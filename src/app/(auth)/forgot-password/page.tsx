@@ -158,7 +158,7 @@ export default function ForgotPasswordPage() {
         <p className="text-sm text-secondary-600">
           If you're having trouble resetting your password, please{" "}
           <Link
-            href="/contact"
+            href="#contact"
             className="font-medium text-primary-600 hover:text-primary-700"
           >
             contact support

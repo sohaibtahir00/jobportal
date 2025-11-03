@@ -72,7 +72,7 @@ export default function EmployerDashboardPage() {
             Post a Job
           </Link>
           <Link
-            href="/employer/invoices"
+            href="#invoices"
             className="inline-flex items-center justify-center rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm font-medium text-secondary-700 transition-colors hover:bg-secondary-50"
           >
             <Receipt className="mr-2 h-4 w-4" />
@@ -240,7 +240,7 @@ export default function EmployerDashboardPage() {
                 </CardDescription>
               </div>
               <Link
-                href="/employer/jobs"
+                href="/jobs"
                 className="text-sm font-medium text-primary-600 hover:text-primary-700"
               >
                 View All
@@ -316,7 +316,7 @@ export default function EmployerDashboardPage() {
                 </CardDescription>
               </div>
               <Link
-                href="/employer/applications"
+                href="#applications"
                 className="text-sm font-medium text-primary-600 hover:text-primary-700"
               >
                 View All
@@ -416,7 +416,7 @@ export default function EmployerDashboardPage() {
                   manage your billing information.
                 </p>
                 <Link
-                  href="/employer/invoices"
+                  href="#invoices"
                   className="mt-4 inline-flex items-center text-sm font-medium text-accent-600 hover:text-accent-700"
                 >
                   View Invoices

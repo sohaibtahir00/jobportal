@@ -5,7 +5,8 @@
       "Bash(npm init:*)",
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

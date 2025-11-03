@@ -34,20 +34,24 @@ const MOCK_EMPLOYER_USER = {
 
 const candidateNavItems = [
   { href: "/candidate/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/candidate/jobs", label: "Browse Jobs", icon: Briefcase },
-  { href: "/candidate/applications", label: "My Applications", icon: FileText },
-  { href: "/candidate/messages", label: "Messages", icon: MessageSquare },
-  { href: "/candidate/settings", label: "Settings", icon: Settings },
+  { href: "/candidate/profile", label: "My Profile", icon: FileText },
+  { href: "/jobs", label: "Browse Jobs", icon: Briefcase },
+  // Coming soon pages:
+  // { href: "/candidate/applications", label: "My Applications", icon: FileText },
+  // { href: "/candidate/messages", label: "Messages", icon: MessageSquare },
+  // { href: "/candidate/settings", label: "Settings", icon: Settings },
 ];
 
 const employerNavItems = [
   { href: "/employer/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/employer/jobs", label: "My Jobs", icon: Briefcase },
-  { href: "/employer/applications", label: "Applications", icon: Users },
-  { href: "/employer/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/employer/invoices", label: "Invoices", icon: Receipt },
-  { href: "/employer/messages", label: "Messages", icon: MessageSquare },
-  { href: "/employer/settings", label: "Settings", icon: Settings },
+  { href: "/employer/jobs/new", label: "Post New Job", icon: Briefcase },
+  // Coming soon pages:
+  // { href: "/employer/jobs", label: "My Jobs", icon: Briefcase },
+  // { href: "/employer/applications", label: "Applications", icon: Users },
+  // { href: "/employer/analytics", label: "Analytics", icon: BarChart3 },
+  // { href: "/employer/invoices", label: "Invoices", icon: Receipt },
+  // { href: "/employer/messages", label: "Messages", icon: MessageSquare },
+  // { href: "/employer/settings", label: "Settings", icon: Settings },
 ];
 
 export default function DashboardLayout({

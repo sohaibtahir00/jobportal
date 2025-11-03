@@ -21,31 +21,23 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   const footerLinks = {
     jobSeekers: [
       { name: "Browse Jobs", href: "/jobs" },
-      { name: "Job Alerts", href: "/alerts" },
-      { name: "Career Advice", href: "/career-advice" },
-      { name: "Resume Builder", href: "/resume-builder" },
-      { name: "Salary Guide", href: "/salary" },
+      { name: "Candidate Dashboard", href: "/candidate/dashboard" },
+      { name: "My Profile", href: "/candidate/profile" },
     ],
     employers: [
-      { name: "Post a Job", href: "/post-job" },
-      { name: "Browse Candidates", href: "/candidates" },
-      { name: "Employer Solutions", href: "/solutions" },
-      { name: "Pricing", href: "/pricing" },
-      { name: "Resources", href: "/employer-resources" },
+      { name: "Post a Job", href: "/employer/jobs/new" },
+      { name: "Employer Dashboard", href: "/employer/dashboard" },
+      { name: "For Employers", href: "/employers" },
     ],
     company: [
-      { name: "About Us", href: "/about" },
-      { name: "Contact", href: "/contact" },
-      { name: "Careers", href: "/careers" },
-      { name: "Press", href: "/press" },
-      { name: "Partners", href: "/partners" },
+      { name: "Homepage", href: "/" },
+      { name: "About the Project", href: "#about" },
+      { name: "GitHub", href: "https://github.com" },
     ],
     legal: [
-      { name: "Privacy Policy", href: "/privacy" },
-      { name: "Terms of Service", href: "/terms" },
-      { name: "Cookie Policy", href: "/cookies" },
-      { name: "Accessibility", href: "/accessibility" },
-      { name: "Sitemap", href: "/sitemap" },
+      { name: "Privacy Policy", href: "#privacy" },
+      { name: "Terms of Service", href: "#terms" },
+      { name: "Cookie Policy", href: "#cookies" },
     ],
   };
 
@@ -228,19 +220,19 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             </p>
             <div className="flex items-center gap-6">
               <Link
-                href="/privacy"
+                href="#privacy"
                 className="text-sm text-secondary-600 transition-colors hover:text-primary-600"
               >
                 Privacy
               </Link>
               <Link
-                href="/terms"
+                href="#terms"
                 className="text-sm text-secondary-600 transition-colors hover:text-primary-600"
               >
                 Terms
               </Link>
               <Link
-                href="/cookies"
+                href="#cookies"
                 className="text-sm text-secondary-600 transition-colors hover:text-primary-600"
               >
                 Cookies

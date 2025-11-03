@@ -212,7 +212,7 @@ export default function Home() {
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <Link href="/post-job">Post a Job</Link>
+                <Link href="/employer/jobs/new">Post a Job</Link>
               </Button>
             </div>
 
@@ -459,7 +459,7 @@ export default function Home() {
               className="bg-white text-primary-600 hover:bg-primary-50"
               asChild
             >
-              <Link href="/post-job">
+              <Link href="/employer/jobs/new">
                 Post a Job
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
@@ -550,7 +550,7 @@ export default function Home() {
                 className="border-white text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="/post-job">Hire Talent</Link>
+                <Link href="/employer/jobs/new">Hire Talent</Link>
               </Button>
             </div>
           </div>

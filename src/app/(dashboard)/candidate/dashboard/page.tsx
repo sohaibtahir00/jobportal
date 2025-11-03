@@ -92,7 +92,7 @@ export default function CandidateDashboardPage() {
                 </div>
               </div>
               <Link
-                href="/candidate/settings"
+                href="/candidate/profile"
                 className="inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-accent-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-700 lg:flex-shrink-0"
               >
                 Complete Profile
@@ -186,7 +186,7 @@ export default function CandidateDashboardPage() {
               </CardDescription>
             </div>
             <Link
-              href="/candidate/applications"
+              href="#applications"
               className="text-sm font-medium text-primary-600 hover:text-primary-700"
             >
               View All
@@ -267,7 +267,7 @@ export default function CandidateDashboardPage() {
             </p>
           </div>
           <Link
-            href="/candidate/jobs"
+            href="/jobs"
             className="text-sm font-medium text-primary-600 hover:text-primary-700"
           >
             View All Jobs

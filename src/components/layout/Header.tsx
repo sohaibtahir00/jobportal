@@ -51,9 +51,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
 
   const navigation = [
     { name: "Find Jobs", href: "/jobs" },
-    { name: "Companies", href: "/companies" },
     { name: "For Employers", href: "/employers" },
-    { name: "Resources", href: "/resources" },
   ];
 
   return (
@@ -94,10 +92,10 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
           {/* Desktop Actions */}
           <div className="hidden items-center gap-4 md:flex">
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/signin">Sign In</Link>
+              <Link href="/login">Sign In</Link>
             </Button>
             <Button variant="primary" size="sm" asChild>
-              <Link href="/post-job">Post a Job</Link>
+              <Link href="/employer/jobs/new">Post a Job</Link>
             </Button>
           </div>
 
@@ -139,12 +137,12 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                 className="w-full justify-center"
                 asChild
               >
-                <Link href="/signin" onClick={() => setMobileMenuOpen(false)}>
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                   Sign In
                 </Link>
               </Button>
               <Button variant="primary" className="w-full justify-center" asChild>
-                <Link href="/post-job" onClick={() => setMobileMenuOpen(false)}>
+                <Link href="/employer/jobs/new" onClick={() => setMobileMenuOpen(false)}>
                   Post a Job
                 </Link>
               </Button>

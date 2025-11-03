@@ -231,7 +231,7 @@ export default function SignupPage() {
             >
               I agree to the{" "}
               <Link
-                href="/terms"
+                href="#terms"
                 className="font-medium text-primary-600 hover:text-primary-700"
                 target="_blank"
               >
@@ -239,7 +239,7 @@ export default function SignupPage() {
               </Link>{" "}
               and{" "}
               <Link
-                href="/privacy"
+                href="#privacy"
                 className="font-medium text-primary-600 hover:text-primary-700"
                 target="_blank"
               >

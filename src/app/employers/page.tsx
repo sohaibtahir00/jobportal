@@ -157,7 +157,7 @@ export default function EmployersPage() {
                 className="bg-white text-primary-600 hover:bg-primary-50"
                 asChild
               >
-                <Link href="/post-job">
+                <Link href="/employer/jobs/new">
                   Post a Job - It's Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -168,7 +168,7 @@ export default function EmployersPage() {
                 className="border-white text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="/contact">Talk to Sales</Link>
+                <Link href="#contact">Talk to Sales</Link>
               </Button>
             </div>
 
@@ -392,7 +392,7 @@ export default function EmployersPage() {
 
                 <div className="mt-8 border-t border-secondary-200 pt-8 text-center">
                   <Button variant="primary" size="lg" asChild>
-                    <Link href="/post-job">
+                    <Link href="/employer/jobs/new">
                       Get Started Free
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
@@ -514,7 +514,7 @@ export default function EmployersPage() {
                 className="bg-white text-primary-600 hover:bg-primary-50"
                 asChild
               >
-                <Link href="/post-job">
+                <Link href="/employer/jobs/new">
                   <Rocket className="mr-2 h-5 w-5" />
                   Post a Job Now
                 </Link>
@@ -525,7 +525,7 @@ export default function EmployersPage() {
                 className="border-white text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="/contact">Schedule a Demo</Link>
+                <Link href="#contact">Schedule a Demo</Link>
               </Button>
             </div>
 
