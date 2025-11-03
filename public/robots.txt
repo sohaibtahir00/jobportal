@@ -1,0 +1,21 @@
+# robots.txt for AI/ML Job Portal
+
+# Allow all robots complete access
+User-agent: *
+Allow: /
+
+# Disallow auth pages and dashboard
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /candidate/
+Disallow: /employer/
+
+# Disallow API routes
+Disallow: /api/
+
+# Crawl-delay (optional - adjust if needed)
+# Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://aiml-jobs.com/sitemap.xml
