@@ -29,9 +29,6 @@ export default function LoginPage() {
 
     try {
       // TODO: Replace with actual API call
-      console.log("Login data:", data);
-
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       showToast("success", "Welcome back!", "You've successfully logged in.");
@@ -44,8 +41,7 @@ export default function LoginPage() {
   };
 
   const handleSocialLogin = (provider: "google" | "linkedin") => {
-    // TODO: Implement social login
-    console.log(`Login with ${provider}`);
+    // TODO: Implement social login with OAuth
   };
 
   return (
@@ -120,16 +116,10 @@ export default function LoginPage() {
           variant="primary"
           size="lg"
           className="w-full"
-          disabled={isLoading}
+          loading={isLoading}
+          loadingText="Signing in..."
         >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Signing in...
-            </>
-          ) : (
-            "Sign in"
-          )}
+          Sign in
         </Button>
 
         {/* Divider */}

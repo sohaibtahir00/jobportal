@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Search,
@@ -17,10 +18,40 @@ import {
   Target,
   Clock,
 } from "lucide-react";
-import { Button, Input, Badge, Card, CardContent } from "@/components/ui";
+import { Button, Input, Badge, Card, CardContent, useToast } from "@/components/ui";
 
 export default function Home() {
+  const router = useRouter();
+  const { showToast } = useToast();
   const [email, setEmail] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [location, setLocation] = useState("");
+  const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set("search", searchQuery.trim());
+    if (location.trim()) params.set("location", location.trim());
+    router.push(`/jobs?${params.toString()}`);
+  };
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsNewsletterLoading(true);
+
+    try {
+      // TODO: Replace with actual API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      showToast("success", "Subscribed successfully!", `Welcome aboard! Check your inbox at ${email}`);
+      setEmail(""); // Clear email after successful submission
+    } catch (error) {
+      showToast("error", "Subscription failed", "There was a problem subscribing you to our newsletter. Please try again.");
+    } finally {
+      setIsNewsletterLoading(false);
+    }
+  };
 
   const featuredJobs = [
     {
@@ -177,28 +208,42 @@ export default function Home() {
             <div className="mx-auto mb-8 max-w-3xl">
               <Card>
                 <CardContent className="p-4">
-                  <div className="flex flex-col gap-3 md:flex-row">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
-                      <input
-                        type="text"
-                        placeholder="Job title, keywords, or company"
-                        className="h-12 w-full rounded-md border border-secondary-300 bg-white pl-11 pr-4 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
-                      />
+                  <form onSubmit={handleSearch}>
+                    <div className="flex flex-col gap-3 md:flex-row">
+                      <div className="relative flex-1">
+                        <label htmlFor="hero-job-search" className="sr-only">
+                          Search for jobs by title, keywords, or company
+                        </label>
+                        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
+                        <input
+                          id="hero-job-search"
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Job title, keywords, or company"
+                          className="h-12 w-full rounded-md border border-secondary-300 bg-white pl-11 pr-4 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
+                        />
+                      </div>
+                      <div className="relative flex-1">
+                        <label htmlFor="hero-location-search" className="sr-only">
+                          Filter by location: city, state, or remote
+                        </label>
+                        <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
+                        <input
+                          id="hero-location-search"
+                          type="text"
+                          value={location}
+                          onChange={(e) => setLocation(e.target.value)}
+                          placeholder="City, state, or remote"
+                          className="h-12 w-full rounded-md border border-secondary-300 bg-white pl-11 pr-4 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
+                        />
+                      </div>
+                      <Button type="submit" size="lg" className="h-12 px-8">
+                        <Search className="mr-2 h-5 w-5" />
+                        Search Jobs
+                      </Button>
                     </div>
-                    <div className="relative flex-1">
-                      <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
-                      <input
-                        type="text"
-                        placeholder="City, state, or remote"
-                        className="h-12 w-full rounded-md border border-secondary-300 bg-white pl-11 pr-4 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
-                      />
-                    </div>
-                    <Button size="lg" className="h-12 px-8">
-                      <Search className="mr-2 h-5 w-5" />
-                      Search Jobs
-                    </Button>
-                  </div>
+                  </form>
                 </CardContent>
               </Card>
             </div>
@@ -495,22 +540,30 @@ export default function Home() {
                   and career tips delivered to your inbox.
                 </p>
                 <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    console.log("Newsletter signup:", email);
-                  }}
+                  onSubmit={handleNewsletterSubmit}
                   className="mx-auto max-w-md"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row">
+                    <label htmlFor="newsletter-email" className="sr-only">
+                      Email address for newsletter subscription
+                    </label>
                     <Input
+                      id="newsletter-email"
                       type="email"
                       placeholder="Enter your email address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      disabled={isNewsletterLoading}
                       className="flex-1"
                     />
-                    <Button type="submit" size="lg" className="sm:w-auto">
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="sm:w-auto"
+                      loading={isNewsletterLoading}
+                      loadingText="Subscribing..."
+                    >
                       Subscribe
                     </Button>
                   </div>

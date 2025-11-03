@@ -25,13 +25,14 @@ import { JobCard } from "@/components/jobs/JobCard";
 import { ApplicationForm } from "@/components/jobs/ApplicationForm";
 import { getJobById } from "@/lib/mockData";
 import { generateJobPostingJsonLd } from "@/lib/seo";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function JobDetailPage() {
   const params = useParams();
   const jobId = parseInt(params.id as string);
   const job = getJobDetails(jobId);
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
-  const [jsonLd, setJsonLd] = useState<any>(null);
+  const [jsonLd, setJsonLd] = useState<Record<string, unknown> | null>(null);
 
   // Generate JSON-LD structured data for the job
   useEffect(() => {
@@ -76,8 +77,9 @@ export default function JobDetailPage() {
         />
       )}
 
-      <div className="bg-secondary-50 py-8">
-        <div className="container">
+      <ErrorBoundary>
+        <div className="bg-secondary-50 py-8">
+          <div className="container">
         {/* Back Button */}
         <div className="mb-6">
           <Button variant="ghost" asChild className="gap-2">
@@ -391,8 +393,9 @@ export default function JobDetailPage() {
           jobTitle={job.title}
           companyName={job.company}
         />
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
     </>
   );
 }

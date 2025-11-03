@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, Controller, useFieldArray } from "react-hook-form";
+import { useForm, Controller, useFieldArray, type Control } from "react-hook-form";
 import {
   ChevronLeft,
   ChevronRight,
@@ -123,12 +123,14 @@ export default function NewJobPostingPage() {
     },
   });
 
+  // Note: Type assertion needed due to react-hook-form's type inference limitations with Zod schemas
+  // The form fields are still type-safe through the schema validation
   const {
     fields: responsibilityFields,
     append: appendResponsibility,
     remove: removeResponsibility,
   } = useFieldArray({
-    control: control as any,
+    control: control as unknown as Control,
     name: "responsibilities",
   });
 
@@ -137,7 +139,7 @@ export default function NewJobPostingPage() {
     append: appendRequirement,
     remove: removeRequirement,
   } = useFieldArray({
-    control: control as any,
+    control: control as unknown as Control,
     name: "requirements",
   });
 
@@ -146,7 +148,7 @@ export default function NewJobPostingPage() {
     append: appendNiceToHave,
     remove: removeNiceToHave,
   } = useFieldArray({
-    control: control as any,
+    control: control as unknown as Control,
     name: "niceToHaves",
   });
 
@@ -155,7 +157,7 @@ export default function NewJobPostingPage() {
     append: appendBenefit,
     remove: removeBenefit,
   } = useFieldArray({
-    control: control as any,
+    control: control as unknown as Control,
     name: "benefits",
   });
 
@@ -198,7 +200,7 @@ export default function NewJobPostingPage() {
   const onSaveDraft = async () => {
     setIsLoading(true);
     try {
-      console.log("Saving draft:", formValues);
+      // TODO: Replace with actual API call to save draft
       await new Promise((resolve) => setTimeout(resolve, 1500));
       showToast("success", "Draft saved!", "Your job posting has been saved as a draft.");
     } catch (error) {
@@ -211,7 +213,7 @@ export default function NewJobPostingPage() {
   const onPublish = async (data: JobPostingFormData) => {
     setIsLoading(true);
     try {
-      console.log("Publishing job:", data);
+      // TODO: Replace with actual API call to publish job
       await new Promise((resolve) => setTimeout(resolve, 1500));
       showToast("success", "Job published!", "Your job posting is now live.");
       router.push("/employer/dashboard");
@@ -770,13 +772,9 @@ export default function NewJobPostingPage() {
                 type="button"
                 variant="outline"
                 onClick={onSaveDraft}
-                disabled={isLoading}
+                loading={isLoading}
               >
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                ) : (
-                  <Save className="mr-2 h-5 w-5" />
-                )}
+                <Save className="mr-2 h-5 w-5" />
                 Save Draft
               </Button>
             )}
@@ -792,25 +790,18 @@ export default function NewJobPostingPage() {
                   type="button"
                   variant="outline"
                   onClick={onSaveDraft}
-                  disabled={isLoading}
+                  loading={isLoading}
                 >
-                  {isLoading ? (
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  ) : (
-                    <Save className="mr-2 h-5 w-5" />
-                  )}
+                  <Save className="mr-2 h-5 w-5" />
                   Save Draft
                 </Button>
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={isLoading}
+                  loading={isLoading}
+                  loadingText="Publishing..."
                 >
-                  {isLoading ? (
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  ) : (
-                    <Send className="mr-2 h-5 w-5" />
-                  )}
+                  <Send className="mr-2 h-5 w-5" />
                   Publish Job
                 </Button>
               </>

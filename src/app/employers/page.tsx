@@ -168,7 +168,7 @@ export default function EmployersPage() {
                 className="border-white text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="#contact">Talk to Sales</Link>
+                <Link href="/about">Talk to Sales</Link>
               </Button>
             </div>
 
@@ -525,7 +525,7 @@ export default function EmployersPage() {
                 className="border-white text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="#contact">Schedule a Demo</Link>
+                <Link href="/about">Schedule a Demo</Link>
               </Button>
             </div>
 

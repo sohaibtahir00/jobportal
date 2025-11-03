@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Upload, CheckCircle2, Loader2 } from "lucide-react";
+import { Upload, CheckCircle2, Loader2, FileText, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -34,7 +34,8 @@ export function ApplicationForm({
 }: ApplicationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [fileName, setFileName] = useState<string>("");
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const { showToast } = useToast();
 
   const {
@@ -47,11 +48,65 @@ export function ApplicationForm({
     resolver: zodResolver(jobApplicationSchema),
   });
 
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setFileName(file.name);
-      setValue("resumeFile", file);
+    if (!file) return;
+
+    // Check file type
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      showToast("error", "Invalid file type", "Please upload PDF or DOC files only");
+      e.target.value = ""; // Reset input
+      return;
+    }
+
+    // Check file size (5MB = 5 * 1024 * 1024 bytes)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      showToast("error", "File too large", "File size must be less than 5MB");
+      e.target.value = ""; // Reset input
+      return;
+    }
+
+    // File is valid - simulate upload progress
+    setUploadProgress(0);
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return prev + 20;
+      });
+    }, 100);
+
+    // Set file and update form
+    setResumeFile(file);
+    setValue("resumeFile", file);
+    showToast("success", "Resume uploaded", `${file.name} uploaded successfully`);
+  };
+
+  const handleRemoveFile = () => {
+    setResumeFile(null);
+    setUploadProgress(0);
+    setValue("resumeFile", undefined);
+    // Reset the file input
+    const fileInput = document.getElementById("resume-upload") as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
     }
   };
 
@@ -59,16 +114,8 @@ export function ApplicationForm({
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
+      // TODO: Replace with actual API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Log the application data
-      console.log("Application submitted:", {
-        jobTitle,
-        companyName,
-        ...data,
-        resumeFileName: fileName,
-      });
 
       setIsSuccess(true);
       showToast("success", "Application submitted!", `Your application for ${jobTitle} has been sent.`);
@@ -76,7 +123,8 @@ export function ApplicationForm({
       // Reset form after 3 seconds and close
       setTimeout(() => {
         reset();
-        setFileName("");
+        setResumeFile(null);
+        setUploadProgress(0);
         setIsSuccess(false);
         onClose();
       }, 3000);
@@ -90,7 +138,8 @@ export function ApplicationForm({
   const handleClose = () => {
     if (!isSubmitting) {
       reset();
-      setFileName("");
+      setResumeFile(null);
+      setUploadProgress(0);
       setIsSuccess(false);
       onClose();
     }
@@ -161,35 +210,83 @@ export function ApplicationForm({
                     Resume / CV
                     <span className="ml-1 text-danger-600">*</span>
                   </label>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      id="resume-upload"
-                    />
-                    <label
-                      htmlFor="resume-upload"
-                      className="flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-secondary-300 bg-secondary-50 transition-colors hover:border-primary-600 hover:bg-primary-50"
-                    >
-                      <Upload className="mb-2 h-8 w-8 text-secondary-400" />
-                      {fileName ? (
-                        <span className="text-sm font-medium text-secondary-900">
-                          {fileName}
+
+                  {!resumeFile ? (
+                    // Upload Area
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        id="resume-upload"
+                      />
+                      <label
+                        htmlFor="resume-upload"
+                        className="flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-secondary-300 bg-secondary-50 transition-colors hover:border-primary-600 hover:bg-primary-50"
+                      >
+                        <Upload className="mb-2 h-8 w-8 text-secondary-400" />
+                        <span className="text-sm font-medium text-secondary-700">
+                          Click to upload resume
                         </span>
-                      ) : (
-                        <>
-                          <span className="text-sm font-medium text-secondary-700">
-                            Click to upload resume
-                          </span>
-                          <span className="mt-1 text-xs text-secondary-500">
-                            PDF, DOC, or DOCX (max 5MB)
-                          </span>
-                        </>
+                        <span className="mt-1 text-xs text-secondary-500">
+                          PDF, DOC, or DOCX (max 5MB)
+                        </span>
+                      </label>
+                    </div>
+                  ) : (
+                    // File Preview
+                    <div className="rounded-md border border-secondary-300 bg-white p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary-100">
+                            <FileText className="h-5 w-5 text-primary-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-secondary-900 truncate">
+                              {resumeFile.name}
+                            </p>
+                            <p className="text-xs text-secondary-500">
+                              {formatFileSize(resumeFile.size)}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveFile}
+                          className="flex h-8 w-8 items-center justify-center rounded-md text-secondary-400 transition-colors hover:bg-secondary-100 hover:text-secondary-600"
+                          aria-label="Remove file"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      {/* Upload Progress Bar */}
+                      {uploadProgress < 100 && (
+                        <div className="mt-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs text-secondary-600">Uploading...</span>
+                            <span className="text-xs text-secondary-600">{uploadProgress}%</span>
+                          </div>
+                          <div className="h-1.5 w-full rounded-full bg-secondary-200 overflow-hidden">
+                            <div
+                              className="h-full bg-primary-600 transition-all duration-300"
+                              style={{ width: `${uploadProgress}%` }}
+                            />
+                          </div>
+                        </div>
                       )}
-                    </label>
-                  </div>
+
+                      {/* Upload Complete */}
+                      {uploadProgress === 100 && (
+                        <div className="mt-3 flex items-center gap-2 text-xs text-success-600">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <span>Upload complete</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {errors.resumeFile?.message && (
                     <p className="mt-1.5 text-xs text-danger-600">
                       {errors.resumeFile.message as string}
@@ -274,17 +371,11 @@ export function ApplicationForm({
                   <Button
                     type="submit"
                     variant="primary"
-                    disabled={isSubmitting}
+                    loading={isSubmitting}
+                    loadingText="Submitting..."
                     className="min-w-[120px]"
                   >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      "Submit Application"
-                    )}
+                    Submit Application
                   </Button>
                 </div>
               </form>

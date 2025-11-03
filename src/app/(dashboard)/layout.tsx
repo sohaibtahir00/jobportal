@@ -16,6 +16,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { useState, useMemo } from "react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // This will be replaced with actual auth check later
 const MOCK_CANDIDATE_USER = {
@@ -178,7 +179,9 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content */}
-        <main className="p-4 lg:p-8">{children}</main>
+        <main className="p-4 lg:p-8">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </main>
       </div>
     </div>
   );

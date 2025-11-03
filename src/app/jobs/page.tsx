@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, Briefcase } from "lucide-react";
 import { Button, Badge, EmptyState } from "@/components/ui";
 import { JobCard } from "@/components/jobs/JobCard";
@@ -10,7 +11,8 @@ import { mockJobs } from "@/lib/mock-jobs";
 
 const ITEMS_PER_PAGE = 9;
 
-export default function JobsPage() {
+function JobsContent() {
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -22,6 +24,23 @@ export default function JobsPage() {
     salaryMin: 0,
     salaryMax: 300000,
   });
+
+  // Initialize search from URL parameters
+  useEffect(() => {
+    const search = searchParams.get("search");
+    const location = searchParams.get("location");
+
+    if (search) {
+      setSearchQuery(search);
+    }
+
+    if (location) {
+      setFilters(prev => ({
+        ...prev,
+        locations: [location],
+      }));
+    }
+  }, [searchParams]);
 
   // Filter and search jobs
   const filteredJobs = useMemo(() => {
@@ -42,11 +61,18 @@ export default function JobsPage() {
       }
 
       // Location filter
-      if (
-        filters.locations.length > 0 &&
-        !filters.locations.includes(job.location)
-      ) {
-        return false;
+      if (filters.locations.length > 0) {
+        const matchesLocation = filters.locations.some((filterLoc) => {
+          const filterLower = filterLoc.toLowerCase();
+          const jobLocLower = job.location.toLowerCase();
+          // Check if job location contains the filter location or vice versa
+          return (
+            jobLocLower.includes(filterLower) ||
+            filterLower.includes(jobLocLower) ||
+            filterLower === "remote" && job.location.toLowerCase() === "remote"
+          );
+        });
+        if (!matchesLocation) return false;
       }
 
       // Remote type filter
@@ -110,8 +136,12 @@ export default function JobsPage() {
         {/* Search Bar */}
         <div className="mb-6">
           <div className="relative">
+            <label htmlFor="jobs-search" className="sr-only">
+              Search jobs by title, company, or skills
+            </label>
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
             <input
+              id="jobs-search"
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
@@ -281,5 +311,22 @@ export default function JobsPage() {
         resultsCount={filteredJobs.length}
       />
     </div>
+  );
+}
+
+export default function JobsPage() {
+  return (
+    <Suspense fallback={
+      <div className="container py-12">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary-600 border-r-transparent" />
+            <p className="text-secondary-600">Loading jobs...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <JobsContent />
+    </Suspense>
   );
 }

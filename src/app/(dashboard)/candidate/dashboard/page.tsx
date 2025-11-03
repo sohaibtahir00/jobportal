@@ -186,7 +186,7 @@ export default function CandidateDashboardPage() {
               </CardDescription>
             </div>
             <Link
-              href="#applications"
+              href="javascript:void(0)"
               className="text-sm font-medium text-primary-600 hover:text-primary-700"
             >
               View All

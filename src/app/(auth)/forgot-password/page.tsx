@@ -33,9 +33,6 @@ export default function ForgotPasswordPage() {
 
     try {
       // TODO: Replace with actual API call
-      console.log("Forgot password data:", data);
-
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       setIsSuccess(true);
@@ -126,16 +123,10 @@ export default function ForgotPasswordPage() {
           variant="primary"
           size="lg"
           className="w-full"
-          disabled={isLoading}
+          loading={isLoading}
+          loadingText="Sending reset link..."
         >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Sending reset link...
-            </>
-          ) : (
-            "Send reset link"
-          )}
+          Send reset link
         </Button>
 
         {/* Back to Login */}
@@ -158,7 +149,7 @@ export default function ForgotPasswordPage() {
         <p className="text-sm text-secondary-600">
           If you're having trouble resetting your password, please{" "}
           <Link
-            href="#contact"
+            href="/about"
             className="font-medium text-primary-600 hover:text-primary-700"
           >
             contact support

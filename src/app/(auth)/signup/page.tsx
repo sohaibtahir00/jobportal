@@ -33,9 +33,6 @@ export default function SignupPage() {
 
     try {
       // TODO: Replace with actual API call
-      console.log("Registration data:", data);
-
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       showToast("success", "Account created!", "Welcome to the platform. Let's get started.");
@@ -52,8 +49,7 @@ export default function SignupPage() {
   };
 
   const handleSocialSignup = (provider: "google" | "linkedin") => {
-    // TODO: Implement social signup
-    console.log(`Sign up with ${provider}`);
+    // TODO: Implement social signup with OAuth
   };
 
   return (
@@ -231,7 +227,7 @@ export default function SignupPage() {
             >
               I agree to the{" "}
               <Link
-                href="#terms"
+                href="/terms"
                 className="font-medium text-primary-600 hover:text-primary-700"
                 target="_blank"
               >
@@ -239,7 +235,7 @@ export default function SignupPage() {
               </Link>{" "}
               and{" "}
               <Link
-                href="#privacy"
+                href="/privacy"
                 className="font-medium text-primary-600 hover:text-primary-700"
                 target="_blank"
               >
@@ -260,16 +256,10 @@ export default function SignupPage() {
           variant="primary"
           size="lg"
           className="w-full"
-          disabled={isLoading}
+          loading={isLoading}
+          loadingText="Creating account..."
         >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Creating account...
-            </>
-          ) : (
-            "Create account"
-          )}
+          Create account
         </Button>
 
         {/* Divider */}

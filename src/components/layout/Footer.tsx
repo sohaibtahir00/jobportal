@@ -31,13 +31,12 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
     ],
     company: [
       { name: "Homepage", href: "/" },
-      { name: "About the Project", href: "#about" },
+      { name: "About the Project", href: "/about" },
       { name: "GitHub", href: "https://github.com" },
     ],
     legal: [
-      { name: "Privacy Policy", href: "#privacy" },
-      { name: "Terms of Service", href: "#terms" },
-      { name: "Cookie Policy", href: "#cookies" },
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Terms of Service", href: "/terms" },
     ],
   };
 
@@ -121,8 +120,12 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               </h3>
               <div className="flex gap-2">
                 <div className="relative flex-1">
+                  <label htmlFor="footer-newsletter-email" className="sr-only">
+                    Email address for newsletter subscription
+                  </label>
                   <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary-400" />
                   <input
+                    id="footer-newsletter-email"
                     type="email"
                     placeholder="Enter your email"
                     className="h-10 w-full rounded-md border border-secondary-300 bg-white pl-10 pr-3 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
@@ -220,22 +223,22 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             </p>
             <div className="flex items-center gap-6">
               <Link
-                href="#privacy"
+                href="/privacy"
                 className="text-sm text-secondary-600 transition-colors hover:text-primary-600"
               >
                 Privacy
               </Link>
               <Link
-                href="#terms"
+                href="/terms"
                 className="text-sm text-secondary-600 transition-colors hover:text-primary-600"
               >
                 Terms
               </Link>
               <Link
-                href="#cookies"
+                href="/about"
                 className="text-sm text-secondary-600 transition-colors hover:text-primary-600"
               >
-                Cookies
+                About
               </Link>
             </div>
           </div>

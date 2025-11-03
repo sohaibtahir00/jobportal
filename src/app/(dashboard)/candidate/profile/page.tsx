@@ -144,9 +144,6 @@ export default function CandidateProfilePage() {
 
     try {
       // TODO: Replace with actual API call
-      console.log("Profile data:", data);
-
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       showToast("success", "Profile updated!", "Your changes have been saved successfully.");

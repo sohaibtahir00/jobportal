@@ -6,6 +6,8 @@ export interface ButtonProps
   variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
+  loading?: boolean; // Alias for isLoading
+  loadingText?: string; // Custom loading text
   asChild?: boolean;
   children: React.ReactNode;
 }
@@ -17,6 +19,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       variant = "primary",
       size = "md",
       isLoading = false,
+      loading = false,
+      loadingText,
       asChild = false,
       disabled,
       children,
@@ -24,6 +28,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
+    // Support both isLoading and loading props
+    const isButtonLoading = isLoading || loading;
     const baseStyles =
       "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
 
@@ -50,33 +56,39 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       baseStyles,
       variants[variant],
       sizes[size],
-      isLoading && "cursor-wait",
+      isButtonLoading && "cursor-wait",
       className
     );
 
     if (asChild) {
       // When asChild is true, clone the child element and pass props to it
-      const child = children as React.ReactElement<any>;
+      const child = React.Children.only(children) as React.ReactElement<{ className?: string }>;
       return React.cloneElement(child, {
-        ...props,
-        className: cn(child.props?.className, classes),
+        ...(props as object),
+        className: cn(child.props.className, classes),
       });
     }
+
+    // Determine loading text to display
+    const displayLoadingText = loadingText || (
+      typeof children === 'string' ? children : 'Loading...'
+    );
 
     return (
       <button
         ref={ref}
         className={classes}
-        disabled={disabled || isLoading}
+        disabled={disabled || isButtonLoading}
         {...props}
       >
-        {isLoading ? (
+        {isButtonLoading ? (
           <>
             <svg
-              className="mr-2 h-4 w-4 animate-spin"
+              className="mr-2 h-4 w-4 animate-spin flex-shrink-0"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <circle
                 className="opacity-25"
@@ -92,7 +104,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Loading...
+            <span>{displayLoadingText}</span>
           </>
         ) : (
           children
