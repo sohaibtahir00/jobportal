@@ -22,8 +22,22 @@ export function JobCard({ job }: JobCardProps) {
                 {job.title}
               </h3>
               <p className="text-sm text-secondary-600">{job.company}</p>
+              {job.skillsVerified && (
+                <p className="mt-1 text-xs text-amber-600">
+                  Skills verified candidates preferred
+                </p>
+              )}
             </div>
           </div>
+          {job.skillsVerified && (
+            <Badge
+              variant="warning"
+              size="sm"
+              className="ml-2 flex-shrink-0 bg-amber-100 text-amber-700 border-amber-200"
+            >
+              ⭐ Verified
+            </Badge>
+          )}
         </div>
 
         <div className="mb-4 space-y-2">

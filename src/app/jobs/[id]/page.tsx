@@ -93,6 +93,21 @@ export default function JobDetailPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2">
+            {/* Status Indicator */}
+            {!job.skillsVerified ? (
+              <div className="mb-6 rounded-lg border border-primary-200 bg-primary-50 p-4">
+                <p className="text-sm text-primary-900">
+                  <span className="mr-2">ℹ️</span>
+                  <strong>This job is publicly listed.</strong> Apply now to get priority when the employer claims it.
+                </p>
+              </div>
+            ) : (
+              <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-success-200 bg-success-50 px-4 py-2">
+                <span className="text-success-600">✓</span>
+                <span className="font-semibold text-success-900">Verified Employer</span>
+              </div>
+            )}
+
             {/* Job Header */}
             <Card className="mb-6">
               <CardContent className="p-8">
@@ -157,24 +172,49 @@ export default function JobDetailPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="flex-1 sm:flex-initial"
-                    onClick={() => setIsApplicationFormOpen(true)}
-                  >
-                    Apply Now
-                  </Button>
-                  <Button variant="outline" size="lg" className="gap-2">
-                    <Bookmark className="h-4 w-4" />
-                    Save Job
-                  </Button>
-                  <Button variant="outline" size="lg" className="gap-2">
-                    <Share2 className="h-4 w-4" />
-                    Share
-                  </Button>
+                <div>
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      className="flex-1 sm:flex-initial"
+                      onClick={() => setIsApplicationFormOpen(true)}
+                    >
+                      Apply Now
+                    </Button>
+                    <Button variant="outline" size="lg" className="gap-2">
+                      <Bookmark className="h-4 w-4" />
+                      Save Job
+                    </Button>
+                    <Button variant="outline" size="lg" className="gap-2">
+                      <Share2 className="h-4 w-4" />
+                      Share
+                    </Button>
+                  </div>
+                  <p className="mt-2 text-sm text-secondary-600">
+                    Application takes 2 minutes
+                  </p>
                 </div>
+
+                {/* Skills Verification Section */}
+                {job.skillsVerified && (
+                  <div className="mt-6 rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="text-xl">⭐</span>
+                      <h3 className="font-bold text-amber-900">
+                        Skills-Verified Candidates Preferred
+                      </h3>
+                    </div>
+                    <p className="mb-3 text-sm text-amber-800">
+                      This employer wants to see your Skills Score Card. Take our 60-minute assessment to stand out.
+                    </p>
+                    <Button variant="outline" size="sm" asChild className="border-amber-300 text-amber-900 hover:bg-amber-100">
+                      <Link href="/skills-assessment">
+                        Learn More
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

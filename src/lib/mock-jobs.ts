@@ -15,6 +15,7 @@ export interface Job {
   description: string;
   posted: string;
   logo: string;
+  skillsVerified?: boolean;
 }
 
 export const mockJobs: Job[] = [
@@ -32,6 +33,7 @@ export const mockJobs: Job[] = [
     description: "Lead ML initiatives and build scalable AI systems.",
     posted: "2 days ago",
     logo: "🚀",
+    skillsVerified: true,
   },
   {
     id: 2,
@@ -47,6 +49,7 @@ export const mockJobs: Job[] = [
     description: "Conduct cutting-edge research in deep learning and AI.",
     posted: "1 day ago",
     logo: "🧠",
+    skillsVerified: true,
   },
   {
     id: 3,
@@ -77,6 +80,7 @@ export const mockJobs: Job[] = [
     description: "Monitor and respond to security threats and incidents.",
     posted: "5 days ago",
     logo: "🔒",
+    skillsVerified: true,
   },
   {
     id: 5,
@@ -122,6 +126,7 @@ export const mockJobs: Job[] = [
     description: "Deploy and maintain ML models in production.",
     posted: "2 days ago",
     logo: "☁️",
+    skillsVerified: true,
   },
   {
     id: 8,
@@ -152,6 +157,7 @@ export const mockJobs: Job[] = [
     description: "Operate security systems and respond to threats.",
     posted: "3 days ago",
     logo: "🛡️",
+    skillsVerified: true,
   },
   {
     id: 10,
@@ -227,6 +233,7 @@ export const mockJobs: Job[] = [
     description: "Develop high-frequency trading algorithms.",
     posted: "2 days ago",
     logo: "📈",
+    skillsVerified: true,
   },
   {
     id: 15,
@@ -317,5 +324,6 @@ export const mockJobs: Job[] = [
     description: "Develop AI solutions for medical image analysis.",
     posted: "6 days ago",
     logo: "🔬",
+    skillsVerified: true,
   },
 ];

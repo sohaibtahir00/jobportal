@@ -17,6 +17,11 @@ import {
   Zap,
   Target,
   Clock,
+  Phone,
+  Brain,
+  Heart,
+  DollarSign,
+  Lock,
 } from "lucide-react";
 import { Button, Input, Badge, Card, CardContent, useToast } from "@/components/ui";
 
@@ -27,6 +32,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState("");
   const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
+  const [selectedNiche, setSelectedNiche] = useState<string>("all");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +71,8 @@ export default function Home() {
       logo: "🚀",
       tags: ["Python", "TensorFlow", "PyTorch"],
       posted: "2 days ago",
+      niche: "ai-ml",
+      skillsVerified: true,
     },
     {
       id: 2,
@@ -77,42 +85,50 @@ export default function Home() {
       logo: "🧠",
       tags: ["Research", "Deep Learning", "NLP"],
       posted: "1 day ago",
+      niche: "ai-ml",
+      skillsVerified: true,
     },
     {
       id: 3,
-      title: "Data Scientist",
-      company: "Analytics Co",
+      title: "Healthcare Data Engineer",
+      company: "MedTech Solutions",
       location: "Austin, TX",
       type: "Full-time",
       salary: "$120k - $160k",
       remote: false,
-      logo: "📊",
-      tags: ["Python", "SQL", "Statistics"],
+      logo: "🏥",
+      tags: ["Python", "SQL", "HIPAA"],
       posted: "3 days ago",
+      niche: "healthcare",
+      skillsVerified: false,
     },
     {
       id: 4,
-      title: "ML Operations Engineer",
-      company: "CloudScale",
+      title: "Fintech Backend Engineer",
+      company: "PaymentsCo",
       location: "Seattle, WA",
       type: "Full-time",
       salary: "$140k - $180k",
       remote: true,
-      logo: "☁️",
-      tags: ["MLOps", "Kubernetes", "AWS"],
+      logo: "💰",
+      tags: ["Java", "Spring", "Microservices"],
       posted: "1 week ago",
+      niche: "fintech",
+      skillsVerified: true,
     },
     {
       id: 5,
-      title: "Computer Vision Engineer",
-      company: "VisionTech",
+      title: "Cybersecurity Analyst",
+      company: "SecureGuard",
       location: "Boston, MA",
       type: "Full-time",
       salary: "$130k - $190k",
       remote: true,
-      logo: "👁️",
-      tags: ["OpenCV", "YOLO", "PyTorch"],
+      logo: "🔒",
+      tags: ["Penetration Testing", "SIEM", "AWS"],
       posted: "4 days ago",
+      niche: "cybersecurity",
+      skillsVerified: true,
     },
     {
       id: 6,
@@ -125,8 +141,23 @@ export default function Home() {
       logo: "💬",
       tags: ["NLP", "Transformers", "BERT"],
       posted: "5 days ago",
+      niche: "ai-ml",
+      skillsVerified: false,
     },
   ];
+
+  const nicheCategories = [
+    { id: "all", label: "All Jobs", count: featuredJobs.length },
+    { id: "ai-ml", label: "AI/ML Engineers", count: featuredJobs.filter(j => j.niche === "ai-ml").length },
+    { id: "healthcare", label: "Healthcare IT", count: featuredJobs.filter(j => j.niche === "healthcare").length },
+    { id: "fintech", label: "Fintech Engineers", count: featuredJobs.filter(j => j.niche === "fintech").length },
+    { id: "cybersecurity", label: "Cybersecurity", count: featuredJobs.filter(j => j.niche === "cybersecurity").length },
+  ];
+
+  // Filter jobs based on selected niche
+  const filteredJobs = selectedNiche === "all"
+    ? featuredJobs
+    : featuredJobs.filter(job => job.niche === selectedNiche);
 
   const howItWorksSteps = [
     {
@@ -151,28 +182,28 @@ export default function Home() {
 
   const employerBenefits = [
     {
-      icon: Users,
-      title: "Access Top Talent",
+      icon: Shield,
+      title: "Skills-Verified Talent",
       description:
-        "Connect with pre-vetted AI/ML professionals with proven expertise in cutting-edge technologies.",
+        "Every candidate has completed our 60-minute proctored assessment. No guessing, no surprises—just proven expertise.",
+    },
+    {
+      icon: Target,
+      title: "Zero Risk",
+      description:
+        "Pay only when you hire. 15-20% success fee. No upfront costs, no retainers, no wasted budget on unqualified candidates.",
     },
     {
       icon: Zap,
-      title: "Fast Hiring Process",
+      title: "Fast Turnaround",
       description:
-        "Post jobs in minutes and start receiving qualified applications within hours. Streamlined hiring workflow.",
+        "Qualified candidates are already waiting. Most employers start interviewing within 48 hours. Fill roles in weeks, not months.",
     },
     {
-      icon: Shield,
-      title: "Quality Assurance",
+      icon: Briefcase,
+      title: "Your Jobs May Already Be Listed",
       description:
-        "All candidates are verified and screened. Get access to portfolios, GitHub profiles, and project showcases.",
-    },
-    {
-      icon: Clock,
-      title: "Save Time & Money",
-      description:
-        "Reduce time-to-hire by 50%. No agency fees, just direct access to the best AI/ML talent in the market.",
+        "We aggregate job postings from across the web. Your open roles might already be on our platform with qualified candidates waiting. Claim them now.",
     },
   ];
 
@@ -181,6 +212,49 @@ export default function Home() {
     { label: "AI/ML Professionals", value: "85,000+", icon: Users },
     { label: "Successful Placements", value: "15,000+", icon: CheckCircle2 },
     { label: "Partner Companies", value: "2,500+", icon: Building2 },
+  ];
+
+  const specializations = [
+    {
+      id: "ai-ml",
+      icon: Brain,
+      title: "AI/ML Engineers",
+      jobCount: "847 jobs available",
+      salary: "$140k-200k",
+      color: "from-purple-500 to-blue-500",
+      bgColor: "bg-purple-50",
+      iconColor: "text-purple-600",
+    },
+    {
+      id: "healthcare",
+      icon: Heart,
+      title: "Healthcare IT",
+      jobCount: "623 jobs available",
+      salary: "$100k-160k",
+      color: "from-red-500 to-pink-500",
+      bgColor: "bg-red-50",
+      iconColor: "text-red-600",
+    },
+    {
+      id: "fintech",
+      icon: DollarSign,
+      title: "Fintech Engineers",
+      jobCount: "531 jobs available",
+      salary: "$130k-200k",
+      color: "from-green-500 to-emerald-500",
+      bgColor: "bg-green-50",
+      iconColor: "text-green-600",
+    },
+    {
+      id: "cybersecurity",
+      icon: Lock,
+      title: "Cybersecurity",
+      jobCount: "892 jobs available",
+      salary: "$120k-180k",
+      color: "from-orange-500 to-amber-500",
+      bgColor: "bg-orange-50",
+      iconColor: "text-orange-600",
+    },
   ];
 
   return (
@@ -193,16 +267,32 @@ export default function Home() {
               🚀 #1 AI/ML Job Board
             </Badge>
             <h1 className="mb-6 text-4xl font-bold leading-tight text-secondary-900 md:text-5xl lg:text-6xl">
-              Find Your Next{" "}
+              Land Your Dream{" "}
               <span className="bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-                AI/ML Role
-              </span>
+                Tech Job
+              </span>{" "}
+              in 30 Days
             </h1>
-            <p className="mb-8 text-lg text-secondary-600 md:text-xl">
-              Connect with top companies hiring AI and Machine Learning talent.
-              Discover thousands of opportunities in artificial intelligence,
-              data science, and deep learning.
+            <p className="mb-6 text-lg text-secondary-600 md:text-xl">
+              We connect top AI/ML engineers with fast-growing companies. Every
+              candidate is skills-verified. No spam, just perfect matches.
             </p>
+
+            {/* Trust Signals */}
+            <div className="mb-8 flex flex-wrap items-center justify-center gap-6 text-sm text-secondary-700">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-success-600" />
+                <span className="font-medium">2,000+ candidates placed</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-success-600" />
+                <span className="font-medium">$18k avg. salary increase</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-success-600" />
+                <span className="font-medium">3,000+ verified jobs</span>
+              </div>
+            </div>
 
             {/* Search Bar */}
             <div className="mx-auto mb-8 max-w-3xl">
@@ -252,29 +342,19 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button variant="primary" size="lg" asChild>
                 <Link href="/jobs">
-                  Browse All Jobs
+                  Browse Jobs
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <Link href="/employer/jobs/new">Post a Job</Link>
+                <Link href="/employers">For Employers</Link>
               </Button>
             </div>
 
-            {/* Quick Stats */}
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-secondary-600">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-success-600" />
-                <span>500+ new jobs this week</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-success-600" />
-                <span>Average salary: $165k</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-success-600" />
-                <span>70% remote positions</span>
-              </div>
+            {/* Skills Verification Badge */}
+            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-secondary-600">
+              <span className="text-xl">⭐</span>
+              <span>All candidates are skills-verified with proctored assessments</span>
             </div>
           </div>
         </div>
@@ -316,16 +396,53 @@ export default function Home() {
               Featured Opportunities
             </Badge>
             <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
-              Latest AI/ML Jobs
+              Latest Tech Jobs
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-secondary-600">
-              Explore hand-picked opportunities from leading companies in AI and
-              machine learning
+              Explore opportunities across AI/ML, Healthcare IT, Fintech, and Cybersecurity
             </p>
           </div>
 
+          {/* Niche Selector - Desktop */}
+          <div className="mb-8 hidden md:block">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {nicheCategories.map((niche) => (
+                <button
+                  key={niche.id}
+                  onClick={() => setSelectedNiche(niche.id)}
+                  className={`rounded-full px-6 py-2.5 text-sm font-medium transition-all ${
+                    selectedNiche === niche.id
+                      ? "bg-primary-600 text-white shadow-md"
+                      : "bg-white text-secondary-700 hover:bg-secondary-100 border border-secondary-200"
+                  }`}
+                >
+                  {niche.label} ({niche.count})
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Niche Selector - Mobile Dropdown */}
+          <div className="mb-8 md:hidden">
+            <label htmlFor="niche-select" className="sr-only">
+              Select job category
+            </label>
+            <select
+              id="niche-select"
+              value={selectedNiche}
+              onChange={(e) => setSelectedNiche(e.target.value)}
+              className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-3 text-sm font-medium text-secondary-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              {nicheCategories.map((niche) => (
+                <option key={niche.id} value={niche.id}>
+                  {niche.label} ({niche.count})
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featuredJobs.map((job) => (
+            {filteredJobs.map((job) => (
               <Card
                 key={job.id}
                 className="transition-all hover:shadow-lg hover:-translate-y-1"
@@ -336,15 +453,29 @@ export default function Home() {
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 text-2xl">
                         {job.logo}
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <h3 className="font-semibold text-secondary-900 line-clamp-1">
                           {job.title}
                         </h3>
                         <p className="text-sm text-secondary-600">
                           {job.company}
                         </p>
+                        {job.skillsVerified && (
+                          <p className="mt-1 text-xs text-amber-600">
+                            Skills verified candidates preferred
+                          </p>
+                        )}
                       </div>
                     </div>
+                    {job.skillsVerified && (
+                      <Badge
+                        variant="warning"
+                        size="sm"
+                        className="ml-2 flex-shrink-0 bg-amber-100 text-amber-700 border-amber-200"
+                      >
+                        ⭐ Verified Talent
+                      </Badge>
+                    )}
                   </div>
 
                   <div className="mb-4 flex flex-wrap gap-2">
@@ -455,6 +586,294 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Our Specializations Section */}
+      <section className="bg-gradient-to-br from-secondary-50 to-white py-20">
+        <div className="container">
+          <div className="mb-12 text-center">
+            <Badge variant="primary" className="mb-4">
+              Our Specializations
+            </Badge>
+            <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
+              Find Jobs in Your Niche
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-secondary-600">
+              We specialize in four high-demand tech sectors with verified employers and competitive salaries
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {specializations.map((spec) => {
+              const Icon = spec.icon;
+              return (
+                <Card
+                  key={spec.id}
+                  className="group relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1"
+                >
+                  <CardContent className="p-6">
+                    {/* Gradient Background */}
+                    <div
+                      className={`absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-gradient-to-br ${spec.color} opacity-10 transition-all group-hover:scale-150`}
+                    />
+
+                    {/* Icon */}
+                    <div className={`relative mb-4 flex h-14 w-14 items-center justify-center rounded-lg ${spec.bgColor}`}>
+                      <Icon className={`h-7 w-7 ${spec.iconColor}`} />
+                    </div>
+
+                    {/* Content */}
+                    <div className="relative">
+                      <h3 className="mb-2 text-xl font-bold text-secondary-900">
+                        {spec.title}
+                      </h3>
+                      <div className="mb-3 space-y-1">
+                        <p className="text-sm font-medium text-secondary-700">
+                          {spec.jobCount}
+                        </p>
+                        <p className="text-sm text-secondary-600">
+                          Avg salary: <span className="font-semibold text-success-600">{spec.salary}</span>
+                        </p>
+                      </div>
+
+                      {/* CTA Button */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full group-hover:border-primary-600 group-hover:text-primary-600"
+                        asChild
+                      >
+                        <Link href={`/jobs?niche=${spec.id}`}>
+                          Browse Jobs
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="mt-12 text-center">
+            <p className="mb-4 text-secondary-600">
+              Not sure which niche is right for you?
+            </p>
+            <Button variant="primary" size="lg" asChild>
+              <Link href="/jobs">Browse All Jobs</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Skills Verification Section */}
+      <section className="bg-gradient-to-br from-secondary-50 to-primary-50 py-20">
+        <div className="container">
+          <div className="mb-12 text-center">
+            <Badge variant="primary" className="mb-4">
+              ⭐ Skills Verification
+            </Badge>
+            <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
+              Stand Out with Verified Skills
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-secondary-600">
+              Take our 60-minute assessment to unlock exclusive opportunities
+            </p>
+          </div>
+
+          <div className="mx-auto max-w-6xl">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+              {/* Left Column - Benefits List */}
+              <div className="flex flex-col justify-center">
+                <Card className="border-2 border-primary-200 bg-white">
+                  <CardContent className="p-8">
+                    <h3 className="mb-6 text-2xl font-bold text-secondary-900">
+                      Benefits of Verification
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="mt-1 h-6 w-6 flex-shrink-0 text-success-600" />
+                        <div>
+                          <p className="font-semibold text-secondary-900">
+                            Priority in employer searches
+                          </p>
+                          <p className="text-sm text-secondary-600">
+                            Get noticed first when employers filter candidates
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="mt-1 h-6 w-6 flex-shrink-0 text-success-600" />
+                        <div>
+                          <p className="font-semibold text-secondary-900">
+                            Access to 250+ exclusive jobs
+                          </p>
+                          <p className="text-sm text-secondary-600">
+                            Only verified candidates can apply to premium roles
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="mt-1 h-6 w-6 flex-shrink-0 text-success-600" />
+                        <div>
+                          <p className="font-semibold text-secondary-900">
+                            3x more likely to get interviews
+                          </p>
+                          <p className="text-sm text-secondary-600">
+                            Verified candidates have higher response rates
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="mt-1 h-6 w-6 flex-shrink-0 text-success-600" />
+                        <div>
+                          <p className="font-semibold text-secondary-900">
+                            +18% higher salary offers on average
+                          </p>
+                          <p className="text-sm text-secondary-600">
+                            Prove your skills and command better compensation
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="mt-1 h-6 w-6 flex-shrink-0 text-success-600" />
+                        <div>
+                          <p className="font-semibold text-secondary-900">
+                            See your skill percentile vs. other candidates
+                          </p>
+                          <p className="text-sm text-secondary-600">
+                            Know where you stand in the market
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Right Column - Skills Score Card Preview */}
+              <div className="flex flex-col justify-center">
+                <Card className="border-2 border-accent-200 bg-white shadow-lg">
+                  <CardContent className="p-8">
+                    <div className="mb-6 flex items-center justify-between">
+                      <h3 className="text-xl font-bold text-secondary-900">
+                        Skills Score Card Preview
+                      </h3>
+                      <Badge variant="primary">Sample</Badge>
+                    </div>
+
+                    {/* Overall Score */}
+                    <div className="mb-6 rounded-lg bg-gradient-to-br from-primary-50 to-accent-50 p-6">
+                      <div className="mb-2 text-sm font-medium text-secondary-600">
+                        Overall Score
+                      </div>
+                      <div className="mb-3 flex items-baseline gap-2">
+                        <span className="text-5xl font-bold text-primary-600">
+                          88
+                        </span>
+                        <span className="text-2xl text-secondary-400">/100</span>
+                      </div>
+                      <div className="mb-2 flex items-center gap-2">
+                        <Badge variant="primary">Top 12%</Badge>
+                        <span className="text-sm text-secondary-600">
+                          of all candidates
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm font-medium text-secondary-700">
+                          Performance Tier:
+                        </span>
+                        <span className="text-lg">⭐⭐⭐⭐⭐</span>
+                        <span className="ml-1 text-sm font-semibold text-accent-600">
+                          Advanced
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Top Strengths */}
+                    <div>
+                      <h4 className="mb-4 text-sm font-semibold text-secondary-900">
+                        Top Strengths
+                      </h4>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="mb-1 flex items-center justify-between">
+                            <span className="text-sm font-medium text-secondary-700">
+                              Python
+                            </span>
+                            <span className="text-sm font-bold text-primary-600">
+                              95/100
+                            </span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-secondary-200">
+                            <div
+                              className="h-2 rounded-full bg-gradient-to-r from-primary-600 to-accent-600"
+                              style={{ width: "95%" }}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="mb-1 flex items-center justify-between">
+                            <span className="text-sm font-medium text-secondary-700">
+                              Problem-Solving
+                            </span>
+                            <span className="text-sm font-bold text-primary-600">
+                              92/100
+                            </span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-secondary-200">
+                            <div
+                              className="h-2 rounded-full bg-gradient-to-r from-primary-600 to-accent-600"
+                              style={{ width: "92%" }}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="mb-1 flex items-center justify-between">
+                            <span className="text-sm font-medium text-secondary-700">
+                              Machine Learning
+                            </span>
+                            <span className="text-sm font-bold text-primary-600">
+                              88/100
+                            </span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-secondary-200">
+                            <div
+                              className="h-2 rounded-full bg-gradient-to-r from-primary-600 to-accent-600"
+                              style={{ width: "88%" }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Verification Badge */}
+                    <div className="mt-6 flex items-center justify-center gap-2 rounded-lg border-2 border-success-200 bg-success-50 py-3">
+                      <Shield className="h-5 w-5 text-success-600" />
+                      <span className="text-sm font-semibold text-success-700">
+                        Proctored & Verified
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="mt-12 text-center">
+              <Button variant="primary" size="lg" asChild>
+                <Link href="#skills-assessment">
+                  Learn More About Skills Assessment
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <p className="mt-4 text-sm text-secondary-600">
+                Assessment takes 60 minutes • Valid for 12 months • Free for job seekers
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* For Employers Section */}
       <section className="bg-gradient-to-br from-primary-600 to-primary-800 py-20 text-white">
         <div className="container">
@@ -463,12 +882,23 @@ export default function Home() {
               For Employers
             </Badge>
             <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-              Hire Top AI/ML Talent Faster
+              Hire Top AI/ML Engineers in Weeks, Not Months
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-primary-100">
-              Access the largest pool of qualified AI and machine learning
-              professionals
+              Pay only when you hire. 15-20% success fee. Every candidate is skills-verified.
             </p>
+          </div>
+
+          {/* Prominent Message */}
+          <div className="mx-auto mb-12 max-w-3xl">
+            <div className="rounded-lg border-2 border-white/30 bg-white/10 p-6 text-center backdrop-blur-sm">
+              <p className="text-lg font-semibold md:text-xl">
+                💼 Your jobs may already be on our platform with qualified candidates waiting
+              </p>
+              <p className="mt-2 text-sm text-primary-100">
+                We aggregate postings from across the web. Claim your listings now to connect with pre-vetted talent.
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -504,8 +934,8 @@ export default function Home() {
               className="bg-white text-primary-600 hover:bg-primary-50"
               asChild
             >
-              <Link href="/employer/jobs/new">
-                Post a Job
+              <Link href="/claim">
+                Check If Your Jobs Are Listed
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -515,7 +945,10 @@ export default function Home() {
               className="border-white text-white hover:bg-white/10"
               asChild
             >
-              <Link href="/employers">Learn More</Link>
+              <Link href="/claim">
+                <Phone className="mr-2 h-5 w-5" />
+                Schedule a Call
+              </Link>
             </Button>
           </div>
         </div>

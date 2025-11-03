@@ -19,20 +19,26 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
-    jobSeekers: [
+    forCandidates: [
       { name: "Browse Jobs", href: "/jobs" },
-      { name: "Candidate Dashboard", href: "/candidate/dashboard" },
+      { name: "Skills Assessment", href: "/skills-assessment" },
+      { name: "Career Resources", href: "/blog" },
+      { name: "How It Works", href: "/about" },
       { name: "My Profile", href: "/candidate/profile" },
     ],
-    employers: [
+    forEmployers: [
+      { name: "How It Works", href: "/employers" },
+      { name: "Pricing (15-20% fee)", href: "/claim" },
+      { name: "Claim Your Job", href: "/claim" },
       { name: "Post a Job", href: "/employer/jobs/new" },
-      { name: "Employer Dashboard", href: "/employer/dashboard" },
-      { name: "For Employers", href: "/employers" },
+      { name: "Schedule a Call", href: "/claim" },
     ],
-    company: [
-      { name: "Homepage", href: "/" },
-      { name: "About the Project", href: "/about" },
-      { name: "GitHub", href: "https://github.com" },
+    resources: [
+      { name: "Blog", href: "/blog" },
+      { name: "Salary Guides", href: "/blog?category=Salary+Data" },
+      { name: "Interview Prep", href: "/blog?category=Interview+Tips" },
+      { name: "Assessment Prep", href: "/blog?category=Skills+Assessment" },
+      { name: "About Us", href: "/about" },
     ],
     legal: [
       { name: "Privacy Policy", href: "/privacy" },
@@ -89,10 +95,24 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               </span>
             </Link>
             <p className="mt-4 text-sm text-secondary-600">
-              Your gateway to finding the perfect career opportunity. Connect
-              with top employers and discover jobs that match your skills and
-              aspirations.
+              Specialized recruitment for AI/ML, Healthcare IT, Fintech & Cybersecurity engineers. Skills-verified candidates, success-fee model.
             </p>
+
+            {/* Trust Signals */}
+            <div className="mt-6 space-y-2">
+              <div className="flex items-center gap-2 text-sm text-secondary-700">
+                <span className="text-success-600">✓</span>
+                <span className="font-medium">2,000+ candidates placed</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-secondary-700">
+                <span className="text-success-600">✓</span>
+                <span className="font-medium">15-20% success fee only</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-secondary-700">
+                <span className="text-success-600">✓</span>
+                <span className="font-medium">90-day guarantee</span>
+              </div>
+            </div>
 
             {/* Social Links */}
             <div className="mt-6 flex items-center gap-4">
@@ -138,13 +158,13 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             </div>
           </div>
 
-          {/* For Job Seekers */}
+          {/* For Candidates */}
           <div>
             <h3 className="mb-4 text-sm font-semibold text-secondary-900">
-              For Job Seekers
+              For Candidates
             </h3>
             <ul className="space-y-3">
-              {footerLinks.jobSeekers.map((link) => (
+              {footerLinks.forCandidates.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
@@ -163,7 +183,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               For Employers
             </h3>
             <ul className="space-y-3">
-              {footerLinks.employers.map((link) => (
+              {footerLinks.forEmployers.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
@@ -176,13 +196,13 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Resources */}
           <div>
             <h3 className="mb-4 text-sm font-semibold text-secondary-900">
-              Company
+              Resources
             </h3>
             <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
+              {footerLinks.resources.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}

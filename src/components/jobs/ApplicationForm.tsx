@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Upload, CheckCircle2, Loader2, FileText, X } from "lucide-react";
+import { Upload, CheckCircle2, Loader2, FileText, X, TrendingUp, Zap, Award, Target } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ export function ApplicationForm({
   jobTitle,
   companyName,
 }: ApplicationFormProps) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -149,21 +151,107 @@ export function ApplicationForm({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent showClose onClose={handleClose} className="max-w-2xl">
         {isSuccess ? (
-          // Success State
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-success-100">
-              <CheckCircle2 className="h-12 w-12 text-success-600" />
+          // Post-Application Success Screen
+          <div className="max-h-[80vh] overflow-y-auto py-8">
+            <div className="text-center">
+              <div className="mb-4 flex justify-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success-100">
+                  <CheckCircle2 className="h-10 w-10 text-success-600" />
+                </div>
+              </div>
+              <h2 className="mb-2 text-2xl font-bold text-secondary-900">
+                Application submitted! ✓
+              </h2>
+              <p className="mb-8 text-secondary-600">
+                Your application for <strong>{jobTitle}</strong> at <strong>{companyName}</strong> has been received.
+              </p>
             </div>
-            <h2 className="mb-2 text-2xl font-bold text-secondary-900">
-              Application Submitted!
-            </h2>
-            <p className="text-lg text-secondary-600">
-              Your application for <strong>{jobTitle}</strong> at{" "}
-              <strong>{companyName}</strong> has been received.
+
+            {/* Main Pitch */}
+            <div className="mb-8 rounded-lg bg-gradient-to-br from-primary-50 to-accent-50 p-6 text-center">
+              <h3 className="mb-2 text-xl font-bold text-secondary-900">
+                Want to stand out from other candidates?
+              </h3>
+              <p className="text-lg font-semibold text-primary-700">
+                Take our 60-minute Skills Assessment
+              </p>
+            </div>
+
+            {/* Benefits Grid */}
+            <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="flex items-start gap-3 rounded-lg border border-primary-200 bg-white p-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary-100">
+                  <TrendingUp className="h-5 w-5 text-primary-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-secondary-900">Priority Review</h4>
+                  <p className="text-sm text-secondary-600">Your application goes to the top of employer's lists</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-lg border border-primary-200 bg-white p-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent-100">
+                  <Zap className="h-5 w-5 text-accent-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-secondary-900">Exclusive Jobs</h4>
+                  <p className="text-sm text-secondary-600">Unlock 250+ jobs only available to verified candidates (25% more roles)</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-lg border border-success-200 bg-white p-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-success-100">
+                  <Award className="h-5 w-5 text-success-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-secondary-900">Higher Salary</h4>
+                  <p className="text-sm text-secondary-600">Verified candidates earn 18% more on average</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-lg border border-secondary-200 bg-white p-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-100">
+                  <Target className="h-5 w-5 text-secondary-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-secondary-900">Know Your Level</h4>
+                  <p className="text-sm text-secondary-600">See your percentile ranking vs. other candidates</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Social Proof */}
+            <div className="mb-8 rounded-lg bg-secondary-50 p-6 text-center">
+              <p className="text-lg font-semibold text-secondary-900">
+                Candidates with test scores get reviewed <span className="text-primary-600">5x faster</span> and are{" "}
+                <span className="text-success-600">3x more likely</span> to get interviews.
+              </p>
+            </div>
+
+            {/* Reassurance */}
+            <p className="mb-8 text-center text-sm text-secondary-600">
+              Don't worry - your application is already submitted. The assessment is optional but recommended.
             </p>
-            <p className="mt-4 text-sm text-secondary-500">
-              We'll review your application and get back to you soon.
-            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => router.push("/skills-assessment")}
+                className="flex-1 sm:flex-initial"
+              >
+                Take Assessment Now
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleClose}
+                className="flex-1 sm:flex-initial"
+              >
+                Maybe Later
+              </Button>
+            </div>
           </div>
         ) : (
           // Application Form
