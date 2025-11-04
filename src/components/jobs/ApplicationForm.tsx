@@ -122,14 +122,8 @@ export function ApplicationForm({
       setIsSuccess(true);
       showToast("success", "Application submitted!", `Your application for ${jobTitle} has been sent.`);
 
-      // Reset form after 3 seconds and close
-      setTimeout(() => {
-        reset();
-        setResumeFile(null);
-        setUploadProgress(0);
-        setIsSuccess(false);
-        onClose();
-      }, 3000);
+      // Don't auto-close - let user decide when to close
+      // They need time to read the benefits and click "Take Assessment Now"
     } catch (error) {
       showToast("error", "Submission failed", "There was a problem submitting your application. Please try again.");
     } finally {
@@ -238,7 +232,16 @@ export function ApplicationForm({
               <Button
                 variant="primary"
                 size="lg"
-                onClick={() => router.push("/skills-assessment")}
+                onClick={() => {
+                  // Reset form state before navigating
+                  reset();
+                  setResumeFile(null);
+                  setUploadProgress(0);
+                  setIsSuccess(false);
+                  onClose();
+                  // Navigate to skills assessment
+                  router.push("/skills-assessment");
+                }}
                 className="flex-1 sm:flex-initial"
               >
                 Take Assessment Now
