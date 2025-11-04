@@ -7,7 +7,16 @@
       "Bash(npm run build:*)",
       "Bash(npm uninstall:*)",
       "Bash(find:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout /t 5 /nobreak)",
+      "Bash(nul)",
+      "Bash(timeout /t 15 /nobreak)",
+      "Bash(timeout /t 20 /nobreak)",
+      "Bash(timeout /t 30 /nobreak)",
+      "Bash(timeout /t 10 /nobreak)",
+      "Bash(timeout /t 3 /nobreak)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

@@ -79,7 +79,7 @@ export default function JobDetailPage() {
 
       <ErrorBoundary>
         {/* Company Banner */}
-        <div className="relative h-64 bg-gradient-to-r from-primary-600 to-accent-600 overflow-hidden">
+        <div className="relative h-48 md:h-64 bg-gradient-to-r from-primary-600 to-accent-600 overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="absolute inset-0 opacity-10">
             <div
@@ -91,30 +91,30 @@ export default function JobDetailPage() {
             ></div>
           </div>
 
-          <div className="container relative h-full flex items-end pb-8">
-            <div className="flex items-end gap-6">
+          <div className="container relative h-full flex items-end pb-6 md:pb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6 w-full">
               {/* Company Logo */}
-              <div className="w-24 h-24 bg-white rounded-2xl shadow-2xl flex items-center justify-center text-3xl font-bold text-primary-600 border-4 border-white">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white rounded-xl md:rounded-2xl shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-bold text-primary-600 border-2 md:border-4 border-white flex-shrink-0">
                 {job.logo}
               </div>
 
-              <div className="text-white pb-2">
-                <h1 className="text-4xl font-bold mb-2">
+              <div className="text-white flex-1">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
                   {job.title}
                 </h1>
-                <div className="flex items-center gap-4 text-white/90">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm sm:text-base text-white/90">
                   <span className="flex items-center gap-1">
-                    <Building2 className="w-5 h-5" />
-                    {job.company}
+                    <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="truncate max-w-[150px] sm:max-w-none">{job.company}</span>
                   </span>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <span className="flex items-center gap-1">
-                    <MapPin className="w-5 h-5" />
-                    {job.location}
+                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="truncate max-w-[120px] sm:max-w-none">{job.location}</span>
                   </span>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <span className="flex items-center gap-1">
-                    <Briefcase className="w-5 h-5" />
+                    <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" />
                     {job.type}
                   </span>
                 </div>
@@ -123,32 +123,32 @@ export default function JobDetailPage() {
           </div>
         </div>
 
-        {/* Sticky Metadata Bar */}
+        {/* Sticky Metadata Bar - RESPONSIVE */}
         <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-          <div className="container py-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-6 flex-wrap">
+          <div className="container py-3 md:py-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+              <div className="flex items-center gap-3 sm:gap-6 flex-wrap">
                 {/* Salary - PROMINENT */}
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
-                    <DollarSign className="w-6 h-6 text-white" />
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+                    <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
                     <div className="text-xs text-gray-500">Salary Range</div>
-                    <div className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                    <div className="text-base sm:text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                       {formatCurrency(job.salary.min)} - {formatCurrency(job.salary.max)}
                     </div>
                   </div>
                 </div>
 
                 {/* Posted Date */}
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
-                    <Clock className="w-6 h-6 text-white" />
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
+                    <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
                     <div className="text-xs text-gray-500">Posted</div>
-                    <div className="text-lg font-bold text-gray-900">
+                    <div className="text-sm sm:text-lg font-bold text-gray-900">
                       {job.posted}
                     </div>
                   </div>
@@ -156,21 +156,21 @@ export default function JobDetailPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Button
                   variant="primary"
                   onClick={() => setIsApplicationFormOpen(true)}
-                  className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                  className="flex-1 sm:flex-none bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all text-sm sm:text-base"
                 >
                   Apply Now
                 </Button>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 px-3 sm:px-4">
                   <Bookmark className="h-4 w-4" />
-                  Save
+                  <span className="hidden sm:inline">Save</span>
                 </Button>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 px-3 sm:px-4">
                   <Share2 className="h-4 w-4" />
-                  Share
+                  <span className="hidden sm:inline">Share</span>
                 </Button>
               </div>
             </div>

@@ -146,103 +146,104 @@ export function ApplicationForm({
       <DialogContent showClose onClose={handleClose} className="max-w-2xl">
         {isSuccess ? (
           // Post-Application Success Screen
-          <div className="max-h-[80vh] overflow-y-auto py-8">
-            <div className="text-center">
+          <div className="py-2">
+            {/* Success Header */}
+            <div className="text-center mb-6">
               <div className="mb-4 flex justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success-100">
-                  <CheckCircle2 className="h-10 w-10 text-success-600" />
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-success-100 to-success-200 shadow-lg">
+                  <CheckCircle2 className="h-12 w-12 text-success-600" />
                 </div>
               </div>
-              <h2 className="mb-2 text-2xl font-bold text-secondary-900">
-                Application submitted! ✓
+              <h2 className="mb-3 text-3xl font-bold text-secondary-900">
+                Application Submitted! 🎉
               </h2>
-              <p className="mb-8 text-secondary-600">
-                Your application for <strong>{jobTitle}</strong> at <strong>{companyName}</strong> has been received.
+              <p className="text-base text-secondary-600 max-w-md mx-auto">
+                Your application for <strong className="text-secondary-900">{jobTitle}</strong> at{" "}
+                <strong className="text-secondary-900">{companyName}</strong> has been received.
               </p>
             </div>
 
-            {/* Main Pitch */}
-            <div className="mb-8 rounded-lg bg-gradient-to-br from-primary-50 to-accent-50 p-6 text-center">
+            {/* Main Pitch Card */}
+            <div className="mb-6 rounded-xl bg-gradient-to-br from-primary-50 via-accent-50 to-primary-50 border-2 border-primary-200 p-6 text-center shadow-sm">
               <h3 className="mb-2 text-xl font-bold text-secondary-900">
-                Want to stand out from other candidates?
+                🚀 Want to stand out from other candidates?
               </h3>
-              <p className="text-lg font-semibold text-primary-700">
+              <p className="text-lg font-semibold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
                 Take our 60-minute Skills Assessment
               </p>
             </div>
 
             {/* Benefits Grid */}
-            <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="flex items-start gap-3 rounded-lg border border-primary-200 bg-white p-4">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary-100">
-                  <TrendingUp className="h-5 w-5 text-primary-600" />
+            <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex items-start gap-3 rounded-lg border-2 border-primary-100 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 shadow-sm">
+                  <TrendingUp className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-secondary-900">Priority Review</h4>
-                  <p className="text-sm text-secondary-600">Your application goes to the top of employer's lists</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 rounded-lg border border-primary-200 bg-white p-4">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent-100">
-                  <Zap className="h-5 w-5 text-accent-600" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-secondary-900">Exclusive Jobs</h4>
-                  <p className="text-sm text-secondary-600">Unlock 250+ jobs only available to verified candidates (25% more roles)</p>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-secondary-900 mb-1">Priority Review</h4>
+                  <p className="text-sm text-secondary-600 leading-tight">Top of employer's lists</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-lg border border-success-200 bg-white p-4">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-success-100">
-                  <Award className="h-5 w-5 text-success-600" />
+              <div className="flex items-start gap-3 rounded-lg border-2 border-accent-100 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 shadow-sm">
+                  <Zap className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-secondary-900">Higher Salary</h4>
-                  <p className="text-sm text-secondary-600">Verified candidates earn 18% more on average</p>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-secondary-900 mb-1">Exclusive Jobs</h4>
+                  <p className="text-sm text-secondary-600 leading-tight">+250 verified-only roles</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-lg border border-secondary-200 bg-white p-4">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-100">
-                  <Target className="h-5 w-5 text-secondary-600" />
+              <div className="flex items-start gap-3 rounded-lg border-2 border-success-100 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-success-500 to-success-600 shadow-sm">
+                  <Award className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-secondary-900">Know Your Level</h4>
-                  <p className="text-sm text-secondary-600">See your percentile ranking vs. other candidates</p>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-secondary-900 mb-1">Higher Salary</h4>
+                  <p className="text-sm text-secondary-600 leading-tight">18% more on average</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-lg border-2 border-secondary-100 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-secondary-400 to-secondary-500 shadow-sm">
+                  <Target className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-secondary-900 mb-1">Know Your Level</h4>
+                  <p className="text-sm text-secondary-600 leading-tight">Percentile ranking</p>
                 </div>
               </div>
             </div>
 
             {/* Social Proof */}
-            <div className="mb-8 rounded-lg bg-secondary-50 p-6 text-center">
-              <p className="text-lg font-semibold text-secondary-900">
-                Candidates with test scores get reviewed <span className="text-primary-600">5x faster</span> and are{" "}
-                <span className="text-success-600">3x more likely</span> to get interviews.
+            <div className="mb-6 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-5 text-center shadow-sm">
+              <p className="text-base font-semibold text-secondary-900 leading-relaxed">
+                Verified candidates get reviewed{" "}
+                <span className="text-primary-600 font-bold">5x faster</span> and are{" "}
+                <span className="text-success-600 font-bold">3x more likely</span> to get interviews
               </p>
             </div>
 
             {/* Reassurance */}
-            <p className="mb-8 text-center text-sm text-secondary-600">
-              Don't worry - your application is already submitted. The assessment is optional but recommended.
+            <p className="mb-6 text-center text-sm text-secondary-500">
+              ✓ Your application is already submitted. The assessment is optional but highly recommended.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Button
                 variant="primary"
                 size="lg"
                 onClick={() => {
-                  // Reset form state before navigating
                   reset();
                   setResumeFile(null);
                   setUploadProgress(0);
                   setIsSuccess(false);
                   onClose();
-                  // Navigate to skills assessment
                   router.push("/skills-assessment");
                 }}
-                className="flex-1 sm:flex-initial"
+                className="flex-1 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg hover:shadow-xl transition-all"
               >
                 Take Assessment Now
               </Button>
@@ -250,7 +251,7 @@ export function ApplicationForm({
                 variant="outline"
                 size="lg"
                 onClick={handleClose}
-                className="flex-1 sm:flex-initial"
+                className="flex-1 sm:flex-none sm:min-w-[140px]"
               >
                 Maybe Later
               </Button>

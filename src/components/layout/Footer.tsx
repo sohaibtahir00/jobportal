@@ -77,7 +77,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   return (
     <footer
       className={cn(
-        "border-t border-secondary-200 bg-secondary-50",
+        "border-t border-secondary-200 bg-secondary-50 lg:pl-64",
         className
       )}
     >
@@ -86,7 +86,10 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-6">
           {/* Brand Section */}
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+            <Link
+              href="/"
+              className="flex items-center gap-2 transition-opacity hover:opacity-80"
+            >
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600">
                 <Briefcase className="h-6 w-6 text-white" />
               </div>
@@ -95,7 +98,9 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               </span>
             </Link>
             <p className="mt-4 text-sm text-secondary-600">
-              Specialized recruitment for AI/ML, Healthcare IT, Fintech & Cybersecurity engineers. Skills-verified candidates, success-fee model.
+              Specialized recruitment for AI/ML, Healthcare IT, Fintech &
+              Cybersecurity engineers. Skills-verified candidates, success-fee
+              model.
             </p>
 
             {/* Trust Signals */}

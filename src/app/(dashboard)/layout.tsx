@@ -89,7 +89,7 @@ export default function DashboardLayout({
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col overflow-y-auto">
           {/* Logo & Close Button */}
           <div className="flex h-16 items-center justify-between border-b border-secondary-200 px-6">
             <Link href="/" className="text-xl font-bold text-primary-600">

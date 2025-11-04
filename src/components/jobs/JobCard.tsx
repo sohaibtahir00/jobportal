@@ -10,57 +10,56 @@ interface JobCardProps {
 
 export function JobCard({ job }: JobCardProps) {
   return (
-    <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1">
-      <CardContent className="p-6">
-        <div className="mb-4 flex items-start justify-between">
-          <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 text-2xl">
-              {job.logo}
-            </div>
-            <div className="flex-1">
-              <h3 className="mb-1 font-semibold text-secondary-900 line-clamp-1">
-                {job.title}
-              </h3>
-              <p className="text-sm text-secondary-600">{job.company}</p>
-              {job.skillsVerified && (
-                <p className="mt-1 text-xs text-amber-600">
-                  Skills verified candidates preferred
-                </p>
-              )}
-            </div>
+    <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1 overflow-hidden">
+      <CardContent className="p-6 flex flex-col h-full">
+        {/* Header with Logo and Title */}
+        <div className="mb-4 flex items-start gap-3">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-100 text-2xl">
+            {job.logo}
           </div>
-          {job.skillsVerified && (
+          <div className="flex-1 min-w-0">
+            <h3 className="mb-1 font-semibold text-secondary-900 line-clamp-2 text-base">
+              {job.title}
+            </h3>
+            <p className="text-sm text-secondary-600 truncate">{job.company}</p>
+          </div>
+        </div>
+
+        {/* Verified Badge - Full Width */}
+        {job.skillsVerified && (
+          <div className="mb-3">
             <Badge
               variant="warning"
               size="sm"
-              className="ml-2 flex-shrink-0 bg-amber-100 text-amber-700 border-amber-200"
+              className="bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 border-amber-300"
             >
-              ⭐ Verified
+              ⭐ Verified - Skills verified candidates preferred
             </Badge>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="mb-4 space-y-2">
+        {/* Job Details */}
+        <div className="mb-4 space-y-2 flex-grow">
           <div className="flex items-center gap-2 text-sm text-secondary-600">
             <MapPin className="h-4 w-4 flex-shrink-0" />
-            <span className="line-clamp-1">{job.location}</span>
+            <span className="truncate">{job.location}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-secondary-600">
             <Briefcase className="h-4 w-4 flex-shrink-0" />
             <span>{job.type}</span>
             <span className="text-secondary-400">•</span>
-            <span>{job.experienceLevel}</span>
+            <span className="truncate">{job.experienceLevel}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-secondary-600">
+          <div className="flex items-center gap-2 text-sm font-semibold text-green-600">
             <DollarSign className="h-4 w-4 flex-shrink-0" />
             <span>
-              {formatCurrency(job.salary.min)} -{" "}
-              {formatCurrency(job.salary.max)}
+              {formatCurrency(job.salary.min)} - {formatCurrency(job.salary.max)}
             </span>
           </div>
         </div>
 
-        <div className="mb-4 flex flex-wrap gap-2">
+        {/* Remote & Niche Badges */}
+        <div className="mb-3 flex flex-wrap gap-2">
           <Badge
             variant={
               job.remote === "Remote"
@@ -73,11 +72,12 @@ export function JobCard({ job }: JobCardProps) {
           >
             {job.remote}
           </Badge>
-          <Badge variant="outline" size="sm">
+          <Badge variant="outline" size="sm" className="capitalize">
             {job.niche}
           </Badge>
         </div>
 
+        {/* Skills Tags */}
         <div className="mb-4 flex flex-wrap gap-2">
           {job.tags.slice(0, 3).map((tag, idx) => (
             <Badge key={idx} variant="secondary" size="sm">
@@ -91,7 +91,8 @@ export function JobCard({ job }: JobCardProps) {
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-secondary-200 pt-4">
+        {/* Footer */}
+        <div className="flex items-center justify-between border-t border-secondary-200 pt-4 mt-auto">
           <div className="flex items-center gap-1 text-xs text-secondary-500">
             <Clock className="h-3 w-3" />
             <span>{job.posted}</span>
