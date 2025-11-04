@@ -260,15 +260,32 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-accent-50 py-20 md:py-28">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 py-20 md:py-28">
+        {/* Modern gradient mesh overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-100/20 via-transparent to-accent-100/20" />
+
+        {/* Subtle dots pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `radial-gradient(circle, #1d4ed8 1px, transparent 1px)`,
+            backgroundSize: '24px 24px'
+          }}
+        />
+
+        {/* Floating decorative elements with blur */}
+        <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gradient-to-br from-primary-400/30 to-accent-400/30 blur-3xl animate-pulse-slow" />
+        <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-accent-400/30 to-success-400/30 blur-3xl animate-pulse-slow" style={{ animationDelay: '1000ms' }} />
+        <div className="absolute right-1/4 top-1/4 h-48 w-48 rounded-full bg-gradient-to-br from-primary-300/20 to-accent-300/20 blur-2xl animate-float" />
+
         <div className="container relative z-10">
           <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="primary" size="lg" className="mb-6">
+            <Badge variant="primary" size="lg" className="mb-6 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg shadow-primary-500/50 hover:shadow-xl hover:shadow-primary-500/60 transition-all animate-pulse-slow">
               🚀 #1 AI/ML Job Board
             </Badge>
             <h1 className="mb-6 text-4xl font-bold leading-tight text-secondary-900 md:text-5xl lg:text-6xl">
               Land Your Dream{" "}
-              <span className="bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary-600 via-accent-500 to-success-500 bg-clip-text text-transparent animate-gradient-x font-extrabold">
                 Tech Job
               </span>{" "}
               in 30 Days
@@ -279,25 +296,31 @@ export default function Home() {
             </p>
 
             {/* Trust Signals */}
-            <div className="mb-8 flex flex-wrap items-center justify-center gap-6 text-sm text-secondary-700">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-success-600" />
-                <span className="font-medium">2,000+ candidates placed</span>
+            <div className="mb-8 flex flex-wrap items-center justify-center gap-4 text-sm">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-success-50 border border-success-200">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success-500">
+                  <CheckCircle2 className="h-4 w-4 text-white" />
+                </div>
+                <span className="font-semibold text-success-700">2,000+ candidates placed</span>
               </div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-success-600" />
-                <span className="font-medium">$18k avg. salary increase</span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 border border-primary-200">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-500">
+                  <TrendingUp className="h-4 w-4 text-white" />
+                </div>
+                <span className="font-semibold text-primary-700">$18k avg. salary increase</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-success-600" />
-                <span className="font-medium">3,000+ verified jobs</span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-accent-50 border border-accent-200">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-500">
+                  <Briefcase className="h-4 w-4 text-white" />
+                </div>
+                <span className="font-semibold text-accent-700">3,000+ verified jobs</span>
               </div>
             </div>
 
             {/* Search Bar */}
             <div className="mx-auto mb-8 max-w-3xl">
-              <Card>
-                <CardContent className="p-4">
+              <Card className="border-0 shadow-xl shadow-primary-500/10 hover:shadow-2xl hover:shadow-primary-500/20 transition-all">
+                <CardContent className="p-4 bg-white/95 backdrop-blur-sm">
                   <form onSubmit={handleSearch}>
                     <div className="flex flex-col gap-3 md:flex-row">
                       <div className="relative flex-1">
@@ -311,7 +334,7 @@ export default function Home() {
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           placeholder="Job title, keywords, or company"
-                          className="h-12 w-full rounded-md border border-secondary-300 bg-white pl-11 pr-4 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
+                          className="h-12 w-full rounded-lg border-2 border-secondary-200 bg-white pl-11 pr-4 text-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/20 hover:border-secondary-300"
                         />
                       </div>
                       <div className="relative flex-1">
@@ -325,10 +348,10 @@ export default function Home() {
                           value={location}
                           onChange={(e) => setLocation(e.target.value)}
                           placeholder="City, state, or remote"
-                          className="h-12 w-full rounded-md border border-secondary-300 bg-white pl-11 pr-4 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
+                          className="h-12 w-full rounded-lg border-2 border-secondary-200 bg-white pl-11 pr-4 text-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/20 hover:border-secondary-300"
                         />
                       </div>
-                      <Button type="submit" size="lg" className="h-12 px-8">
+                      <Button type="submit" size="lg" className="h-12 px-8 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
                         <Search className="mr-2 h-5 w-5" />
                         Search Jobs
                       </Button>
@@ -340,13 +363,13 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button variant="primary" size="lg" asChild>
+              <Button variant="primary" size="lg" asChild className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all duration-300">
                 <Link href="/jobs">
                   Browse Jobs
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" asChild>
+              <Button variant="outline" size="lg" asChild className="hover:bg-primary-50 hover:border-primary-600 hover:text-primary-700 transition-all duration-300">
                 <Link href="/employers">For Employers</Link>
               </Button>
             </div>
@@ -365,20 +388,20 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="border-y border-secondary-200 bg-white py-12">
+      <section className="border-y border-secondary-200 bg-gradient-to-r from-white via-primary-50/30 to-white py-12">
         <div className="container">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className="flex flex-col items-center text-center">
-                  <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary-100">
+                <div key={index} className="flex flex-col items-center text-center group">
+                  <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-accent-100 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all">
                     <Icon className="h-7 w-7 text-primary-600" />
                   </div>
-                  <div className="text-3xl font-bold text-secondary-900 md:text-4xl">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-secondary-900 to-primary-700 bg-clip-text text-transparent md:text-4xl">
                     {stat.value}
                   </div>
-                  <div className="mt-1 text-sm text-secondary-600">
+                  <div className="mt-1 text-sm font-medium text-secondary-600">
                     {stat.label}
                   </div>
                 </div>
@@ -389,10 +412,10 @@ export default function Home() {
       </section>
 
       {/* Featured Jobs Section */}
-      <section className="bg-secondary-50 py-20">
+      <section className="relative bg-gradient-to-br from-secondary-50 via-white to-secondary-50 py-20">
         <div className="container">
           <div className="mb-12 text-center">
-            <Badge variant="primary" className="mb-4">
+            <Badge variant="primary" className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all">
               Featured Opportunities
             </Badge>
             <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
@@ -412,8 +435,8 @@ export default function Home() {
                   onClick={() => setSelectedNiche(niche.id)}
                   className={`rounded-full px-6 py-2.5 text-sm font-medium transition-all ${
                     selectedNiche === niche.id
-                      ? "bg-primary-600 text-white shadow-md"
-                      : "bg-white text-secondary-700 hover:bg-secondary-100 border border-secondary-200"
+                      ? "bg-gradient-to-r from-primary-600 to-accent-600 text-white shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5"
+                      : "bg-white/80 backdrop-blur-sm text-secondary-700 hover:bg-white hover:shadow-md border border-secondary-200"
                   }`}
                 >
                   {niche.label} ({niche.count})
@@ -431,7 +454,7 @@ export default function Home() {
               id="niche-select"
               value={selectedNiche}
               onChange={(e) => setSelectedNiche(e.target.value)}
-              className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-3 text-sm font-medium text-secondary-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-lg border-2 border-secondary-300 bg-white px-4 py-3 text-sm font-medium text-secondary-900 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/20 shadow-sm transition-all"
             >
               {nicheCategories.map((niche) => (
                 <option key={niche.id} value={niche.id}>
@@ -445,12 +468,12 @@ export default function Home() {
             {filteredJobs.map((job) => (
               <Card
                 key={job.id}
-                className="transition-all hover:shadow-lg hover:-translate-y-1"
+                className="transition-all hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm"
               >
                 <CardContent className="p-6">
                   <div className="mb-4 flex items-start justify-between">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 text-2xl">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary-100 to-accent-100 text-2xl shadow-sm">
                         {job.logo}
                       </div>
                       <div className="flex-1">
@@ -508,7 +531,7 @@ export default function Home() {
                     <span className="text-sm font-semibold text-secondary-900">
                       {job.salary}
                     </span>
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" asChild className="hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:border-primary-300 transition-all">
                       <Link href={`/jobs/${job.id}`}>View Details</Link>
                     </Button>
                   </div>
@@ -522,7 +545,7 @@ export default function Home() {
           </div>
 
           <div className="mt-12 text-center">
-            <Button variant="primary" size="lg" asChild>
+            <Button variant="primary" size="lg" asChild className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all">
               <Link href="/jobs">
                 View All Jobs
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -536,7 +559,7 @@ export default function Home() {
       <section className="bg-white py-20">
         <div className="container">
           <div className="mb-12 text-center">
-            <Badge variant="primary" className="mb-4">
+            <Badge variant="primary" className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all">
               Simple Process
             </Badge>
             <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
@@ -552,14 +575,14 @@ export default function Home() {
               const Icon = step.icon;
               return (
                 <div key={index} className="relative">
-                  <Card className="h-full">
+                  <Card className="h-full border-0 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 bg-white/80 backdrop-blur-sm">
                     <CardContent className="p-8 text-center">
                       <div className="mb-6 flex justify-center">
                         <div className="relative">
-                          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
+                          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-accent-100 shadow-inner">
                             <Icon className="h-8 w-8 text-primary-600" />
                           </div>
-                          <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white">
+                          <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary-600 to-accent-600 text-sm font-bold text-white shadow-lg">
                             {index + 1}
                           </div>
                         </div>
@@ -571,7 +594,7 @@ export default function Home() {
                     </CardContent>
                   </Card>
                   {index < howItWorksSteps.length - 1 && (
-                    <div className="absolute right-0 top-1/2 hidden h-0.5 w-full -translate-y-1/2 translate-x-1/2 bg-gradient-to-r from-primary-300 to-transparent md:block" />
+                    <div className="absolute right-0 top-1/2 hidden h-0.5 w-full -translate-y-1/2 translate-x-1/2 bg-gradient-to-r from-primary-400 via-accent-400 to-transparent md:block" />
                   )}
                 </div>
               );
@@ -579,7 +602,7 @@ export default function Home() {
           </div>
 
           <div className="mt-12 text-center">
-            <Button variant="primary" size="lg" asChild>
+            <Button variant="primary" size="lg" asChild className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all">
               <Link href="/signup">Get Started Free</Link>
             </Button>
           </div>
@@ -590,7 +613,7 @@ export default function Home() {
       <section className="bg-gradient-to-br from-secondary-50 to-white py-20">
         <div className="container">
           <div className="mb-12 text-center">
-            <Badge variant="primary" className="mb-4">
+            <Badge variant="primary" className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all">
               Our Specializations
             </Badge>
             <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
@@ -607,16 +630,16 @@ export default function Home() {
               return (
                 <Card
                   key={spec.id}
-                  className="group relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1"
+                  className="group relative overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm"
                 >
                   <CardContent className="p-6">
                     {/* Gradient Background */}
                     <div
-                      className={`absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-gradient-to-br ${spec.color} opacity-10 transition-all group-hover:scale-150`}
+                      className={`absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-gradient-to-br ${spec.color} opacity-20 blur-2xl transition-all group-hover:scale-150 group-hover:opacity-30`}
                     />
 
                     {/* Icon */}
-                    <div className={`relative mb-4 flex h-14 w-14 items-center justify-center rounded-lg ${spec.bgColor}`}>
+                    <div className={`relative mb-4 flex h-14 w-14 items-center justify-center rounded-lg ${spec.bgColor} shadow-lg group-hover:scale-110 transition-transform`}>
                       <Icon className={`h-7 w-7 ${spec.iconColor}`} />
                     </div>
 
@@ -638,7 +661,7 @@ export default function Home() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full group-hover:border-primary-600 group-hover:text-primary-600"
+                        className="w-full group-hover:bg-gradient-to-r group-hover:from-primary-600 group-hover:to-accent-600 group-hover:text-white group-hover:border-transparent transition-all"
                         asChild
                       >
                         <Link href={`/jobs?niche=${spec.id}`}>
@@ -658,7 +681,7 @@ export default function Home() {
             <p className="mb-4 text-secondary-600">
               Not sure which niche is right for you?
             </p>
-            <Button variant="primary" size="lg" asChild>
+            <Button variant="primary" size="lg" asChild className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all">
               <Link href="/jobs">Browse All Jobs</Link>
             </Button>
           </div>
@@ -669,7 +692,7 @@ export default function Home() {
       <section className="bg-gradient-to-br from-secondary-50 to-primary-50 py-20">
         <div className="container">
           <div className="mb-12 text-center">
-            <Badge variant="primary" className="mb-4">
+            <Badge variant="primary" className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all">
               ⭐ Skills Verification
             </Badge>
             <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
@@ -684,7 +707,7 @@ export default function Home() {
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
               {/* Left Column - Benefits List */}
               <div className="flex flex-col justify-center">
-                <Card className="border-2 border-primary-200 bg-white">
+                <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all">
                   <CardContent className="p-8">
                     <h3 className="mb-6 text-2xl font-bold text-secondary-900">
                       Benefits of Verification
@@ -752,7 +775,7 @@ export default function Home() {
 
               {/* Right Column - Skills Score Card Preview */}
               <div className="flex flex-col justify-center">
-                <Card className="border-2 border-accent-200 bg-white shadow-lg">
+                <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all">
                   <CardContent className="p-8">
                     <div className="mb-6 flex items-center justify-between">
                       <h3 className="text-xl font-bold text-secondary-900">
@@ -860,7 +883,7 @@ export default function Home() {
 
             {/* CTA */}
             <div className="mt-12 text-center">
-              <Button variant="primary" size="lg" asChild>
+              <Button variant="primary" size="lg" asChild className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all">
                 <Link href="/skills-assessment">
                   Learn More About Skills Assessment
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -875,10 +898,14 @@ export default function Home() {
       </section>
 
       {/* For Employers Section */}
-      <section className="bg-gradient-to-br from-primary-600 to-primary-800 py-20 text-white">
-        <div className="container">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-accent-700 py-20 text-white">
+        {/* Decorative elements */}
+        <div className="absolute -right-20 top-20 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute -left-20 bottom-20 h-64 w-64 rounded-full bg-accent-400/10 blur-3xl" />
+
+        <div className="container relative z-10">
           <div className="mb-12 text-center">
-            <Badge variant="secondary" className="mb-4">
+            <Badge variant="secondary" className="mb-4 bg-white/20 text-white border-white/30 shadow-lg">
               For Employers
             </Badge>
             <h2 className="mb-4 text-3xl font-bold md:text-4xl">
@@ -891,7 +918,7 @@ export default function Home() {
 
           {/* Prominent Message */}
           <div className="mx-auto mb-12 max-w-3xl">
-            <div className="rounded-lg border-2 border-white/30 bg-white/10 p-6 text-center backdrop-blur-sm">
+            <div className="rounded-lg border-2 border-white/30 bg-white/10 p-6 text-center backdrop-blur-sm shadow-xl hover:shadow-2xl hover:bg-white/15 transition-all">
               <p className="text-lg font-semibold md:text-xl">
                 💼 Your jobs may already be on our platform with qualified candidates waiting
               </p>
@@ -907,11 +934,11 @@ export default function Home() {
               return (
                 <Card
                   key={index}
-                  className="border-primary-400/20 bg-white/10 backdrop-blur-sm"
+                  className="border-0 bg-white/10 backdrop-blur-sm shadow-lg hover:shadow-2xl hover:bg-white/15 hover:-translate-y-1 transition-all"
                 >
                   <CardContent className="p-6 text-center">
                     <div className="mb-4 flex justify-center">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 shadow-inner">
                         <Icon className="h-7 w-7 text-white" />
                       </div>
                     </div>
@@ -931,7 +958,7 @@ export default function Home() {
             <Button
               variant="secondary"
               size="lg"
-              className="bg-white text-primary-600 hover:bg-primary-50"
+              className="bg-white text-primary-600 hover:bg-primary-50 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all"
               asChild
             >
               <Link href="/claim">
@@ -942,7 +969,7 @@ export default function Home() {
             <Button
               variant="outline"
               size="lg"
-              className="border-white text-white hover:bg-white/10"
+              className="border-2 border-white text-white hover:bg-white hover:text-primary-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
               asChild
             >
               <Link href="/claim">
@@ -958,10 +985,10 @@ export default function Home() {
       <section className="bg-secondary-50 py-20">
         <div className="container">
           <div className="mx-auto max-w-3xl">
-            <Card className="border-2 border-primary-200">
+            <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm">
               <CardContent className="p-8 text-center md:p-12">
                 <div className="mb-4 flex justify-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-accent-100 shadow-lg">
                     <TrendingUp className="h-8 w-8 text-primary-600" />
                   </div>
                 </div>
@@ -988,12 +1015,12 @@ export default function Home() {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       disabled={isNewsletterLoading}
-                      className="flex-1"
+                      className="flex-1 h-12 border-2 focus:ring-4 focus:ring-primary-500/20 transition-all"
                     />
                     <Button
                       type="submit"
                       size="lg"
-                      className="sm:w-auto"
+                      className="sm:w-auto bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all"
                       loading={isNewsletterLoading}
                       loadingText="Subscribing..."
                     >
@@ -1013,31 +1040,37 @@ export default function Home() {
       {/* Final CTA Section */}
       <section className="bg-white py-20">
         <div className="container">
-          <div className="rounded-2xl bg-gradient-to-r from-primary-600 to-accent-600 p-8 text-center text-white md:p-16">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-              Ready to Take the Next Step?
-            </h2>
-            <p className="mb-8 text-lg text-primary-100 md:text-xl">
-              Whether you're looking for your next role or hiring top talent,
-              we're here to help.
-            </p>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button
-                variant="secondary"
-                size="lg"
-                className="bg-white text-primary-600 hover:bg-primary-50"
-                asChild
-              >
-                <Link href="/jobs">Find Jobs</Link>
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-white text-white hover:bg-white/10"
-                asChild
-              >
-                <Link href="/employer/jobs/new">Hire Talent</Link>
-              </Button>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-600 via-primary-700 to-accent-600 p-8 text-center text-white shadow-2xl md:p-16">
+            {/* Decorative elements */}
+            <div className="absolute -right-10 top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+            <div className="absolute -left-10 bottom-10 h-40 w-40 rounded-full bg-accent-400/20 blur-2xl" />
+
+            <div className="relative z-10">
+              <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+                Ready to Take the Next Step?
+              </h2>
+              <p className="mb-8 text-lg text-primary-100 md:text-xl">
+                Whether you're looking for your next role or hiring top talent,
+                we're here to help.
+              </p>
+              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="bg-white text-primary-600 hover:bg-primary-50 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all"
+                  asChild
+                >
+                  <Link href="/jobs">Find Jobs</Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-2 border-white text-white hover:bg-white hover:text-primary-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                  asChild
+                >
+                  <Link href="/employer/jobs/new">Hire Talent</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
