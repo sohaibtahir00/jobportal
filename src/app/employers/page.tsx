@@ -12,7 +12,6 @@ import {
   Users,
   TrendingUp,
   Clock,
-  DollarSign,
   Star,
   ChevronLeft,
   ChevronRight,
@@ -211,11 +210,11 @@ export default function EmployersPage() {
             {benefits.map((benefit, index) => {
               const Icon = benefit.icon;
               return (
-                <Card key={index} className="text-center transition-all hover:shadow-lg">
+                <Card key={index} className="text-center border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                   <CardContent className="p-8">
                     <div className="mb-4 flex justify-center">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
-                        <Icon className="h-8 w-8 text-primary-600" />
+                      <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-accent-600 shadow-md">
+                        <Icon className="h-8 w-8 text-white" />
                       </div>
                     </div>
                     <h3 className="mb-3 text-xl font-semibold text-secondary-900">

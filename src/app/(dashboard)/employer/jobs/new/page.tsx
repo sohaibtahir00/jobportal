@@ -224,13 +224,13 @@ export default function NewJobPostingPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="relative min-h-screen space-y-6 bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-secondary-900 lg:text-3xl">
+      <div className="rounded-xl bg-gradient-to-r from-primary-600 to-accent-600 p-6 shadow-lg">
+        <h1 className="text-2xl font-bold text-white lg:text-3xl">
           Post a New Job
         </h1>
-        <p className="mt-1 text-secondary-600">
+        <p className="mt-1 text-primary-100">
           Fill out the details below to create a new job posting
         </p>
       </div>
@@ -239,7 +239,7 @@ export default function NewJobPostingPage() {
       <Stepper steps={STEPS} currentStep={currentStep} />
 
       <form onSubmit={handleSubmit(onPublish)}>
-        <Card>
+        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
           <CardContent className="p-6">
             {/* Step 1: Basic Info */}
             {currentStep === 1 && (
@@ -780,7 +780,12 @@ export default function NewJobPostingPage() {
             )}
 
             {currentStep < 3 ? (
-              <Button type="button" variant="primary" onClick={handleNext}>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handleNext}
+                className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
                 Next
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
@@ -791,6 +796,7 @@ export default function NewJobPostingPage() {
                   variant="outline"
                   onClick={onSaveDraft}
                   loading={isLoading}
+                  className="hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:border-primary-300 transition-all"
                 >
                   <Save className="mr-2 h-5 w-5" />
                   Save Draft
@@ -800,6 +806,7 @@ export default function NewJobPostingPage() {
                   variant="primary"
                   loading={isLoading}
                   loadingText="Publishing..."
+                  className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all"
                 >
                   <Send className="mr-2 h-5 w-5" />
                   Publish Job

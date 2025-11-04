@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, Briefcase } from "lucide-react";
-import { Button, Badge, EmptyState } from "@/components/ui";
+import { Button, Badge } from "@/components/ui";
 import { JobCard } from "@/components/jobs/JobCard";
 import { FiltersSidebar, Filters } from "@/components/jobs/FiltersSidebar";
 import { MobileFiltersDrawer } from "@/components/jobs/MobileFiltersDrawer";
@@ -121,35 +121,52 @@ function JobsContent() {
   };
 
   return (
-    <div className="bg-secondary-50 py-8">
-      <div className="container">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-secondary-900 md:text-4xl">
-            Find Your Next Opportunity
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-primary-600 to-accent-600 text-white py-12">
+        <div className="container">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Browse {mockJobs.length}+ AI/ML Jobs
           </h1>
-          <p className="text-lg text-secondary-600">
-            Browse {mockJobs.length} available positions
+          <p className="text-xl text-primary-100 mb-6">
+            Find your dream role from top companies hiring AI/ML talent
           </p>
-        </div>
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative">
-            <label htmlFor="jobs-search" className="sr-only">
-              Search jobs by title, company, or skills
-            </label>
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
-            <input
-              id="jobs-search"
-              type="text"
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search by job title, company, or skills..."
-              className="h-14 w-full rounded-lg border border-secondary-300 bg-white pl-12 pr-4 text-base shadow-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
-            />
+          {/* Search Bar */}
+          <div className="max-w-4xl bg-white rounded-xl p-2 shadow-2xl">
+            <div className="flex gap-2">
+              <div className="flex-1 flex items-center gap-2 px-4">
+                <Search className="w-5 h-5 text-gray-400" />
+                <input
+                  id="jobs-search"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  placeholder="Search jobs, companies, or skills..."
+                  className="flex-1 outline-none text-gray-900 py-3"
+                />
+              </div>
+              <button className="bg-gradient-to-r from-primary-600 to-accent-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-primary-700 hover:to-accent-700 transition-all shadow-md">
+                Search
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Filters */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            {['All Jobs', 'Remote', 'Senior Level', '$150k+', 'AI/ML', 'Full-time'].map((filter) => (
+              <button
+                key={filter}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg text-sm font-medium transition-all"
+              >
+                {filter}
+              </button>
+            ))}
           </div>
         </div>
+      </section>
+
+      <div className="container py-8">
 
         {/* Mobile Filter Button */}
         <div className="mb-6 flex items-center justify-between lg:hidden">

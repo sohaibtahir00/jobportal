@@ -37,11 +37,11 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="bg-secondary-50 py-12">
+    <div className="relative bg-gradient-to-br from-secondary-50 via-white to-secondary-50 py-12">
       <div className="container">
         {/* Back Button */}
         <div className="mb-6">
-          <Button variant="ghost" asChild className="gap-2">
+          <Button variant="ghost" asChild className="gap-2 hover:bg-primary-50 transition-all">
             <Link href="/">
               <ArrowLeft className="h-4 w-4" />
               Back to Home
@@ -52,7 +52,7 @@ export default function AboutPage() {
         {/* Header */}
         <div className="mb-12 text-center">
           <div className="mb-4 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-accent-100 shadow-lg">
               <Info className="h-8 w-8 text-primary-600" />
             </div>
           </div>
@@ -66,7 +66,7 @@ export default function AboutPage() {
         </div>
 
         {/* Overview Card */}
-        <Card className="mx-auto mb-12 max-w-4xl">
+        <Card className="mx-auto mb-12 max-w-4xl border-0 shadow-xl bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all">
           <CardContent className="p-8 md:p-12">
             <h2 className="mb-4 text-2xl font-semibold text-secondary-900">
               Project Overview
@@ -118,7 +118,7 @@ export default function AboutPage() {
             </h3>
             <div className="mb-6 flex flex-wrap gap-2">
               {techStack.map((tech) => (
-                <Badge key={tech} variant="primary">
+                <Badge key={tech} variant="primary" className="bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-sm hover:shadow-md transition-all">
                   {tech}
                 </Badge>
               ))}
@@ -141,10 +141,10 @@ export default function AboutPage() {
             {features.map((feature) => {
               const Icon = feature.icon;
               return (
-                <Card key={feature.title}>
+                <Card key={feature.title} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl hover:-translate-y-1 transition-all">
                   <CardContent className="p-6 text-center">
                     <div className="mb-4 flex justify-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-accent-100 shadow-lg">
                         <Icon className="h-6 w-6 text-primary-600" />
                       </div>
                     </div>
@@ -162,7 +162,7 @@ export default function AboutPage() {
         </div>
 
         {/* Development Status */}
-        <Card className="mx-auto max-w-4xl border-2 border-primary-200 bg-primary-50/50">
+        <Card className="mx-auto max-w-4xl border-0 shadow-xl bg-gradient-to-br from-primary-50 to-accent-50">
           <CardContent className="p-8 text-center">
             <h3 className="mb-3 text-xl font-semibold text-secondary-900">
               Development Status
@@ -173,10 +173,10 @@ export default function AboutPage() {
               connections are planned for future implementation.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button variant="primary" asChild>
+              <Button variant="primary" asChild className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
                 <Link href="/jobs">Browse Jobs</Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild className="hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:border-primary-300 transition-all">
                 <Link href="/">Back to Home</Link>
               </Button>
             </div>

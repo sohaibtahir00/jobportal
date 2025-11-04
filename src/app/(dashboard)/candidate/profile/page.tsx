@@ -157,19 +157,19 @@ export default function CandidateProfilePage() {
   const bioValue = watch("bio");
 
   return (
-    <div className="space-y-6">
+    <div className="relative min-h-screen space-y-6 bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-secondary-900 lg:text-3xl">
+      <div className="rounded-xl bg-gradient-to-r from-primary-600 to-accent-600 p-6 shadow-lg">
+        <h1 className="text-2xl font-bold text-white lg:text-3xl">
           Edit Profile
         </h1>
-        <p className="mt-1 text-secondary-600">
+        <p className="mt-1 text-primary-100">
           Update your profile information to help employers find you
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Card>
+        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
           <CardContent className="p-0">
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -476,6 +476,7 @@ export default function CandidateProfilePage() {
             variant="primary"
             size="lg"
             disabled={isLoading}
+            className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all"
           >
             {isLoading ? (
               <>

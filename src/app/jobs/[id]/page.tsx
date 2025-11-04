@@ -78,7 +78,106 @@ export default function JobDetailPage() {
       )}
 
       <ErrorBoundary>
-        <div className="bg-secondary-50 py-8">
+        {/* Company Banner */}
+        <div className="relative h-64 bg-gradient-to-r from-primary-600 to-accent-600 overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="absolute inset-0 opacity-10">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
+                backgroundSize: "50px 50px",
+              }}
+            ></div>
+          </div>
+
+          <div className="container relative h-full flex items-end pb-8">
+            <div className="flex items-end gap-6">
+              {/* Company Logo */}
+              <div className="w-24 h-24 bg-white rounded-2xl shadow-2xl flex items-center justify-center text-3xl font-bold text-primary-600 border-4 border-white">
+                {job.logo}
+              </div>
+
+              <div className="text-white pb-2">
+                <h1 className="text-4xl font-bold mb-2">
+                  {job.title}
+                </h1>
+                <div className="flex items-center gap-4 text-white/90">
+                  <span className="flex items-center gap-1">
+                    <Building2 className="w-5 h-5" />
+                    {job.company}
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-5 h-5" />
+                    {job.location}
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <Briefcase className="w-5 h-5" />
+                    {job.type}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sticky Metadata Bar */}
+        <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+          <div className="container py-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-6 flex-wrap">
+                {/* Salary - PROMINENT */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+                    <DollarSign className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500">Salary Range</div>
+                    <div className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                      {formatCurrency(job.salary.min)} - {formatCurrency(job.salary.max)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Posted Date */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
+                    <Clock className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500">Posted</div>
+                    <div className="text-lg font-bold text-gray-900">
+                      {job.posted}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="primary"
+                  onClick={() => setIsApplicationFormOpen(true)}
+                  className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                >
+                  Apply Now
+                </Button>
+                <Button variant="outline" className="gap-2">
+                  <Bookmark className="h-4 w-4" />
+                  Save
+                </Button>
+                <Button variant="outline" className="gap-2">
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
           <div className="container">
         {/* Back Button */}
         <div className="mb-6">
