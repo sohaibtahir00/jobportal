@@ -861,7 +861,7 @@ export default function Home() {
             {/* CTA */}
             <div className="mt-12 text-center">
               <Button variant="primary" size="lg" asChild>
-                <Link href="#skills-assessment">
+                <Link href="/skills-assessment">
                   Learn More About Skills Assessment
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
