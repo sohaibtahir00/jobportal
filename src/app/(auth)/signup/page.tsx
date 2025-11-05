@@ -114,9 +114,11 @@ export default function SignupPage() {
         >
           {/* Logo */}
           <div className="mb-8">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-600 to-accent-600 flex items-center justify-center text-white font-bold text-xl shadow-lg mb-4">
-              JP
-            </div>
+            <img
+              src="/logo.png"
+              alt="Job Portal"
+              className="h-20 md:h-24 w-auto mb-4"
+            />
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Create your account
             </h1>

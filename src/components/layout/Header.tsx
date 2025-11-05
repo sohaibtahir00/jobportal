@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Briefcase, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
@@ -67,13 +68,15 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
       <div className="container">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600">
-              <Briefcase className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-xl font-bold text-secondary-900">
-              Job Portal
-            </span>
+          <Link href="/" className="flex items-center transition-opacity hover:opacity-80">
+            <Image
+              src="/logo.png"
+              alt="Job Portal"
+              width={280}
+              height={70}
+              className="h-14 md:h-16 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}

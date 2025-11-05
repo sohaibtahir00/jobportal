@@ -92,8 +92,8 @@ export default function DashboardLayout({
         <div className="flex h-full flex-col overflow-y-auto">
           {/* Logo & Close Button */}
           <div className="flex h-16 items-center justify-between border-b border-secondary-200 px-6">
-            <Link href="/" className="text-xl font-bold text-primary-600">
-              JobPortal
+            <Link href="/" className="flex items-center">
+              <img src="/logo.png" alt="Job Portal" className="h-14 w-auto" />
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
