@@ -61,7 +61,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Fetch user data
       const response = await api.get('/api/auth/me');
-      setUser(response.data.user || response.data);
+      const userData = response.data.user || response.data;
+
+      // Transform user role to lowercase for frontend consistency
+      if (userData.role) {
+        userData.role = userData.role.toLowerCase();
+      }
+
+      setUser(userData);
       setError(null);
     } catch (err: any) {
       console.error('Failed to load user:', err);
@@ -87,6 +94,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await api.post('/api/auth/login', credentials);
 
       const { token, user: userData } = response.data;
+
+      // Transform user role to lowercase for frontend consistency
+      if (userData.role) {
+        userData.role = userData.role.toLowerCase();
+      }
 
       // Store token in both localStorage and cookie
       setAuthToken(token);
@@ -125,12 +137,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: data.email,
         password: data.password,
         name: data.fullName, // Backend expects 'name', not 'fullName'
-        role: data.role,
+        role: data.role.toUpperCase(), // Backend expects uppercase role (CANDIDATE or EMPLOYER)
       };
 
       const response = await api.post('/api/auth/register', requestData);
 
       const { token, user: userData } = response.data;
+
+      // Transform user role back to lowercase for frontend consistency
+      if (userData.role) {
+        userData.role = userData.role.toLowerCase();
+      }
 
       // Store token in both localStorage and cookie
       setAuthToken(token);
