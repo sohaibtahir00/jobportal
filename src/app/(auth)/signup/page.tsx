@@ -13,9 +13,11 @@ import {
   Building2,
   Mail,
   User,
+  AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/components/ui";
+import { useAuth } from "@/hooks/useAuth";
 import {
   registrationSchema,
   type RegistrationFormData,
@@ -25,8 +27,9 @@ export default function SignupPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const { showToast } = useToast();
+  const { signup, isLoading, error: authError, clearError } = useAuth();
 
   const {
     register,
@@ -70,30 +73,43 @@ export default function SignupPage() {
   };
 
   const onSubmit = async (data: RegistrationFormData) => {
-    setIsLoading(true);
+    // Clear any previous errors
+    setApiError(null);
+    clearError();
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Call the real signup API
+      await signup({
+        email: data.email,
+        password: data.password,
+        fullName: data.fullName,
+        role: data.role,
+      });
 
+      // Success toast
       showToast(
         "success",
         "Account created!",
         "Welcome to the platform. Let's get started."
       );
-      // Mock redirect based on role
-      if (data.role === "employer") {
-        router.push("/employer/dashboard");
-      } else {
-        router.push("/candidate/dashboard");
-      }
-    } catch (error) {
+
+      // Redirect is handled automatically by AuthContext based on user role
+      // No need to manually redirect here
+    } catch (error: any) {
+      // Extract error message
+      const errorMessage = error.message || authError || "An unexpected error occurred. Please try again.";
+
+      setApiError(errorMessage);
+
+      // Show error toast
       showToast(
         "error",
         "Registration failed",
-        "There was a problem creating your account. Please try again."
+        errorMessage
       );
-      setIsLoading(false);
+
+      // Log error for debugging
+      console.error("Signup error:", error);
     }
   };
 
@@ -182,6 +198,37 @@ export default function SignupPage() {
               </span>
             </div>
           </div>
+
+          {/* API Error Alert */}
+          {(apiError || authError) && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3"
+            >
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-red-800">
+                  Registration Error
+                </h3>
+                <p className="text-sm text-red-700 mt-1">
+                  {apiError || authError}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setApiError(null);
+                  clearError();
+                }}
+                className="text-red-600 hover:text-red-800"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </motion.div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -522,7 +569,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-accent-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-accent-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-lg"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -533,6 +580,13 @@ export default function SignupPage() {
                 "Create account"
               )}
             </button>
+
+            {/* Loading Indicator Text */}
+            {isLoading && (
+              <p className="text-xs text-center text-gray-500">
+                Registering with backend server...
+              </p>
+            )}
           </form>
 
           {/* Sign In Link */}
