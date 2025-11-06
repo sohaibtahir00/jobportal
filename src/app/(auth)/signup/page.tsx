@@ -82,7 +82,7 @@ export default function SignupPage() {
       await signup({
         email: data.email,
         password: data.password,
-        fullName: data.fullName,
+        fullName: data.name, // Map 'name' from form to 'fullName' for AuthContext
         role: data.role,
       });
 
@@ -338,17 +338,17 @@ export default function SignupPage() {
                       : "Your full name"
                   }
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-primary-500/20 transition-all outline-none pr-12 ${
-                    errors.fullName
+                    errors.name
                       ? "border-red-500 focus:border-red-500"
                       : "border-gray-300 focus:border-primary-500"
                   }`}
-                  {...register("fullName")}
+                  {...register("name")}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-4">
                   <User className="w-5 h-5 text-gray-400" />
                 </div>
               </div>
-              {errors.fullName && (
+              {errors.name && (
                 <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
                   <svg
                     className="w-4 h-4"
@@ -361,7 +361,7 @@ export default function SignupPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  {errors.fullName.message}
+                  {errors.name.message}
                 </p>
               )}
             </div>

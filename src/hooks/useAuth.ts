@@ -1,38 +1,89 @@
 "use client";
 
-import { useContext } from 'react';
-import { AuthContext, AuthContextType } from '@/contexts/AuthContext';
+import { useSession, signIn, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import api from "@/lib/api";
 
-/**
- * Custom hook to access authentication context
- *
- * @throws {Error} If used outside of AuthProvider
- * @returns {AuthContextType} Authentication context value
- *
- * @example
- * ```tsx
- * const { user, login, logout, isAuthenticated } = useAuth();
- *
- * // Check if user is authenticated
- * if (isAuthenticated) {
- *   console.log('User:', user);
- * }
- *
- * // Login
- * await login({ email: 'user@example.com', password: 'password' });
- *
- * // Logout
- * logout();
- * ```
- */
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext);
+export interface SignupData {
+  email: string;
+  password: string;
+  fullName: string;
+  role: "candidate" | "employer";
+}
 
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+export function useAuth() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  return context;
+  const user = session?.user
+    ? {
+        id: session.user.id,
+        email: session.user.email!,
+        name: session.user.name!,
+        fullName: session.user.name!,
+        role: session.user.role?.toLowerCase() as "candidate" | "employer",
+        image: session.user.image,
+        status: session.user.status,
+      }
+    : null;
+
+  const login = async ({ email, password }: { email: string; password: string }) => {
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      throw new Error(result.error);
+    }
+
+    // Redirect based on role after successful login
+    const response = await fetch("/api/auth/session");
+    const sessionData = await response.json();
+
+    if (sessionData?.user?.role) {
+      const role = sessionData.user.role.toLowerCase();
+      if (role === "employer") {
+        router.push("/employer/dashboard");
+      } else {
+        router.push("/candidate/dashboard");
+      }
+    }
+  };
+
+  const signup = async (data: SignupData) => {
+    // Call backend register API
+    const response = await api.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
+      email: data.email,
+      password: data.password,
+      name: data.fullName,
+      role: data.role.toUpperCase(),
+    });
+
+    if (response.status !== 201) {
+      throw new Error(response.data.error || "Registration failed");
+    }
+
+    // After registration, log the user in
+    await login({ email: data.email, password: data.password });
+  };
+
+  const logout = async () => {
+    await signOut({ redirect: false });
+    router.push("/login");
+  };
+
+  return {
+    user,
+    isAuthenticated: !!session,
+    isLoading: status === "loading",
+    error: null,
+    login,
+    signup,
+    logout,
+    clearError: () => {}, // No-op for compatibility
+  };
 }
 
 export default useAuth;
