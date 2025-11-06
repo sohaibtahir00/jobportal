@@ -120,7 +120,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
-      const response = await api.post('/api/auth/register', data);
+      // Transform data to match backend expectations
+      const requestData = {
+        email: data.email,
+        password: data.password,
+        name: data.fullName, // Backend expects 'name', not 'fullName'
+        role: data.role,
+      };
+
+      const response = await api.post('/api/auth/register', requestData);
 
       const { token, user: userData } = response.data;
 
