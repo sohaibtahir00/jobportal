@@ -9,24 +9,25 @@ interface JobCardProps {
 }
 
 export function JobCard({ job }: JobCardProps) {
+  const jobAny = job as any;
   return (
     <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1 overflow-hidden">
       <CardContent className="p-6 flex flex-col h-full">
         {/* Header with Logo and Title */}
         <div className="mb-4 flex items-start gap-3">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-100 text-2xl">
-            {job.logo}
+            {jobAny.logo || jobAny.employer?.companyName?.charAt(0) || 'J'}
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="mb-1 font-semibold text-secondary-900 line-clamp-2 text-base">
               {job.title}
             </h3>
-            <p className="text-sm text-secondary-600 truncate">{job.company}</p>
+            <p className="text-sm text-secondary-600 truncate">{jobAny.company || jobAny.employer?.companyName || 'Company'}</p>
           </div>
         </div>
 
         {/* Verified Badge - Full Width */}
-        {job.skillsVerified && (
+        {jobAny.skillsVerified && (
           <div className="mb-3">
             <Badge
               variant="warning"
@@ -53,7 +54,7 @@ export function JobCard({ job }: JobCardProps) {
           <div className="flex items-center gap-2 text-sm font-semibold text-green-600">
             <DollarSign className="h-4 w-4 flex-shrink-0" />
             <span>
-              {formatCurrency(job.salary.min)} - {formatCurrency(job.salary.max)}
+              {formatCurrency(job.salaryMin || 0)} - {formatCurrency(job.salaryMax || 0)}
             </span>
           </div>
         </div>
@@ -62,31 +63,29 @@ export function JobCard({ job }: JobCardProps) {
         <div className="mb-3 flex flex-wrap gap-2">
           <Badge
             variant={
-              job.remote === "Remote"
+              job.remote
                 ? "success"
-                : job.remote === "Hybrid"
-                ? "primary"
                 : "secondary"
             }
             size="sm"
           >
-            {job.remote}
+            {job.remote ? 'Remote' : 'On-site'}
           </Badge>
           <Badge variant="outline" size="sm" className="capitalize">
-            {job.niche}
+            {jobAny.niche || job.type}
           </Badge>
         </div>
 
         {/* Skills Tags */}
         <div className="mb-4 flex flex-wrap gap-2">
-          {job.tags.slice(0, 3).map((tag, idx) => (
+          {(job.skills || []).slice(0, 3).map((tag: string, idx: number) => (
             <Badge key={idx} variant="secondary" size="sm">
               {tag}
             </Badge>
           ))}
-          {job.tags.length > 3 && (
+          {(job.skills || []).length > 3 && (
             <Badge variant="secondary" size="sm">
-              +{job.tags.length - 3}
+              +{(job.skills || []).length - 3}
             </Badge>
           )}
         </div>
@@ -95,7 +94,7 @@ export function JobCard({ job }: JobCardProps) {
         <div className="flex items-center justify-between border-t border-secondary-200 pt-4 mt-auto">
           <div className="flex items-center gap-1 text-xs text-secondary-500">
             <Clock className="h-3 w-3" />
-            <span>{job.posted}</span>
+            <span>{jobAny.posted || 'Recently'}</span>
           </div>
           <Button variant="outline" size="sm" asChild>
             <Link href={`/jobs/${job.id}`}>View Details</Link>

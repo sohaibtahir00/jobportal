@@ -77,6 +77,16 @@ export default function CandidateDashboardPage() {
   const stats = mockDashboardStats;
   const profile = mockUserProfile;
   const applications = mockApplications;
+
+  // Mock data disabled - show placeholder
+  if (!profile) {
+    return (
+      <div className="container mx-auto py-8">
+        <h1 className="text-3xl font-bold mb-4">Candidate Dashboard</h1>
+        <p className="text-gray-600">Dashboard under construction. Authentication is working!</p>
+      </div>
+    );
+  }
   const recommendedJobs = mockRecommendedJobs;
 
   const isProfileIncomplete = profile.profileCompletion < 100;
@@ -194,7 +204,7 @@ export default function CandidateDashboardPage() {
                           employers:
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {profile.missingFields.map((field) => (
+                          {profile.missingFields.map((field: string) => (
                             <Badge
                               key={field}
                               variant="secondary"
@@ -408,9 +418,9 @@ export default function CandidateDashboardPage() {
                             </td>
                             <td className="py-4 pr-4">
                               <Badge
-                                className={`${statusInfo.bg} ${statusInfo.text} border-none shadow-sm`}
+                                className={`${(statusInfo as any).bg} ${(statusInfo as any).text} border-none shadow-sm`}
                               >
-                                {statusInfo.label}
+                                {(statusInfo as any).label}
                               </Badge>
                             </td>
                             <td className="hidden py-4 pr-4 text-secondary-500 lg:table-cell">
@@ -575,7 +585,7 @@ export default function CandidateDashboardPage() {
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
-                      {job.skills.slice(0, 3).map((skill) => (
+                      {job.skills.slice(0, 3).map((skill: string) => (
                         <Badge
                           key={skill}
                           variant="secondary"

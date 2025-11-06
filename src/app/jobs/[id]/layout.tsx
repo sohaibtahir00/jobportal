@@ -17,23 +17,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const employer = job.employer;
-  const salaryRange = `$${(job.salaryMin / 1000).toFixed(0)}k - $${(job.salaryMax / 1000).toFixed(0)}k`;
+  const salaryRange = job.salaryMin && job.salaryMax
+    ? `$${(job.salaryMin / 1000).toFixed(0)}k - $${(job.salaryMax / 1000).toFixed(0)}k`
+    : "Competitive";
 
   return {
     title: `${job.title} at ${employer.companyName}`,
-    description: `${job.title} • ${employer.companyName} • ${job.location} • ${job.remoteType} • ${salaryRange}. ${job.description.substring(0, 150)}...`,
+    description: `${job.title} • ${employer.companyName} • ${job.location} • ${job.remote ? 'Remote' : 'On-site'} • ${salaryRange}. ${job.description.substring(0, 150)}...`,
     keywords: [
       job.title,
       employer.companyName,
-      job.niche,
       job.location,
-      ...job.techStack,
+      ...job.skills,
       job.experienceLevel,
-      job.employmentType,
+      job.type,
     ],
     openGraph: {
       title: `${job.title} at ${employer.companyName}`,
-      description: `${job.title} • ${job.location} • ${job.remoteType} • ${salaryRange}. Apply now!`,
+      description: `${job.title} • ${job.location} • ${job.remote ? 'Remote' : 'On-site'} • ${salaryRange}. Apply now!`,
       type: "website",
       url: `https://aiml-jobs.com/jobs/${params.id}`,
       images: [
@@ -48,7 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: `${job.title} at ${employer.companyName}`,
-      description: `${job.location} • ${job.remoteType} • ${salaryRange}. Apply now!`,
+      description: `${job.location} • ${job.remote ? 'Remote' : 'On-site'} • ${salaryRange}. Apply now!`,
       images: [employer.companyLogo || "/og-image-job-default.png"],
     },
   };

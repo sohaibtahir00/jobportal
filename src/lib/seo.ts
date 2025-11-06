@@ -21,16 +21,16 @@ export function generateJobPostingJsonLd(job: Job) {
       name: employer.companyName,
       value: job.id,
     },
-    datePosted: job.postedAt.toISOString(),
+    datePosted: job.createdAt,
     validThrough: new Date(
-      job.postedAt.getTime() + 90 * 24 * 60 * 60 * 1000
+      new Date(job.createdAt).getTime() + 90 * 24 * 60 * 60 * 1000
     ).toISOString(), // 90 days from posting
-    employmentType: job.employmentType.toUpperCase().replace("-", "_"), // FULL_TIME, PART_TIME, CONTRACT, INTERN
+    employmentType: job.type, // Backend uses JobType enum
     hiringOrganization: {
       "@type": "Organization",
       name: employer.companyName,
       sameAs: employer.companyWebsite,
-      logo: employer.companyLogo,
+      logo: employer.companyLogo || undefined,
     },
     jobLocation: {
       "@type": "Place",
@@ -41,25 +41,25 @@ export function generateJobPostingJsonLd(job: Job) {
         addressCountry: "US",
       },
     },
-    baseSalary: {
+    baseSalary: job.salaryMin && job.salaryMax ? {
       "@type": "MonetaryAmount",
-      currency: job.salaryCurrency,
+      currency: "USD",
       value: {
         "@type": "QuantitativeValue",
         minValue: job.salaryMin,
         maxValue: job.salaryMax,
         unitText: "YEAR",
       },
-    },
-    responsibilities: job.responsibilities.join(". "),
-    skills: job.techStack.join(", "),
-    qualifications: job.requirements.join(". "),
+    } : undefined,
+    responsibilities: job.responsibilities,
+    skills: job.skills?.join(", "),
+    qualifications: job.requirements,
     experienceRequirements: {
       "@type": "OccupationalExperienceRequirements",
       monthsOfExperience: getMonthsOfExperience(job.experienceLevel),
     },
     // Remote work options
-    ...(job.remoteType === "remote" && {
+    ...(job.remote && {
       jobLocationType: "TELECOMMUTE",
     }),
     applicantLocationRequirements: {
@@ -69,15 +69,16 @@ export function generateJobPostingJsonLd(job: Job) {
   };
 }
 
-function getMonthsOfExperience(level: string): number {
-  switch (level) {
-    case "entry":
+function getMonthsOfExperience(level: any): number {
+  const levelStr = String(level).toUpperCase();
+  switch (levelStr) {
+    case "ENTRY_LEVEL":
       return 12; // 1 year
-    case "mid":
+    case "MID_LEVEL":
       return 36; // 3 years
-    case "senior":
+    case "SENIOR_LEVEL":
       return 60; // 5 years
-    case "lead":
+    case "EXECUTIVE":
       return 120; // 10 years
     default:
       return 0;

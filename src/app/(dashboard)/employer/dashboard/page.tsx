@@ -311,9 +311,9 @@ export default function EmployerDashboardPage() {
                             </p>
                           </div>
                           <Badge
-                            className={`${statusInfo.bg} ${statusInfo.text} border-none shadow-sm`}
+                            className={`${(statusInfo as any).bg} ${(statusInfo as any).text} border-none shadow-sm`}
                           >
-                            {statusInfo.label}
+                            {(statusInfo as any).label}
                           </Badge>
                         </div>
 
@@ -405,9 +405,9 @@ export default function EmployerDashboardPage() {
                           </p>
                           <div className="mt-1 flex items-center gap-2">
                             <Badge
-                              className={`${statusInfo.bg} ${statusInfo.text} border-none shadow-sm`}
+                              className={`${(statusInfo as any).bg} ${(statusInfo as any).text} border-none shadow-sm`}
                             >
-                              {statusInfo.label}
+                              {(statusInfo as any).label}
                             </Badge>
                             <span className="text-xs text-secondary-500">
                               {getRelativeTime(

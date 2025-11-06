@@ -65,9 +65,7 @@ export const registrationSchema = z
         "Password must contain at least one uppercase letter, one lowercase letter, and one number"
       ),
     confirmPassword: z.string().min(1, "Please confirm your password"),
-    role: z.enum(["candidate", "employer"], {
-      required_error: "Please select a role",
-    }),
+    role: z.enum(["candidate", "employer"]),
     companyName: z.string().optional(), // For employers (optional during registration)
     acceptTerms: z
       .boolean()
@@ -280,20 +278,14 @@ export const jobPostingSchema = z
       .min(50, "Responsibilities must be at least 50 characters")
       .max(5000, "Responsibilities must not exceed 5000 characters"),
     type: z.enum(
-      ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP", "TEMPORARY"],
-      {
-        required_error: "Please select a job type",
-      }
+      ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP", "TEMPORARY"]
     ),
     location: z
       .string()
       .min(2, "Location is required")
       .max(200, "Location must not exceed 200 characters"),
     experienceLevel: z.enum(
-      ["ENTRY_LEVEL", "MID_LEVEL", "SENIOR_LEVEL", "EXECUTIVE"],
-      {
-        required_error: "Please select an experience level",
-      }
+      ["ENTRY_LEVEL", "MID_LEVEL", "SENIOR_LEVEL", "EXECUTIVE"]
     ),
 
     // Remote (boolean)

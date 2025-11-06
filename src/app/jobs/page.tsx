@@ -50,13 +50,13 @@ function JobsContent() {
         const query = searchQuery.toLowerCase();
         const matchesSearch =
           job.title.toLowerCase().includes(query) ||
-          job.company.toLowerCase().includes(query) ||
-          job.tags.some((tag) => tag.toLowerCase().includes(query));
+          ((job as any).company?.toLowerCase() || '').includes(query) ||
+          (job.skills || []).some((tag) => tag.toLowerCase().includes(query));
         if (!matchesSearch) return false;
       }
 
-      // Niche filter
-      if (filters.niches.length > 0 && !filters.niches.includes(job.niche)) {
+      // Niche filter (using type instead of niche which doesn't exist)
+      if (filters.niches.length > 0 && !filters.niches.includes((job as any).niche || job.type)) {
         return false;
       }
 
@@ -78,7 +78,7 @@ function JobsContent() {
       // Remote type filter
       if (
         filters.remoteTypes.length > 0 &&
-        !filters.remoteTypes.includes(job.remote)
+        !filters.remoteTypes.includes(job.remote ? 'remote' : 'onsite')
       ) {
         return false;
       }
@@ -92,10 +92,10 @@ function JobsContent() {
       }
 
       // Salary filter
-      if (job.salary.max < filters.salaryMin) {
+      if (job.salaryMax && job.salaryMax < filters.salaryMin) {
         return false;
       }
-      if (filters.salaryMax < 300000 && job.salary.min > filters.salaryMax) {
+      if (filters.salaryMax < 300000 && job.salaryMin && job.salaryMin > filters.salaryMax) {
         return false;
       }
 
