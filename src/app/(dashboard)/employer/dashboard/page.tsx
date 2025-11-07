@@ -6,15 +6,12 @@ import {
   Briefcase,
   FileText,
   CheckCircle2,
-  FileWarning,
   TrendingUp,
   TrendingDown,
   Eye,
   Users,
   ChevronRight,
   Plus,
-  Receipt,
-  Sparkles,
   Calendar,
   Loader2,
 } from "lucide-react";
@@ -123,8 +120,9 @@ export default function EmployerDashboardPage() {
   const stats = data?.stats || {
     activeJobs: 0,
     totalApplications: 0,
-    filledPositions: 0,
-    pendingInvoices: 0,
+    newApplications: 0,
+    interviewsScheduled: 0,
+    totalViews: 0,
   };
 
   const activeJobs = data?.activeJobs || [];
@@ -136,33 +134,33 @@ export default function EmployerDashboardPage() {
     {
       icon: <Briefcase className="h-6 w-6 text-white" />,
       label: "Active Jobs",
-      value: stats.activeJobs,
-      trend: "+2 this month",
+      value: stats.activeJobs || 0,
+      trend: "Job postings",
       trendUp: true,
       gradient: "from-blue-500 to-blue-600",
     },
     {
       icon: <FileText className="h-6 w-6 text-white" />,
       label: "Total Applications",
-      value: stats.totalApplications,
-      trend: "New applications",
+      value: stats.totalApplications || 0,
+      trend: `${stats.newApplications || 0} new`,
       trendUp: true,
       gradient: "from-purple-500 to-purple-600",
     },
     {
       icon: <CheckCircle2 className="h-6 w-6 text-white" />,
-      label: "Filled Positions",
-      value: stats.filledPositions,
-      trend: "Hired candidates",
+      label: "Interviews Scheduled",
+      value: stats.interviewsScheduled || 0,
+      trend: "Upcoming interviews",
       trendUp: true,
       gradient: "from-green-500 to-emerald-600",
     },
     {
-      icon: <FileWarning className="h-6 w-6 text-white" />,
-      label: "Pending Invoices",
-      value: stats.pendingInvoices,
-      trend: "Awaiting payment",
-      trendUp: false,
+      icon: <Eye className="h-6 w-6 text-white" />,
+      label: "Total Views",
+      value: stats.totalViews || 0,
+      trend: "Job post views",
+      trendUp: true,
       gradient: "from-orange-500 to-amber-600",
     },
   ];
@@ -507,27 +505,26 @@ export default function EmployerDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-gradient-to-br from-orange-50 to-white shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5">
+          <Card className="border-0 bg-gradient-to-br from-purple-50 to-white shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-secondary-900">
-                    Review your invoices
+                    Review applications
                   </h3>
                   <p className="mt-2 text-sm text-secondary-600">
-                    You have {stats.pendingInvoices} pending invoices. Review
-                    and manage your billing information.
+                    You have {stats.newApplications || 0} new applications waiting for your review.
                   </p>
                   <Link
-                    href="javascript:void(0)"
-                    className="mt-4 inline-flex items-center text-sm font-medium text-orange-600 transition-colors hover:text-orange-700"
+                    href="/employer/applications"
+                    className="mt-4 inline-flex items-center text-sm font-medium text-purple-600 transition-colors hover:text-purple-700"
                   >
-                    View Invoices
+                    View Applications
                     <ChevronRight className="ml-1 h-4 w-4" />
                   </Link>
                 </div>
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-amber-600 shadow-md">
-                  <Receipt className="h-6 w-6 text-white" />
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 shadow-md">
+                  <FileText className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>

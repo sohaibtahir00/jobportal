@@ -390,6 +390,8 @@ export interface EmployerStats {
   interviewsScheduled: number;
   totalViews: number;
   avgTimeToHire?: number;
+  filledPositions?: number;
+  pendingInvoices?: number;
 }
 
 // Pagination (matches backend format)
