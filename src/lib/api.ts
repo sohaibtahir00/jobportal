@@ -1,22 +1,28 @@
 import axios from 'axios';
 import { getSession } from 'next-auth/react';
 
+// Get backend URL - MUST be set in Vercel environment variables
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://job-portal-backend-production-cd05.up.railway.app';
+
+console.log('[API Client] Backend URL:', BACKEND_URL);
+
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: BACKEND_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth headers
 api.interceptors.request.use(
   async (config) => {
     const session = await getSession();
-    if (session?.user?.id) {
-      // NextAuth session exists, add custom header if needed for backend
+    if (session?.user) {
+      // Add user info headers for backend authentication
       config.headers['X-User-Id'] = session.user.id;
-      config.headers['X-User-Role'] = session.user.role;
+      config.headers['X-User-Email'] = session.user.email || '';
+      config.headers['X-User-Role'] = session.user.role || '';
     }
     return config;
   },
