@@ -45,30 +45,39 @@ export interface UpdateProfileResponse {
  */
 export async function getProfile(): Promise<GetProfileResponse> {
   try {
-    console.log('[Profile API] Fetching profile from backend...');
-    // Use axios client which adds auth headers automatically (same as auth.ts)
-    const response = await api.get<GetProfileResponse>('/api/profile');
-    console.log('[Profile API] Profile fetched successfully:', response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error('[Profile API] Error fetching profile:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-      code: error.code,
+    console.log('[Profile API] Fetching profile via Next.js proxy...');
+
+    // Use Next.js API route proxy to avoid CORS (frontend-only solution)
+    const response = await fetch('/api/proxy/profile', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'same-origin', // Important for Next.js API routes
     });
 
-    const errorMessage = error.response?.data?.error ||
-                        error.response?.data?.message ||
-                        error.message ||
-                        'Failed to fetch profile. Please try again.';
+    console.log('[Profile API] Proxy response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to fetch profile' }));
+      console.error('[Profile API] Proxy error response:', errorData);
+      throw new Error(errorData.error || 'Failed to fetch profile');
+    }
+
+    const data = await response.json();
+    console.log('[Profile API] Profile fetched successfully via proxy:', data);
+    return data;
+  } catch (error: any) {
+    console.error('[Profile API] Error:', error);
+
+    const errorMessage = error.message || 'Failed to fetch profile. Please try again.';
 
     // Handle specific errors
-    if (error.response?.status === 401 || errorMessage.includes('Authentication required')) {
+    if (errorMessage.includes('Authentication required') || errorMessage.includes('Unauthorized')) {
       throw new Error('You must be logged in to view your profile.');
     }
 
-    if (error.response?.status === 404 || errorMessage.includes('not found')) {
+    if (errorMessage.includes('not found')) {
       throw new Error('Profile not found. Please contact support.');
     }
 
@@ -90,29 +99,40 @@ export async function getProfile(): Promise<GetProfileResponse> {
  */
 export async function updateProfile(data: UpdateProfileRequest): Promise<UpdateProfileResponse> {
   try {
-    console.log('[Profile API] Updating profile...');
-    // Use axios client which adds auth headers automatically (same as auth.ts)
-    const response = await api.patch<UpdateProfileResponse>('/api/profile', data);
-    console.log('[Profile API] Profile updated successfully:', response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error('[Profile API] Error updating profile:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
+    console.log('[Profile API] Updating profile via Next.js proxy...');
+
+    // Use Next.js API route proxy to avoid CORS (frontend-only solution)
+    const response = await fetch('/api/proxy/profile', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'same-origin', // Important for Next.js API routes
+      body: JSON.stringify(data),
     });
 
-    const errorMessage = error.response?.data?.error ||
-                        error.response?.data?.message ||
-                        error.message ||
-                        'Failed to update profile. Please try again.';
+    console.log('[Profile API] Proxy update response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to update profile' }));
+      console.error('[Profile API] Proxy update error response:', errorData);
+      throw new Error(errorData.error || 'Failed to update profile');
+    }
+
+    const result = await response.json();
+    console.log('[Profile API] Profile updated successfully via proxy:', result);
+    return result;
+  } catch (error: any) {
+    console.error('[Profile API] Update error:', error);
+
+    const errorMessage = error.message || 'Failed to update profile. Please try again.';
 
     // Handle specific errors
-    if (error.response?.status === 401 || errorMessage.includes('Authentication required')) {
+    if (errorMessage.includes('Authentication required') || errorMessage.includes('Unauthorized')) {
       throw new Error('You must be logged in to update your profile.');
     }
 
-    if (error.response?.status === 400 || errorMessage.includes('validation')) {
+    if (errorMessage.includes('validation')) {
       throw new Error(errorMessage);
     }
 
