@@ -124,7 +124,7 @@ export default function JobDetailPage() {
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm sm:text-base text-white/90">
                   <span className="flex items-center gap-1">
                     <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="truncate max-w-[150px] sm:max-w-none">{job.company}</span>
+                    <span className="truncate max-w-[150px] sm:max-w-none">{job.employer?.companyName || 'Company'}</span>
                   </span>
                   <span className="hidden sm:inline">•</span>
                   <span className="flex items-center gap-1">
@@ -155,7 +155,11 @@ export default function JobDetailPage() {
                   <div>
                     <div className="text-xs text-gray-500">Salary Range</div>
                     <div className="text-base sm:text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                      {formatCurrency(job.salary.min)} - {formatCurrency(job.salary.max)}
+                      {job.salaryMin && job.salaryMax ? (
+                        `${formatCurrency(job.salaryMin)} - ${formatCurrency(job.salaryMax)}`
+                      ) : (
+                        'Competitive'
+                      )}
                     </div>
                   </div>
                 </div>
@@ -168,7 +172,11 @@ export default function JobDetailPage() {
                   <div>
                     <div className="text-xs text-gray-500">Posted</div>
                     <div className="text-sm sm:text-lg font-bold text-gray-900">
-                      {job.posted}
+                      {new Date(job.createdAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
                     </div>
                   </div>
                 </div>
@@ -211,15 +219,8 @@ export default function JobDetailPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            {/* Status Indicator */}
-            {!job.skillsVerified ? (
-              <div className="mb-6 rounded-lg border border-primary-200 bg-primary-50 p-4">
-                <p className="text-sm text-primary-900">
-                  <span className="mr-2">ℹ️</span>
-                  <strong>This job is publicly listed.</strong> Apply now to get priority when the employer claims it.
-                </p>
-              </div>
-            ) : (
+            {/* Verified Employer Badge */}
+            {job.employer?.verified && (
               <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-success-200 bg-success-50 px-4 py-2">
                 <span className="text-success-600">✓</span>
                 <span className="font-semibold text-success-900">Verified Employer</span>
@@ -231,14 +232,18 @@ export default function JobDetailPage() {
               <CardContent className="p-8">
                 <div className="mb-6 flex items-start gap-4">
                   <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-primary-100 text-3xl">
-                    {job.logo}
+                    {job.employer?.companyLogo ? (
+                      <img src={job.employer.companyLogo} alt={job.employer.companyName} className="h-full w-full rounded-lg object-cover" />
+                    ) : (
+                      job.employer?.companyName?.charAt(0) || 'J'
+                    )}
                   </div>
                   <div className="flex-1">
                     <h1 className="mb-2 text-3xl font-bold text-secondary-900">
                       {job.title}
                     </h1>
                     <p className="mb-4 text-xl text-secondary-600">
-                      {job.company}
+                      {job.employer?.companyName || 'Company'}
                     </p>
 
                     <div className="flex flex-wrap gap-3 text-sm text-secondary-600">
@@ -254,7 +259,7 @@ export default function JobDetailPage() {
                       <span className="text-secondary-400">•</span>
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        <span>Posted {job.posted}</span>
+                        <span>Posted {new Date(job.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                       </div>
                     </div>
                   </div>
@@ -262,32 +267,26 @@ export default function JobDetailPage() {
 
                 {/* Badges */}
                 <div className="mb-6 flex flex-wrap gap-2">
-                  <Badge
-                    variant={
-                      job.remote === "Remote"
-                        ? "success"
-                        : job.remote === "Hybrid"
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    {job.remote}
+                  <Badge variant={job.remote ? "success" : "secondary"}>
+                    {job.remote ? 'Remote' : 'On-site'}
                   </Badge>
                   <Badge variant="outline">{job.niche}</Badge>
                   <Badge variant="secondary">{job.experienceLevel}</Badge>
                 </div>
 
                 {/* Salary */}
-                <div className="mb-6 flex items-center gap-2 text-2xl font-bold text-secondary-900">
-                  <DollarSign className="h-6 w-6 text-success-600" />
-                  <span>
-                    {formatCurrency(job.salary.min)} -{" "}
-                    {formatCurrency(job.salary.max)}
-                  </span>
-                  <span className="text-base font-normal text-secondary-600">
-                    / year
-                  </span>
-                </div>
+                {job.salaryMin && job.salaryMax && (
+                  <div className="mb-6 flex items-center gap-2 text-2xl font-bold text-secondary-900">
+                    <DollarSign className="h-6 w-6 text-success-600" />
+                    <span>
+                      {formatCurrency(job.salaryMin)} -{" "}
+                      {formatCurrency(job.salaryMax)}
+                    </span>
+                    <span className="text-base font-normal text-secondary-600">
+                      / year
+                    </span>
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div>
@@ -314,25 +313,7 @@ export default function JobDetailPage() {
                   </p>
                 </div>
 
-                {/* Skills Verification Section */}
-                {job.skillsVerified && (
-                  <div className="mt-6 rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className="text-xl">⭐</span>
-                      <h3 className="font-bold text-amber-900">
-                        Skills-Verified Candidates Preferred
-                      </h3>
-                    </div>
-                    <p className="mb-3 text-sm text-amber-800">
-                      This employer wants to see your Skills Score Card. Take our 60-minute assessment to stand out.
-                    </p>
-                    <Button variant="outline" size="sm" asChild className="border-amber-300 text-amber-900 hover:bg-amber-100">
-                      <Link href="/skills-assessment">
-                        Learn More
-                      </Link>
-                    </Button>
-                  </div>
-                )}
+                {/* Skills Assessment CTA - Always show for now */}
               </CardContent>
             </Card>
 
@@ -342,8 +323,8 @@ export default function JobDetailPage() {
                 <CardTitle>About the Role</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-secondary-700 leading-relaxed">
-                  {job.fullDescription}
+                <p className="text-secondary-700 leading-relaxed whitespace-pre-wrap">
+                  {job.description}
                 </p>
               </CardContent>
             </Card>
@@ -354,14 +335,9 @@ export default function JobDetailPage() {
                 <CardTitle>Responsibilities</CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-3">
-                  {job.responsibilities.map((item: string, index: number) => (
-                    <li key={index} className="flex gap-3">
-                      <div className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary-600" />
-                      <span className="text-secondary-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-secondary-700 leading-relaxed whitespace-pre-wrap">
+                  {job.responsibilities}
+                </p>
               </CardContent>
             </Card>
 
@@ -371,33 +347,12 @@ export default function JobDetailPage() {
                 <CardTitle>Requirements</CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-3">
-                  {job.requirements.map((item, index) => (
-                    <li key={index} className="flex gap-3">
-                      <div className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-danger-600" />
-                      <span className="text-secondary-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-secondary-700 leading-relaxed whitespace-pre-wrap">
+                  {job.requirements}
+                </p>
               </CardContent>
             </Card>
 
-            {/* Nice to Haves */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Nice to Haves</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {job.niceToHaves.map((item, index) => (
-                    <li key={index} className="flex gap-3">
-                      <div className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-success-600" />
-                      <span className="text-secondary-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
 
             {/* Tech Stack */}
             <Card className="mb-6">
@@ -406,7 +361,7 @@ export default function JobDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {job.tags.map((tag, index) => (
+                  {job.skills && job.skills.map((tag, index) => (
                     <Badge key={index} variant="secondary" size="lg">
                       {tag}
                     </Badge>
@@ -416,25 +371,18 @@ export default function JobDetailPage() {
             </Card>
 
             {/* Benefits */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Benefits & Perks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {job.benefits.map((benefit, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <div className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-success-100">
-                        <div className="h-2 w-2 rounded-full bg-success-600" />
-                      </div>
-                      <span className="text-sm text-secondary-700">
-                        {benefit}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {job.benefits && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Benefits & Perks</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-secondary-700 leading-relaxed whitespace-pre-wrap">
+                    {job.benefits}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar */}

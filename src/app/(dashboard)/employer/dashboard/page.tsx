@@ -193,13 +193,6 @@ export default function EmployerDashboardPage() {
               <Plus className="mr-2 h-4 w-4" />
               Post a Job
             </Link>
-            <Link
-              href="javascript:void(0)"
-              className="inline-flex items-center justify-center rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm font-medium text-secondary-700 shadow-sm transition-all hover:bg-secondary-50 hover:shadow-md"
-            >
-              <Receipt className="mr-2 h-4 w-4" />
-              View Invoices
-            </Link>
           </div>
         </motion.div>
 

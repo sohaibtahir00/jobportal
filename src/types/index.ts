@@ -181,6 +181,7 @@ export interface Job {
   description: string;           // Text, required
   requirements: string;          // Text, required
   responsibilities: string;      // Text, required
+  niche: string;                 // Job category/niche (e.g., "AI/ML", "Data Science")
   type: JobType;                 // UPPERCASE enum, required
   status: JobStatus;             // UPPERCASE enum, default: DRAFT
   location: string;              // Required
