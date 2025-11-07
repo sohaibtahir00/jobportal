@@ -41,10 +41,24 @@ export async function getCandidateProfile(): Promise<CandidateProfileResponse> {
 
     return response.data;
   } catch (error: any) {
-    console.error('[Candidate API] Get profile error:', error);
+    // ✅ DETAILED ERROR LOGGING FOR DEBUGGING
+    console.error('[Candidate API] Get profile error - FULL DETAILS:');
+    console.error('1. Error object:', error);
+    console.error('2. Error message:', error.message);
+    console.error('3. Error code:', error.code);
+    console.error('4. Error name:', error.name);
+    console.error('5. Response data:', error.response?.data);
+    console.error('6. Response status:', error.response?.status);
+    console.error('7. Response statusText:', error.response?.statusText);
+    console.error('8. Response headers:', error.response?.headers);
+    console.error('9. Request URL:', error.config?.url);
+    console.error('10. Request method:', error.config?.method);
+    console.error('11. Request headers:', error.config?.headers);
+    console.error('12. Is network error:', !error.response);
 
     const errorMessage = error.response?.data?.error ||
                         error.response?.data?.message ||
+                        error.message ||
                         'Failed to fetch candidate profile';
 
     // Handle specific error cases
