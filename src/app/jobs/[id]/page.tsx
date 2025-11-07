@@ -389,67 +389,83 @@ export default function JobDetailPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
               {/* Company Info */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>About {job.company}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-center rounded-lg bg-primary-50 p-8">
-                    <div className="text-6xl">{job.logo}</div>
-                  </div>
-
-                  <p className="text-sm text-secondary-700">
-                    {job.companyInfo.description}
-                  </p>
-
-                  <div className="space-y-3 border-t border-secondary-200 pt-4">
-                    <div className="flex items-center gap-3 text-sm">
-                      <Building2 className="h-4 w-4 text-secondary-400" />
-                      <div>
-                        <div className="text-secondary-500">Industry</div>
-                        <div className="font-medium text-secondary-900">
-                          {job.companyInfo.industry}
-                        </div>
-                      </div>
+              {job.employer && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>About {job.employer.companyName}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-center rounded-lg bg-primary-50 p-8">
+                      {job.employer.companyLogo ? (
+                        <img src={job.employer.companyLogo} alt={job.employer.companyName} className="h-20 w-20 object-contain" />
+                      ) : (
+                        <div className="text-6xl">{job.employer.companyName.charAt(0)}</div>
+                      )}
                     </div>
 
-                    <div className="flex items-center gap-3 text-sm">
-                      <Users className="h-4 w-4 text-secondary-400" />
-                      <div>
-                        <div className="text-secondary-500">Company Size</div>
-                        <div className="font-medium text-secondary-900">
-                          {job.companyInfo.size}
+                    {job.employer.description && (
+                      <p className="text-sm text-secondary-700">
+                        {job.employer.description}
+                      </p>
+                    )}
+
+                    <div className="space-y-3 border-t border-secondary-200 pt-4">
+                      {job.employer.industry && (
+                        <div className="flex items-center gap-3 text-sm">
+                          <Building2 className="h-4 w-4 text-secondary-400" />
+                          <div>
+                            <div className="text-secondary-500">Industry</div>
+                            <div className="font-medium text-secondary-900">
+                              {job.employer.industry}
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )}
+
+                      {job.employer.companySize && (
+                        <div className="flex items-center gap-3 text-sm">
+                          <Users className="h-4 w-4 text-secondary-400" />
+                          <div>
+                            <div className="text-secondary-500">Company Size</div>
+                            <div className="font-medium text-secondary-900">
+                              {job.employer.companySize}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {job.employer.location && (
+                        <div className="flex items-center gap-3 text-sm">
+                          <MapPin className="h-4 w-4 text-secondary-400" />
+                          <div>
+                            <div className="text-secondary-500">Location</div>
+                            <div className="font-medium text-secondary-900">
+                              {job.employer.location}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex items-center gap-3 text-sm">
-                      <Calendar className="h-4 w-4 text-secondary-400" />
-                      <div>
-                        <div className="text-secondary-500">Founded</div>
-                        <div className="font-medium text-secondary-900">
-                          {job.companyInfo.founded}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    className="w-full gap-2"
-                    asChild
-                  >
-                    <a
-                      href={job.companyInfo.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Visit Website
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  </Button>
-                </CardContent>
-              </Card>
+                    {job.employer.companyWebsite && (
+                      <Button
+                        variant="outline"
+                        className="w-full gap-2"
+                        asChild
+                      >
+                        <a
+                          href={job.employer.companyWebsite}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Visit Website
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Apply CTA */}
               <Card className="bg-gradient-to-br from-primary-600 to-primary-700 text-white">
@@ -458,7 +474,7 @@ export default function JobDetailPage() {
                     Ready to Apply?
                   </h3>
                   <p className="mb-4 text-sm text-primary-100">
-                    Join {job.company} and make an impact
+                    Join {job.employer?.companyName || 'our team'} and make an impact
                   </p>
                   <Button
                     variant="secondary"
@@ -497,7 +513,8 @@ export default function JobDetailPage() {
           isOpen={isApplicationFormOpen}
           onClose={() => setIsApplicationFormOpen(false)}
           jobTitle={job.title}
-          companyName={job.company}
+          companyName={job.employer?.companyName || 'Company'}
+          jobId={job.id}
         />
           </div>
         </div>
