@@ -53,8 +53,8 @@ export function useAuth() {
   };
 
   const signup = async (data: SignupData) => {
-    // Call backend register API
-    const response = await api.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
+    // Call backend register API - use relative path since api client already has baseURL configured
+    const response = await api.post('/api/auth/register', {
       email: data.email,
       password: data.password,
       name: data.fullName,
