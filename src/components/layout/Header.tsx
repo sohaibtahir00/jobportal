@@ -101,15 +101,10 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
               <div className="h-9 w-24 animate-pulse rounded-md bg-secondary-200" />
             ) : session ? (
               <>
-                {/* Show different button based on role */}
+                {/* Show Post Job button for employers only */}
                 {session.user?.role === "EMPLOYER" && (
                   <Button variant="primary" size="sm" asChild>
                     <Link href="/employer/jobs/new">Post a Job</Link>
-                  </Button>
-                )}
-                {session.user?.role === "CANDIDATE" && (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href="/jobs">Browse Jobs</Link>
                   </Button>
                 )}
 
@@ -145,6 +140,15 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                         >
                           Profile
                         </Link>
+                        {session.user?.role === "CANDIDATE" && (
+                          <Link
+                            href="/jobs"
+                            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            Browse Jobs
+                          </Link>
+                        )}
                         <hr className="my-1 border-secondary-200" />
                         <button
                           onClick={() => {
@@ -154,7 +158,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                           className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
                         >
                           <LogOut className="h-4 w-4" />
-                          Sign Out
+                          Log Out
                         </button>
                       </div>
                     </>
@@ -214,17 +218,11 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                     <p className="text-xs text-primary-700">{session.user?.email}</p>
                   </div>
 
-                  {/* Role-specific action */}
-                  {session.user?.role === "EMPLOYER" ? (
+                  {/* Post Job for Employers */}
+                  {session.user?.role === "EMPLOYER" && (
                     <Button variant="primary" className="w-full justify-center" asChild>
                       <Link href="/employer/jobs/new" onClick={() => setMobileMenuOpen(false)}>
                         Post a Job
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Button variant="outline" className="w-full justify-center" asChild>
-                      <Link href="/jobs" onClick={() => setMobileMenuOpen(false)}>
-                        Browse Jobs
                       </Link>
                     </Button>
                   )}
@@ -240,7 +238,17 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                     </Link>
                   </Button>
 
-                  {/* Sign Out */}
+                  {/* Browse Jobs for Candidates */}
+                  {session.user?.role === "CANDIDATE" && (
+                    <Button variant="outline" className="w-full justify-center" asChild>
+                      <Link href="/jobs" onClick={() => setMobileMenuOpen(false)}>
+                        <Briefcase className="mr-2 h-4 w-4" />
+                        Browse Jobs
+                      </Link>
+                    </Button>
+                  )}
+
+                  {/* Log Out */}
                   <Button
                     variant="ghost"
                     className="w-full justify-center text-red-600 hover:bg-red-50 hover:text-red-700"
@@ -250,7 +258,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                     }}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
+                    Log Out
                   </Button>
                 </>
               ) : (
