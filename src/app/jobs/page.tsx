@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useMemo, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, Briefcase } from "lucide-react";
 import { Button, Badge } from "@/components/ui";
 import { JobCard } from "@/components/jobs/JobCard";
 import { FiltersSidebar, Filters } from "@/components/jobs/FiltersSidebar";
 import { MobileFiltersDrawer } from "@/components/jobs/MobileFiltersDrawer";
-import { mockJobs } from "@/lib/mock-jobs";
+import { useJobs } from "@/hooks/useJobs";
+import type { GetJobsParams } from "@/lib/api/jobs";
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 12;
 
 function JobsContent() {
   const searchParams = useSearchParams();
@@ -42,72 +43,30 @@ function JobsContent() {
     }
   }, [searchParams]);
 
-  // Filter and search jobs
-  const filteredJobs = useMemo(() => {
-    return mockJobs.filter((job) => {
-      // Search query filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch =
-          job.title.toLowerCase().includes(query) ||
-          ((job as any).company?.toLowerCase() || '').includes(query) ||
-          (job.skills || []).some((tag) => tag.toLowerCase().includes(query));
-        if (!matchesSearch) return false;
-      }
+  // Build API query params from filters
+  const queryParams: GetJobsParams = {
+    page: currentPage,
+    limit: ITEMS_PER_PAGE,
+    search: searchQuery || undefined,
+    niche: filters.niches.length > 0 ? filters.niches[0] : undefined,
+    location: filters.locations.length > 0 ? filters.locations[0] : undefined,
+    remoteType: filters.remoteTypes.length > 0
+      ? (filters.remoteTypes[0].toUpperCase() as 'REMOTE' | 'HYBRID' | 'ONSITE')
+      : undefined,
+    experienceLevel: filters.experienceLevels.length > 0
+      ? (filters.experienceLevels[0].toUpperCase() as 'ENTRY' | 'MID' | 'SENIOR' | 'LEAD')
+      : undefined,
+    salaryMin: filters.salaryMin > 0 ? filters.salaryMin : undefined,
+    salaryMax: filters.salaryMax < 300000 ? filters.salaryMax : undefined,
+  };
 
-      // Niche filter (using type instead of niche which doesn't exist)
-      if (filters.niches.length > 0 && !filters.niches.includes((job as any).niche || job.type)) {
-        return false;
-      }
+  // Fetch jobs from API
+  const { data, isLoading, error } = useJobs(queryParams);
 
-      // Location filter
-      if (filters.locations.length > 0) {
-        const matchesLocation = filters.locations.some((filterLoc) => {
-          const filterLower = filterLoc.toLowerCase();
-          const jobLocLower = job.location.toLowerCase();
-          // Check if job location contains the filter location or vice versa
-          return (
-            jobLocLower.includes(filterLower) ||
-            filterLower.includes(jobLocLower) ||
-            filterLower === "remote" && job.location.toLowerCase() === "remote"
-          );
-        });
-        if (!matchesLocation) return false;
-      }
-
-      // Remote type filter
-      if (
-        filters.remoteTypes.length > 0 &&
-        !filters.remoteTypes.includes(job.remote ? 'remote' : 'onsite')
-      ) {
-        return false;
-      }
-
-      // Experience level filter
-      if (
-        filters.experienceLevels.length > 0 &&
-        !filters.experienceLevels.includes(job.experienceLevel)
-      ) {
-        return false;
-      }
-
-      // Salary filter
-      if (job.salaryMax && job.salaryMax < filters.salaryMin) {
-        return false;
-      }
-      if (filters.salaryMax < 300000 && job.salaryMin && job.salaryMin > filters.salaryMax) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [searchQuery, filters]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
+  const jobs = data?.jobs || [];
+  const totalPages = data?.pagination?.totalPages || 1;
+  const totalCount = data?.pagination?.totalCount || 0;
+  const startIndex = ((data?.pagination?.page || 1) - 1) * ITEMS_PER_PAGE;
 
   // Reset to page 1 when filters change
   const handleFilterChange = (newFilters: Filters) => {
@@ -126,7 +85,11 @@ function JobsContent() {
       <section className="bg-gradient-to-r from-primary-600 to-accent-600 text-white py-12">
         <div className="container">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Browse {mockJobs.length}+ AI/ML Jobs
+            {isLoading ? (
+              "Browsing AI/ML Jobs"
+            ) : (
+              `Browse ${totalCount}+ AI/ML Jobs`
+            )}
           </h1>
           <p className="text-xl text-primary-100 mb-6">
             Find your dream role from top companies hiring AI/ML talent
@@ -171,8 +134,11 @@ function JobsContent() {
         {/* Mobile Filter Button */}
         <div className="mb-6 flex items-center justify-between lg:hidden">
           <p className="text-sm text-secondary-600">
-            {filteredJobs.length} {filteredJobs.length === 1 ? "job" : "jobs"}{" "}
-            found
+            {isLoading ? (
+              "Loading..."
+            ) : (
+              `${totalCount} ${totalCount === 1 ? "job" : "jobs"} found`
+            )}
           </p>
           <Button
             variant="outline"
@@ -213,16 +179,44 @@ function JobsContent() {
             {/* Results Header */}
             <div className="mb-6 flex items-center justify-between">
               <p className="text-sm text-secondary-600">
-                Showing {startIndex + 1}-
-                {Math.min(endIndex, filteredJobs.length)} of{" "}
-                {filteredJobs.length} {filteredJobs.length === 1 ? "job" : "jobs"}
+                {isLoading ? (
+                  "Loading jobs..."
+                ) : jobs.length > 0 ? (
+                  `Showing ${startIndex + 1}-${Math.min(startIndex + jobs.length, totalCount)} of ${totalCount} ${totalCount === 1 ? "job" : "jobs"}`
+                ) : (
+                  "No jobs found"
+                )}
               </p>
             </div>
 
-            {/* Job Cards Grid */}
-            {paginatedJobs.length > 0 ? (
+            {/* Loading State */}
+            {isLoading ? (
               <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {paginatedJobs.map((job) => (
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-64 animate-pulse rounded-lg bg-secondary-200"
+                  />
+                ))}
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-red-300 bg-red-50 py-16">
+                <h3 className="mb-2 text-lg font-semibold text-red-900">
+                  Failed to load jobs
+                </h3>
+                <p className="mb-6 text-center text-red-700">
+                  {(error as any)?.response?.data?.message || "Please try again later"}
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => window.location.reload()}
+                >
+                  Retry
+                </Button>
+              </div>
+            ) : jobs.length > 0 ? (
+              <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {jobs.map((job) => (
                   <JobCard key={job.id} job={job} />
                 ))}
               </div>
@@ -325,7 +319,7 @@ function JobsContent() {
         onClose={() => setMobileFiltersOpen(false)}
         filters={filters}
         onFilterChange={handleFilterChange}
-        resultsCount={filteredJobs.length}
+        resultsCount={totalCount}
       />
     </div>
   );
