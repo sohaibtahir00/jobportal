@@ -432,8 +432,40 @@ export interface ChartDataPoint {
 export interface ProfileCompletion {
   percentage: number;
   missingFields: string[];
-  status: "POOR" | "FAIR" | "GOOD" | "EXCELLENT";
+  status: "incomplete" | "basic" | "good" | "excellent";
 }
+
+// Candidate Profile API Response
+export interface CandidateProfileResponse {
+  candidate: Candidate;
+  profileCompletion: ProfileCompletion;
+}
+
+// Update Candidate Profile Request
+export interface UpdateCandidateProfileData {
+  phone?: string | null;
+  resume?: string | null;
+  portfolio?: string | null;
+  linkedIn?: string | null;
+  github?: string | null;
+  bio?: string | null;
+  skills?: string[];
+  experience?: number | null;
+  education?: string | null;
+  location?: string | null;
+  preferredJobType?: JobType | null;
+  expectedSalary?: number | null; // In cents!
+  availability?: boolean;
+}
+
+// Helper functions for salary conversion (cents <-> dollars)
+export const convertSalaryToDollars = (cents: number | null): number | null => {
+  return cents ? cents / 100 : null;
+};
+
+export const convertSalaryToCents = (dollars: number | null): number | null => {
+  return dollars ? Math.round(dollars * 100) : null;
+};
 
 // ============================================================================
 // TYPE ALIASES FOR BACKWARDS COMPATIBILITY
