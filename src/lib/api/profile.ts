@@ -34,10 +34,9 @@ export interface UpdateProfileResponse {
 }
 
 /**
- * GET /api/proxy/profile
+ * GET /api/profile (via axios with session headers)
  * Get current user's profile with role-specific data
  *
- * Uses frontend proxy to avoid cross-domain session issues
  * Returns user data with nested candidate or employer profile
  * based on the user's role.
  *
@@ -46,31 +45,21 @@ export interface UpdateProfileResponse {
  */
 export async function getProfile(): Promise<GetProfileResponse> {
   try {
-    // Use frontend proxy route to handle authentication properly
-    const response = await fetch('/api/proxy/profile', {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to fetch profile' }));
-      throw new Error(error.error || error.message || 'Failed to fetch profile');
-    }
-
-    const data = await response.json();
-    return data;
+    // Use axios client which adds auth headers automatically
+    const response = await api.get<GetProfileResponse>('/api/profile');
+    return response.data;
   } catch (error: any) {
-    const errorMessage = error.message || 'Failed to fetch profile. Please try again.';
+    const errorMessage = error.response?.data?.error ||
+                        error.response?.data?.message ||
+                        error.message ||
+                        'Failed to fetch profile. Please try again.';
 
     // Handle specific errors
-    if (errorMessage.includes('401') || errorMessage.includes('Authentication required')) {
+    if (error.response?.status === 401 || errorMessage.includes('Authentication required')) {
       throw new Error('You must be logged in to view your profile.');
     }
 
-    if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+    if (error.response?.status === 404 || errorMessage.includes('not found')) {
       throw new Error('Profile not found. Please contact support.');
     }
 
@@ -79,10 +68,9 @@ export async function getProfile(): Promise<GetProfileResponse> {
 }
 
 /**
- * PATCH /api/proxy/profile
+ * PATCH /api/profile (via axios with session headers)
  * Update user profile (name, image)
  *
- * Uses frontend proxy to avoid cross-domain session issues
  * Only updates basic user fields. For role-specific updates:
  * - Candidates: use /api/candidates/profile
  * - Employers: use /api/employers/profile
@@ -93,32 +81,21 @@ export async function getProfile(): Promise<GetProfileResponse> {
  */
 export async function updateProfile(data: UpdateProfileRequest): Promise<UpdateProfileResponse> {
   try {
-    // Use frontend proxy route to handle authentication properly
-    const response = await fetch('/api/proxy/profile', {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to update profile' }));
-      throw new Error(error.error || error.message || 'Failed to update profile');
-    }
-
-    const result = await response.json();
-    return result;
+    // Use axios client which adds auth headers automatically
+    const response = await api.patch<UpdateProfileResponse>('/api/profile', data);
+    return response.data;
   } catch (error: any) {
-    const errorMessage = error.message || 'Failed to update profile. Please try again.';
+    const errorMessage = error.response?.data?.error ||
+                        error.response?.data?.message ||
+                        error.message ||
+                        'Failed to update profile. Please try again.';
 
     // Handle specific errors
-    if (errorMessage.includes('401') || errorMessage.includes('Authentication required')) {
+    if (error.response?.status === 401 || errorMessage.includes('Authentication required')) {
       throw new Error('You must be logged in to update your profile.');
     }
 
-    if (errorMessage.includes('400') || errorMessage.includes('validation')) {
+    if (error.response?.status === 400 || errorMessage.includes('validation')) {
       throw new Error(errorMessage);
     }
 
