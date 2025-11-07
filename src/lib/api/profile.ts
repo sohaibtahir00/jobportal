@@ -45,10 +45,24 @@ export interface UpdateProfileResponse {
  */
 export async function getProfile(): Promise<GetProfileResponse> {
   try {
+    console.log('[Profile API] Fetching profile from backend...');
     // Use axios client which adds auth headers automatically
     const response = await api.get<GetProfileResponse>('/api/profile');
+    console.log('[Profile API] Profile fetched successfully:', response.data);
     return response.data;
   } catch (error: any) {
+    console.error('[Profile API] Error fetching profile:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      code: error.code,
+      config: {
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        headers: error.config?.headers,
+      }
+    });
+
     const errorMessage = error.response?.data?.error ||
                         error.response?.data?.message ||
                         error.message ||

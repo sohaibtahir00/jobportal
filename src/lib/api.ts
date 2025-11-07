@@ -18,15 +18,23 @@ export const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     const session = await getSession();
+    console.log('[API Client] Request interceptor - Session:', session?.user ? 'Found' : 'Not found');
     if (session?.user) {
       // Add user info headers for backend authentication
       config.headers['X-User-Id'] = session.user.id;
       config.headers['X-User-Email'] = session.user.email || '';
       config.headers['X-User-Role'] = session.user.role || '';
+      console.log('[API Client] Request headers:', {
+        'X-User-Id': config.headers['X-User-Id'],
+        'X-User-Email': config.headers['X-User-Email'],
+        'X-User-Role': config.headers['X-User-Role'],
+      });
     }
+    console.log('[API Client] Making request to:', `${config.baseURL || ''}${config.url || ''}`);
     return config;
   },
   (error) => {
+    console.error('[API Client] Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
