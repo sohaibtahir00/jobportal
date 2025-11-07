@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   FileText,
   MessageSquare,
@@ -36,15 +37,12 @@ import {
   Badge,
 } from "@/components/ui";
 import {
-  mockDashboardStats,
-  mockUserProfile,
-  mockApplications,
-  mockRecommendedJobs,
   getStatusColor,
   type Application,
 } from "@/lib/mock-dashboard";
 import { getRelativeTime } from "@/lib/date-utils";
 import { formatSalaryRange } from "@/lib/utils";
+import { useCandidateProfile } from "@/hooks/useCandidateProfile";
 
 // CountUp Animation Component
 function CountUp({ end, duration = 2 }: { end: number; duration?: number }) {
@@ -74,22 +72,48 @@ function CountUp({ end, duration = 2 }: { end: number; duration?: number }) {
 }
 
 export default function CandidateDashboardPage() {
-  const stats = mockDashboardStats;
-  const profile = mockUserProfile;
-  const applications = mockApplications;
+  const { data: session } = useSession();
+  const { profile, profileCompletion, isLoading, isError } = useCandidateProfile();
 
-  // Mock data disabled - show placeholder
-  if (!profile) {
+  // Loading state
+  if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-4">Candidate Dashboard</h1>
-        <p className="text-gray-600">Dashboard under construction. Authentication is working!</p>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
+          <p className="mt-4 text-secondary-600">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
-  const recommendedJobs = mockRecommendedJobs;
 
-  const isProfileIncomplete = profile.profileCompletion < 100;
+  // Error state
+  if (isError || !profile) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6">
+          <h2 className="text-xl font-semibold text-red-900">Unable to load dashboard</h2>
+          <p className="mt-2 text-red-700">
+            There was an error loading your dashboard data. Please try refreshing the page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculate stats from profile data
+  const stats = {
+    applicationsSent: 0, // TODO: Fetch from applications endpoint
+    testsTaken: 0, // TODO: Fetch from tests endpoint
+    messages: 0, // TODO: Fetch from messages endpoint
+    profileCompletion: profileCompletion?.percentage ?? 0,
+  };
+
+  // Mock applications and jobs for now - these will be replaced with real API calls
+  const applications: Application[] = [];
+  const recommendedJobs: any[] = [];
+
+  const isProfileIncomplete = (profileCompletion?.percentage ?? 0) < 100;
 
   // Application activity data for chart
   const applicationData = [
@@ -172,7 +196,7 @@ export default function CandidateDashboardPage() {
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-2xl font-bold text-secondary-900 lg:text-3xl">
-            Welcome back, {profile.name.split(" ")[0]}!
+            Welcome back, {session?.user?.name?.split(" ")[0] || "there"}!
           </h1>
           <p className="mt-1 text-secondary-600">
             Here's what's happening with your job search today
@@ -199,12 +223,12 @@ export default function CandidateDashboardPage() {
                           Complete Your Profile
                         </h3>
                         <p className="mt-1 text-sm text-secondary-600">
-                          Your profile is {profile.profileCompletion}% complete.
+                          Your profile is {profileCompletion?.percentage ?? 0}% complete.
                           Add the following to increase your visibility to
                           employers:
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {profile.missingFields.map((field: string) => (
+                          {profileCompletion?.missingFields.map((field: string) => (
                             <Badge
                               key={field}
                               variant="secondary"
@@ -223,12 +247,12 @@ export default function CandidateDashboardPage() {
                         <motion.div
                           className="h-full bg-gradient-to-r from-orange-500 to-amber-500 shadow-sm"
                           initial={{ width: 0 }}
-                          animate={{ width: `${profile.profileCompletion}%` }}
+                          animate={{ width: `${profileCompletion?.percentage ?? 0}%` }}
                           transition={{ duration: 1, delay: 0.3 }}
                         />
                       </div>
                       <p className="mt-1 text-xs font-medium text-secondary-600">
-                        {profile.profileCompletion}% Complete
+                        {profileCompletion?.percentage ?? 0}% Complete
                       </p>
                     </div>
                   </div>
