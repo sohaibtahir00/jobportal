@@ -17,6 +17,7 @@ import {
   Badge,
 } from "@/components/ui";
 import { useCandidateProfile } from "@/hooks/useCandidateProfile";
+import { useCandidateDashboard } from "@/hooks/useDashboard";
 
 // CountUp Animation Component
 function CountUp({ end, duration = 2 }: { end: number; duration?: number }) {
@@ -47,9 +48,11 @@ function CountUp({ end, duration = 2 }: { end: number; duration?: number }) {
 
 export default function CandidateDashboardPage() {
   const { data: session } = useSession();
-  const { profile, profileCompletion, isLoading, isError } = useCandidateProfile();
+  const { profile, profileCompletion, isLoading: profileLoading, isError: profileError } = useCandidateProfile();
+  const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useCandidateDashboard();
 
   // Loading state
+  const isLoading = profileLoading || dashboardLoading;
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -62,7 +65,7 @@ export default function CandidateDashboardPage() {
   }
 
   // Error state
-  if (isError || !profile) {
+  if (profileError || !profile) {
     return (
       <div className="container mx-auto py-8">
         <div className="rounded-lg border border-red-200 bg-red-50 p-6">
@@ -75,11 +78,11 @@ export default function CandidateDashboardPage() {
     );
   }
 
-  // Calculate stats from profile data
+  // Get stats from dashboard API or fallback to zeros
   const stats = {
-    applicationsSent: 0,
-    testsTaken: 0,
-    messages: 0,
+    applicationsSent: dashboardData?.stats?.totalApplications ?? 0,
+    testsTaken: 0, // TODO: Add to backend when tests feature is ready
+    messages: dashboardData?.stats?.messagesUnread ?? 0,
     profileCompletion: profileCompletion?.percentage ?? 0,
   };
 
