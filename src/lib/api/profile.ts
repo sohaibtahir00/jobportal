@@ -45,35 +45,37 @@ export interface UpdateProfileResponse {
  */
 export async function getProfile(): Promise<GetProfileResponse> {
   try {
-    console.log('[Profile API] Fetching profile from backend...');
-    // Use axios client which adds auth headers automatically
-    const response = await api.get<GetProfileResponse>('/api/profile');
-    console.log('[Profile API] Profile fetched successfully:', response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error('[Profile API] Error fetching profile:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-      code: error.code,
-      config: {
-        url: error.config?.url,
-        baseURL: error.config?.baseURL,
-        headers: error.config?.headers,
-      }
+    console.log('[Profile API] Fetching profile via proxy...');
+    // Use Next.js API proxy to avoid CORS issues
+    const response = await fetch('/api/proxy/profile', {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
-    const errorMessage = error.response?.data?.error ||
-                        error.response?.data?.message ||
-                        error.message ||
-                        'Failed to fetch profile. Please try again.';
+    console.log('[Profile API] Proxy response status:', response.status);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to fetch profile' }));
+      throw new Error(error.error || error.message || 'Failed to fetch profile');
+    }
+
+    const data = await response.json();
+    console.log('[Profile API] Profile fetched successfully:', data);
+    return data;
+  } catch (error: any) {
+    console.error('[Profile API] Error fetching profile:', error);
+
+    const errorMessage = error.message || 'Failed to fetch profile. Please try again.';
 
     // Handle specific errors
-    if (error.response?.status === 401 || errorMessage.includes('Authentication required')) {
+    if (errorMessage.includes('Authentication required') || errorMessage.includes('Unauthorized')) {
       throw new Error('You must be logged in to view your profile.');
     }
 
-    if (error.response?.status === 404 || errorMessage.includes('not found')) {
+    if (errorMessage.includes('not found')) {
       throw new Error('Profile not found. Please contact support.');
     }
 
@@ -95,21 +97,38 @@ export async function getProfile(): Promise<GetProfileResponse> {
  */
 export async function updateProfile(data: UpdateProfileRequest): Promise<UpdateProfileResponse> {
   try {
-    // Use axios client which adds auth headers automatically
-    const response = await api.patch<UpdateProfileResponse>('/api/profile', data);
-    return response.data;
+    console.log('[Profile API] Updating profile via proxy...');
+    // Use Next.js API proxy to avoid CORS issues
+    const response = await fetch('/api/proxy/profile', {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    console.log('[Profile API] Proxy update response status:', response.status);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to update profile' }));
+      throw new Error(error.error || error.message || 'Failed to update profile');
+    }
+
+    const result = await response.json();
+    console.log('[Profile API] Profile updated successfully:', result);
+    return result;
   } catch (error: any) {
-    const errorMessage = error.response?.data?.error ||
-                        error.response?.data?.message ||
-                        error.message ||
-                        'Failed to update profile. Please try again.';
+    console.error('[Profile API] Error updating profile:', error);
+
+    const errorMessage = error.message || 'Failed to update profile. Please try again.';
 
     // Handle specific errors
-    if (error.response?.status === 401 || errorMessage.includes('Authentication required')) {
+    if (errorMessage.includes('Authentication required') || errorMessage.includes('Unauthorized')) {
       throw new Error('You must be logged in to update your profile.');
     }
 
-    if (error.response?.status === 400 || errorMessage.includes('validation')) {
+    if (errorMessage.includes('validation')) {
       throw new Error(errorMessage);
     }
 
