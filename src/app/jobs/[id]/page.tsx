@@ -16,34 +16,53 @@ import {
   ArrowLeft,
   Share2,
   Bookmark,
+  Loader2,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { getJobDetails } from "@/lib/job-details";
-import { mockJobs } from "@/lib/mock-jobs";
 import { formatCurrency } from "@/lib/utils";
 import { JobCard } from "@/components/jobs/JobCard";
 import ApplicationForm from "@/components/jobs/ApplicationForm";
-import { getJobById } from "@/lib/mockData";
 import { generateJobPostingJsonLd } from "@/lib/seo";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { useJob, useJobs } from "@/hooks/useJobs";
 
 export default function JobDetailPage() {
   const params = useParams();
-  const jobId = parseInt(params.id as string);
-  const job: any = getJobDetails(jobId); // Cast to avoid type issues with mock JobDetail
+  const jobId = params.id as string;
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
   const [jsonLd, setJsonLd] = useState<Record<string, unknown> | null>(null);
 
+  // Fetch job from API
+  const { data: job, isLoading, error } = useJob(jobId);
+
+  // Fetch similar jobs (same niche)
+  const { data: similarJobsData } = useJobs({
+    niche: job?.niche,
+    limit: 3,
+  });
+
   // Generate JSON-LD structured data for the job
   useEffect(() => {
-    const jobData = getJobById(`job-${jobId}`);
-    if (jobData) {
-      const structuredData = generateJobPostingJsonLd(jobData);
+    if (job) {
+      const structuredData = generateJobPostingJsonLd(job);
       setJsonLd(structuredData);
     }
-  }, [jobId]);
+  }, [job]);
 
-  if (!job) {
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="container py-16">
+        <div className="mx-auto max-w-2xl text-center">
+          <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary-600" />
+          <p className="text-lg text-secondary-600">Loading job details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error or Not Found state
+  if (error || !job) {
     return (
       <div className="container py-16">
         <div className="mx-auto max-w-2xl text-center">
@@ -51,7 +70,9 @@ export default function JobDetailPage() {
             Job Not Found
           </h1>
           <p className="mb-8 text-lg text-secondary-600">
-            The job you're looking for doesn't exist or has been removed.
+            {error
+              ? (error as any)?.response?.data?.message || "Failed to load job details"
+              : "The job you're looking for doesn't exist or has been removed."}
           </p>
           <Button variant="primary" asChild>
             <Link href="/jobs">Browse All Jobs</Link>
@@ -61,8 +82,8 @@ export default function JobDetailPage() {
     );
   }
 
-  // Get similar jobs (same type, excluding current job)
-  const similarJobs = mockJobs.slice(0, 3); // Mock jobs disabled, returns empty array
+  // Get similar jobs (excluding current job)
+  const similarJobs = similarJobsData?.jobs?.filter((j) => j.id !== jobId) || [];
 
   return (
     <>
