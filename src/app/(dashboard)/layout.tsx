@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   Briefcase,
@@ -14,8 +15,9 @@ import {
   Users,
   Receipt,
   BarChart3,
+  Loader2,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 // This will be replaced with actual auth check later
@@ -61,17 +63,37 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Detect role from pathname
+  // Detect role from pathname or session
   const isEmployer = pathname.startsWith("/employer");
-  const MOCK_USER = isEmployer ? MOCK_EMPLOYER_USER : MOCK_CANDIDATE_USER;
   const navItems = isEmployer ? employerNavItems : candidateNavItems;
 
-  // TODO: Replace with actual authentication check
-  // const { user, isLoading } = useAuth();
-  // if (isLoading) return <LoadingSpinner />;
-  // if (!user) redirect('/login');
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  // Loading state
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary-50">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary-600" />
+          <p className="mt-4 text-secondary-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not authenticated
+  if (!session) {
+    return null; // Will redirect via useEffect
+  }
 
   return (
     <div className="min-h-screen bg-secondary-50">
@@ -109,18 +131,20 @@ export default function DashboardLayout({
             <div className="flex items-center space-x-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600">
                 <span className="text-sm font-semibold">
-                  {MOCK_USER.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
+                  {session.user?.name
+                    ? session.user.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                    : session.user?.email?.[0].toUpperCase()}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="truncate text-sm font-medium text-secondary-900">
-                  {MOCK_USER.name}
+                  {session.user?.name || "User"}
                 </p>
                 <p className="truncate text-xs text-secondary-500">
-                  {MOCK_USER.email}
+                  {session.user?.email}
                 </p>
               </div>
             </div>
@@ -151,7 +175,10 @@ export default function DashboardLayout({
 
           {/* Logout */}
           <div className="border-t border-secondary-200 p-3">
-            <button className="flex w-full items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium text-secondary-700 transition-colors hover:bg-secondary-50">
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="flex w-full items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+            >
               <LogOut className="h-5 w-5" />
               <span>Log Out</span>
             </button>
