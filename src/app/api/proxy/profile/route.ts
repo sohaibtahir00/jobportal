@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
+// Backend URL configuration
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_URL || 'http://localhost:3001';
+
+console.log('[Proxy] Backend URL:', BACKEND_URL);
 
 /**
  * GET /api/proxy/profile
