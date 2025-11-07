@@ -16,6 +16,7 @@ import {
   Receipt,
   Sparkles,
   Calendar,
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -26,14 +27,7 @@ import {
   CardContent,
   Badge,
 } from "@/components/ui";
-import {
-  mockEmployerStats,
-  mockActiveJobs,
-  mockRecentApplications,
-  mockApplicationsOverTime,
-  getApplicationStatusColor,
-  getJobStatusColor,
-} from "@/lib/mock-employer-dashboard";
+import { useEmployerDashboard } from "@/hooks/useDashboard";
 import { getRelativeTime } from "@/lib/date-utils";
 import {
   LineChart,
@@ -74,10 +68,68 @@ function CountUp({ end, duration = 2 }: { end: number; duration?: number }) {
 }
 
 export default function EmployerDashboardPage() {
-  const stats = mockEmployerStats;
-  const activeJobs = mockActiveJobs;
-  const recentApplications = mockRecentApplications;
-  const chartData = mockApplicationsOverTime;
+  const { data, isLoading, error } = useEmployerDashboard();
+
+  // Helper functions for status colors
+  const getApplicationStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' };
+      case 'REVIEWED':
+        return { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Reviewed' };
+      case 'SHORTLISTED':
+        return { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Shortlisted' };
+      case 'REJECTED':
+        return { bg: 'bg-red-100', text: 'text-red-800', label: 'Rejected' };
+      case 'HIRED':
+        return { bg: 'bg-green-100', text: 'text-green-800', label: 'Hired' };
+      default:
+        return { bg: 'bg-gray-100', text: 'text-gray-800', label: status };
+    }
+  };
+
+  const getJobStatusColor = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':
+        return { bg: 'bg-green-100', text: 'text-green-800', label: 'Active' };
+      case 'CLOSED':
+        return { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Closed' };
+      case 'DRAFT':
+        return { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Draft' };
+      case 'EXPIRED':
+        return { bg: 'bg-red-100', text: 'text-red-800', label: 'Expired' };
+      default:
+        return { bg: 'bg-gray-100', text: 'text-gray-800', label: status };
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <p className="text-red-600 mb-4">Failed to load dashboard data</p>
+        <p className="text-sm text-secondary-600">{(error as any)?.message || 'Please try again later'}</p>
+      </div>
+    );
+  }
+
+  const stats = data?.stats || {
+    activeJobs: 0,
+    totalApplications: 0,
+    filledPositions: 0,
+    pendingInvoices: 0,
+  };
+
+  const activeJobs = data?.activeJobs || [];
+  const recentApplications = data?.recentApplications || [];
+  const chartData = data?.analytics?.applicationTrend || [];
 
   // Stat cards data with gradients
   const statCards = [
@@ -93,7 +145,7 @@ export default function EmployerDashboardPage() {
       icon: <FileText className="h-6 w-6 text-white" />,
       label: "Total Applications",
       value: stats.totalApplications,
-      trend: "46 new this week",
+      trend: "New applications",
       trendUp: true,
       gradient: "from-purple-500 to-purple-600",
     },
@@ -101,7 +153,7 @@ export default function EmployerDashboardPage() {
       icon: <CheckCircle2 className="h-6 w-6 text-white" />,
       label: "Filled Positions",
       value: stats.filledPositions,
-      trend: "83% hire rate",
+      trend: "Hired candidates",
       trendUp: true,
       gradient: "from-green-500 to-emerald-600",
     },
@@ -109,7 +161,7 @@ export default function EmployerDashboardPage() {
       icon: <FileWarning className="h-6 w-6 text-white" />,
       label: "Pending Invoices",
       value: stats.pendingInvoices,
-      trend: "$48,600 total",
+      trend: "Awaiting payment",
       trendUp: false,
       gradient: "from-orange-500 to-amber-600",
     },
@@ -218,45 +270,42 @@ export default function EmployerDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis
-                      dataKey="date"
-                      stroke="#9ca3af"
-                      fontSize={12}
-                      tickLine={false}
-                    />
-                    <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "white",
-                        border: "none",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                      }}
-                    />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="applications"
-                      stroke="#3b82f6"
-                      strokeWidth={3}
-                      dot={{ fill: "#3b82f6", r: 4 }}
-                      activeDot={{ r: 6 }}
-                      name="Applications"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="interviews"
-                      stroke="#7c3aed"
-                      strokeWidth={3}
-                      dot={{ fill: "#7c3aed", r: 4 }}
-                      activeDot={{ r: 6 }}
-                      name="Interviews"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                {chartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis
+                        dataKey="date"
+                        stroke="#9ca3af"
+                        fontSize={12}
+                        tickLine={false}
+                      />
+                      <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "white",
+                          border: "none",
+                          borderRadius: "8px",
+                          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        }}
+                      />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="count"
+                        stroke="#3b82f6"
+                        strokeWidth={3}
+                        dot={{ fill: "#3b82f6", r: 4 }}
+                        activeDot={{ r: 6 }}
+                        name="Applications"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-secondary-500">
+                    No application data available
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -288,61 +337,58 @@ export default function EmployerDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {activeJobs.map((job, index) => {
-                    const statusInfo = getJobStatusColor(job.status);
-                    return (
-                      <motion.div
-                        key={job.id}
-                        className="flex flex-col gap-3 rounded-lg border border-white/50 bg-gradient-to-r from-white to-gray-50/50 p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: 0.6 + index * 0.05 }}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <Link
-                              href={`/employer/jobs/${job.id}`}
-                              className="font-semibold text-secondary-900 transition-colors hover:text-primary-600"
-                            >
-                              {job.title}
-                            </Link>
-                            <p className="mt-1 text-sm text-secondary-600">
-                              {job.department}
-                            </p>
-                          </div>
-                          <Badge
-                            className={`${(statusInfo as any).bg} ${(statusInfo as any).text} border-none shadow-sm`}
-                          >
-                            {(statusInfo as any).label}
-                          </Badge>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-secondary-600">
-                          <span className="flex items-center">
-                            <Users className="mr-1.5 h-4 w-4" />
-                            {job.applicationsCount} applications
-                            {job.newApplications > 0 && (
-                              <Badge
-                                variant="primary"
-                                size="sm"
-                                className="ml-2 bg-gradient-to-r from-primary-500 to-accent-500 border-none shadow-sm"
+                  {activeJobs.length > 0 ? (
+                    activeJobs.map((job: any, index: number) => {
+                      const statusInfo = getJobStatusColor(job.status);
+                      return (
+                        <motion.div
+                          key={job.id}
+                          className="flex flex-col gap-3 rounded-lg border border-white/50 bg-gradient-to-r from-white to-gray-50/50 p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.6 + index * 0.05 }}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <Link
+                                href={`/jobs/${job.id}`}
+                                className="font-semibold text-secondary-900 transition-colors hover:text-primary-600"
                               >
-                                +{job.newApplications} new
-                              </Badge>
-                            )}
-                          </span>
-                          <span className="flex items-center">
-                            <Eye className="mr-1.5 h-4 w-4" />
-                            {job.views.toLocaleString()} views
-                          </span>
-                          <span className="flex items-center">
-                            <Calendar className="mr-1.5 h-4 w-4" />
-                            {getRelativeTime(new Date(job.postedDate))}
-                          </span>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                                {job.title}
+                              </Link>
+                              <p className="mt-1 text-sm text-secondary-600">
+                                {job.location}
+                              </p>
+                            </div>
+                            <Badge
+                              className={`${(statusInfo as any).bg} ${(statusInfo as any).text} border-none shadow-sm`}
+                            >
+                              {(statusInfo as any).label}
+                            </Badge>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-secondary-600">
+                            <span className="flex items-center">
+                              <Users className="mr-1.5 h-4 w-4" />
+                              {job._count?.applications || 0} applications
+                            </span>
+                            <span className="flex items-center">
+                              <Eye className="mr-1.5 h-4 w-4" />
+                              {job.views?.toLocaleString() || 0} views
+                            </span>
+                            <span className="flex items-center">
+                              <Calendar className="mr-1.5 h-4 w-4" />
+                              {getRelativeTime(new Date(job.createdAt))}
+                            </span>
+                          </div>
+                        </motion.div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-8 text-secondary-500">
+                      No active jobs found. Create your first job posting!
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -373,58 +419,55 @@ export default function EmployerDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {recentApplications.map((application, index) => {
-                    const statusInfo = getApplicationStatusColor(
-                      application.status
-                    );
-                    return (
-                      <motion.div
-                        key={application.id}
-                        className="flex items-center justify-between rounded-lg border border-white/50 bg-gradient-to-r from-white to-gray-50/50 p-3 shadow-sm transition-all hover:shadow-md"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: 0.7 + index * 0.05 }}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium text-secondary-900 truncate">
-                              {application.candidateName}
-                            </p>
-                            {application.matchScore &&
-                              application.matchScore >= 85 && (
-                                <div className="flex items-center gap-1 rounded bg-gradient-to-r from-green-50 to-emerald-50 px-1.5 py-0.5 shadow-sm">
-                                  <Sparkles className="h-3 w-3 text-green-600" />
-                                  <span className="text-xs font-semibold text-green-700">
-                                    {application.matchScore}%
-                                  </span>
-                                </div>
-                              )}
-                          </div>
-                          <p className="mt-0.5 text-xs text-secondary-600 truncate">
-                            {application.jobTitle}
-                          </p>
-                          <div className="mt-1 flex items-center gap-2">
-                            <Badge
-                              className={`${(statusInfo as any).bg} ${(statusInfo as any).text} border-none shadow-sm`}
-                            >
-                              {(statusInfo as any).label}
-                            </Badge>
-                            <span className="text-xs text-secondary-500">
-                              {getRelativeTime(
-                                new Date(application.appliedDate)
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                        <Link
-                          href={`/employer/applications/${application.id}`}
-                          className="ml-3 flex-shrink-0 text-primary-600 transition-colors hover:text-primary-700"
+                  {recentApplications.length > 0 ? (
+                    recentApplications.map((application: any, index: number) => {
+                      const statusInfo = getApplicationStatusColor(
+                        application.status
+                      );
+                      return (
+                        <motion.div
+                          key={application.id}
+                          className="flex items-center justify-between rounded-lg border border-white/50 bg-gradient-to-r from-white to-gray-50/50 p-3 shadow-sm transition-all hover:shadow-md"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.7 + index * 0.05 }}
                         >
-                          <ChevronRight className="h-5 w-5" />
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-secondary-900 truncate">
+                                {application.candidate?.user?.name || 'Unknown Candidate'}
+                              </p>
+                            </div>
+                            <p className="mt-0.5 text-xs text-secondary-600 truncate">
+                              {application.job?.title || 'Unknown Position'}
+                            </p>
+                            <div className="mt-1 flex items-center gap-2">
+                              <Badge
+                                className={`${(statusInfo as any).bg} ${(statusInfo as any).text} border-none shadow-sm`}
+                              >
+                                {(statusInfo as any).label}
+                              </Badge>
+                              <span className="text-xs text-secondary-500">
+                                {getRelativeTime(
+                                  new Date(application.createdAt)
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                          <Link
+                            href={`/employer/applications/${application.id}`}
+                            className="ml-3 flex-shrink-0 text-primary-600 transition-colors hover:text-primary-700"
+                          >
+                            <ChevronRight className="h-5 w-5" />
+                          </Link>
+                        </motion.div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-8 text-secondary-500">
+                      No recent applications
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

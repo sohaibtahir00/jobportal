@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { mockJobs } from "@/lib/mockData";
 
 export const metadata: Metadata = {
-  title: `Browse ${mockJobs.length} Jobs in AI/ML, Data Science & Tech`,
+  title: "Browse Jobs in AI/ML, Data Science & Tech",
   description:
     "Find your next opportunity in AI, Machine Learning, Data Science, Healthcare IT, FinTech, Cybersecurity, and Cloud Computing. Filter by experience level, location, remote type, and salary.",
   openGraph: {
-    title: `Browse ${mockJobs.length} Jobs in AI/ML, Data Science & Tech`,
+    title: "Browse Jobs in AI/ML, Data Science & Tech",
     description:
       "Find your next opportunity in AI, Machine Learning, Data Science, Healthcare IT, FinTech, Cybersecurity, and Cloud Computing.",
     type: "website",
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `Browse ${mockJobs.length} Jobs in AI/ML, Data Science & Tech`,
+    title: "Browse Jobs in AI/ML, Data Science & Tech",
     description:
       "Find your next opportunity in AI, Machine Learning, Data Science, Healthcare IT, FinTech, Cybersecurity, and Cloud Computing.",
     images: ["/og-image-jobs.png"],
