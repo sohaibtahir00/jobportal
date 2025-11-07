@@ -5,7 +5,8 @@ import { authOptions } from "@/lib/auth";
 // Backend URL configuration
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_URL || 'https://job-portal-backend-production-cd05.up.railway.app';
 
-console.log('[Proxy] Backend URL:', BACKEND_URL);
+console.log('[Proxy Profile] Backend URL:', BACKEND_URL);
+console.log('[Proxy Profile] Route initialized');
 
 /**
  * GET /api/proxy/profile
