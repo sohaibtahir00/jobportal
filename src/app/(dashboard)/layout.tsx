@@ -38,7 +38,7 @@ const MOCK_EMPLOYER_USER = {
 const candidateNavItems = [
   { href: "/candidate/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/candidate/profile", label: "My Profile", icon: FileText },
-  { href: "/jobs", label: "Browse Jobs", icon: Briefcase },
+  { href: "/candidate/jobs", label: "Browse Jobs", icon: Briefcase },
   // Coming soon pages:
   // { href: "/candidate/applications", label: "My Applications", icon: FileText },
   // { href: "/candidate/messages", label: "Messages", icon: MessageSquare },

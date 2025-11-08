@@ -142,17 +142,15 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                         >
                           Dashboard
                         </Link>
-                        <Link
-                          href={
-                            session.user?.role === "CANDIDATE"
-                              ? "/candidate/profile"
-                              : "/employer/profile"
-                          }
-                          className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          Profile
-                        </Link>
+                        {session.user?.role === "CANDIDATE" && (
+                          <Link
+                            href="/candidate/profile"
+                            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            My Profile
+                          </Link>
+                        )}
                         {session.user?.role === "CANDIDATE" && (
                           <Link
                             href="/jobs"
@@ -160,6 +158,24 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                             onClick={() => setUserMenuOpen(false)}
                           >
                             Browse Jobs
+                          </Link>
+                        )}
+                        {session.user?.role === "EMPLOYER" && (
+                          <Link
+                            href="/employer/applicants"
+                            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            Applicants
+                          </Link>
+                        )}
+                        {session.user?.role === "EMPLOYER" && (
+                          <Link
+                            href="/employer/claim"
+                            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            Claim Jobs
                           </Link>
                         )}
                         <hr className="my-1 border-secondary-200" />
@@ -270,21 +286,68 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                     </Link>
                   </Button>
 
-                  {/* Browse Jobs for Candidates */}
+                  {/* Profile and Browse Jobs for Candidates */}
                   {session.user?.role === "CANDIDATE" && (
-                    <Button
-                      variant="outline"
-                      className="w-full justify-center"
-                      asChild
-                    >
-                      <Link
-                        href="/jobs"
-                        onClick={() => setMobileMenuOpen(false)}
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-center"
+                        asChild
                       >
-                        <Briefcase className="mr-2 h-4 w-4" />
-                        Browse Jobs
-                      </Link>
-                    </Button>
+                        <Link
+                          href="/candidate/profile"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          My Profile
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-center"
+                        asChild
+                      >
+                        <Link
+                          href="/jobs"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <Briefcase className="mr-2 h-4 w-4" />
+                          Browse Jobs
+                        </Link>
+                      </Button>
+                    </>
+                  )}
+
+                  {/* Applicants and Claim Jobs for Employers */}
+                  {session.user?.role === "EMPLOYER" && (
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-center"
+                        asChild
+                      >
+                        <Link
+                          href="/employer/applicants"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          Applicants
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-center"
+                        asChild
+                      >
+                        <Link
+                          href="/employer/claim"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <Briefcase className="mr-2 h-4 w-4" />
+                          Claim Jobs
+                        </Link>
+                      </Button>
+                    </>
                   )}
 
                   {/* Log Out */}
