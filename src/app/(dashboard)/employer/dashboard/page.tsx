@@ -2,20 +2,27 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   Briefcase,
   FileText,
   CheckCircle2,
-  TrendingUp,
-  TrendingDown,
-  Eye,
   Users,
-  ChevronRight,
+  DollarSign,
   Plus,
   Calendar,
   Loader2,
+  Eye,
+  Clock,
+  Award,
+  AlertCircle,
+  TrendingUp,
+  Phone,
+  Target,
+  X,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import CountUp from "react-countup";
 import {
   Card,
   CardHeader,
@@ -23,87 +30,79 @@ import {
   CardDescription,
   CardContent,
   Badge,
+  Button,
+  Progress,
 } from "@/components/ui";
 import { useEmployerDashboard } from "@/hooks/useDashboard";
-import { getRelativeTime } from "@/lib/date-utils";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 
-// CountUp Animation Component
-function CountUp({ end, duration = 2 }: { end: number; duration?: number }) {
-  const [count, setCount] = useState(0);
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
 
-  useEffect(() => {
-    let startTime: number;
-    let animationFrame: number;
+function formatRelativeTime(date: string | Date): string {
+  const now = new Date();
+  const past = new Date(date);
+  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
 
-    const animate = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = (timestamp - startTime) / (duration * 1000);
-
-      if (progress < 1) {
-        setCount(Math.floor(end * progress));
-        animationFrame = requestAnimationFrame(animate);
-      } else {
-        setCount(end);
-      }
-    };
-
-    animationFrame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationFrame);
-  }, [end, duration]);
-
-  return <span>{count}</span>;
+  if (diffInSeconds < 60) return "just now";
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  return past.toLocaleDateString();
 }
 
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+const statusColors: Record<string, string> = {
+  PENDING: "bg-yellow-100 text-yellow-800 border-yellow-300",
+  REVIEWED: "bg-blue-100 text-blue-800 border-blue-300",
+  SHORTLISTED: "bg-purple-100 text-purple-800 border-purple-300",
+  INTERVIEW_SCHEDULED: "bg-indigo-100 text-indigo-800 border-indigo-300",
+  INTERVIEWED: "bg-cyan-100 text-cyan-800 border-cyan-300",
+  OFFERED: "bg-green-100 text-green-800 border-green-300",
+  ACCEPTED: "bg-emerald-100 text-emerald-800 border-emerald-300",
+  REJECTED: "bg-red-100 text-red-800 border-red-300",
+  WITHDRAWN: "bg-gray-100 text-gray-800 border-gray-300",
+};
+
+const jobStatusColors: Record<string, string> = {
+  ACTIVE: "bg-green-100 text-green-800 border-green-300",
+  DRAFT: "bg-yellow-100 text-yellow-800 border-yellow-300",
+  CLOSED: "bg-gray-100 text-gray-800 border-gray-300",
+  FILLED: "bg-blue-100 text-blue-800 border-blue-300",
+  EXPIRED: "bg-red-100 text-red-800 border-red-300",
+};
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
 export default function EmployerDashboardPage() {
+  const { data: session } = useSession();
   const { data, isLoading, error } = useEmployerDashboard();
 
-  // Helper functions for status colors
-  const getApplicationStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' };
-      case 'REVIEWED':
-        return { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Reviewed' };
-      case 'SHORTLISTED':
-        return { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Shortlisted' };
-      case 'REJECTED':
-        return { bg: 'bg-red-100', text: 'text-red-800', label: 'Rejected' };
-      case 'HIRED':
-        return { bg: 'bg-green-100', text: 'text-green-800', label: 'Hired' };
-      default:
-        return { bg: 'bg-gray-100', text: 'text-gray-800', label: status };
-    }
-  };
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [showClaimReminder, setShowClaimReminder] = useState(true);
 
-  const getJobStatusColor = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return { bg: 'bg-green-100', text: 'text-green-800', label: 'Active' };
-      case 'CLOSED':
-        return { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Closed' };
-      case 'DRAFT':
-        return { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Draft' };
-      case 'EXPIRED':
-        return { bg: 'bg-red-100', text: 'text-red-800', label: 'Expired' };
-      default:
-        return { bg: 'bg-gray-100', text: 'text-gray-800', label: status };
-    }
-  };
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary-600 mx-auto" />
+          <p className="mt-4 text-secondary-600">Loading your dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -111,414 +110,580 @@ export default function EmployerDashboardPage() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <p className="text-red-600 mb-4">Failed to load dashboard data</p>
-        <p className="text-sm text-secondary-600">{(error as any)?.message || 'Please try again later'}</p>
+        <AlertCircle className="h-12 w-12 text-red-600 mb-4" />
+        <p className="text-red-600 mb-2 text-lg font-semibold">Failed to load dashboard</p>
+        <p className="text-sm text-secondary-600">{(error as any)?.message || "Please try again later"}</p>
       </div>
     );
   }
 
-  const stats = data?.stats || {
+  // Extract data from API response
+  const employer = data?.employer || { companyName: "Your Company" };
+  const summary = data?.summary || {
     activeJobs: 0,
     totalApplications: 0,
-    newApplications: 0,
-    interviewsScheduled: 0,
-    totalViews: 0,
+    pendingReviews: 0,
+    activePlacements: 0,
+    totalSpent: 0,
+    pendingPayments: 0,
   };
-
-  const activeJobs = data?.activeJobs || [];
+  const applicationStats = data?.applicationStats || {
+    total: 0,
+    pending: 0,
+    reviewed: 0,
+    shortlisted: 0,
+    interviewScheduled: 0,
+    interviewed: 0,
+    offered: 0,
+    accepted: 0,
+    rejected: 0,
+  };
+  const topJobs = data?.topJobs || [];
   const recentApplications = data?.recentApplications || [];
-  const chartData = data?.analytics?.applicationTrend || [];
+  const candidateQualityMetrics = data?.candidateQualityMetrics || {
+    totalCandidatesWithTests: 0,
+    elite: 0,
+    advanced: 0,
+    intermediate: 0,
+    beginner: 0,
+  };
+  const quickActions = data?.quickActions || [];
+  const applicationsByJob = data?.applicationsByJob || [];
 
-  // Stat cards data with gradients
+  // Calculate successful hires (accepted applications)
+  const successfulHires = applicationStats.accepted || 0;
+
+  // Calculate skills verification percentage
+  const totalApplicantsWithTests = candidateQualityMetrics.totalCandidatesWithTests || 0;
+  const skillsVerificationPercentage = summary.totalApplications > 0
+    ? Math.round((totalApplicantsWithTests / summary.totalApplications) * 100)
+    : 0;
+
+  // Check for unclaimed jobs (placeholder - would need backend support)
+  const unclaimedJobs = 0;
+
+  // ============================================================================
+  // STAT CARDS DATA
+  // ============================================================================
+
   const statCards = [
     {
-      icon: <Briefcase className="h-6 w-6 text-white" />,
-      label: "Active Jobs",
-      value: stats.activeJobs || 0,
-      trend: "Job postings",
-      trendUp: true,
+      icon: Briefcase,
+      label: "Active Job Postings",
+      value: summary.activeJobs || 0,
       gradient: "from-blue-500 to-blue-600",
+      link: "/employer/jobs",
     },
     {
-      icon: <FileText className="h-6 w-6 text-white" />,
+      icon: FileText,
       label: "Total Applications",
-      value: stats.totalApplications || 0,
-      trend: `${stats.newApplications || 0} new`,
-      trendUp: true,
+      value: summary.totalApplications || 0,
+      badge: summary.pendingReviews > 0 ? `${summary.pendingReviews} new` : null,
       gradient: "from-purple-500 to-purple-600",
+      link: "/employer/applications",
     },
     {
-      icon: <CheckCircle2 className="h-6 w-6 text-white" />,
-      label: "Interviews Scheduled",
-      value: stats.interviewsScheduled || 0,
-      trend: "Upcoming interviews",
-      trendUp: true,
+      icon: Users,
+      label: "Candidates Interviewed",
+      value: (applicationStats.interviewed || 0) + (applicationStats.interviewScheduled || 0),
       gradient: "from-green-500 to-emerald-600",
     },
     {
-      icon: <Eye className="h-6 w-6 text-white" />,
-      label: "Total Views",
-      value: stats.totalViews || 0,
-      trend: "Job post views",
-      trendUp: true,
+      icon: CheckCircle2,
+      label: "Successful Hires",
+      value: successfulHires,
+      gradient: "from-emerald-500 to-teal-600",
+    },
+    {
+      icon: DollarSign,
+      label: "Pending Invoices",
+      value: summary.pendingPayments || 0,
+      formatted: formatCurrency(summary.pendingPayments || 0),
       gradient: "from-orange-500 to-amber-600",
+      link: "/employer/payments",
     },
   ];
 
+  // ============================================================================
+  // RENDER
+  // ============================================================================
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <div className="space-y-6">
-        {/* Header */}
+      <div className="space-y-6 pb-12">
+        {/* ====================================================================== */}
+        {/* WELCOME HEADER */}
+        {/* ====================================================================== */}
         <motion.div
-          className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="bg-gradient-to-r from-primary-600 to-blue-700 rounded-2xl shadow-2xl overflow-hidden"
         >
-          <div>
-            <h1 className="text-2xl font-bold text-secondary-900 lg:text-3xl">
-              Employer Dashboard
-            </h1>
-            <p className="mt-1 text-secondary-600">
-              Manage your job postings and track applications
-            </p>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/employer/jobs/new"
-              className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-primary-600 to-accent-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-primary-500/30 transition-all hover:from-primary-700 hover:to-accent-700 hover:shadow-xl hover:-translate-y-0.5"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Post a Job
-            </Link>
+          <div className="px-6 py-8 lg:px-10 lg:py-10">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                  Welcome back, {employer.companyName}!
+                </h1>
+                <p className="text-blue-100 text-lg">
+                  {currentTime.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
           </div>
         </motion.div>
 
-        {/* Animated Stats Cards */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {statCards.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              className="relative overflow-hidden rounded-xl border border-white/20 bg-white/80 p-6 shadow-md backdrop-blur-sm transition-all hover:shadow-xl group"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              {/* Gradient Icon */}
-              <div
-                className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${stat.gradient} shadow-md`}
+        {/* ====================================================================== */}
+        {/* QUICK STATS CARDS */}
+        {/* ====================================================================== */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {statCards.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
               >
-                {stat.icon}
-              </div>
-
-              {/* Stats */}
-              <div className="mb-1 text-3xl font-bold text-gray-900">
-                <CountUp end={stat.value} />
-              </div>
-              <div className="mb-2 text-sm font-medium text-gray-600">
-                {stat.label}
-              </div>
-
-              {/* Trend Indicator */}
-              <div
-                className={`flex items-center text-xs font-medium ${
-                  stat.trendUp ? "text-green-600" : "text-gray-500"
-                }`}
-              >
-                {stat.trendUp ? (
-                  <TrendingUp className="mr-1 h-3 w-3" />
-                ) : (
-                  <TrendingDown className="mr-1 h-3 w-3" />
-                )}
-                {stat.trend}
-              </div>
-
-              {/* Hover Gradient Overlay */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 transition-opacity group-hover:opacity-5`}
-              />
-            </motion.div>
-          ))}
+                <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary-200 cursor-pointer h-full">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div
+                        className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${stat.gradient} shadow-lg`}
+                      >
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      {stat.badge && (
+                        <Badge variant="danger" className="bg-red-100 text-red-700 border-red-300">
+                          {stat.badge}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm font-medium text-secondary-600 mb-1">{stat.label}</p>
+                    <p className="text-3xl font-bold text-secondary-900">
+                      {stat.formatted || <CountUp end={stat.value} duration={2} />}
+                    </p>
+                    {stat.link && (
+                      <Link
+                        href={stat.link}
+                        className="text-xs text-primary-600 hover:text-primary-700 mt-2 inline-block"
+                      >
+                        View details →
+                      </Link>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
 
-        {/* Applications Over Time Chart */}
+        {/* ====================================================================== */}
+        {/* QUICK ACTIONS */}
+        {/* ====================================================================== */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card className="border-0 bg-white/80 shadow-xl backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary-600" />
-                Applications Over Time
-              </CardTitle>
-              <CardDescription>
-                Track application trends and interview scheduling
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                {chartData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis
-                        dataKey="date"
-                        stroke="#9ca3af"
-                        fontSize={12}
-                        tickLine={false}
-                      />
-                      <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "white",
-                          border: "none",
-                          borderRadius: "8px",
-                          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                        }}
-                      />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="count"
-                        stroke="#3b82f6"
-                        strokeWidth={3}
-                        dot={{ fill: "#3b82f6", r: 4 }}
-                        activeDot={{ r: 6 }}
-                        name="Applications"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-secondary-500">
-                    No application data available
-                  </div>
+          <Card className="border-2 border-primary-100 shadow-lg">
+            <CardContent className="p-6">
+              <h3 className="text-xl font-bold text-secondary-900 mb-4">Quick Actions</h3>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {/* Post New Job */}
+                <Button
+                  asChild
+                  size="lg"
+                  className="h-auto py-4 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700"
+                >
+                  <Link href="/employer/jobs/new" className="flex flex-col items-center gap-2">
+                    <Plus className="h-6 w-6" />
+                    <span>Post New Job</span>
+                  </Link>
+                </Button>
+
+                {/* Claim Your Jobs (if unclaimed exist) */}
+                {unclaimedJobs > 0 && (
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="h-auto py-4 border-2 border-orange-300 hover:bg-orange-50"
+                  >
+                    <Link href="/employer/claim-jobs" className="flex flex-col items-center gap-2">
+                      <Target className="h-6 w-6 text-orange-600" />
+                      <span>Claim Your Jobs</span>
+                    </Link>
+                  </Button>
                 )}
+
+                {/* Search Candidates (if premium) */}
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="h-auto py-4 border-2 border-purple-300 hover:bg-purple-50"
+                >
+                  <Link href="/employer/search-candidates" className="flex flex-col items-center gap-2">
+                    <Users className="h-6 w-6 text-purple-600" />
+                    <span>Search Candidates</span>
+                  </Link>
+                </Button>
+
+                {/* Schedule Call */}
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="h-auto py-4 border-2 border-green-300 hover:bg-green-50"
+                >
+                  <Link href="/contact" className="flex flex-col items-center gap-2">
+                    <Phone className="h-6 w-6 text-green-600" />
+                    <span>Schedule Call</span>
+                  </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
+        {/* ====================================================================== */}
+        {/* CLAIM REMINDER (if unclaimed jobs exist) */}
+        {/* ====================================================================== */}
+        {unclaimedJobs > 0 && showClaimReminder && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Card className="border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-4 flex-1">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 shrink-0">
+                      <AlertCircle className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-secondary-900 mb-2">
+                        You have {unclaimedJobs} unclaimed job{unclaimedJobs > 1 ? "s" : ""} with applicants
+                      </h3>
+                      <p className="text-sm text-secondary-600 mb-4">
+                        These jobs are publicly listed but not officially claimed by your company. Claim them to manage applications.
+                      </p>
+                      <Button asChild className="bg-orange-600 hover:bg-orange-700">
+                        <Link href="/employer/claim-jobs">Claim Now</Link>
+                      </Button>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowClaimReminder(false)}
+                    className="text-secondary-400 hover:text-secondary-600"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* ====================================================================== */}
+        {/* TWO COLUMN LAYOUT: ACTIVE JOBS + RECENT APPLICATIONS */}
+        {/* ====================================================================== */}
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Active Jobs List */}
+          {/* ACTIVE JOBS SECTION */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <Card className="border-0 bg-white/80 shadow-xl backdrop-blur-sm">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Active Jobs</CardTitle>
-                    <CardDescription>
-                      Your currently active job postings
-                    </CardDescription>
-                  </div>
+            <Card className="shadow-lg h-full">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-secondary-900">Active Jobs</h3>
                   <Link
-                    href="/jobs"
-                    className="text-sm font-medium text-primary-600 transition-colors hover:text-primary-700"
+                    href="/employer/jobs"
+                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
                   >
-                    View All
+                    View All →
                   </Link>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {activeJobs.length > 0 ? (
-                    activeJobs.map((job: any, index: number) => {
-                      const statusInfo = getJobStatusColor(job.status);
-                      return (
-                        <motion.div
-                          key={job.id}
-                          className="flex flex-col gap-3 rounded-lg border border-white/50 bg-gradient-to-r from-white to-gray-50/50 p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: 0.6 + index * 0.05 }}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <Link
-                                href={`/jobs/${job.id}`}
-                                className="font-semibold text-secondary-900 transition-colors hover:text-primary-600"
-                              >
-                                {job.title}
-                              </Link>
-                              <p className="mt-1 text-sm text-secondary-600">
-                                {job.location}
-                              </p>
-                            </div>
-                            <Badge
-                              className={`${(statusInfo as any).bg} ${(statusInfo as any).text} border-none shadow-sm`}
-                            >
-                              {(statusInfo as any).label}
-                            </Badge>
-                          </div>
 
-                          <div className="flex flex-wrap items-center gap-4 text-sm text-secondary-600">
-                            <span className="flex items-center">
-                              <Users className="mr-1.5 h-4 w-4" />
-                              {job._count?.applications || 0} applications
-                            </span>
-                            <span className="flex items-center">
-                              <Eye className="mr-1.5 h-4 w-4" />
-                              {job.views?.toLocaleString() || 0} views
-                            </span>
-                            <span className="flex items-center">
-                              <Calendar className="mr-1.5 h-4 w-4" />
-                              {getRelativeTime(new Date(job.createdAt))}
-                            </span>
+                {topJobs.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Briefcase className="h-12 w-12 text-secondary-300 mx-auto mb-3" />
+                    <p className="text-secondary-600 mb-4">No active jobs yet</p>
+                    <Button asChild size="sm">
+                      <Link href="/employer/jobs/new">Post Your First Job</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {topJobs.slice(0, 5).map((job: any) => (
+                      <div
+                        key={job.id}
+                        className="flex flex-col gap-3 rounded-lg border-2 border-gray-200 bg-white p-4 hover:border-primary-300 hover:shadow-md transition-all"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <Link
+                              href={`/employer/jobs/${job.id}`}
+                              className="font-semibold text-secondary-900 hover:text-primary-600 truncate block"
+                            >
+                              {job.title}
+                            </Link>
+                            <p className="text-sm text-secondary-600 mt-1">{job.location}</p>
                           </div>
-                        </motion.div>
-                      );
-                    })
-                  ) : (
-                    <div className="text-center py-8 text-secondary-500">
-                      No active jobs found. Create your first job posting!
-                    </div>
-                  )}
-                </div>
+                          <Badge className={jobStatusColors[job.status]}>
+                            {job.status}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-secondary-600">
+                          <span className="flex items-center gap-1">
+                            <FileText className="h-4 w-4" />
+                            {job.applicationsCount} applications
+                            {job.applicationsCount > 0 && (
+                              <Badge variant="danger" size="sm" className="ml-1">New</Badge>
+                            )}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Eye className="h-4 w-4" />
+                            {job.views || 0} views
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Award className="h-4 w-4" />
+                            {/* Skills-verified count would come from backend */}
+                            0 verified
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-secondary-500">
+                          <Calendar className="h-3 w-3" />
+                          Posted {formatRelativeTime(job.postedAt)}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" asChild className="flex-1">
+                            <Link href={`/employer/jobs/${job.id}/applications`}>
+                              View Applicants
+                            </Link>
+                          </Button>
+                          <Button size="sm" variant="outline" asChild className="flex-1">
+                            <Link href={`/employer/jobs/${job.id}/edit`}>Edit</Link>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Recent Applications */}
+          {/* RECENT APPLICATIONS */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <Card className="border-0 bg-white/80 shadow-xl backdrop-blur-sm">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Recent Applications</CardTitle>
-                    <CardDescription>
-                      Latest candidates who applied
-                    </CardDescription>
-                  </div>
+            <Card className="shadow-lg h-full">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-secondary-900">Recent Applications</h3>
                   <Link
-                    href="javascript:void(0)"
-                    className="text-sm font-medium text-primary-600 transition-colors hover:text-primary-700"
+                    href="/employer/applications"
+                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
                   >
-                    View All
+                    View All →
                   </Link>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {recentApplications.length > 0 ? (
-                    recentApplications.map((application: any, index: number) => {
-                      const statusInfo = getApplicationStatusColor(
-                        application.status
-                      );
-                      return (
-                        <motion.div
-                          key={application.id}
-                          className="flex items-center justify-between rounded-lg border border-white/50 bg-gradient-to-r from-white to-gray-50/50 p-3 shadow-sm transition-all hover:shadow-md"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: 0.7 + index * 0.05 }}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-secondary-900 truncate">
-                                {application.candidate?.user?.name || 'Unknown Candidate'}
-                              </p>
-                            </div>
-                            <p className="mt-0.5 text-xs text-secondary-600 truncate">
-                              {application.job?.title || 'Unknown Position'}
-                            </p>
-                            <div className="mt-1 flex items-center gap-2">
-                              <Badge
-                                className={`${(statusInfo as any).bg} ${(statusInfo as any).text} border-none shadow-sm`}
-                              >
-                                {(statusInfo as any).label}
+
+                {recentApplications.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 text-secondary-300 mx-auto mb-3" />
+                    <p className="text-secondary-600">No applications yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {recentApplications.slice(0, 10).map((app: any) => (
+                      <div
+                        key={app.id}
+                        className="flex items-start gap-3 p-3 rounded-lg border-2 border-gray-200 bg-white hover:border-primary-300 hover:shadow-md transition-all"
+                      >
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 shrink-0">
+                          <Users className="h-5 w-5 text-primary-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-secondary-900 truncate">
+                            {app.candidateName || "Candidate"}
+                          </p>
+                          <p className="text-sm text-secondary-600 truncate">{app.jobTitle}</p>
+                          <div className="flex items-center gap-2 mt-2 flex-wrap">
+                            <Badge className={statusColors[app.status]}>
+                              {app.status.replace(/_/g, " ")}
+                            </Badge>
+                            {app.candidateTestTier && (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                                <Award className="h-3 w-3 mr-1" />
+                                {app.candidateTestTier}
                               </Badge>
-                              <span className="text-xs text-secondary-500">
-                                {getRelativeTime(
-                                  new Date(application.createdAt)
-                                )}
-                              </span>
-                            </div>
+                            )}
+                            <span className="text-xs text-secondary-500">
+                              {formatRelativeTime(app.appliedAt)}
+                            </span>
                           </div>
-                          <Link
-                            href={`/employer/applications/${application.id}`}
-                            className="ml-3 flex-shrink-0 text-primary-600 transition-colors hover:text-primary-700"
-                          >
-                            <ChevronRight className="h-5 w-5" />
-                          </Link>
-                        </motion.div>
-                      );
-                    })
-                  ) : (
-                    <div className="text-center py-8 text-secondary-500">
-                      No recent applications
-                    </div>
-                  )}
-                </div>
+                        </div>
+                        <Button size="sm" variant="outline" asChild>
+                          <Link href={`/employer/applications/${app.id}`}>View</Link>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
         </div>
 
-        {/* Quick Actions Cards */}
+        {/* ====================================================================== */}
+        {/* SKILLS VERIFICATION STATS */}
+        {/* ====================================================================== */}
         <motion.div
-          className="grid gap-4 sm:grid-cols-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
         >
-          <Card className="border-0 bg-gradient-to-br from-primary-50 to-white shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5">
+          <Card className="border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg">
             <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-secondary-900">
-                    Ready to hire more talent?
-                  </h3>
-                  <p className="mt-2 text-sm text-secondary-600">
-                    Post a new job opening and reach thousands of qualified
-                    candidates in the AI/ML space.
-                  </p>
-                  <Link
-                    href="/employer/jobs/new"
-                    className="mt-4 inline-flex items-center text-sm font-medium text-primary-600 transition-colors hover:text-primary-700"
-                  >
-                    Post a Job
-                    <ChevronRight className="ml-1 h-4 w-4" />
-                  </Link>
+              <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-600">
+                      <Award className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-secondary-900">
+                        Skills Verification Stats
+                      </h3>
+                      <p className="text-sm text-secondary-600">
+                        {skillsVerificationPercentage}% of your applicants have verified skills
+                      </p>
+                    </div>
+                  </div>
+
+                  <Progress value={skillsVerificationPercentage} className="h-3 mb-4" />
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="bg-white/80 rounded-lg p-3 border border-green-100">
+                      <p className="text-sm text-secondary-600">Total Verified</p>
+                      <p className="text-2xl font-bold text-green-700">
+                        {totalApplicantsWithTests}
+                      </p>
+                    </div>
+                    <div className="bg-white/80 rounded-lg p-3 border border-green-100">
+                      <p className="text-sm text-secondary-600">Total Applicants</p>
+                      <p className="text-2xl font-bold text-secondary-900">
+                        {summary.totalApplications}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/80 rounded-lg p-4 border border-green-100">
+                    <p className="text-sm font-semibold text-secondary-900 mb-2">
+                      Tier Distribution:
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="text-center">
+                        <p className="text-xs text-secondary-600">Elite</p>
+                        <p className="text-lg font-bold text-purple-600">
+                          {candidateQualityMetrics.elite || 0}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-secondary-600">Advanced</p>
+                        <p className="text-lg font-bold text-blue-600">
+                          {candidateQualityMetrics.advanced || 0}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-secondary-600">Intermediate</p>
+                        <p className="text-lg font-bold text-green-600">
+                          {candidateQualityMetrics.intermediate || 0}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-secondary-600">Beginner</p>
+                        <p className="text-lg font-bold text-yellow-600">
+                          {candidateQualityMetrics.beginner || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-600 shadow-md">
-                  <Plus className="h-6 w-6 text-white" />
+                <div className="lg:w-64 bg-white/80 rounded-lg p-4 border border-green-200">
+                  <CheckCircle2 className="h-8 w-8 text-green-600 mb-3" />
+                  <p className="text-sm font-semibold text-secondary-900 mb-2">
+                    Candidates with Skills Scores are 3x more likely to be good fits
+                  </p>
+                  <p className="text-xs text-secondary-600">
+                    Verified candidates have completed our comprehensive skills assessment.
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
+        </motion.div>
 
-          <Card className="border-0 bg-gradient-to-br from-purple-50 to-white shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5">
+        {/* ====================================================================== */}
+        {/* PIPELINE OVERVIEW */}
+        {/* ====================================================================== */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+        >
+          <Card className="shadow-lg">
             <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-secondary-900">
-                    Review applications
-                  </h3>
-                  <p className="mt-2 text-sm text-secondary-600">
-                    You have {stats.newApplications || 0} new applications waiting for your review.
-                  </p>
-                  <Link
-                    href="/employer/applications"
-                    className="mt-4 inline-flex items-center text-sm font-medium text-purple-600 transition-colors hover:text-purple-700"
-                  >
-                    View Applications
-                    <ChevronRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </div>
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 shadow-md">
-                  <FileText className="h-6 w-6 text-white" />
-                </div>
+              <h3 className="text-xl font-bold text-secondary-900 mb-6">Pipeline Overview</h3>
+              <div className="space-y-3">
+                {[
+                  { label: "New Applications", count: applicationStats.pending || 0, color: "bg-yellow-500" },
+                  { label: "Under Review", count: applicationStats.reviewed || 0, color: "bg-blue-500" },
+                  { label: "Shortlisted", count: applicationStats.shortlisted || 0, color: "bg-purple-500" },
+                  { label: "Interview Scheduled", count: applicationStats.interviewScheduled || 0, color: "bg-indigo-500" },
+                  { label: "Offer Extended", count: applicationStats.offered || 0, color: "bg-green-500" },
+                  { label: "Hired", count: applicationStats.accepted || 0, color: "bg-emerald-500" },
+                ].map((stage, index) => {
+                  const maxCount = Math.max(...[
+                    applicationStats.pending || 0,
+                    applicationStats.reviewed || 0,
+                    applicationStats.shortlisted || 0,
+                    applicationStats.interviewScheduled || 0,
+                    applicationStats.offered || 0,
+                    applicationStats.accepted || 0,
+                  ]);
+                  const percentage = maxCount > 0 ? (stage.count / maxCount) * 100 : 0;
+
+                  return (
+                    <div key={stage.label}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-secondary-700">{stage.label}</span>
+                        <span className="text-sm font-bold text-secondary-900">{stage.count}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div
+                          className={`h-full ${stage.color} transition-all duration-500`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

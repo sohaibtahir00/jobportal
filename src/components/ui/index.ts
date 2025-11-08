@@ -76,3 +76,5 @@ export type { Toast, ToastType } from "./Toast";
 
 export { EmptyState } from "./EmptyState";
 export type { EmptyStateProps } from "./EmptyState";
+
+export { Progress } from "./progress";

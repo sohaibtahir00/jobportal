@@ -82,12 +82,75 @@ export interface CandidateDashboardData {
 }
 
 export interface EmployerDashboardData {
-  stats: EmployerStats;
-  activeJobs: any[];
+  employer: {
+    id: string;
+    name: string;
+    email: string;
+    companyName: string;
+    companyLogo: string | null;
+    location: string | null;
+    industry: string | null;
+    verified: boolean;
+  };
+  jobStats: {
+    total: number;
+    active: number;
+    draft: number;
+    closed: number;
+    expired: number;
+  };
+  applicationStats: {
+    total: number;
+    pending: number;
+    reviewed: number;
+    shortlisted: number;
+    interviewScheduled: number;
+    interviewed: number;
+    offered: number;
+    accepted: number;
+    rejected: number;
+  };
+  pendingReviews: number;
   recentApplications: any[];
-  analytics: {
-    applicationTrend: { date: string; count: number }[];
-    topPerformingJobs: any[];
+  topJobs: any[];
+  placementStats: {
+    total: number;
+    pending: number;
+    confirmed: number;
+    completed: number;
+    cancelled: number;
+  };
+  activePlacements: any[];
+  paymentSummary: {
+    totalSpent: number;
+    totalSpentFormatted: string;
+    pendingPayments: number;
+    pendingPaymentsFormatted: string;
+    fullyPaidPlacements: number;
+    placementsWithPendingPayment: number;
+  };
+  recentActivity: {
+    newApplications: number;
+    reviewedApplications: number;
+    newPlacements: number;
+    jobsPosted: number;
+  };
+  applicationsByJob: any[];
+  candidateQualityMetrics: {
+    totalCandidatesWithTests: number;
+    elite: number;
+    advanced: number;
+    intermediate: number;
+    beginner: number;
+  };
+  quickActions: any[];
+  summary: {
+    activeJobs: number;
+    totalApplications: number;
+    pendingReviews: number;
+    activePlacements: number;
+    totalSpent: number;
+    pendingPayments: number;
   };
 }
 
