@@ -189,7 +189,7 @@ export default function CandidateDashboardPage() {
                   size="lg"
                   className="bg-white hover:bg-gray-50 text-primary-700 font-semibold shadow-lg"
                 >
-                  <Link href="/jobs">Browse Jobs</Link>
+                  <Link href="/candidate/jobs">Browse Jobs</Link>
                 </Button>
               </div>
             </div>
@@ -506,7 +506,7 @@ export default function CandidateDashboardPage() {
                   size="lg"
                   className="bg-primary-600 hover:bg-primary-700 text-white shrink-0"
                 >
-                  <Link href="/jobs">
+                  <Link href="/candidate/jobs">
                     <Briefcase className="mr-2 h-4 w-4" />
                     Browse Jobs
                   </Link>
@@ -642,7 +642,7 @@ export default function CandidateDashboardPage() {
                     <Clock className="h-12 w-12 text-secondary-300 mx-auto mb-3" />
                     <p className="text-secondary-600">No recent activity yet</p>
                     <Button asChild className="mt-4" size="sm">
-                      <Link href="/jobs">Browse Jobs</Link>
+                      <Link href="/candidate/jobs">Browse Jobs</Link>
                     </Button>
                   </div>
                 ) : (
@@ -691,7 +691,7 @@ export default function CandidateDashboardPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-secondary-900">Recommended Jobs</h3>
                   <Link
-                    href="/jobs"
+                    href="/candidate/jobs"
                     className="text-sm text-primary-600 hover:text-primary-700 font-medium"
                   >
                     View All →
