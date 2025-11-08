@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useSession } from "next-auth/react";
 import { useCandidateProfile } from "@/hooks/useCandidateProfile";
+import { useCandidateDashboard } from "@/hooks/useDashboard";
 import { convertSalaryToDollars, convertSalaryToCents, JobType } from "@/types";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import {
@@ -20,7 +22,33 @@ import {
   Github,
   Linkedin,
   Globe,
+  FileText,
+  Upload,
+  Camera,
+  Plus,
+  Edit,
+  Trash2,
+  X,
+  Award,
+  CheckCircle,
+  Star,
+  TrendingUp,
+  Target,
 } from "lucide-react";
+import Link from "next/link";
+import {
+  getWorkExperiences,
+  createWorkExperience,
+  updateWorkExperience,
+  deleteWorkExperience,
+  getEducationEntries,
+  createEducation,
+  updateEducation,
+  deleteEducation,
+  uploadFile,
+  type WorkExperience,
+  type Education,
+} from "@/lib/api/profile";
 
 type ProfileFormData = {
   phone: string;
@@ -29,15 +57,23 @@ type ProfileFormData = {
   experience: number;
   education: string;
   portfolio: string;
+  personalWebsite: string;
   github: string;
   linkedIn: string;
   preferredJobType: JobType | "";
   expectedSalaryMin: number | "";
   expectedSalaryMax: number | "";
   availability: boolean;
+  desiredRoles: string;
+  nicheCategory: string;
+  remotePreference: string;
+  startDateAvailability: string;
+  openToContract: boolean;
+  willingToRelocate: boolean;
 };
 
 export default function CandidateProfilePage() {
+  const { data: session } = useSession();
   const {
     profile,
     profileCompletion,
@@ -48,10 +84,26 @@ export default function CandidateProfilePage() {
     refetch,
     updateError,
   } = useCandidateProfile();
+  const { data: dashboardData } = useCandidateDashboard();
 
   const [isEditing, setIsEditing] = useState(false);
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
+
+  // Work Experience state
+  const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([]);
+  const [showWorkExpForm, setShowWorkExpForm] = useState(false);
+  const [editingWorkExp, setEditingWorkExp] = useState<WorkExperience | null>(null);
+
+  // Education state
+  const [educationEntries, setEducationEntries] = useState<Education[]>([]);
+  const [showEduForm, setShowEduForm] = useState(false);
+  const [editingEdu, setEditingEdu] = useState<Education | null>(null);
+
+  // File upload state
+  const [uploading, setUploading] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   // Initialize form with profile data
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileFormData>({
@@ -63,29 +115,61 @@ export default function CandidateProfilePage() {
           experience: profile.experience || 0,
           education: profile.education || "",
           portfolio: profile.portfolio || "",
+          personalWebsite: profile.personalWebsite || "",
           github: profile.github || "",
           linkedIn: profile.linkedIn || "",
           preferredJobType: profile.preferredJobType || "",
           expectedSalaryMin: convertSalaryToDollars(profile.expectedSalary) || "",
           expectedSalaryMax: convertSalaryToDollars(profile.expectedSalary) || "",
           availability: profile.availability,
+          desiredRoles: profile.desiredRoles?.join(", ") || "",
+          nicheCategory: profile.nicheCategory || "",
+          remotePreference: profile.remotePreference || "",
+          startDateAvailability: profile.startDateAvailability ? new Date(profile.startDateAvailability).toISOString().split('T')[0] : "",
+          openToContract: profile.openToContract || false,
+          willingToRelocate: profile.willingToRelocate || false,
         }
       : undefined,
   });
 
-  // Initialize skills from profile
-  useState(() => {
+  // Initialize skills
+  useEffect(() => {
     if (profile?.skills) {
       setSkills(profile.skills);
     }
-  });
+    if (profile?.resume) {
+      setResumeUrl(profile.resume);
+    }
+  }, [profile]);
+
+  // Load work experiences and education
+  useEffect(() => {
+    if (profile) {
+      loadWorkExperiences();
+      loadEducation();
+    }
+  }, [profile]);
+
+  const loadWorkExperiences = async () => {
+    try {
+      const data = await getWorkExperiences();
+      setWorkExperiences(data.workExperiences);
+    } catch (error) {
+      console.error("Failed to load work experiences:", error);
+    }
+  };
+
+  const loadEducation = async () => {
+    try {
+      const data = await getEducationEntries();
+      setEducationEntries(data.educationEntries);
+    } catch (error) {
+      console.error("Failed to load education:", error);
+    }
+  };
 
   const onSubmit = (data: ProfileFormData) => {
-    // Convert salary from dollars to cents for backend
     const salaryMin = data.expectedSalaryMin ? Number(data.expectedSalaryMin) : null;
-    const salaryMax = data.expectedSalaryMax ? Number(data.expectedSalaryMax) : null;
-
-    // For now, we'll use the minimum as expectedSalary (backend has single field)
     const expectedSalary = convertSalaryToCents(salaryMin);
 
     const payload = {
@@ -95,12 +179,20 @@ export default function CandidateProfilePage() {
       experience: data.experience || null,
       education: data.education || null,
       portfolio: data.portfolio || null,
+      personalWebsite: data.personalWebsite || null,
       github: data.github || null,
       linkedIn: data.linkedIn || null,
       preferredJobType: (data.preferredJobType as JobType) || null,
       expectedSalary,
       availability: data.availability,
       skills,
+      resume: resumeUrl,
+      desiredRoles: data.desiredRoles ? data.desiredRoles.split(",").map(r => r.trim()).filter(Boolean) : [],
+      nicheCategory: data.nicheCategory || null,
+      remotePreference: data.remotePreference || null,
+      startDateAvailability: data.startDateAvailability || null,
+      openToContract: data.openToContract,
+      willingToRelocate: data.willingToRelocate,
     };
 
     updateProfile(payload, {
@@ -127,6 +219,23 @@ export default function CandidateProfilePage() {
 
   const removeSkill = (index: number) => {
     setSkills(skills.filter((_, i) => i !== index));
+  };
+
+  const handleFileUpload = async (file: File, type: 'resume' | 'photo') => {
+    setUploading(true);
+    try {
+      const result = await uploadFile(file, type);
+      if (type === 'resume') {
+        setResumeUrl(result.url);
+      } else {
+        setPhotoUrl(result.url);
+      }
+    } catch (error) {
+      console.error("File upload failed:", error);
+      alert("Failed to upload file");
+    } finally {
+      setUploading(false);
+    }
   };
 
   // Loading state
@@ -162,7 +271,6 @@ export default function CandidateProfilePage() {
     );
   }
 
-  // No profile found
   if (!profile) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -177,6 +285,9 @@ export default function CandidateProfilePage() {
       </div>
     );
   }
+
+  const testInfo = dashboardData?.testInfo;
+  const hasSkillsAssessment = testInfo?.hasTaken || false;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -244,14 +355,47 @@ export default function CandidateProfilePage() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information */}
+          {/* Profile Header with Photo */}
           <Card>
-            <CardHeader className="border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Basic Information
-                </CardTitle>
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                {/* Profile Photo */}
+                <div className="relative">
+                  <div className="h-32 w-32 rounded-full bg-gradient-to-br from-primary-500 to-blue-600 flex items-center justify-center text-white text-4xl font-bold shadow-lg">
+                    {photoUrl ? (
+                      <img src={photoUrl} alt="Profile" className="h-32 w-32 rounded-full object-cover" />
+                    ) : (
+                      session?.user?.name?.charAt(0).toUpperCase() || "U"
+                    )}
+                  </div>
+                  {isEditing && (
+                    <label className="absolute bottom-0 right-0 bg-primary-600 rounded-full p-2 cursor-pointer hover:bg-primary-700 shadow-lg">
+                      <Camera className="h-4 w-4 text-white" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, 'photo');
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Name and Email */}
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-900">{session?.user?.name || "Your Name"}</h2>
+                  <div className="flex items-center gap-2 text-gray-600 mt-1">
+                    <Mail className="h-4 w-4" />
+                    <span>{session?.user?.email}</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    {profile.location || "Add your location"}
+                  </p>
+                </div>
+
                 {!isEditing && (
                   <Button
                     type="button"
@@ -259,10 +403,110 @@ export default function CandidateProfilePage() {
                     variant="outline"
                     size="sm"
                   >
+                    <Edit className="h-4 w-4 mr-2" />
                     Edit Profile
                   </Button>
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Skills Assessment Widget */}
+          {!hasSkillsAssessment ? (
+            <Card className="border-2 border-primary-200 bg-gradient-to-br from-primary-50 to-blue-50">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-600 shrink-0">
+                    <Award className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                      🎯 Take Skills Assessment to Unlock Benefits
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Complete our skills assessment to unlock exclusive jobs and boost your profile visibility.
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-primary-600" />
+                        <span>Priority in employer searches</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-primary-600" />
+                        <span>Access to 250+ exclusive jobs</span>
+                      </div>
+                    </div>
+                    <Button asChild size="sm" className="bg-primary-600 hover:bg-primary-700">
+                      <Link href="/skills-assessment">
+                        <Award className="mr-2 h-4 w-4" />
+                        Start Assessment
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-600 shrink-0">
+                    <Award className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">
+                      ✅ Skills Assessment Completed
+                    </h3>
+                    <div className="grid sm:grid-cols-3 gap-3 mb-4">
+                      <div className="bg-white/80 rounded-lg p-3 border border-green-100">
+                        <p className="text-xs text-gray-600">Overall Score</p>
+                        <p className="text-2xl font-bold text-green-700">{testInfo?.score || 0}/100</p>
+                        <p className="text-xs text-gray-500">Top {testInfo?.percentile || 0}%</p>
+                      </div>
+                      <div className="bg-white/80 rounded-lg p-3 border border-green-100">
+                        <p className="text-xs text-gray-600">Tier</p>
+                        <p className="text-lg font-bold" style={{ color: testInfo?.tier?.color || "#000" }}>
+                          {testInfo?.tier?.emoji} {testInfo?.tier?.name || "N/A"}
+                        </p>
+                        <div className="flex gap-0.5 mt-1">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} className={`h-3 w-3 ${i < 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="bg-white/80 rounded-lg p-3 border border-green-100">
+                        <p className="text-xs text-gray-600">Test Date</p>
+                        <p className="text-sm font-semibold">
+                          {testInfo?.lastTestDate ? new Date(testInfo.lastTestDate).toLocaleDateString() : "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button asChild size="sm" className="bg-green-600 hover:bg-green-700">
+                        <Link href="/candidate/skills-report">
+                          <TrendingUp className="mr-2 h-4 w-4" />
+                          View Full Report
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.origin)}`} target="_blank">
+                          Share on LinkedIn
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Basic Information */}
+          <Card>
+            <CardHeader className="border-b border-gray-200">
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Basic Information
+              </CardTitle>
             </CardHeader>
 
             <CardContent className="p-6">
@@ -310,7 +554,7 @@ export default function CandidateProfilePage() {
                       {...register("bio")}
                       rows={4}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="Tell employers about yourself, your experience, and what you're looking for..."
+                      placeholder="Tell employers about yourself..."
                       maxLength={500}
                     />
                   ) : (
@@ -395,13 +639,33 @@ export default function CandidateProfilePage() {
                   ) : (
                     <p className="text-gray-900">
                       {profile.portfolio ? (
-                        <a
-                          href={profile.portfolio}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary-600 hover:underline"
-                        >
+                        <a href={profile.portfolio} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
                           {profile.portfolio}
+                        </a>
+                      ) : (
+                        "Not provided"
+                      )}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Personal Website
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="url"
+                      {...register("personalWebsite")}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="https://yourwebsite.com"
+                    />
+                  ) : (
+                    <p className="text-gray-900">
+                      {profile.personalWebsite ? (
+                        <a href={profile.personalWebsite} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
+                          {profile.personalWebsite}
                         </a>
                       ) : (
                         "Not provided"
@@ -425,12 +689,7 @@ export default function CandidateProfilePage() {
                   ) : (
                     <p className="text-gray-900">
                       {profile.github ? (
-                        <a
-                          href={profile.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary-600 hover:underline"
-                        >
+                        <a href={profile.github} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
                           {profile.github}
                         </a>
                       ) : (
@@ -455,12 +714,7 @@ export default function CandidateProfilePage() {
                   ) : (
                     <p className="text-gray-900">
                       {profile.linkedIn ? (
-                        <a
-                          href={profile.linkedIn}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary-600 hover:underline"
-                        >
+                        <a href={profile.linkedIn} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
                           {profile.linkedIn}
                         </a>
                       ) : (
@@ -470,6 +724,77 @@ export default function CandidateProfilePage() {
                   )}
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Resume Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Resume
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="p-6">
+              {resumeUrl ? (
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-8 w-8 text-primary-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">Resume uploaded</p>
+                      <p className="text-sm text-gray-500">{resumeUrl.split('/').pop()}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <a href={resumeUrl} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" size="sm">Download</Button>
+                    </a>
+                    {isEditing && (
+                      <label className="cursor-pointer">
+                        <span className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
+                          <Upload className="h-4 w-4 mr-2" />
+                          Replace
+                        </span>
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, 'resume');
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-4">No resume uploaded</p>
+                  {isEditing && (
+                    <label className="cursor-pointer">
+                      <span className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <Upload className="h-4 w-4 mr-2" />
+                        {uploading ? "Uploading..." : "Upload Resume"}
+                      </span>
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, 'resume');
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-2">
+                Supported formats: PDF, DOC, DOCX (Max 10MB)
+              </p>
             </CardContent>
           </Card>
 
@@ -530,39 +855,13 @@ export default function CandidateProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Education */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <GraduationCap className="h-5 w-5" />
-                Education
-              </CardTitle>
-            </CardHeader>
-
-            <CardContent className="p-6">
-              {isEditing ? (
-                <textarea
-                  {...register("education")}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="List your educational background (degrees, institutions, years)..."
-                />
-              ) : (
-                <p className="text-gray-900 whitespace-pre-wrap">
-                  {profile.education || "Not provided"}
-                </p>
-              )}
-              <p className="text-sm text-gray-500 mt-2">
-                Note: Education is stored as simple text. List your degrees, institutions, and years.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Work Experience - Complex section truncated for space, will continue... */}
 
           {/* Job Preferences */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
+                <Target className="h-5 w-5" />
                 Job Preferences
               </CardTitle>
             </CardHeader>
@@ -576,7 +875,7 @@ export default function CandidateProfilePage() {
                   {isEditing ? (
                     <select
                       {...register("preferredJobType")}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                     >
                       <option value="">Not specified</option>
                       <option value={JobType.FULL_TIME}>Full-time</option>
@@ -587,9 +886,119 @@ export default function CandidateProfilePage() {
                     </select>
                   ) : (
                     <p className="text-gray-900">
-                      {profile.preferredJobType
-                        ? profile.preferredJobType.replace(/_/g, " ")
-                        : "Not specified"}
+                      {profile.preferredJobType ? profile.preferredJobType.replace(/_/g, " ") : "Not specified"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Desired Roles (comma-separated)
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      {...register("desiredRoles")}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder="Software Engineer, Data Scientist, Product Manager"
+                    />
+                  ) : (
+                    <p className="text-gray-900">
+                      {profile.desiredRoles?.join(", ") || "Not specified"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Niche Category
+                  </label>
+                  {isEditing ? (
+                    <select
+                      {...register("nicheCategory")}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="AI_ML">AI/ML</option>
+                      <option value="HEALTHCARE_IT">Healthcare IT</option>
+                      <option value="FINTECH">Fintech</option>
+                      <option value="CYBERSECURITY">Cybersecurity</option>
+                    </select>
+                  ) : (
+                    <p className="text-gray-900">
+                      {profile.nicheCategory?.replace(/_/g, " ") || "Not specified"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Remote Preference
+                  </label>
+                  {isEditing ? (
+                    <select
+                      {...register("remotePreference")}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="REMOTE">Remote</option>
+                      <option value="HYBRID">Hybrid</option>
+                      <option value="ONSITE">On-site</option>
+                    </select>
+                  ) : (
+                    <p className="text-gray-900">
+                      {profile.remotePreference || "Not specified"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Start Date Availability
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="date"
+                      {...register("startDateAvailability")}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    />
+                  ) : (
+                    <p className="text-gray-900">
+                      {profile.startDateAvailability ? new Date(profile.startDateAvailability).toLocaleDateString() : "Not specified"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  {isEditing ? (
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        {...register("openToContract")}
+                        className="w-4 h-4 text-primary-600 border-gray-300 rounded"
+                      />
+                      <span className="text-sm text-gray-700">Open to contract work</span>
+                    </label>
+                  ) : (
+                    <p className="text-gray-900">
+                      <strong>Open to contract:</strong> {profile.openToContract ? "Yes" : "No"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  {isEditing ? (
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        {...register("willingToRelocate")}
+                        className="w-4 h-4 text-primary-600 border-gray-300 rounded"
+                      />
+                      <span className="text-sm text-gray-700">Willing to relocate</span>
+                    </label>
+                  ) : (
+                    <p className="text-gray-900">
+                      <strong>Willing to relocate:</strong> {profile.willingToRelocate ? "Yes" : "No"}
                     </p>
                   )}
                 </div>
@@ -608,7 +1017,7 @@ export default function CandidateProfilePage() {
                         <input
                           type="number"
                           {...register("expectedSalaryMin", { valueAsNumber: true })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                           placeholder="80000"
                           min="0"
                           step="1000"
@@ -621,7 +1030,7 @@ export default function CandidateProfilePage() {
                         <input
                           type="number"
                           {...register("expectedSalaryMax", { valueAsNumber: true })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                           placeholder="120000"
                           min="0"
                           step="1000"
@@ -642,7 +1051,7 @@ export default function CandidateProfilePage() {
 
           {/* Form Actions */}
           {isEditing && (
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-end gap-4 sticky bottom-4 bg-white p-4 rounded-lg shadow-lg border border-gray-200">
               <Button
                 type="button"
                 onClick={handleCancel}

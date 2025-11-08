@@ -1,141 +1,111 @@
 /**
- * Profile API Functions
- * Strongly typed API calls for profile management endpoints
- * Backend documentation: docs/API_REFERENCE.md
+ * Profile API Client
+ * Handles work experience, education, and file uploads
  */
 
 import api from '../api';
-import type { User } from '@/types';
-import type { ErrorResponse } from '../api-types';
 
-/**
- * Profile response from GET /api/profile
- * Backend returns user + role-specific profile data
- */
-export interface GetProfileResponse {
-  user: User;
-  profile: any; // Role-specific: Candidate or Employer profile with nested data
+// ============================================================================
+// TYPES
+// ============================================================================
+
+export interface WorkExperience {
+  id: string;
+  companyName: string;
+  jobTitle: string;
+  startDate: string;
+  endDate?: string | null;
+  isCurrent: boolean;
+  description?: string | null;
+  location?: string | null;
 }
 
-/**
- * Update profile request for PATCH /api/profile
- */
-export interface UpdateProfileRequest {
-  name?: string;
-  image?: string;
+export interface Education {
+  id: string;
+  schoolName: string;
+  degree: string;
+  fieldOfStudy: string;
+  graduationYear: number;
+  gpa?: number | null;
+  description?: string | null;
 }
 
-/**
- * Update profile response from PATCH /api/profile
- */
-export interface UpdateProfileResponse {
-  message: string;
-  user: User;
+// ============================================================================
+// WORK EXPERIENCE API
+// ============================================================================
+
+export async function getWorkExperiences(): Promise<{ workExperiences: WorkExperience[] }> {
+  const response = await api.get('/api/candidates/work-experience');
+  return response.data;
 }
 
-/**
- * GET /api/profile (via axios with session headers)
- * Get current user's profile with role-specific data
- *
- * Returns user data with nested candidate or employer profile
- * based on the user's role.
- *
- * @returns Promise with user profile data
- * @throws Error with backend error message
- */
-export async function getProfile(): Promise<GetProfileResponse> {
-  try {
-    console.log('[Profile API] Fetching profile via Next.js proxy...');
-
-    // Use Next.js API route proxy to avoid CORS (frontend-only solution)
-    const response = await fetch('/api/proxy/profile', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'same-origin', // Important for Next.js API routes
-    });
-
-    console.log('[Profile API] Proxy response status:', response.status);
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Failed to fetch profile' }));
-      console.error('[Profile API] Proxy error response:', errorData);
-      throw new Error(errorData.error || 'Failed to fetch profile');
-    }
-
-    const data = await response.json();
-    console.log('[Profile API] Profile fetched successfully via proxy:', data);
-    return data;
-  } catch (error: any) {
-    console.error('[Profile API] Error:', error);
-
-    const errorMessage = error.message || 'Failed to fetch profile. Please try again.';
-
-    // Handle specific errors
-    if (errorMessage.includes('Authentication required') || errorMessage.includes('Unauthorized')) {
-      throw new Error('You must be logged in to view your profile.');
-    }
-
-    if (errorMessage.includes('not found')) {
-      throw new Error('Profile not found. Please contact support.');
-    }
-
-    throw new Error(errorMessage);
-  }
+export async function createWorkExperience(data: Omit<WorkExperience, 'id'>): Promise<{ workExperience: WorkExperience }> {
+  const response = await api.post('/api/candidates/work-experience', data);
+  return response.data;
 }
 
-/**
- * PATCH /api/profile (via axios with session headers)
- * Update user profile (name, image)
- *
- * Only updates basic user fields. For role-specific updates:
- * - Candidates: use /api/candidates/profile
- * - Employers: use /api/employers/profile
- *
- * @param data Profile update data
- * @returns Promise with updated user data
- * @throws Error with backend error message
- */
-export async function updateProfile(data: UpdateProfileRequest): Promise<UpdateProfileResponse> {
-  try {
-    console.log('[Profile API] Updating profile via Next.js proxy...');
+export async function updateWorkExperience(id: string, data: Partial<WorkExperience>): Promise<{ workExperience: WorkExperience }> {
+  const response = await api.patch(`/api/candidates/work-experience/${id}`, data);
+  return response.data;
+}
 
-    // Use Next.js API route proxy to avoid CORS (frontend-only solution)
-    const response = await fetch('/api/proxy/profile', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'same-origin', // Important for Next.js API routes
-      body: JSON.stringify(data),
-    });
+export async function deleteWorkExperience(id: string): Promise<{ message: string }> {
+  const response = await api.delete(`/api/candidates/work-experience/${id}`);
+  return response.data;
+}
 
-    console.log('[Profile API] Proxy update response status:', response.status);
+// ============================================================================
+// EDUCATION API
+// ============================================================================
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Failed to update profile' }));
-      console.error('[Profile API] Proxy update error response:', errorData);
-      throw new Error(errorData.error || 'Failed to update profile');
-    }
+export async function getEducationEntries(): Promise<{ educationEntries: Education[] }> {
+  const response = await api.get('/api/candidates/education');
+  return response.data;
+}
 
-    const result = await response.json();
-    console.log('[Profile API] Profile updated successfully via proxy:', result);
-    return result;
-  } catch (error: any) {
-    console.error('[Profile API] Update error:', error);
+export async function createEducation(data: Omit<Education, 'id'>): Promise<{ education: Education }> {
+  const response = await api.post('/api/candidates/education', data);
+  return response.data;
+}
 
-    const errorMessage = error.message || 'Failed to update profile. Please try again.';
+export async function updateEducation(id: string, data: Partial<Education>): Promise<{ education: Education }> {
+  const response = await api.patch(`/api/candidates/education/${id}`, data);
+  return response.data;
+}
 
-    // Handle specific errors
-    if (errorMessage.includes('Authentication required') || errorMessage.includes('Unauthorized')) {
-      throw new Error('You must be logged in to update your profile.');
-    }
+export async function deleteEducation(id: string): Promise<{ message: string }> {
+  const response = await api.delete(`/api/candidates/education/${id}`);
+  return response.data;
+}
 
-    if (errorMessage.includes('validation')) {
-      throw new Error(errorMessage);
-    }
+// ============================================================================
+// PROFILE API
+// ============================================================================
 
-    throw new Error(errorMessage);
-  }
+export async function getProfile(): Promise<any> {
+  const response = await api.get('/api/candidates/profile');
+  return response.data;
+}
+
+export async function updateProfile(data: any): Promise<any> {
+  const response = await api.patch('/api/candidates/profile', data);
+  return response.data;
+}
+
+// ============================================================================
+// FILE UPLOAD API
+// ============================================================================
+
+export async function uploadFile(file: File, type: 'resume' | 'photo'): Promise<{ url: string; filename: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('type', type);
+
+  const response = await api.post('/api/upload/file', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return response.data;
 }

@@ -11,12 +11,73 @@ import type { CandidateStats, EmployerStats } from '@/types';
 // ============================================================================
 
 export interface CandidateDashboardData {
-  stats: CandidateStats;
+  candidate: {
+    id: string;
+    name: string;
+    email: string;
+    emailVerified: boolean;
+    location: string | null;
+    availability: string | null;
+    skills: string[];
+    experience: number | null;
+  };
+  applicationStats: {
+    total: number;
+    pending: number;
+    reviewed: number;
+    shortlisted: number;
+    interviewScheduled: number;
+    interviewed: number;
+    offered: number;
+    accepted: number;
+    rejected: number;
+    withdrawn: number;
+  };
+  activeApplications: number;
   recentApplications: any[];
-  recommendedJobs: any[];
-  profileCompletion: {
+  profileCompleteness: {
     percentage: number;
+    completedFields: number;
+    totalFields: number;
     missingFields: string[];
+  };
+  testInfo: {
+    hasTaken: boolean;
+    score?: number;
+    percentile?: number;
+    tier?: {
+      name: string;
+      description: string;
+      color: string;
+      emoji: string;
+    };
+    lastTestDate?: string;
+    nextTier?: any;
+    recentTests?: any[];
+    inviteSent?: boolean;
+    inviteSentAt?: string;
+    message?: string;
+  };
+  placementInfo: {
+    hasActivePlacement: boolean;
+    placement?: any;
+    totalPlacements?: number;
+    completedPlacements?: number;
+  };
+  recommendedJobs: any[];
+  recentActivity: {
+    applicationsSubmitted: number;
+    statusUpdates: number;
+    testsCompleted: number;
+  };
+  quickActions: any[];
+  summary: {
+    totalApplications: number;
+    activeApplications: number;
+    profileCompleteness: number;
+    hasTestResults: boolean;
+    testTier: string | null;
+    hasActivePlacement: boolean;
   };
 }
 

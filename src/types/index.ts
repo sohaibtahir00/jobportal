@@ -109,6 +109,7 @@ export interface Candidate {
   phone: string | null;
   resume: string | null;         // URL to resume file
   portfolio: string | null;      // URL to portfolio
+  personalWebsite: string | null; // Personal website URL
   linkedIn: string | null;       // LinkedIn profile URL
   github: string | null;         // GitHub profile URL
   bio: string | null;
@@ -119,6 +120,14 @@ export interface Candidate {
   preferredJobType: JobType | null; // UPPERCASE enum
   expectedSalary: number | null; // In dollars (check usage - may be cents)
   availability: boolean;         // Default: true
+
+  // Enhanced Job Preferences
+  desiredRoles: string[];        // Array of desired role titles
+  nicheCategory: string | null;  // AI_ML, HEALTHCARE_IT, FINTECH, CYBERSECURITY
+  remotePreference: string | null; // REMOTE, HYBRID, ONSITE
+  startDateAvailability: string | null; // ISO 8601 DateTime
+  openToContract: boolean;       // Default: false
+  willingToRelocate: boolean;    // Default: false
 
   // Skills Testing
   hasTakenTest: boolean;
@@ -142,6 +151,35 @@ export interface Candidate {
   applications?: Application[];
   testResults?: TestResult[];
   placements?: Placement[];
+  workExperiences?: WorkExperience[];
+  educationEntries?: Education[];
+}
+
+export interface WorkExperience {
+  id: string;
+  candidateId: string;
+  companyName: string;
+  jobTitle: string;
+  startDate: string;             // ISO 8601 DateTime
+  endDate: string | null;        // ISO 8601 DateTime
+  isCurrent: boolean;
+  description: string | null;
+  location: string | null;
+  createdAt: string;             // ISO 8601 DateTime
+  updatedAt: string;             // ISO 8601 DateTime
+}
+
+export interface Education {
+  id: string;
+  candidateId: string;
+  schoolName: string;
+  degree: string;
+  fieldOfStudy: string;
+  graduationYear: number;
+  gpa: number | null;
+  description: string | null;
+  createdAt: string;             // ISO 8601 DateTime
+  updatedAt: string;             // ISO 8601 DateTime
 }
 
 export interface Employer {
@@ -449,6 +487,7 @@ export interface UpdateCandidateProfileData {
   phone?: string | null;
   resume?: string | null;
   portfolio?: string | null;
+  personalWebsite?: string | null;
   linkedIn?: string | null;
   github?: string | null;
   bio?: string | null;
@@ -459,6 +498,12 @@ export interface UpdateCandidateProfileData {
   preferredJobType?: JobType | null;
   expectedSalary?: number | null; // In cents!
   availability?: boolean;
+  desiredRoles?: string[];
+  nicheCategory?: string | null;
+  remotePreference?: string | null;
+  startDateAvailability?: string | null;
+  openToContract?: boolean;
+  willingToRelocate?: boolean;
 }
 
 // Helper functions for salary conversion (cents <-> dollars)

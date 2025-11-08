@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { getProfile, updateProfile, type GetProfileResponse, type UpdateProfileRequest } from '@/lib/api/profile';
+import { getProfile, updateProfile } from '@/lib/api/profile';
 import type { User } from '@/types';
 
 interface UseProfileReturn {
@@ -13,7 +13,7 @@ interface UseProfileReturn {
   loading: boolean;
   error: string | null;
   refreshProfile: () => Promise<void>;
-  updateUserProfile: (data: UpdateProfileRequest) => Promise<void>;
+  updateUserProfile: (data: any) => Promise<void>;
 }
 
 /**
@@ -81,7 +81,7 @@ export function useProfile(): UseProfileReturn {
    *
    * @param data Profile update data (name, image)
    */
-  const updateUserProfile = async (data: UpdateProfileRequest) => {
+  const updateUserProfile = async (data: any) => {
     try {
       setError(null);
 
