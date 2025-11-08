@@ -173,12 +173,25 @@ export async function deleteJob(id: string): Promise<{ message: string }> {
  */
 export async function claimJob(
   id: string,
-  claimData: { companyName: string; contactEmail: string }
-): Promise<{ message: string; job: Job }> {
+  claimData: {
+    phone: string;
+    roleLevel: string;
+    salaryMin?: number;
+    salaryMax?: number;
+    startDateNeeded?: string;
+    candidatesNeeded?: number;
+  }
+): Promise<{
+  message: string;
+  job: Job;
+  claimMetadata: any;
+  stats: { totalApplicants: number; skillsVerifiedApplicants: number };
+  nextSteps: string[];
+}> {
   try {
     console.log('[Jobs API] Claiming job:', id);
 
-    const response = await api.post<{ message: string; job: Job }>(
+    const response = await api.post(
       `/api/jobs/${id}/claim`,
       claimData
     );
@@ -188,6 +201,52 @@ export async function claimJob(
     return response.data;
   } catch (error: any) {
     console.error('[Jobs API] Failed to claim job:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+/**
+ * GET /api/employers/claimed-jobs - Get employer's claimed jobs
+ */
+export async function getClaimedJobs(): Promise<{
+  claimedJobs: any[];
+  totalClaimed: number;
+  totalApplicants: number;
+  totalSkillsVerified: number;
+}> {
+  try {
+    console.log('[Jobs API] Fetching claimed jobs');
+
+    const response = await api.get('/api/employers/claimed-jobs');
+
+    console.log('[Jobs API] Claimed jobs fetched successfully');
+
+    return response.data;
+  } catch (error: any) {
+    console.error('[Jobs API] Failed to fetch claimed jobs:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+/**
+ * GET /api/employers/search-jobs - Search for unclaimed jobs by company name
+ */
+export async function searchUnclaimedJobs(companyName: string): Promise<{
+  jobs: any[];
+  searchQuery: string;
+  pagination: any;
+  message: string;
+}> {
+  try {
+    console.log('[Jobs API] Searching unclaimed jobs for:', companyName);
+
+    const response = await api.get(`/api/employers/search-jobs?companyName=${encodeURIComponent(companyName)}`);
+
+    console.log('[Jobs API] Unclaimed jobs search completed');
+
+    return response.data;
+  } catch (error: any) {
+    console.error('[Jobs API] Failed to search unclaimed jobs:', error.response?.data || error.message);
     throw error;
   }
 }

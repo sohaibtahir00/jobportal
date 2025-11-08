@@ -12,6 +12,8 @@ import {
   deleteJob,
   claimJob,
   searchJobs,
+  getClaimedJobs,
+  searchUnclaimedJobs,
   type GetJobsParams,
   type CreateJobData,
 } from '@/lib/api/jobs';
@@ -138,19 +140,51 @@ export function useClaimJob(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (claimData: { companyName: string; contactEmail: string }) =>
-      claimJob(id, claimData),
+    mutationFn: (claimData: {
+      phone: string;
+      roleLevel: string;
+      salaryMin?: number;
+      salaryMax?: number;
+      startDateNeeded?: string;
+      candidatesNeeded?: number;
+    }) => claimJob(id, claimData),
     onSuccess: (data) => {
       // Update the job in cache with claimed status
       queryClient.setQueryData(['job', id], data.job);
 
-      // Invalidate jobs list
+      // Invalidate jobs lists
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['claimed-jobs'] });
 
       console.log('[useClaimJob] Job claimed successfully');
     },
     onError: (error: any) => {
       console.error('[useClaimJob] Failed to claim job:', error);
     },
+  });
+}
+
+/**
+ * Hook to fetch employer's claimed jobs
+ */
+export function useClaimedJobs() {
+  return useQuery({
+    queryKey: ['claimed-jobs'],
+    queryFn: getClaimedJobs,
+    staleTime: 60 * 1000, // 1 minute
+    retry: 1,
+  });
+}
+
+/**
+ * Hook to search for unclaimed jobs by company name
+ */
+export function useSearchUnclaimedJobs(companyName: string, enabled: boolean = false) {
+  return useQuery({
+    queryKey: ['unclaimed-jobs', companyName],
+    queryFn: () => searchUnclaimedJobs(companyName),
+    enabled: enabled && companyName.length >= 2,
+    staleTime: 30 * 1000, // 30 seconds
+    retry: 1,
   });
 }
