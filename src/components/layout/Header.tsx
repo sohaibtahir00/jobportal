@@ -153,7 +153,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                         )}
                         {session.user?.role === "CANDIDATE" && (
                           <Link
-                            href="/jobs"
+                            href="/candidate/jobs"
                             className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
                             onClick={() => setUserMenuOpen(false)}
                           >
@@ -308,7 +308,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                         asChild
                       >
                         <Link
-                          href="/jobs"
+                          href="/candidate/jobs"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <Briefcase className="mr-2 h-4 w-4" />
