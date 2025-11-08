@@ -12,6 +12,11 @@ export default function CandidateLayout({
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  // 🔍 DEBUG - Remove after fixing
+  console.log('[Candidate Layout] Status:', status);
+  console.log('[Candidate Layout] Session:', session);
+  console.log('[Candidate Layout] User Role:', session?.user?.role);
+
   useEffect(() => {
     if (status === "loading") return;
 

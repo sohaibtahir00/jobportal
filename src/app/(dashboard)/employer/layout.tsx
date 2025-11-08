@@ -12,6 +12,11 @@ export default function EmployerLayout({
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  // 🔍 DEBUG - Remove after fixing
+  console.log('[Employer Layout] Status:', status);
+  console.log('[Employer Layout] Session:', session);
+  console.log('[Employer Layout] User Role:', session?.user?.role);
+
   useEffect(() => {
     if (status === "loading") return;
 
