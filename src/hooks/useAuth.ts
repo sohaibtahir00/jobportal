@@ -66,7 +66,22 @@ export function useAuth() {
     }
 
     // After registration, log the user in
-    await login({ email: data.email, password: data.password });
+    const result = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      throw new Error(result.error);
+    }
+
+    // Redirect to onboarding based on role (instead of dashboard)
+    if (data.role === "employer") {
+      router.push("/onboarding/employer");
+    } else {
+      router.push("/onboarding/candidate");
+    }
   };
 
   const logout = async () => {
