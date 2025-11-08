@@ -23,7 +23,14 @@ import {
   DollarSign,
   Lock,
 } from "lucide-react";
-import { Button, Input, Badge, Card, CardContent, useToast } from "@/components/ui";
+import {
+  Button,
+  Input,
+  Badge,
+  Card,
+  CardContent,
+  useToast,
+} from "@/components/ui";
 
 export default function Home() {
   const router = useRouter();
@@ -50,10 +57,18 @@ export default function Home() {
       // TODO: Replace with actual API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      showToast("success", "Subscribed successfully!", `Welcome aboard! Check your inbox at ${email}`);
+      showToast(
+        "success",
+        "Subscribed successfully!",
+        `Welcome aboard! Check your inbox at ${email}`
+      );
       setEmail(""); // Clear email after successful submission
     } catch (error) {
-      showToast("error", "Subscription failed", "There was a problem subscribing you to our newsletter. Please try again.");
+      showToast(
+        "error",
+        "Subscription failed",
+        "There was a problem subscribing you to our newsletter. Please try again."
+      );
     } finally {
       setIsNewsletterLoading(false);
     }
@@ -148,16 +163,33 @@ export default function Home() {
 
   const nicheCategories = [
     { id: "all", label: "All Jobs", count: featuredJobs.length },
-    { id: "ai-ml", label: "AI/ML Engineers", count: featuredJobs.filter(j => j.niche === "ai-ml").length },
-    { id: "healthcare", label: "Healthcare IT", count: featuredJobs.filter(j => j.niche === "healthcare").length },
-    { id: "fintech", label: "Fintech Engineers", count: featuredJobs.filter(j => j.niche === "fintech").length },
-    { id: "cybersecurity", label: "Cybersecurity", count: featuredJobs.filter(j => j.niche === "cybersecurity").length },
+    {
+      id: "ai-ml",
+      label: "AI/ML Engineers",
+      count: featuredJobs.filter((j) => j.niche === "ai-ml").length,
+    },
+    {
+      id: "healthcare",
+      label: "Healthcare IT",
+      count: featuredJobs.filter((j) => j.niche === "healthcare").length,
+    },
+    {
+      id: "fintech",
+      label: "Fintech Engineers",
+      count: featuredJobs.filter((j) => j.niche === "fintech").length,
+    },
+    {
+      id: "cybersecurity",
+      label: "Cybersecurity",
+      count: featuredJobs.filter((j) => j.niche === "cybersecurity").length,
+    },
   ];
 
   // Filter jobs based on selected niche
-  const filteredJobs = selectedNiche === "all"
-    ? featuredJobs
-    : featuredJobs.filter(job => job.niche === selectedNiche);
+  const filteredJobs =
+    selectedNiche === "all"
+      ? featuredJobs
+      : featuredJobs.filter((job) => job.niche === selectedNiche);
 
   const howItWorksSteps = [
     {
@@ -269,24 +301,31 @@ export default function Home() {
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `radial-gradient(circle, #1d4ed8 1px, transparent 1px)`,
-            backgroundSize: '24px 24px'
+            backgroundSize: "24px 24px",
           }}
         />
 
         {/* Floating decorative elements with blur */}
         <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gradient-to-br from-primary-400/30 to-accent-400/30 blur-3xl animate-pulse-slow" />
-        <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-accent-400/30 to-success-400/30 blur-3xl animate-pulse-slow" style={{ animationDelay: '1000ms' }} />
+        <div
+          className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-accent-400/30 to-success-400/30 blur-3xl animate-pulse-slow"
+          style={{ animationDelay: "1000ms" }}
+        />
         <div className="absolute right-1/4 top-1/4 h-48 w-48 rounded-full bg-gradient-to-br from-primary-300/20 to-accent-300/20 blur-2xl animate-float" />
 
         <div className="container relative z-10">
           <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="primary" size="lg" className="mb-6 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg shadow-primary-500/50 hover:shadow-xl hover:shadow-primary-500/60 transition-all animate-pulse-slow">
+            <Badge
+              variant="primary"
+              size="lg"
+              className="mb-6 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg shadow-primary-500/50 hover:shadow-xl hover:shadow-primary-500/60 transition-all animate-pulse-slow"
+            >
               🚀 #1 AI/ML Job Board
             </Badge>
             <h1 className="mb-6 text-4xl font-bold leading-tight text-secondary-900 md:text-5xl lg:text-6xl">
               Land Your Dream{" "}
               <span className="bg-gradient-to-r from-primary-600 via-accent-500 to-success-500 bg-clip-text text-transparent animate-gradient-x font-extrabold">
-                [Niche] Job
+                AI/ML Job
               </span>{" "}
               in 30 Days
             </h1>
@@ -301,19 +340,25 @@ export default function Home() {
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success-500">
                   <CheckCircle2 className="h-4 w-4 text-white" />
                 </div>
-                <span className="font-semibold text-success-700">2,000+ candidates placed</span>
+                <span className="font-semibold text-success-700">
+                  2,000+ candidates placed
+                </span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 border border-primary-200">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-500">
                   <TrendingUp className="h-4 w-4 text-white" />
                 </div>
-                <span className="font-semibold text-primary-700">$18k avg. salary increase</span>
+                <span className="font-semibold text-primary-700">
+                  $18k avg. salary increase
+                </span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-accent-50 border border-accent-200">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-500">
                   <Briefcase className="h-4 w-4 text-white" />
                 </div>
-                <span className="font-semibold text-accent-700">3,000+ verified jobs</span>
+                <span className="font-semibold text-accent-700">
+                  3,000+ verified jobs
+                </span>
               </div>
             </div>
 
@@ -338,7 +383,10 @@ export default function Home() {
                         />
                       </div>
                       <div className="relative flex-1">
-                        <label htmlFor="hero-location-search" className="sr-only">
+                        <label
+                          htmlFor="hero-location-search"
+                          className="sr-only"
+                        >
                           Filter by location: city, state, or remote
                         </label>
                         <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
@@ -351,7 +399,11 @@ export default function Home() {
                           className="h-12 w-full rounded-lg border-2 border-secondary-200 bg-white pl-11 pr-4 text-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/20 hover:border-secondary-300"
                         />
                       </div>
-                      <Button type="submit" size="lg" className="h-12 px-8 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="h-12 px-8 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                      >
                         <Search className="mr-2 h-5 w-5" />
                         Search Jobs
                       </Button>
@@ -363,13 +415,23 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button variant="primary" size="lg" asChild className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all duration-300">
+              <Button
+                variant="primary"
+                size="lg"
+                asChild
+                className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all duration-300"
+              >
                 <Link href="/jobs">
                   Browse Jobs
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" asChild className="hover:bg-primary-50 hover:border-primary-600 hover:text-primary-700 transition-all duration-300">
+              <Button
+                variant="outline"
+                size="lg"
+                asChild
+                className="hover:bg-primary-50 hover:border-primary-600 hover:text-primary-700 transition-all duration-300"
+              >
                 <Link href="/employers">For Employers</Link>
               </Button>
             </div>
@@ -377,7 +439,9 @@ export default function Home() {
             {/* Skills Verification Badge */}
             <div className="mt-6 flex items-center justify-center gap-2 text-sm text-secondary-600">
               <span className="text-xl">⭐</span>
-              <span>All candidates are skills-verified with proctored assessments</span>
+              <span>
+                All candidates are skills-verified with proctored assessments
+              </span>
             </div>
           </div>
         </div>
@@ -394,7 +458,10 @@ export default function Home() {
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className="flex flex-col items-center text-center group">
+                <div
+                  key={index}
+                  className="flex flex-col items-center text-center group"
+                >
                   <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-accent-100 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all">
                     <Icon className="h-7 w-7 text-primary-600" />
                   </div>
@@ -415,14 +482,18 @@ export default function Home() {
       <section className="relative bg-gradient-to-br from-secondary-50 via-white to-secondary-50 py-20">
         <div className="container">
           <div className="mb-12 text-center">
-            <Badge variant="primary" className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all">
+            <Badge
+              variant="primary"
+              className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all"
+            >
               Featured Opportunities
             </Badge>
             <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
               Latest Tech Jobs
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-secondary-600">
-              Explore opportunities across AI/ML, Healthcare IT, Fintech, and Cybersecurity
+              Explore opportunities across AI/ML, Healthcare IT, Fintech, and
+              Cybersecurity
             </p>
           </div>
 
@@ -531,7 +602,12 @@ export default function Home() {
                     <span className="text-sm font-semibold text-secondary-900">
                       {job.salary}
                     </span>
-                    <Button variant="outline" size="sm" asChild className="hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:border-primary-300 transition-all">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:border-primary-300 transition-all"
+                    >
                       <Link href={`/jobs/${job.id}`}>View Details</Link>
                     </Button>
                   </div>
@@ -545,7 +621,12 @@ export default function Home() {
           </div>
 
           <div className="mt-12 text-center">
-            <Button variant="primary" size="lg" asChild className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all">
+            <Button
+              variant="primary"
+              size="lg"
+              asChild
+              className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all"
+            >
               <Link href="/jobs">
                 View All Jobs
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -559,7 +640,10 @@ export default function Home() {
       <section className="bg-white py-20">
         <div className="container">
           <div className="mb-12 text-center">
-            <Badge variant="primary" className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all">
+            <Badge
+              variant="primary"
+              className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all"
+            >
               Simple Process
             </Badge>
             <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
@@ -602,7 +686,12 @@ export default function Home() {
           </div>
 
           <div className="mt-12 text-center">
-            <Button variant="primary" size="lg" asChild className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all">
+            <Button
+              variant="primary"
+              size="lg"
+              asChild
+              className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all"
+            >
               <Link href="/signup">Get Started Free</Link>
             </Button>
           </div>
@@ -613,14 +702,18 @@ export default function Home() {
       <section className="bg-gradient-to-br from-secondary-50 to-white py-20">
         <div className="container">
           <div className="mb-12 text-center">
-            <Badge variant="primary" className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all">
+            <Badge
+              variant="primary"
+              className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all"
+            >
               Our Specializations
             </Badge>
             <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
               Find Jobs in Your Niche
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-secondary-600">
-              We specialize in four high-demand tech sectors with verified employers and competitive salaries
+              We specialize in four high-demand tech sectors with verified
+              employers and competitive salaries
             </p>
           </div>
 
@@ -639,7 +732,9 @@ export default function Home() {
                     />
 
                     {/* Icon */}
-                    <div className={`relative mb-4 flex h-14 w-14 items-center justify-center rounded-lg ${spec.bgColor} shadow-lg group-hover:scale-110 transition-transform`}>
+                    <div
+                      className={`relative mb-4 flex h-14 w-14 items-center justify-center rounded-lg ${spec.bgColor} shadow-lg group-hover:scale-110 transition-transform`}
+                    >
                       <Icon className={`h-7 w-7 ${spec.iconColor}`} />
                     </div>
 
@@ -653,7 +748,10 @@ export default function Home() {
                           {spec.jobCount}
                         </p>
                         <p className="text-sm text-secondary-600">
-                          Avg salary: <span className="font-semibold text-success-600">{spec.salary}</span>
+                          Avg salary:{" "}
+                          <span className="font-semibold text-success-600">
+                            {spec.salary}
+                          </span>
                         </p>
                       </div>
 
@@ -681,7 +779,12 @@ export default function Home() {
             <p className="mb-4 text-secondary-600">
               Not sure which niche is right for you?
             </p>
-            <Button variant="primary" size="lg" asChild className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all">
+            <Button
+              variant="primary"
+              size="lg"
+              asChild
+              className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all"
+            >
               <Link href="/jobs">Browse All Jobs</Link>
             </Button>
           </div>
@@ -692,7 +795,10 @@ export default function Home() {
       <section className="bg-gradient-to-br from-secondary-50 to-primary-50 py-20">
         <div className="container">
           <div className="mb-12 text-center">
-            <Badge variant="primary" className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all">
+            <Badge
+              variant="primary"
+              className="mb-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-lg hover:shadow-xl transition-all"
+            >
               ⭐ Skills Verification
             </Badge>
             <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
@@ -793,7 +899,9 @@ export default function Home() {
                         <span className="text-5xl font-bold text-primary-600">
                           88
                         </span>
-                        <span className="text-2xl text-secondary-400">/100</span>
+                        <span className="text-2xl text-secondary-400">
+                          /100
+                        </span>
                       </div>
                       <div className="mb-2 flex items-center gap-2">
                         <Badge variant="primary">Top 12%</Badge>
@@ -883,14 +991,20 @@ export default function Home() {
 
             {/* CTA */}
             <div className="mt-12 text-center">
-              <Button variant="primary" size="lg" asChild className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all">
+              <Button
+                variant="primary"
+                size="lg"
+                asChild
+                className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all"
+              >
                 <Link href="/skills-assessment">
                   Learn More About Skills Assessment
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <p className="mt-4 text-sm text-secondary-600">
-                Assessment takes 60 minutes • Valid for 12 months • Free for job seekers
+                Assessment takes 60 minutes • Valid for 12 months • Free for job
+                seekers
               </p>
             </div>
           </div>
@@ -905,14 +1019,18 @@ export default function Home() {
 
         <div className="container relative z-10">
           <div className="mb-12 text-center">
-            <Badge variant="secondary" className="mb-4 bg-white/20 text-white border-white/30 shadow-lg">
+            <Badge
+              variant="secondary"
+              className="mb-4 bg-white/20 text-white border-white/30 shadow-lg"
+            >
               For Employers
             </Badge>
             <h2 className="mb-4 text-3xl font-bold md:text-4xl">
               Hire Top AI/ML Engineers in Weeks, Not Months
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-primary-100">
-              Pay only when you hire. 15-20% success fee. Every candidate is skills-verified.
+              Pay only when you hire. 15-20% success fee. Every candidate is
+              skills-verified.
             </p>
           </div>
 
@@ -920,10 +1038,12 @@ export default function Home() {
           <div className="mx-auto mb-12 max-w-3xl">
             <div className="rounded-lg border-2 border-white/30 bg-white/10 p-6 text-center backdrop-blur-sm shadow-xl hover:shadow-2xl hover:bg-white/15 transition-all">
               <p className="text-lg font-semibold md:text-xl">
-                💼 Your jobs may already be on our platform with qualified candidates waiting
+                💼 Your jobs may already be on our platform with qualified
+                candidates waiting
               </p>
               <p className="mt-2 text-sm text-primary-100">
-                We aggregate postings from across the web. Claim your listings now to connect with pre-vetted talent.
+                We aggregate postings from across the web. Claim your listings
+                now to connect with pre-vetted talent.
               </p>
             </div>
           </div>
