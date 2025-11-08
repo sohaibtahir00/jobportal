@@ -83,6 +83,25 @@ export const authOptions: AuthOptions = {
       }
       return session;
     },
+
+    async redirect({ url, baseUrl }) {
+      // If the url is already absolute (starts with http), use it as is
+      if (url.startsWith("http")) {
+        // But only if it's the same domain
+        if (url.startsWith(baseUrl)) {
+          return url;
+        }
+        return baseUrl;
+      }
+
+      // If it's a relative URL, prepend the baseUrl
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+
+      // If it's just a path without leading slash
+      return `${baseUrl}/${url}`;
+    },
   },
 
   pages: {
@@ -90,6 +109,19 @@ export const authOptions: AuthOptions = {
     error: "/login",
   },
 
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === "production" ? "__Secure-" : ""}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
+
+  useSecureCookies: process.env.NODE_ENV === "production",
   debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET || "development-secret-change-in-production",
 };
