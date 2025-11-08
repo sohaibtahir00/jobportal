@@ -6,6 +6,7 @@ import { useCreateJob } from "@/hooks/useJobs";
 import { Loader2, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import Link from "next/link";
+import { transformJobFormToBackendPayload } from "@/lib/transformers/job";
 
 export default function NewJobPage() {
   const router = useRouter();
@@ -39,7 +40,8 @@ export default function NewJobPage() {
     e.preventDefault();
 
     try {
-      await createJob.mutateAsync({
+      // Transform form data to match backend expectations
+      const payload = transformJobFormToBackendPayload({
         title: formData.title,
         description: formData.description,
         niche: formData.niche,
@@ -50,18 +52,20 @@ export default function NewJobPage() {
         salaryMin: formData.salaryMin ? parseInt(formData.salaryMin) : undefined,
         salaryMax: formData.salaryMax ? parseInt(formData.salaryMax) : undefined,
         currency: formData.currency,
-        skills: formData.skills ? formData.skills.split(",").map((s) => s.trim()) : undefined,
-        benefits: formData.benefits
-          ? formData.benefits.split(",").map((s) => s.trim())
-          : undefined,
+        skills: formData.skills,
+        benefits: formData.benefits,
       });
+
+      console.log('[Job Form] Submitting payload:', payload);
+
+      await createJob.mutateAsync(payload as any);
 
       // Success - redirect after delay
       setTimeout(() => {
         router.push("/employer/dashboard");
       }, 2000);
     } catch (error) {
-      console.error("Job posting failed:", error);
+      console.error("[Job Form] Submission error:", error);
     }
   };
 

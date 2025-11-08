@@ -37,17 +37,18 @@ export interface GetJobsResponse {
 export interface CreateJobData {
   title: string;
   description: string;
-  niche: string;
+  requirements: string;
+  responsibilities: string;
+  type: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP';
   location: string;
-  remoteType: 'REMOTE' | 'HYBRID' | 'ONSITE';
-  experienceLevel: 'ENTRY' | 'MID' | 'SENIOR' | 'LEAD';
-  employmentType: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP';
+  remote: boolean;
   salaryMin?: number;
   salaryMax?: number;
-  currency?: string;
+  experienceLevel: 'ENTRY' | 'MID' | 'SENIOR' | 'LEAD';
   skills?: string[];
-  benefits?: string[];
-  applicationDeadline?: string;
+  benefits?: string;
+  deadline?: string;
+  slots?: number;
 }
 
 // ============================================================================
@@ -108,7 +109,7 @@ export async function getJobById(id: string): Promise<Job> {
  */
 export async function createJob(jobData: CreateJobData): Promise<{ message: string; job: Job }> {
   try {
-    console.log('[Jobs API] Creating job:', jobData.title);
+    console.log('[Jobs API] Creating job with full payload:', jobData);
 
     const response = await api.post<{ message: string; job: Job }>('/api/jobs', jobData);
 
@@ -116,7 +117,13 @@ export async function createJob(jobData: CreateJobData): Promise<{ message: stri
 
     return response.data;
   } catch (error: any) {
-    console.error('[Jobs API] Failed to create job:', error.response?.data || error.message);
+    console.error('[Jobs API] Create job error - Full details:');
+    console.error('Status:', error.response?.status);
+    console.error('Status Text:', error.response?.statusText);
+    console.error('Error Data:', error.response?.data);
+    console.error('Error Message:', error.response?.data?.message);
+    console.error('Validation Errors:', error.response?.data?.errors);
+    console.error('Payload sent:', jobData);
     throw error;
   }
 }
