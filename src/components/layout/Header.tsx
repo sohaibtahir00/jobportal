@@ -171,7 +171,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                   <Link href="/login">Sign In</Link>
                 </Button>
                 <Button variant="primary" size="sm" asChild>
-                  <Link href="/employer/jobs/new">Post a Job</Link>
+                  <Link href="/register">Get Started</Link>
                 </Button>
               </>
             )}
@@ -273,8 +273,8 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                     </Link>
                   </Button>
                   <Button variant="primary" className="w-full justify-center" asChild>
-                    <Link href="/employer/jobs/new" onClick={() => setMobileMenuOpen(false)}>
-                      Post a Job
+                    <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                      Get Started
                     </Link>
                   </Button>
                 </>
