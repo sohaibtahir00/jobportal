@@ -17,11 +17,13 @@ import {
   Share2,
   Bookmark,
   Loader2,
+  Info,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
 import { JobCard } from "@/components/jobs/JobCard";
 import ApplicationForm from "@/components/jobs/ApplicationForm";
+import { ApplicationSuccessModal } from "@/components/jobs/ApplicationSuccessModal";
 import { generateJobPostingJsonLd } from "@/lib/seo";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useJob, useJobs } from "@/hooks/useJobs";
@@ -30,6 +32,7 @@ export default function JobDetailPage() {
   const params = useParams();
   const jobId = params.id as string;
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [jsonLd, setJsonLd] = useState<Record<string, unknown> | null>(null);
 
   // Fetch job from API
@@ -224,6 +227,18 @@ export default function JobDetailPage() {
               <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-success-200 bg-success-50 px-4 py-2">
                 <span className="text-success-600">✓</span>
                 <span className="font-semibold text-success-900">Verified Employer</span>
+              </div>
+            )}
+
+            {/* Unclaimed Job Notice */}
+            {!(job as any).isClaimed && (
+              <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <p className="flex items-start gap-2 text-sm text-blue-800">
+                  <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                  <span>
+                    This job is publicly listed. Apply to get priority when the employer claims it.
+                  </span>
+                </p>
               </div>
             )}
 
@@ -515,6 +530,15 @@ export default function JobDetailPage() {
           jobTitle={job.title}
           companyName={job.employer?.companyName || 'Company'}
           jobId={job.id}
+          onSuccess={() => setShowSuccessModal(true)}
+        />
+
+        {/* Application Success Modal with Skills Assessment Promotion */}
+        <ApplicationSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          jobTitle={job.title}
+          niche={job.niche || 'Tech'}
         />
           </div>
         </div>

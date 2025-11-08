@@ -15,30 +15,33 @@ import {
   Star,
   ChevronLeft,
   ChevronRight,
+  Search,
+  CheckCircle,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 
 export default function EmployersPage() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [companySearch, setCompanySearch] = useState("");
 
   const benefits = [
     {
       icon: Users,
-      title: "Pre-Vetted Talent Pool",
+      title: "Skills-Verified Talent",
       description:
-        "Access a curated network of 85,000+ AI/ML professionals who have been thoroughly screened and verified for their technical expertise.",
-    },
-    {
-      icon: Zap,
-      title: "Faster Time-to-Hire",
-      description:
-        "Reduce your hiring timeline by 50%. Our streamlined process helps you find and hire qualified candidates in weeks, not months.",
+        "Every candidate tested with proctored exams. Only the top 20% pass our assessments.",
     },
     {
       icon: Shield,
-      title: "Quality Guarantee",
+      title: "Zero Risk",
       description:
-        "Every candidate profile includes verified credentials, portfolio reviews, and technical assessments to ensure top-tier quality.",
+        "No upfront costs. No retainers. Pay only when you successfully hire.",
+    },
+    {
+      icon: Zap,
+      title: "Fast Turnaround",
+      description:
+        "Reduce your hiring timeline by 50%. Our streamlined process helps you find and hire qualified candidates in weeks, not months.",
     },
     {
       icon: Target,
@@ -48,34 +51,36 @@ export default function EmployersPage() {
     },
   ];
 
-  const timeline = [
+  const claimConvertSteps = [
     {
       step: "1",
-      title: "Post Your Job",
-      description:
-        "Create a detailed job listing in minutes. Specify your requirements, tech stack, and compensation range.",
-      time: "5 minutes",
+      title: "Check if Listed",
+      description: "Search for your company's jobs",
     },
     {
       step: "2",
-      title: "Review Candidates",
-      description:
-        "Receive applications from qualified candidates. Review their profiles, portfolios, and technical assessments.",
-      time: "1-2 days",
+      title: "Claim Jobs",
+      description: "See qualified candidates immediately",
     },
     {
       step: "3",
-      title: "Interview Top Talent",
-      description:
-        "Conduct interviews with pre-screened candidates who match your criteria. Schedule directly through our platform.",
-      time: "1-2 weeks",
+      title: "Review Skills",
+      description: "Skills Score Cards show abilities",
     },
     {
       step: "4",
-      title: "Make an Offer",
-      description:
-        "Extend offers to your chosen candidates. We facilitate the entire hiring process including offer negotiation.",
-      time: "3-5 days",
+      title: "Interview",
+      description: "Interview your top picks",
+    },
+    {
+      step: "5",
+      title: "Hire",
+      description: "Make your hiring decision",
+    },
+    {
+      step: "6",
+      title: "Pay Fee",
+      description: "15-20% success fee only",
     },
   ];
 
@@ -128,6 +133,12 @@ export default function EmployersPage() {
     );
   };
 
+  const handleCompanySearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: Implement company search functionality
+    console.log("Searching for:", companySearch);
+  };
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -142,11 +153,10 @@ export default function EmployersPage() {
               🚀 Trusted by 2,500+ Companies
             </Badge>
             <h1 className="mb-6 text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
-              Hire Pre-Vetted AI/ML Talent
+              Hire Top AI/ML Engineers in Weeks, Not Months
             </h1>
             <p className="mb-8 text-xl text-primary-100 md:text-2xl">
-              Access the largest pool of qualified AI and Machine Learning
-              professionals. Hire faster, smarter, and with confidence.
+              Pay only when you hire. 15-20% success fee. Every candidate is skills-verified.
             </p>
 
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -156,8 +166,8 @@ export default function EmployersPage() {
                 className="bg-white text-primary-600 hover:bg-primary-50"
                 asChild
               >
-                <Link href="/employer/jobs/new">
-                  Post a Job - It's Free
+                <Link href="/claim">
+                  Claim Your Job
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -167,9 +177,13 @@ export default function EmployersPage() {
                 className="border-white text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="/about">Talk to Sales</Link>
+                <Link href="/about">Schedule a Call</Link>
               </Button>
             </div>
+
+            <p className="mt-6 text-sm text-primary-100">
+              Your jobs may already be on our platform with qualified candidates waiting
+            </p>
 
             {/* Quick Stats */}
             <div className="mt-12 grid grid-cols-2 gap-6 md:grid-cols-4">
@@ -229,176 +243,301 @@ export default function EmployersPage() {
         </div>
       </section>
 
-      {/* How It Works Timeline */}
+      {/* Claim & Convert Process */}
       <section className="bg-secondary-50 py-20">
         <div className="container">
           <div className="mb-12 text-center">
             <Badge variant="primary" className="mb-4">
-              Simple Process
+              How It Works
             </Badge>
             <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
-              How It Works
+              The Claim & Convert Process
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-secondary-600">
-              From posting to hiring in 4 simple steps
+              We&apos;ve already aggregated thousands of jobs from company career pages.
+              Yours might be one of them - with candidates already applying.
             </p>
           </div>
 
-          <div className="relative">
-            {/* Timeline Line - Desktop */}
-            <div className="absolute left-0 right-0 top-12 hidden h-1 bg-gradient-to-r from-primary-200 via-primary-400 to-primary-600 md:block" />
-
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-              {timeline.map((item, index) => (
-                <div key={index} className="relative">
-                  <Card className="h-full">
-                    <CardContent className="p-6">
-                      <div className="mb-4 flex items-center justify-between">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-600 text-xl font-bold text-white">
-                          {item.step}
-                        </div>
-                        <Badge variant="outline" size="sm">
-                          <Clock className="mr-1 h-3 w-3" />
-                          {item.time}
-                        </Badge>
-                      </div>
-                      <h3 className="mb-2 text-lg font-semibold text-secondary-900">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-secondary-600">
-                        {item.description}
-                      </p>
-                    </CardContent>
-                  </Card>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {claimConvertSteps.map((step, index) => (
+              <div key={index} className="text-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-2xl font-bold text-white shadow-lg mx-auto">
+                  {step.step}
                 </div>
-              ))}
-            </div>
+                <h3 className="mb-2 font-semibold text-secondary-900">{step.title}</h3>
+                <p className="text-sm text-secondary-600">{step.description}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <Button variant="primary" size="lg" asChild>
+              <Link href="/claim">
+                Check If Your Jobs Are Listed
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="bg-white py-20">
+      {/* Pricing Section - Tiered */}
+      <section className="bg-gradient-to-br from-blue-50 to-purple-50 py-20">
         <div className="container">
           <div className="mb-12 text-center">
             <Badge variant="primary" className="mb-4">
               Transparent Pricing
             </Badge>
             <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
-              Simple, Performance-Based Pricing
+              Simple Success-Based Pricing
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-secondary-600">
-              Only pay when you make a successful hire. No upfront costs or
-              hidden fees.
+              No upfront costs. Pay only when you hire.
             </p>
           </div>
 
-          <div className="mx-auto max-w-4xl">
-            <Card className="border-2 border-primary-200 shadow-xl">
-              <CardContent className="p-8 md:p-12">
-                <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
-                  {/* Pricing Info */}
+          <div className="mx-auto max-w-5xl">
+            <div className="overflow-hidden rounded-xl bg-white shadow-lg">
+              <div className="grid divide-x divide-secondary-200 md:grid-cols-3">
+                {/* Junior/Mid Tier */}
+                <div className="p-8 text-center">
+                  <div className="mb-2 text-4xl font-bold text-blue-600">15%</div>
+                  <div className="mb-4 text-sm text-secondary-600">of annual salary</div>
+                  <h3 className="mb-2 text-lg font-semibold">Junior/Mid-Level</h3>
+                  <p className="text-sm text-secondary-600">$80k - $130k salary</p>
+                  <div className="mt-4 border-t border-secondary-200 pt-4">
+                    <p className="text-xs text-secondary-500">Example:</p>
+                    <p className="font-semibold">$100k hire = $15k fee</p>
+                  </div>
+                </div>
+
+                {/* Senior Tier */}
+                <div className="bg-blue-50 p-8 text-center">
+                  <div className="mb-2 text-4xl font-bold text-blue-600">18%</div>
+                  <div className="mb-4 text-sm text-secondary-600">of annual salary</div>
+                  <h3 className="mb-2 text-lg font-semibold">Senior</h3>
+                  <p className="text-sm text-secondary-600">$130k - $170k salary</p>
+                  <div className="mt-4 border-t border-blue-200 pt-4">
+                    <p className="text-xs text-secondary-500">Example:</p>
+                    <p className="font-semibold">$150k hire = $27k fee</p>
+                  </div>
+                </div>
+
+                {/* Lead/Staff Tier */}
+                <div className="p-8 text-center">
+                  <div className="mb-2 text-4xl font-bold text-blue-600">20%</div>
+                  <div className="mb-4 text-sm text-secondary-600">of annual salary</div>
+                  <h3 className="mb-2 text-lg font-semibold">Lead/Staff</h3>
+                  <p className="text-sm text-secondary-600">$170k+ salary</p>
+                  <div className="mt-4 border-t border-secondary-200 pt-4">
+                    <p className="text-xs text-secondary-500">Example:</p>
+                    <p className="font-semibold">$200k hire = $40k fee</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Guarantees */}
+              <div className="bg-secondary-50 px-8 py-6">
+                <div className="grid gap-4 text-center text-sm md:grid-cols-3">
                   <div>
-                    <div className="mb-6">
-                      <div className="mb-2 text-sm font-medium text-secondary-600">
-                        Success-Based Fee
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-6xl font-bold text-primary-600">
-                          18%
-                        </span>
-                        <span className="text-xl text-secondary-600">
-                          of first year salary
-                        </span>
-                      </div>
-                    </div>
+                    <CheckCircle className="mr-2 inline h-5 w-5 text-green-600" />
+                    <span className="font-semibold">90-Day Guarantee</span>
+                  </div>
+                  <div>
+                    <CheckCircle className="mr-2 inline h-5 w-5 text-green-600" />
+                    <span className="font-semibold">No Upfront Costs</span>
+                  </div>
+                  <div>
+                    <CheckCircle className="mr-2 inline h-5 w-5 text-green-600" />
+                    <span className="font-semibold">Pay Only When You Hire</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                    <div className="space-y-3 border-t border-secondary-200 pt-6">
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-success-600" />
-                        <span className="text-secondary-700">
-                          No upfront costs or subscription fees
-                        </span>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-success-600" />
-                        <span className="text-secondary-700">
-                          Unlimited job postings
-                        </span>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-success-600" />
-                        <span className="text-secondary-700">
-                          Access to entire talent pool
-                        </span>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-success-600" />
-                        <span className="text-secondary-700">
-                          90-day replacement guarantee
-                        </span>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-success-600" />
-                        <span className="text-secondary-700">
-                          Dedicated account manager
-                        </span>
-                      </div>
+            {/* Comparison */}
+            <div className="mt-8 text-center">
+              <p className="text-secondary-600">
+                <span className="font-semibold text-green-600">Save up to 60%</span> vs
+                traditional agencies charging 25-30%
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Skills Verification Advantage */}
+      <section className="bg-white py-20">
+        <div className="container">
+          <div className="mb-12 text-center">
+            <Badge variant="primary" className="mb-4">
+              Our Advantage
+            </Badge>
+            <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
+              Our Skills Score Card Gives You 5x More Signal Than a Resume
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-secondary-600">
+              See technical skills, problem-solving ability, and predicted job fit
+            </p>
+          </div>
+
+          <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2">
+            {/* Left: Description */}
+            <div>
+              <h3 className="mb-6 text-2xl font-semibold">
+                What You&apos;ll See in Every Skills Score Card:
+              </h3>
+              <ul className="space-y-4">
+                <li className="flex items-start">
+                  <div className="mr-4 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
+                    <CheckCircle className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Overall Score (0-100)</h4>
+                    <p className="text-sm text-secondary-600">
+                      Percentile ranking vs other candidates
+                    </p>
+                  </div>
+                </li>
+                <li className="flex items-start">
+                  <div className="mr-4 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
+                    <CheckCircle className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Technical Skills Breakdown</h4>
+                    <p className="text-sm text-secondary-600">
+                      Scores for each required technology
+                    </p>
+                  </div>
+                </li>
+                <li className="flex items-start">
+                  <div className="mr-4 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
+                    <CheckCircle className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Problem-Solving Score</h4>
+                    <p className="text-sm text-secondary-600">
+                      How they approach complex challenges
+                    </p>
+                  </div>
+                </li>
+                <li className="flex items-start">
+                  <div className="mr-4 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
+                    <CheckCircle className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Predicted Job Fit</h4>
+                    <p className="text-sm text-secondary-600">
+                      Match percentage for your specific role
+                    </p>
+                  </div>
+                </li>
+                <li className="flex items-start">
+                  <div className="mr-4 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
+                    <CheckCircle className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Verified by Proctoring</h4>
+                    <p className="text-sm text-secondary-600">
+                      AI + human review ensures authenticity
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            {/* Right: Example Score Card */}
+            <div className="rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 p-8 shadow-lg">
+              <div className="rounded-lg bg-white p-6">
+                {/* Header */}
+                <div className="mb-6 flex items-center justify-between border-b pb-4">
+                  <div>
+                    <h4 className="text-lg font-bold">Sarah Johnson</h4>
+                    <p className="text-sm text-secondary-600">Senior ML Engineer</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-green-600">94</div>
+                    <div className="text-xs text-secondary-600">Top 6%</div>
+                  </div>
+                </div>
+
+                {/* Performance Tier */}
+                <div className="mb-6">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm font-semibold">Performance Tier</span>
+                    <span className="text-warning-500">⭐⭐⭐⭐⭐</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-secondary-200">
+                    <div
+                      className="h-2 rounded-full bg-green-500"
+                      style={{ width: "94%" }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Skills Breakdown */}
+                <div className="space-y-3">
+                  <div>
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span>Python & TensorFlow</span>
+                      <span className="font-semibold">96/100</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-secondary-200">
+                      <div
+                        className="h-1.5 rounded-full bg-blue-600"
+                        style={{ width: "96%" }}
+                      ></div>
                     </div>
                   </div>
-
-                  {/* Example Calculation */}
-                  <div className="rounded-lg bg-secondary-50 p-6">
-                    <h3 className="mb-4 text-lg font-semibold text-secondary-900">
-                      Example Calculation
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between border-b border-secondary-200 pb-3">
-                        <span className="text-secondary-600">
-                          Candidate Salary
-                        </span>
-                        <span className="font-semibold text-secondary-900">
-                          $150,000
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between border-b border-secondary-200 pb-3">
-                        <span className="text-secondary-600">Fee Rate</span>
-                        <span className="font-semibold text-secondary-900">
-                          18%
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between pt-2">
-                        <span className="text-lg font-semibold text-secondary-900">
-                          Total Fee
-                        </span>
-                        <span className="text-2xl font-bold text-primary-600">
-                          $27,000
-                        </span>
-                      </div>
+                  <div>
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span>Machine Learning</span>
+                      <span className="font-semibold">95/100</span>
                     </div>
-
-                    <div className="mt-6 rounded-md bg-primary-50 p-4">
-                      <div className="flex items-start gap-2">
-                        <TrendingUp className="h-5 w-5 flex-shrink-0 text-primary-600" />
-                        <p className="text-sm text-secondary-700">
-                          <strong>Save up to 60%</strong> compared to
-                          traditional recruiting agencies (25-30% fee)
-                        </p>
-                      </div>
+                    <div className="h-1.5 rounded-full bg-secondary-200">
+                      <div
+                        className="h-1.5 rounded-full bg-blue-600"
+                        style={{ width: "95%" }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span>System Design</span>
+                      <span className="font-semibold">92/100</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-secondary-200">
+                      <div
+                        className="h-1.5 rounded-full bg-blue-600"
+                        style={{ width: "92%" }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span>Problem Solving</span>
+                      <span className="font-semibold">91/100</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-secondary-200">
+                      <div
+                        className="h-1.5 rounded-full bg-blue-600"
+                        style={{ width: "91%" }}
+                      ></div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-8 border-t border-secondary-200 pt-8 text-center">
-                  <Button variant="primary" size="lg" asChild>
-                    <Link href="/employer/jobs/new">
-                      Get Started Free
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Link>
-                  </Button>
+                {/* Verification Badge */}
+                <div className="mt-6 border-t pt-4 text-center">
+                  <div className="inline-flex items-center gap-2 text-sm text-green-600">
+                    <CheckCircle className="h-4 w-4" />
+                    <span className="font-semibold">Skills Verified</span>
+                  </div>
+                  <p className="mt-1 text-xs text-secondary-500">Assessed: March 15, 2025</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -414,8 +553,8 @@ export default function EmployersPage() {
               What Our Clients Say
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-secondary-600">
-              Join thousands of companies who have successfully hired through
-              our platform
+              Join thousands of companies who have successfully hired through our
+              platform
             </p>
           </div>
 
@@ -437,7 +576,7 @@ export default function EmployersPage() {
                 </div>
 
                 <blockquote className="mb-8 text-center text-xl leading-relaxed text-secondary-700">
-                  "{testimonials[currentTestimonial].content}"
+                  &quot;{testimonials[currentTestimonial].content}&quot;
                 </blockquote>
 
                 <div className="flex flex-col items-center gap-4">
@@ -494,43 +633,96 @@ export default function EmployersPage() {
         </div>
       </section>
 
+      {/* Companies We've Helped */}
+      <section className="bg-white py-20">
+        <div className="container">
+          <div className="mb-12 text-center">
+            <Badge variant="primary" className="mb-4">
+              Trusted Worldwide
+            </Badge>
+            <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
+              Trusted by Leading Companies
+            </h2>
+            <p className="text-secondary-600">
+              Join 500+ companies that have successfully hired through our platform
+            </p>
+          </div>
+
+          {/* Logo Grid */}
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+              <div
+                key={i}
+                className="flex h-16 items-center justify-center rounded-lg bg-secondary-200 grayscale transition-all hover:grayscale-0 cursor-pointer"
+              >
+                <span className="text-xs text-secondary-400">Company {i}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <p className="text-sm text-secondary-600">
+              * Actual company logos will be added. These are placeholders.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA Section */}
-      <section className="bg-gradient-to-br from-primary-600 to-accent-600 py-20 text-white">
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 py-20 text-white">
         <div className="container">
           <div className="mx-auto max-w-4xl text-center">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-              Ready to Build Your AI/ML Dream Team?
+            <h2 className="mb-6 text-4xl font-bold">
+              Ready to Build Your Dream Team?
             </h2>
-            <p className="mb-8 text-xl text-primary-100">
-              Join 2,500+ companies hiring top talent through our platform.
-              Post your first job for free today.
+            <p className="mb-8 text-xl text-blue-100">
+              Check if your jobs are already listed with qualified candidates waiting
             </p>
 
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            {/* Search Form */}
+            <form onSubmit={handleCompanySearch} className="mx-auto mb-8 max-w-md">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={companySearch}
+                  onChange={(e) => setCompanySearch(e.target.value)}
+                  placeholder="Enter your company name..."
+                  className="flex-1 rounded-lg px-4 py-3 text-secondary-900"
+                />
+                <Button type="submit" size="lg" variant="secondary">
+                  <Search className="h-5 w-5" />
+                </Button>
+              </div>
+              <p className="mt-2 text-sm text-blue-100">
+                We&apos;ll show you if your company&apos;s jobs are on our platform
+              </p>
+            </form>
+
+            {/* Or Divider */}
+            <div className="mb-8 flex items-center gap-4">
+              <div className="h-px flex-1 bg-blue-400"></div>
+              <span className="text-blue-100">or</span>
+              <div className="h-px flex-1 bg-blue-400"></div>
+            </div>
+
+            {/* CTAs */}
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Button
-                variant="secondary"
                 size="lg"
+                variant="secondary"
                 className="bg-white text-primary-600 hover:bg-primary-50"
                 asChild
               >
-                <Link href="/employer/jobs/new">
-                  <Rocket className="mr-2 h-5 w-5" />
-                  Post a Job Now
-                </Link>
+                <Link href="/claim">Claim Your Jobs</Link>
               </Button>
               <Button
-                variant="outline"
                 size="lg"
+                variant="outline"
                 className="border-white text-white hover:bg-white/10"
-                asChild
               >
-                <Link href="/about">Schedule a Demo</Link>
+                Schedule a Demo
               </Button>
             </div>
-
-            <p className="mt-8 text-sm text-primary-100">
-              No credit card required • Post jobs in minutes • 90-day guarantee
-            </p>
           </div>
         </div>
       </section>

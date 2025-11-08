@@ -12,6 +12,7 @@ interface ApplicationFormProps {
   jobTitle?: string;
   companyName?: string;
   jobId?: string;
+  onSuccess?: () => void;
 }
 
 export default function ApplicationForm(props: ApplicationFormProps) {
@@ -42,11 +43,13 @@ export default function ApplicationForm(props: ApplicationFormProps) {
         availability: availability || undefined,
       });
 
-      // Success - show message and close after delay
+      // Success - trigger success callback and close after delay
       setTimeout(() => {
         props.onClose?.();
         setCoverLetter("");
         setAvailability("");
+        submitApplication.reset();
+        props.onSuccess?.();
       }, 2000);
     } catch (error: any) {
       console.error("Application submission failed:", error);

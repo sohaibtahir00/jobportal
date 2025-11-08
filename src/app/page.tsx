@@ -168,9 +168,9 @@ export default function Home() {
     },
     {
       icon: Target,
-      title: "Apply with Confidence",
+      title: "Take Skills Assessment",
       description:
-        "Create your profile once and apply to multiple positions with a single click. Track all your applications in one place.",
+        "Complete our 60-minute proctored assessment to verify your skills and stand out to employers. Get your Skills Score Card and boost your profile.",
     },
     {
       icon: Rocket,
@@ -286,7 +286,7 @@ export default function Home() {
             <h1 className="mb-6 text-4xl font-bold leading-tight text-secondary-900 md:text-5xl lg:text-6xl">
               Land Your Dream{" "}
               <span className="bg-gradient-to-r from-primary-600 via-accent-500 to-success-500 bg-clip-text text-transparent animate-gradient-x font-extrabold">
-                Tech Job
+                [Niche] Job
               </span>{" "}
               in 30 Days
             </h1>
