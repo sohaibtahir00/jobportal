@@ -88,14 +88,15 @@ export async function getJobs(params?: GetJobsParams): Promise<GetJobsResponse> 
 
 /**
  * GET /api/jobs/[id] - Get job details by ID
+ * Now returns { job, candidateInfo } if authenticated
  */
-export async function getJobById(id: string): Promise<Job> {
+export async function getJobById(id: string): Promise<any> {
   try {
     console.log('[Jobs API] Fetching job by ID:', id);
 
-    const response = await api.get<Job>(`/api/jobs/${id}`);
+    const response = await api.get<any>(`/api/jobs/${id}`);
 
-    console.log('[Jobs API] Job fetched successfully:', response.data.title);
+    console.log('[Jobs API] Job fetched successfully');
 
     return response.data;
   } catch (error: any) {

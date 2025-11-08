@@ -18,6 +18,9 @@ import {
   Bookmark,
   Loader2,
   Info,
+  CheckCircle,
+  AlertCircle,
+  Heart,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
@@ -27,22 +30,50 @@ import { ApplicationSuccessModal } from "@/components/jobs/ApplicationSuccessMod
 import { generateJobPostingJsonLd } from "@/lib/seo";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useJob, useJobs } from "@/hooks/useJobs";
+import { useSession } from "next-auth/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
 
 export default function JobDetailPage() {
   const params = useParams();
   const jobId = params.id as string;
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [jsonLd, setJsonLd] = useState<Record<string, unknown> | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Fetch job from API
-  const { data: job, isLoading, error } = useJob(jobId);
+  // Fetch job from API (now includes candidateInfo if authenticated)
+  const { data, isLoading, error } = useJob(jobId);
+  const job = data?.job;
+  const candidateInfo = data?.candidateInfo;
 
   // Fetch similar jobs (same niche)
   const { data: similarJobsData } = useJobs({
     niche: job?.niche,
     limit: 3,
   });
+
+  // Save/Unsave job handler
+  const handleSaveToggle = async () => {
+    if (!session || isSaving) return;
+
+    setIsSaving(true);
+    try {
+      if (candidateInfo?.isSaved) {
+        await api.delete(`/api/jobs/${jobId}/save`);
+      } else {
+        await api.post(`/api/jobs/${jobId}/save`);
+      }
+      // Refetch job to update candidateInfo
+      queryClient.invalidateQueries({ queryKey: ['job', jobId] });
+    } catch (error) {
+      console.error('Failed to toggle save:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Generate JSON-LD structured data for the job
   useEffect(() => {
@@ -187,17 +218,64 @@ export default function JobDetailPage() {
 
               {/* Actions */}
               <div className="flex items-center gap-2 sm:gap-3">
-                <Button
-                  variant="primary"
-                  onClick={() => setIsApplicationFormOpen(true)}
-                  className="flex-1 sm:flex-none bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all text-sm sm:text-base"
-                >
-                  Apply Now
-                </Button>
-                <Button variant="outline" className="gap-2 px-3 sm:px-4">
-                  <Bookmark className="h-4 w-4" />
-                  <span className="hidden sm:inline">Save</span>
-                </Button>
+                {/* Apply Button - Show different states based on authentication and application status */}
+                {!session ? (
+                  <Button
+                    variant="primary"
+                    asChild
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all text-sm sm:text-base"
+                  >
+                    <Link href="/login?redirect=/jobs/[jobId]">Sign in to Apply</Link>
+                  </Button>
+                ) : candidateInfo?.hasApplied ? (
+                  <Button
+                    variant="outline"
+                    disabled
+                    className="flex-1 sm:flex-none gap-2 text-sm sm:text-base border-green-300 bg-green-50 text-green-700"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    Applied
+                  </Button>
+                ) : !candidateInfo?.profileComplete ? (
+                  <Button
+                    variant="primary"
+                    asChild
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all text-sm sm:text-base gap-2"
+                  >
+                    <Link href="/candidate/profile">
+                      <AlertCircle className="h-4 w-4" />
+                      Complete Profile to Apply
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    onClick={() => setIsApplicationFormOpen(true)}
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all text-sm sm:text-base"
+                  >
+                    Apply Now
+                  </Button>
+                )}
+
+                {/* Save Button - Only show for authenticated users */}
+                {session && (
+                  <Button
+                    variant="outline"
+                    onClick={handleSaveToggle}
+                    disabled={isSaving}
+                    className="gap-2 px-3 sm:px-4"
+                  >
+                    {candidateInfo?.isSaved ? (
+                      <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                    ) : (
+                      <Heart className="h-4 w-4" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {candidateInfo?.isSaved ? 'Saved' : 'Save'}
+                    </span>
+                  </Button>
+                )}
+
                 <Button variant="outline" className="gap-2 px-3 sm:px-4">
                   <Share2 className="h-4 w-4" />
                   <span className="hidden sm:inline">Share</span>
@@ -222,6 +300,40 @@ export default function JobDetailPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2">
+            {/* Application Status Card - Show if already applied */}
+            {candidateInfo?.hasApplied && candidateInfo.application && (
+              <Card className="mb-6 border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-green-900 mb-1">
+                        You applied to this position
+                      </h3>
+                      <p className="text-sm text-green-700 mb-3">
+                        Applied on {new Date(candidateInfo.application.appliedAt).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-green-900">Application Status:</span>
+                        <Badge
+                          variant={candidateInfo.application.status === 'PENDING' ? 'secondary' : 'primary'}
+                          className="capitalize"
+                        >
+                          {candidateInfo.application.status.toLowerCase().replace('_', ' ')}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Verified Employer Badge */}
             {job.employer?.verified && (
               <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-success-200 bg-success-50 px-4 py-2">
