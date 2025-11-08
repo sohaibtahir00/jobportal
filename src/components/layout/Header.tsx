@@ -71,7 +71,10 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
       <div className="container">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center transition-opacity hover:opacity-80">
+          <Link
+            href="/"
+            className="flex items-center transition-opacity hover:opacity-80"
+          >
             <Image
               src="/logo.png"
               alt="Job Portal"
@@ -115,7 +118,9 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                     className="flex items-center gap-2 rounded-full bg-primary-100 px-3 py-2 text-sm font-medium text-primary-700 transition-colors hover:bg-primary-200"
                   >
                     <User className="h-4 w-4" />
-                    <span className="max-w-[100px] truncate">{session.user?.name || session.user?.email}</span>
+                    <span className="max-w-[100px] truncate">
+                      {session.user?.name || session.user?.email}
+                    </span>
                   </button>
 
                   {/* Dropdown Menu */}
@@ -127,14 +132,22 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                       />
                       <div className="absolute right-0 z-20 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5">
                         <Link
-                          href={session.user?.role === "CANDIDATE" ? "/candidate/dashboard" : "/employer/dashboard"}
+                          href={
+                            session.user?.role === "CANDIDATE"
+                              ? "/candidate/dashboard"
+                              : "/employer/dashboard"
+                          }
                           className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           Dashboard
                         </Link>
                         <Link
-                          href={session.user?.role === "CANDIDATE" ? "/candidate/profile" : "/employer/profile"}
+                          href={
+                            session.user?.role === "CANDIDATE"
+                              ? "/candidate/profile"
+                              : "/employer/profile"
+                          }
                           className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
                           onClick={() => setUserMenuOpen(false)}
                         >
@@ -171,7 +184,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                   <Link href="/login">Sign In</Link>
                 </Button>
                 <Button variant="primary" size="sm" asChild>
-                  <Link href="/register">Get Started</Link>
+                  <Link href="/signup">Get Started</Link>
                 </Button>
               </>
             )}
@@ -214,23 +227,42 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                 <>
                   {/* User Info */}
                   <div className="mb-2 rounded-lg bg-primary-50 p-3">
-                    <p className="text-sm font-medium text-primary-900">{session.user?.name}</p>
-                    <p className="text-xs text-primary-700">{session.user?.email}</p>
+                    <p className="text-sm font-medium text-primary-900">
+                      {session.user?.name}
+                    </p>
+                    <p className="text-xs text-primary-700">
+                      {session.user?.email}
+                    </p>
                   </div>
 
                   {/* Post Job for Employers */}
                   {session.user?.role === "EMPLOYER" && (
-                    <Button variant="primary" className="w-full justify-center" asChild>
-                      <Link href="/employer/jobs/new" onClick={() => setMobileMenuOpen(false)}>
+                    <Button
+                      variant="primary"
+                      className="w-full justify-center"
+                      asChild
+                    >
+                      <Link
+                        href="/employer/jobs/new"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
                         Post a Job
                       </Link>
                     </Button>
                   )}
 
                   {/* Dashboard Link */}
-                  <Button variant="outline" className="w-full justify-center" asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-center"
+                    asChild
+                  >
                     <Link
-                      href={session.user?.role === "CANDIDATE" ? "/candidate/dashboard" : "/employer/dashboard"}
+                      href={
+                        session.user?.role === "CANDIDATE"
+                          ? "/candidate/dashboard"
+                          : "/employer/dashboard"
+                      }
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <User className="mr-2 h-4 w-4" />
@@ -240,8 +272,15 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
 
                   {/* Browse Jobs for Candidates */}
                   {session.user?.role === "CANDIDATE" && (
-                    <Button variant="outline" className="w-full justify-center" asChild>
-                      <Link href="/jobs" onClick={() => setMobileMenuOpen(false)}>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-center"
+                      asChild
+                    >
+                      <Link
+                        href="/jobs"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
                         <Briefcase className="mr-2 h-4 w-4" />
                         Browse Jobs
                       </Link>
@@ -268,12 +307,22 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                     className="w-full justify-center"
                     asChild
                   >
-                    <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
                       Sign In
                     </Link>
                   </Button>
-                  <Button variant="primary" className="w-full justify-center" asChild>
-                    <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <Button
+                    variant="primary"
+                    className="w-full justify-center"
+                    asChild
+                  >
+                    <Link
+                      href="/register"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
                       Get Started
                     </Link>
                   </Button>
