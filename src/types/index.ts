@@ -232,6 +232,7 @@ export interface Job {
   deadline: string | null;       // ISO 8601 DateTime
   slots: number;                 // Default: 1
   views: number;                 // Default: 0
+  isClaimed: boolean;            // Whether this is an exclusive job (default: false)
   createdAt: string;             // ISO 8601 DateTime
   updatedAt: string;             // ISO 8601 DateTime
 
