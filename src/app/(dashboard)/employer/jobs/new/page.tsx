@@ -3,30 +3,175 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateJob } from "@/hooks/useJobs";
-import { Loader2, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { Loader2, CheckCircle2, XCircle, ArrowLeft, Plus, Trash2, Info } from "lucide-react";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Stepper,
+  Progress
+} from "@/components/ui";
 import Link from "next/link";
-import { transformJobFormToBackendPayload } from "@/lib/transformers/job";
 import api from "@/lib/api";
+
+// Form data interface matching all backend fields
+interface JobFormData {
+  // Step 1: Job Basics
+  title: string;
+  nicheCategory: string;
+  employmentType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP";
+  experienceLevel: "ENTRY" | "MID" | "SENIOR" | "LEAD";
+  location: string;
+  remoteType: "REMOTE" | "HYBRID" | "ONSITE";
+
+  // Step 2: Job Description
+  description: string;
+  keyResponsibilities: string[];
+  skills: string[];
+  niceToHaveSkills: string[];
+  techStack: string[];
+
+  // Step 3: Compensation & Benefits
+  salaryMin: string;
+  salaryMax: string;
+  isCompetitive: boolean;
+  equityOffered: boolean;
+  specificBenefits: string[];
+
+  // Step 4: Skills Assessment Requirements (CRITICAL)
+  requiresAssessment: boolean;
+  minSkillsScore: number;
+  requiredTier: string;
+  customAssessmentQuestions: Array<{
+    question: string;
+    type: string;
+    weight: number;
+  }>;
+
+  // Step 5: Interview Process
+  interviewRounds: string;
+  interviewProcess: string;
+  hiringTimeline: string;
+  startDateNeeded: string;
+
+  // Step 6: Application Settings
+  deadline: string;
+  maxApplicants: string;
+  screeningQuestions: Array<{
+    question: string;
+    required: boolean;
+  }>;
+}
+
+const NICHE_CATEGORIES = [
+  "AI/ML",
+  "Healthcare IT",
+  "Fintech",
+  "Cybersecurity",
+  "Cloud Computing",
+  "DevOps",
+  "Data Science",
+  "Web Development",
+  "Mobile Development",
+  "Blockchain",
+];
+
+const BENEFITS_OPTIONS = [
+  "Health Insurance",
+  "Dental Insurance",
+  "Vision Insurance",
+  "401(k)",
+  "Paid Time Off",
+  "Remote Work",
+  "Flexible Hours",
+  "Professional Development",
+  "Stock Options",
+  "Gym Membership",
+  "Commuter Benefits",
+  "Life Insurance",
+];
+
+const TIER_OPTIONS = [
+  { value: "ANY", label: "Any Tier (No Minimum)" },
+  { value: "BEGINNER", label: "Beginner+ (Entry Level)" },
+  { value: "INTERMEDIATE", label: "Intermediate+ (Competent)" },
+  { value: "ADVANCED", label: "Advanced+ (Proficient)" },
+  { value: "ELITE", label: "Elite (Expert Only)" },
+];
+
+const QUESTION_TYPES = [
+  { value: "text", label: "Text Answer" },
+  { value: "number", label: "Number" },
+  { value: "multiple_choice", label: "Multiple Choice" },
+  { value: "yes_no", label: "Yes/No" },
+];
 
 export default function NewJobPage() {
   const router = useRouter();
   const createJob = useCreateJob();
   const [profileCheckDone, setProfileCheckDone] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
 
-  // Check if employer profile exists
+  // Initialize form data with localStorage if available
+  const [formData, setFormData] = useState<JobFormData>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("jobFormDraft");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    }
+    return {
+      title: "",
+      nicheCategory: "",
+      employmentType: "FULL_TIME",
+      experienceLevel: "MID",
+      location: "",
+      remoteType: "REMOTE",
+      description: "",
+      keyResponsibilities: [],
+      skills: [],
+      niceToHaveSkills: [],
+      techStack: [],
+      salaryMin: "",
+      salaryMax: "",
+      isCompetitive: false,
+      equityOffered: false,
+      specificBenefits: [],
+      requiresAssessment: false,
+      minSkillsScore: 0,
+      requiredTier: "ANY",
+      customAssessmentQuestions: [],
+      interviewRounds: "",
+      interviewProcess: "",
+      hiringTimeline: "",
+      startDateNeeded: "",
+      deadline: "",
+      maxApplicants: "",
+      screeningQuestions: [],
+    };
+  });
+
+  // Auto-save to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("jobFormDraft", JSON.stringify(formData));
+    }
+  }, [formData]);
+
+  // Check employer profile
   useEffect(() => {
     const checkEmployerProfile = async () => {
       try {
-        await api.get('/api/employers/profile');
+        await api.get("/api/employers/profile");
         setProfileCheckDone(true);
       } catch (error: any) {
         if (error.response?.status === 404) {
-          console.error('[Job Form] No employer profile found');
-          alert('Please complete your employer profile before posting jobs.');
-          router.push('/employer/profile');
+          alert("Please complete your employer profile before posting jobs.");
+          router.push("/employer/profile");
         } else {
-          // Other errors (network, auth, etc.) - let user continue
           setProfileCheckDone(true);
         }
       }
@@ -34,64 +179,223 @@ export default function NewJobPage() {
     checkEmployerProfile();
   }, [router]);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    niche: "",
-    location: "",
-    remoteType: "REMOTE" as "REMOTE" | "HYBRID" | "ONSITE",
-    experienceLevel: "MID" as "ENTRY" | "MID" | "SENIOR" | "LEAD",
-    employmentType: "FULL_TIME" as "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP",
-    salaryMin: "",
-    salaryMax: "",
-    currency: "USD",
-    skills: "",
-    benefits: "",
-  });
+  // Helper: Update form data
+  const updateFormData = (updates: Partial<JobFormData>) => {
+    setFormData((prev) => ({ ...prev, ...updates }));
+  };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+  // Helper: Add item to array field
+  const addArrayItem = (field: keyof JobFormData, value: string) => {
+    if (!value.trim()) return;
+    const currentArray = formData[field] as string[];
+    updateFormData({ [field]: [...currentArray, value.trim()] });
+  };
+
+  // Helper: Remove item from array field
+  const removeArrayItem = (field: keyof JobFormData, index: number) => {
+    const currentArray = formData[field] as any[];
+    updateFormData({ [field]: currentArray.filter((_, i) => i !== index) });
+  };
+
+  // Helper: Add custom assessment question
+  const addCustomQuestion = () => {
+    if (formData.customAssessmentQuestions.length >= 3) {
+      alert("Maximum 3 custom questions allowed");
+      return;
+    }
+    updateFormData({
+      customAssessmentQuestions: [
+        ...formData.customAssessmentQuestions,
+        { question: "", type: "text", weight: 1 },
+      ],
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Helper: Update custom question
+  const updateCustomQuestion = (
+    index: number,
+    updates: Partial<{ question: string; type: string; weight: number }>
+  ) => {
+    const updated = [...formData.customAssessmentQuestions];
+    updated[index] = { ...updated[index], ...updates };
+    updateFormData({ customAssessmentQuestions: updated });
+  };
+
+  // Helper: Add screening question
+  const addScreeningQuestion = () => {
+    updateFormData({
+      screeningQuestions: [
+        ...formData.screeningQuestions,
+        { question: "", required: false },
+      ],
+    });
+  };
+
+  // Helper: Update screening question
+  const updateScreeningQuestion = (
+    index: number,
+    updates: Partial<{ question: string; required: boolean }>
+  ) => {
+    const updated = [...formData.screeningQuestions];
+    updated[index] = { ...updated[index], ...updates };
+    updateFormData({ screeningQuestions: updated });
+  };
+
+  // Step validation
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 0: // Job Basics
+        return !!(
+          formData.title &&
+          formData.nicheCategory &&
+          formData.location
+        );
+      case 1: // Job Description
+        return !!(
+          formData.description &&
+          formData.keyResponsibilities.length > 0 &&
+          formData.skills.length > 0
+        );
+      case 2: // Compensation
+        return true; // Optional fields
+      case 3: // Skills Assessment
+        if (formData.requiresAssessment) {
+          return !!(formData.minSkillsScore >= 0 && formData.requiredTier);
+        }
+        return true;
+      case 4: // Interview Process
+        return true; // Optional fields
+      case 5: // Application Settings
+        return true; // Optional fields
+      default:
+        return false;
+    }
+  };
+
+  // Navigation
+  const goToNextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep((prev) => Math.min(prev + 1, 5));
+    } else {
+      alert("Please fill in all required fields before proceeding.");
+    }
+  };
+
+  const goToPreviousStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  };
+
+  // Calculate progress
+  const calculateProgress = (): number => {
+    let completed = 0;
+    let total = 6;
+
+    if (formData.title && formData.nicheCategory && formData.location) completed++;
+    if (formData.description && formData.keyResponsibilities.length > 0) completed++;
+    if (formData.salaryMin || formData.salaryMax || formData.specificBenefits.length > 0) completed++;
+    if (!formData.requiresAssessment || (formData.minSkillsScore >= 0 && formData.requiredTier)) completed++;
+    if (formData.interviewProcess || formData.hiringTimeline) completed++;
+    completed++; // Application settings are optional
+
+    return Math.round((completed / total) * 100);
+  };
+
+  // Transform form data to backend payload
+  const transformToBackendPayload = () => {
+    return {
+      // Basic info
+      title: formData.title,
+      description: formData.description,
+      type: formData.employmentType,
+      location: formData.location,
+      remote: formData.remoteType === "REMOTE",
+      experienceLevel: formData.experienceLevel,
+
+      // New comprehensive fields
+      nicheCategory: formData.nicheCategory,
+      remoteType: formData.remoteType,
+      keyResponsibilities: formData.keyResponsibilities,
+
+      // Skills
+      skills: formData.skills,
+      niceToHaveSkills: formData.niceToHaveSkills,
+      techStack: formData.techStack,
+
+      // Compensation
+      salaryMin: formData.salaryMin ? parseInt(formData.salaryMin) : null,
+      salaryMax: formData.salaryMax ? parseInt(formData.salaryMax) : null,
+      equityOffered: formData.equityOffered,
+      specificBenefits: formData.specificBenefits,
+
+      // Skills Assessment (CRITICAL)
+      requiresAssessment: formData.requiresAssessment,
+      minSkillsScore: formData.requiresAssessment ? formData.minSkillsScore : null,
+      requiredTier: formData.requiresAssessment ? formData.requiredTier : null,
+      customAssessmentQuestions: formData.requiresAssessment && formData.customAssessmentQuestions.length > 0
+        ? formData.customAssessmentQuestions
+        : null,
+
+      // Interview Process
+      interviewRounds: formData.interviewRounds ? parseInt(formData.interviewRounds) : null,
+      interviewProcess: formData.interviewProcess || null,
+      hiringTimeline: formData.hiringTimeline || null,
+      startDateNeeded: formData.startDateNeeded ? new Date(formData.startDateNeeded).toISOString() : null,
+
+      // Application Settings
+      deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
+      maxApplicants: formData.maxApplicants ? parseInt(formData.maxApplicants) : null,
+      screeningQuestions: formData.screeningQuestions.length > 0 ? formData.screeningQuestions : null,
+
+      // Dummy fields required by backend
+      requirements: formData.skills.join(", "),
+      responsibilities: formData.keyResponsibilities.join(", "),
+    };
+  };
+
+  // Submit form
+  const handleSubmit = async (e: React.FormEvent, saveAsDraft = false) => {
     e.preventDefault();
 
-    try {
-      // Transform form data to match backend expectations
-      const payload = transformJobFormToBackendPayload({
-        title: formData.title,
-        description: formData.description,
-        niche: formData.niche,
-        location: formData.location,
-        remoteType: formData.remoteType,
-        experienceLevel: formData.experienceLevel,
-        employmentType: formData.employmentType,
-        salaryMin: formData.salaryMin ? parseInt(formData.salaryMin) : undefined,
-        salaryMax: formData.salaryMax ? parseInt(formData.salaryMax) : undefined,
-        currency: formData.currency,
-        skills: formData.skills,
-        benefits: formData.benefits,
-      });
+    // Validate all steps before final submission
+    if (!saveAsDraft) {
+      for (let i = 0; i < 6; i++) {
+        if (!validateStep(i)) {
+          alert(`Please complete Step ${i + 1} before submitting.`);
+          setCurrentStep(i);
+          return;
+        }
+      }
+    }
 
-      console.log('[Job Form] Submitting payload:', payload);
+    try {
+      if (saveAsDraft) {
+        setIsSavingDraft(true);
+      }
+
+      const payload = transformToBackendPayload();
+      console.log("[Job Form] Submitting payload:", payload);
 
       await createJob.mutateAsync(payload as any);
 
-      // Success - redirect after delay
+      // Clear draft from localStorage
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("jobFormDraft");
+      }
+
+      // Success
       setTimeout(() => {
         router.push("/employer/dashboard");
       }, 2000);
     } catch (error) {
       console.error("[Job Form] Submission error:", error);
+    } finally {
+      if (saveAsDraft) {
+        setIsSavingDraft(false);
+      }
     }
   };
 
-  // Show loading while checking profile
+  // Loading state
   if (!profileCheckDone) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -102,15 +406,18 @@ export default function NewJobPage() {
     );
   }
 
+  // Success state
   if (createJob.isSuccess) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
-            <h2 className="text-2xl font-bold text-green-900 mb-2">Job Posted Successfully!</h2>
+            <h2 className="text-2xl font-bold text-green-900 mb-2">
+              Job Posted Successfully!
+            </h2>
             <p className="text-secondary-600 text-center mb-6">
-              Your job posting is now live and candidates can apply.
+              Your job posting has been created and saved as a draft. You can publish it from your dashboard.
             </p>
             <Button variant="primary" asChild>
               <Link href="/employer/dashboard">Go to Dashboard</Link>
@@ -121,8 +428,19 @@ export default function NewJobPage() {
     );
   }
 
+  // Stepper steps
+  const steps = [
+    { id: "basics", label: "Job Basics" },
+    { id: "description", label: "Description" },
+    { id: "compensation", label: "Compensation" },
+    { id: "assessment", label: "Skills Assessment" },
+    { id: "interview", label: "Interview Process" },
+    { id: "settings", label: "Application Settings" },
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
+      {/* Header */}
       <div className="mb-6">
         <Link
           href="/employer/dashboard"
@@ -133,16 +451,37 @@ export default function NewJobPage() {
         </Link>
         <h1 className="text-3xl font-bold text-secondary-900">Post a New Job</h1>
         <p className="text-secondary-600 mt-2">
-          Fill in the details below to create your job posting
+          Complete all 6 steps to create your comprehensive job posting
         </p>
       </div>
 
+      {/* Progress Bar */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium text-secondary-700">
+            Overall Progress
+          </span>
+          <span className="text-sm font-medium text-primary-600">
+            {calculateProgress()}%
+          </span>
+        </div>
+        <Progress value={calculateProgress()} />
+      </div>
+
+      {/* Stepper */}
+      <div className="mb-8">
+        <Stepper steps={steps} currentStep={currentStep + 1} />
+      </div>
+
+      {/* Error Message */}
       {createJob.isError && (
         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
           <div className="flex items-start">
             <XCircle className="h-5 w-5 text-red-600 mr-3 mt-0.5" />
             <div>
-              <h3 className="text-sm font-semibold text-red-900">Failed to post job</h3>
+              <h3 className="text-sm font-semibold text-red-900">
+                Failed to post job
+              </h3>
               <p className="text-sm text-red-700 mt-1">
                 {(createJob.error as any)?.response?.data?.message ||
                   "Please check your inputs and try again."}
@@ -152,56 +491,92 @@ export default function NewJobPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Job Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-secondary-900 mb-2">
-                Job Title *
-              </label>
-              <input
-                type="text"
-                name="title"
-                required
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="e.g., Senior Machine Learning Engineer"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-secondary-900 mb-2">
-                Job Description *
-              </label>
-              <textarea
-                name="description"
-                required
-                value={formData.description}
-                onChange={handleChange}
-                rows={6}
-                className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="Describe the role, responsibilities, and requirements..."
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Form */}
+      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
+        {/* STEP 1: Job Basics */}
+        {currentStep === 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Step 1: Job Basics</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Niche *
+                  Job Title *
                 </label>
                 <input
                   type="text"
-                  name="niche"
                   required
-                  value={formData.niche}
-                  onChange={handleChange}
+                  value={formData.title}
+                  onChange={(e) => updateFormData({ title: e.target.value })}
                   className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="e.g., Machine Learning, AI, Data Science"
+                  placeholder="e.g., Senior Machine Learning Engineer"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary-900 mb-2">
+                  Niche Category *
+                </label>
+                <select
+                  required
+                  value={formData.nicheCategory}
+                  onChange={(e) =>
+                    updateFormData({ nicheCategory: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value="">Select a niche...</option>
+                  {NICHE_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-secondary-900 mb-2">
+                    Employment Type *
+                  </label>
+                  <select
+                    required
+                    value={formData.employmentType}
+                    onChange={(e) =>
+                      updateFormData({
+                        employmentType: e.target.value as any,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="FULL_TIME">Full-time</option>
+                    <option value="PART_TIME">Part-time</option>
+                    <option value="CONTRACT">Contract</option>
+                    <option value="INTERNSHIP">Internship</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-900 mb-2">
+                    Experience Level *
+                  </label>
+                  <select
+                    required
+                    value={formData.experienceLevel}
+                    onChange={(e) =>
+                      updateFormData({
+                        experienceLevel: e.target.value as any,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="ENTRY">Entry Level</option>
+                    <option value="MID">Mid Level</option>
+                    <option value="SENIOR">Senior</option>
+                    <option value="LEAD">Lead</option>
+                  </select>
+                </div>
               </div>
 
               <div>
@@ -210,26 +585,24 @@ export default function NewJobPage() {
                 </label>
                 <input
                   type="text"
-                  name="location"
                   required
                   value={formData.location}
-                  onChange={handleChange}
+                  onChange={(e) => updateFormData({ location: e.target.value })}
                   className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="e.g., San Francisco, CA or Remote"
+                  placeholder="e.g., San Francisco, CA"
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-secondary-900 mb-2">
                   Remote Type *
                 </label>
                 <select
-                  name="remoteType"
                   required
                   value={formData.remoteType}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    updateFormData({ remoteType: e.target.value as any })
+                  }
                   className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="REMOTE">Remote</option>
@@ -237,158 +610,813 @@ export default function NewJobPage() {
                   <option value="ONSITE">On-site</option>
                 </select>
               </div>
+            </CardContent>
+          </Card>
+        )}
 
+        {/* STEP 2: Job Description */}
+        {currentStep === 1 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Step 2: Job Description</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Experience Level *
+                  Job Description *
                 </label>
-                <select
-                  name="experienceLevel"
+                <textarea
                   required
-                  value={formData.experienceLevel}
-                  onChange={handleChange}
+                  value={formData.description}
+                  onChange={(e) =>
+                    updateFormData({ description: e.target.value })
+                  }
+                  rows={6}
                   className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="ENTRY">Entry Level</option>
-                  <option value="MID">Mid Level</option>
-                  <option value="SENIOR">Senior</option>
-                  <option value="LEAD">Lead</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Employment Type *
-                </label>
-                <select
-                  name="employmentType"
-                  required
-                  value={formData.employmentType}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="FULL_TIME">Full-time</option>
-                  <option value="PART_TIME">Part-time</option>
-                  <option value="CONTRACT">Contract</option>
-                  <option value="INTERNSHIP">Internship</option>
-                </select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Compensation</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Min Salary
-                </label>
-                <input
-                  type="number"
-                  name="salaryMin"
-                  value={formData.salaryMin}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="e.g., 100000"
+                  placeholder="Describe the role, what the candidate will do, and why they should join your team..."
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Max Salary
+                  Key Responsibilities *
+                </label>
+                <div className="space-y-2">
+                  {formData.keyResponsibilities.map((resp, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={resp}
+                        readOnly
+                        className="flex-1 px-4 py-2 border border-secondary-300 rounded-lg bg-secondary-50"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          removeArrayItem("keyResponsibilities", index)
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="new-responsibility"
+                      placeholder="Add a key responsibility..."
+                      className="flex-1 px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const input = e.currentTarget;
+                          addArrayItem("keyResponsibilities", input.value);
+                          input.value = "";
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const input = document.getElementById(
+                          "new-responsibility"
+                        ) as HTMLInputElement;
+                        if (input) {
+                          addArrayItem("keyResponsibilities", input.value);
+                          input.value = "";
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary-900 mb-2">
+                  Required Skills *
+                </label>
+                <div className="space-y-2">
+                  {formData.skills.map((skill, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm">
+                        {skill}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeArrayItem("skills", index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="new-skill"
+                      placeholder="Add a required skill..."
+                      className="flex-1 px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const input = e.currentTarget;
+                          addArrayItem("skills", input.value);
+                          input.value = "";
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const input = document.getElementById(
+                          "new-skill"
+                        ) as HTMLInputElement;
+                        if (input) {
+                          addArrayItem("skills", input.value);
+                          input.value = "";
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary-900 mb-2">
+                  Nice-to-Have Skills
+                </label>
+                <div className="space-y-2">
+                  {formData.niceToHaveSkills.map((skill, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <span className="px-3 py-1 bg-secondary-100 text-secondary-700 rounded-full text-sm">
+                        {skill}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeArrayItem("niceToHaveSkills", index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="new-nice-skill"
+                      placeholder="Add a nice-to-have skill..."
+                      className="flex-1 px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const input = e.currentTarget;
+                          addArrayItem("niceToHaveSkills", input.value);
+                          input.value = "";
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const input = document.getElementById(
+                          "new-nice-skill"
+                        ) as HTMLInputElement;
+                        if (input) {
+                          addArrayItem("niceToHaveSkills", input.value);
+                          input.value = "";
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary-900 mb-2">
+                  Tech Stack
+                </label>
+                <div className="space-y-2">
+                  {formData.techStack.map((tech, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                        {tech}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeArrayItem("techStack", index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="new-tech"
+                      placeholder="Add a technology..."
+                      className="flex-1 px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const input = e.currentTarget;
+                          addArrayItem("techStack", input.value);
+                          input.value = "";
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const input = document.getElementById(
+                          "new-tech"
+                        ) as HTMLInputElement;
+                        if (input) {
+                          addArrayItem("techStack", input.value);
+                          input.value = "";
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* STEP 3: Compensation & Benefits */}
+        {currentStep === 2 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Step 3: Compensation & Benefits</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-secondary-900 mb-2">
+                    Min Salary (Annual)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.salaryMin}
+                    onChange={(e) =>
+                      updateFormData({ salaryMin: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="e.g., 100000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-900 mb-2">
+                    Max Salary (Annual)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.salaryMax}
+                    onChange={(e) =>
+                      updateFormData({ salaryMax: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="e.g., 150000"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="competitive-salary"
+                  checked={formData.isCompetitive}
+                  onChange={(e) =>
+                    updateFormData({ isCompetitive: e.target.checked })
+                  }
+                  className="w-4 h-4 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+                />
+                <label
+                  htmlFor="competitive-salary"
+                  className="text-sm font-medium text-secondary-900"
+                >
+                  Competitive salary (check if salary is negotiable/competitive)
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="equity-offered"
+                  checked={formData.equityOffered}
+                  onChange={(e) =>
+                    updateFormData({ equityOffered: e.target.checked })
+                  }
+                  className="w-4 h-4 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+                />
+                <label
+                  htmlFor="equity-offered"
+                  className="text-sm font-medium text-secondary-900"
+                >
+                  Equity/Stock options offered
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary-900 mb-3">
+                  Benefits
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {BENEFITS_OPTIONS.map((benefit) => (
+                    <div key={benefit} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={`benefit-${benefit}`}
+                        checked={formData.specificBenefits.includes(benefit)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateFormData({
+                              specificBenefits: [
+                                ...formData.specificBenefits,
+                                benefit,
+                              ],
+                            });
+                          } else {
+                            updateFormData({
+                              specificBenefits:
+                                formData.specificBenefits.filter(
+                                  (b) => b !== benefit
+                                ),
+                            });
+                          }
+                        }}
+                        className="w-4 h-4 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+                      />
+                      <label
+                        htmlFor={`benefit-${benefit}`}
+                        className="text-sm text-secondary-700"
+                      >
+                        {benefit}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* STEP 4: Skills Assessment Requirements (CRITICAL) */}
+        {currentStep === 3 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Step 4: Skills Assessment Requirements
+                <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">
+                  CRITICAL NEW FEATURE
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-semibold text-blue-900 mb-1">
+                      About Skills Assessment
+                    </h4>
+                    <p className="text-sm text-blue-700">
+                      Require candidates to complete a skills assessment before applying.
+                      You can set minimum score requirements and tier levels to filter qualified applicants.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="requires-assessment"
+                  checked={formData.requiresAssessment}
+                  onChange={(e) =>
+                    updateFormData({ requiresAssessment: e.target.checked })
+                  }
+                  className="w-5 h-5 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+                />
+                <label
+                  htmlFor="requires-assessment"
+                  className="text-base font-medium text-secondary-900"
+                >
+                  Require skills assessment for this position
+                </label>
+              </div>
+
+              {formData.requiresAssessment && (
+                <div className="space-y-6 pl-8 border-l-2 border-primary-200">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-900 mb-3">
+                      Minimum Skills Score: {formData.minSkillsScore}
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={formData.minSkillsScore}
+                      onChange={(e) =>
+                        updateFormData({
+                          minSkillsScore: parseInt(e.target.value),
+                        })
+                      }
+                      className="w-full h-2 bg-secondary-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+                    />
+                    <div className="flex justify-between text-xs text-secondary-600 mt-1">
+                      <span>0 (Any score)</span>
+                      <span>50 (Average)</span>
+                      <span>100 (Perfect)</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-900 mb-2">
+                      Required Tier
+                    </label>
+                    <select
+                      value={formData.requiredTier}
+                      onChange={(e) =>
+                        updateFormData({ requiredTier: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      {TIER_OPTIONS.map((tier) => (
+                        <option key={tier.value} value={tier.value}>
+                          {tier.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-900 mb-2">
+                      Custom Assessment Questions (Max 3)
+                    </label>
+                    <div className="space-y-3">
+                      {formData.customAssessmentQuestions.map((q, index) => (
+                        <div
+                          key={index}
+                          className="border border-secondary-300 rounded-lg p-4 space-y-3"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-secondary-700">
+                              Question {index + 1}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                removeArrayItem("customAssessmentQuestions", index)
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="Enter your question..."
+                            value={q.question}
+                            onChange={(e) =>
+                              updateCustomQuestion(index, {
+                                question: e.target.value,
+                              })
+                            }
+                            className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          />
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs text-secondary-600 mb-1">
+                                Answer Type
+                              </label>
+                              <select
+                                value={q.type}
+                                onChange={(e) =>
+                                  updateCustomQuestion(index, {
+                                    type: e.target.value,
+                                  })
+                                }
+                                className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              >
+                                {QUESTION_TYPES.map((type) => (
+                                  <option key={type.value} value={type.value}>
+                                    {type.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs text-secondary-600 mb-1">
+                                Weight (1-10)
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                max="10"
+                                value={q.weight}
+                                onChange={(e) =>
+                                  updateCustomQuestion(index, {
+                                    weight: parseInt(e.target.value) || 1,
+                                  })
+                                }
+                                className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {formData.customAssessmentQuestions.length < 3 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={addCustomQuestion}
+                          className="w-full"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Custom Question
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* STEP 5: Interview Process */}
+        {currentStep === 4 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Step 5: Interview Process</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-secondary-900 mb-2">
+                  Number of Interview Rounds
                 </label>
                 <input
                   type="number"
-                  name="salaryMax"
-                  value={formData.salaryMax}
-                  onChange={handleChange}
+                  min="1"
+                  max="10"
+                  value={formData.interviewRounds}
+                  onChange={(e) =>
+                    updateFormData({ interviewRounds: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="e.g., 150000"
+                  placeholder="e.g., 3"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Currency
+                  Interview Process Description
                 </label>
-                <select
-                  name="currency"
-                  value={formData.currency}
-                  onChange={handleChange}
+                <textarea
+                  value={formData.interviewProcess}
+                  onChange={(e) =>
+                    updateFormData({ interviewProcess: e.target.value })
+                  }
+                  rows={4}
                   className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                </select>
+                  placeholder="Describe your interview process (e.g., phone screen, technical assessment, team interview, final interview with leadership)"
+                />
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Additional Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-secondary-900 mb-2">
-                Required Skills (comma-separated)
-              </label>
-              <input
-                type="text"
-                name="skills"
-                value={formData.skills}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="e.g., Python, TensorFlow, PyTorch"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-secondary-900 mb-2">
+                  Hiring Timeline
+                </label>
+                <input
+                  type="text"
+                  value={formData.hiringTimeline}
+                  onChange={(e) =>
+                    updateFormData({ hiringTimeline: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="e.g., 2-4 weeks"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-secondary-900 mb-2">
-                Benefits (comma-separated)
-              </label>
-              <input
-                type="text"
-                name="benefits"
-                value={formData.benefits}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="e.g., Health Insurance, 401k, Remote Work"
-              />
-            </div>
-          </CardContent>
-        </Card>
+              <div>
+                <label className="block text-sm font-medium text-secondary-900 mb-2">
+                  Start Date Needed
+                </label>
+                <input
+                  type="date"
+                  value={formData.startDateNeeded}
+                  onChange={(e) =>
+                    updateFormData({ startDateNeeded: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-        <div className="flex gap-4 justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/employer/dashboard")}
-            disabled={createJob.isPending}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={createJob.isPending}
-            className="min-w-[140px]"
-          >
-            {createJob.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Posting...
-              </>
-            ) : (
-              "Post Job"
+        {/* STEP 6: Application Settings */}
+        {currentStep === 5 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Step 6: Application Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-secondary-900 mb-2">
+                    Application Deadline
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.deadline}
+                    onChange={(e) =>
+                      updateFormData({ deadline: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-900 mb-2">
+                    Maximum Applicants
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.maxApplicants}
+                    onChange={(e) =>
+                      updateFormData({ maxApplicants: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="e.g., 100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary-900 mb-2">
+                  Screening Questions
+                </label>
+                <div className="space-y-3">
+                  {formData.screeningQuestions.map((q, index) => (
+                    <div
+                      key={index}
+                      className="border border-secondary-300 rounded-lg p-3 space-y-2"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <input
+                          type="text"
+                          placeholder="Enter screening question..."
+                          value={q.question}
+                          onChange={(e) =>
+                            updateScreeningQuestion(index, {
+                              question: e.target.value,
+                            })
+                          }
+                          className="flex-1 px-3 py-2 text-sm border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            removeArrayItem("screeningQuestions", index)
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id={`screening-required-${index}`}
+                          checked={q.required}
+                          onChange={(e) =>
+                            updateScreeningQuestion(index, {
+                              required: e.target.checked,
+                            })
+                          }
+                          className="w-4 h-4 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+                        />
+                        <label
+                          htmlFor={`screening-required-${index}`}
+                          className="text-xs text-secondary-700"
+                        >
+                          Required question
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addScreeningQuestion}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Screening Question
+                  </Button>
+                </div>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-6">
+                <h4 className="text-sm font-semibold text-green-900 mb-2">
+                  Ready to Submit
+                </h4>
+                <p className="text-sm text-green-700">
+                  Review all the information you've entered. Your job will be saved as a draft
+                  and you can publish it later from your dashboard.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between gap-4 pt-6 border-t">
+          <div>
+            {currentStep > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={goToPreviousStep}
+                disabled={createJob.isPending || isSavingDraft}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Previous
+              </Button>
             )}
-          </Button>
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={(e) => handleSubmit(e as any, true)}
+              disabled={createJob.isPending || isSavingDraft}
+            >
+              {isSavingDraft ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save as Draft"
+              )}
+            </Button>
+
+            {currentStep < 5 ? (
+              <Button
+                type="button"
+                variant="primary"
+                onClick={goToNextStep}
+                disabled={createJob.isPending || isSavingDraft}
+              >
+                Next Step
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={createJob.isPending || isSavingDraft}
+                className="min-w-[140px]"
+              >
+                {createJob.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Job"
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </form>
     </div>
