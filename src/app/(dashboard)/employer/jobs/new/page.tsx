@@ -1,16 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateJob } from "@/hooks/useJobs";
 import { Loader2, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import Link from "next/link";
 import { transformJobFormToBackendPayload } from "@/lib/transformers/job";
+import api from "@/lib/api";
 
 export default function NewJobPage() {
   const router = useRouter();
   const createJob = useCreateJob();
+  const [profileCheckDone, setProfileCheckDone] = useState(false);
+
+  // Check if employer profile exists
+  useEffect(() => {
+    const checkEmployerProfile = async () => {
+      try {
+        await api.get('/api/employers/profile');
+        setProfileCheckDone(true);
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          console.error('[Job Form] No employer profile found');
+          alert('Please complete your employer profile before posting jobs.');
+          router.push('/employer/profile');
+        } else {
+          // Other errors (network, auth, etc.) - let user continue
+          setProfileCheckDone(true);
+        }
+      }
+    };
+    checkEmployerProfile();
+  }, [router]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -68,6 +90,17 @@ export default function NewJobPage() {
       console.error("[Job Form] Submission error:", error);
     }
   };
+
+  // Show loading while checking profile
+  if (!profileCheckDone) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+        </div>
+      </div>
+    );
+  }
 
   if (createJob.isSuccess) {
     return (

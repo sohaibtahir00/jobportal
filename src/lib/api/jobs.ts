@@ -44,7 +44,7 @@ export interface CreateJobData {
   remote: boolean;
   salaryMin?: number;
   salaryMax?: number;
-  experienceLevel: 'ENTRY' | 'MID' | 'SENIOR' | 'LEAD';
+  experienceLevel: 'ENTRY_LEVEL' | 'MID_LEVEL' | 'SENIOR_LEVEL' | 'EXECUTIVE';
   skills?: string[];
   benefits?: string;
   deadline?: string;

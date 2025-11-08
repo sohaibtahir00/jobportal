@@ -31,11 +31,24 @@ export interface BackendJobPayload {
   remote: boolean;
   salaryMin?: number;
   salaryMax?: number;
-  experienceLevel: 'ENTRY' | 'MID' | 'SENIOR' | 'LEAD';
+  experienceLevel: 'ENTRY_LEVEL' | 'MID_LEVEL' | 'SENIOR_LEVEL' | 'EXECUTIVE';
   skills?: string[];
   benefits?: string;
   deadline?: string;
   slots?: number;
+}
+
+/**
+ * Map frontend experience level to backend enum values
+ */
+function mapExperienceLevel(level: 'ENTRY' | 'MID' | 'SENIOR' | 'LEAD'): 'ENTRY_LEVEL' | 'MID_LEVEL' | 'SENIOR_LEVEL' | 'EXECUTIVE' {
+  const mapping: Record<string, 'ENTRY_LEVEL' | 'MID_LEVEL' | 'SENIOR_LEVEL' | 'EXECUTIVE'> = {
+    'ENTRY': 'ENTRY_LEVEL',
+    'MID': 'MID_LEVEL',
+    'SENIOR': 'SENIOR_LEVEL',
+    'LEAD': 'EXECUTIVE',
+  };
+  return mapping[level] || 'MID_LEVEL';
 }
 
 /**
@@ -65,7 +78,7 @@ export function transformJobFormToBackendPayload(formData: JobFormData): Backend
     remote,
     salaryMin: formData.salaryMin,
     salaryMax: formData.salaryMax,
-    experienceLevel: formData.experienceLevel,
+    experienceLevel: mapExperienceLevel(formData.experienceLevel),
     skills,
     benefits,
     deadline: formData.applicationDeadline,
