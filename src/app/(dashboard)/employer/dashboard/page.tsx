@@ -471,7 +471,7 @@ export default function EmployerDashboardPage() {
                         </div>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline" asChild className="flex-1">
-                            <Link href={`/employer/jobs/${job.id}/applications`}>
+                            <Link href={`/employer/jobs/${job.id}/applicants`}>
                               View Applicants
                             </Link>
                           </Button>

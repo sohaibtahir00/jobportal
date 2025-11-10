@@ -166,7 +166,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
       };
 
       const response = await fetch(`/api/jobs/${resolvedParams.id}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
