@@ -285,11 +285,395 @@ export default function EditJobPage() {
           )}
 
           <form onSubmit={handleSave}>
-            {/* Rest of the form stays the same... */}
-            {/* (All the Card components with form fields) */}
-            {/* I'll keep them as-is since they don't need changes */}
+            {/* Basic Information Card */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="mb-6 text-xl font-bold text-secondary-900">
+                  Basic Information
+                </h2>
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="title"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
+                      Job Title *
+                    </label>
+                    <Input
+                      id="title"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleChange}
+                      required
+                      placeholder="e.g. Senior Machine Learning Engineer"
+                    />
+                  </div>
 
-            {/* Just showing the Actions section for brevity */}
+                  <div>
+                    <label
+                      htmlFor="company"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
+                      Company Name
+                    </label>
+                    <Input
+                      id="company"
+                      name="company"
+                      value={formData.company}
+                      onChange={handleChange}
+                      disabled
+                      placeholder="Your company name"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <label
+                        htmlFor="location"
+                        className="mb-2 block text-sm font-medium text-secondary-700"
+                      >
+                        Location *
+                      </label>
+                      <Input
+                        id="location"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleChange}
+                        required
+                        placeholder="e.g. San Francisco, CA"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="locationType"
+                        className="mb-2 block text-sm font-medium text-secondary-700"
+                      >
+                        Location Type *
+                      </label>
+                      <select
+                        id="locationType"
+                        name="locationType"
+                        value={formData.locationType}
+                        onChange={handleChange}
+                        className="w-full rounded-lg border border-secondary-300 px-4 py-2 focus:border-primary-600 focus:outline-none"
+                        required
+                      >
+                        <option value="remote">Remote</option>
+                        <option value="onsite">On-site</option>
+                        <option value="hybrid">Hybrid</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <label
+                        htmlFor="employmentType"
+                        className="mb-2 block text-sm font-medium text-secondary-700"
+                      >
+                        Employment Type *
+                      </label>
+                      <select
+                        id="employmentType"
+                        name="employmentType"
+                        value={formData.employmentType}
+                        onChange={handleChange}
+                        className="w-full rounded-lg border border-secondary-300 px-4 py-2 focus:border-primary-600 focus:outline-none"
+                        required
+                      >
+                        <option value="full-time">Full-time</option>
+                        <option value="part-time">Part-time</option>
+                        <option value="contract">Contract</option>
+                        <option value="internship">Internship</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="experienceLevel"
+                        className="mb-2 block text-sm font-medium text-secondary-700"
+                      >
+                        Experience Level *
+                      </label>
+                      <select
+                        id="experienceLevel"
+                        name="experienceLevel"
+                        value={formData.experienceLevel}
+                        onChange={handleChange}
+                        className="w-full rounded-lg border border-secondary-300 px-4 py-2 focus:border-primary-600 focus:outline-none"
+                        required
+                      >
+                        <option value="entry">Entry Level</option>
+                        <option value="mid">Mid Level</option>
+                        <option value="senior">Senior</option>
+                        <option value="lead">Lead/Principal</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Compensation Card */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="mb-6 text-xl font-bold text-secondary-900">
+                  Compensation
+                </h2>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="salaryMin"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
+                      Minimum Salary ($)
+                    </label>
+                    <Input
+                      id="salaryMin"
+                      name="salaryMin"
+                      type="number"
+                      value={formData.salaryMin}
+                      onChange={handleChange}
+                      placeholder="e.g. 100000"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="salaryMax"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
+                      Maximum Salary ($)
+                    </label>
+                    <Input
+                      id="salaryMax"
+                      name="salaryMax"
+                      type="number"
+                      value={formData.salaryMax}
+                      onChange={handleChange}
+                      placeholder="e.g. 150000"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Job Details Card */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="mb-6 text-xl font-bold text-secondary-900">
+                  Job Details
+                </h2>
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="description"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
+                      Job Description *
+                    </label>
+                    <textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      required
+                      rows={6}
+                      className="w-full rounded-lg border border-secondary-300 px-4 py-2 focus:border-primary-600 focus:outline-none"
+                      placeholder="Describe the role, team, and what makes this opportunity unique..."
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="requirements"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
+                      Requirements *
+                    </label>
+                    <textarea
+                      id="requirements"
+                      name="requirements"
+                      value={formData.requirements}
+                      onChange={handleChange}
+                      required
+                      rows={6}
+                      className="w-full rounded-lg border border-secondary-300 px-4 py-2 focus:border-primary-600 focus:outline-none"
+                      placeholder="List the required skills, experience, and qualifications..."
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="responsibilities"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
+                      Responsibilities *
+                    </label>
+                    <textarea
+                      id="responsibilities"
+                      name="responsibilities"
+                      value={formData.responsibilities}
+                      onChange={handleChange}
+                      required
+                      rows={6}
+                      className="w-full rounded-lg border border-secondary-300 px-4 py-2 focus:border-primary-600 focus:outline-none"
+                      placeholder="What will the person be responsible for?"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="benefits"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
+                      Benefits
+                    </label>
+                    <textarea
+                      id="benefits"
+                      name="benefits"
+                      value={formData.benefits}
+                      onChange={handleChange}
+                      rows={4}
+                      className="w-full rounded-lg border border-secondary-300 px-4 py-2 focus:border-primary-600 focus:outline-none"
+                      placeholder="Health insurance, 401k, flexible hours, etc."
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Skills Card */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="mb-6 text-xl font-bold text-secondary-900">
+                  Required Skills
+                </h2>
+                <div className="mb-4">
+                  <label
+                    htmlFor="skillInput"
+                    className="mb-2 block text-sm font-medium text-secondary-700"
+                  >
+                    Add Skills
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="skillInput"
+                      value={skillInput}
+                      onChange={(e) => setSkillInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddSkill();
+                        }
+                      }}
+                      placeholder="e.g. Python, React, AWS"
+                    />
+                    <Button type="button" variant="outline" onClick={handleAddSkill}>
+                      Add
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {formData.skills.map((skill, idx) => (
+                    <Badge
+                      key={idx}
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-secondary-200"
+                      onClick={() => handleRemoveSkill(skill)}
+                    >
+                      {skill}
+                      <X className="ml-1 h-3 w-3" />
+                    </Badge>
+                  ))}
+                  {formData.skills.length === 0 && (
+                    <p className="text-sm text-secondary-500">
+                      No skills added yet. Add skills above.
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Assessment Card */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="mb-6 text-xl font-bold text-secondary-900">
+                  Skills Assessment
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="requiresAssessment"
+                      name="requiresAssessment"
+                      checked={formData.requiresAssessment}
+                      onChange={handleChange}
+                      className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
+                    />
+                    <label
+                      htmlFor="requiresAssessment"
+                      className="text-sm font-medium text-secondary-700"
+                    >
+                      Require skills assessment for applicants
+                    </label>
+                  </div>
+
+                  {formData.requiresAssessment && (
+                    <div>
+                      <label
+                        htmlFor="minScore"
+                        className="mb-2 block text-sm font-medium text-secondary-700"
+                      >
+                        Minimum Score (0-100)
+                      </label>
+                      <Input
+                        id="minScore"
+                        name="minScore"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={formData.minScore}
+                        onChange={handleChange}
+                        className="w-32"
+                      />
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Status Card */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="mb-6 text-xl font-bold text-secondary-900">
+                  Job Status
+                </h2>
+                <div>
+                  <label
+                    htmlFor="status"
+                    className="mb-2 block text-sm font-medium text-secondary-700"
+                  >
+                    Status
+                  </label>
+                  <select
+                    id="status"
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    className="w-full rounded-lg border border-secondary-300 px-4 py-2 focus:border-primary-600 focus:outline-none md:w-64"
+                  >
+                    <option value="active">Active - Accepting applications</option>
+                    <option value="paused">Paused - Not accepting applications</option>
+                    <option value="closed">Closed - No longer hiring</option>
+                  </select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons */}
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
               <Button
                 type="button"
