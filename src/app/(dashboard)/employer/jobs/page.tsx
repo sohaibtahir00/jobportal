@@ -65,8 +65,9 @@ export default function EmployerJobsPage() {
   // Fetch employer dashboard data which includes all jobs
   const { data, isLoading, error } = useEmployerDashboard();
 
-  // Get all jobs from employer data (not just top 5)
-  const allJobs = data?.employer?.jobs || [];
+  // Get all jobs from employer data (backend includes jobs array via Prisma include)
+  // TypeScript interface doesn't include it, so we cast to any to access it
+  const allJobs = (data as any)?.employer?.jobs || [];
 
   // Transform jobs to include applicationsCount
   const jobs = allJobs.map((job: any) => ({
