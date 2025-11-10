@@ -67,35 +67,47 @@ export default function EditJobPage({ params }: EditJobPageProps) {
   useEffect(() => {
     const loadJob = async () => {
       try {
-        // Mock data - would fetch from API
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setIsLoading(true);
+        setError("");
 
+        // Fetch real job data from API
+        const response = await fetch(`/api/jobs/${resolvedParams.id}`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to load job: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const job = data.job || data;
+
+        // Map API data to form state
         setFormData({
-          title: "Senior Machine Learning Engineer",
-          company: "TechCorp AI",
-          location: "San Francisco, CA",
-          locationType: "hybrid",
-          employmentType: "full-time",
-          experienceLevel: "senior",
-          salaryMin: "180000",
-          salaryMax: "240000",
-          description: "We're looking for an experienced ML Engineer to join our team...",
-          requirements: "- 5+ years of ML experience\n- Strong Python skills\n- Experience with PyTorch/TensorFlow",
-          responsibilities: "- Design and implement ML models\n- Collaborate with cross-functional teams\n- Deploy models to production",
-          benefits: "- Competitive salary\n- Health insurance\n- 401k matching\n- Remote work options",
-          skills: ["Python", "PyTorch", "AWS", "Kubernetes"],
-          requiresAssessment: true,
-          minScore: 75,
-          status: "active",
+          title: job.title || "",
+          company: job.employer?.companyName || "",
+          location: job.location || "",
+          locationType: job.remote ? "remote" : (job.remoteType?.toLowerCase() || "onsite"),
+          employmentType: job.type?.toLowerCase().replace("_", "-") || "full-time",
+          experienceLevel: job.experienceLevel?.toLowerCase().replace("_level", "").replace("_", "-") || "mid",
+          salaryMin: job.salaryMin?.toString() || "",
+          salaryMax: job.salaryMax?.toString() || "",
+          description: job.description || "",
+          requirements: job.requirements || "",
+          responsibilities: job.responsibilities || "",
+          benefits: job.benefits || "",
+          skills: job.skills || [],
+          requiresAssessment: job.requiresAssessment || false,
+          minScore: job.minSkillsScore || 70,
+          status: job.status?.toLowerCase() || "active",
         });
         setIsLoading(false);
-      } catch (err) {
-        setError("Failed to load job data");
+      } catch (err: any) {
+        console.error("Error loading job:", err);
+        setError(err.message || "Failed to load job data");
         setIsLoading(false);
       }
     };
 
-    if (status === "authenticated") {
+    if (status === "authenticated" && resolvedParams.id) {
       loadJob();
     }
   }, [resolvedParams.id, status]);
@@ -133,13 +145,44 @@ export default function EditJobPage({ params }: EditJobPageProps) {
     setError("");
 
     try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Transform form data to API format
+      const updateData = {
+        title: formData.title,
+        description: formData.description,
+        requirements: formData.requirements,
+        responsibilities: formData.responsibilities,
+        location: formData.location,
+        remote: formData.locationType === "remote",
+        remoteType: formData.locationType.toUpperCase(),
+        type: formData.employmentType.toUpperCase().replace("-", "_"),
+        experienceLevel: formData.experienceLevel.toUpperCase().replace("-", "_") + "_LEVEL",
+        salaryMin: formData.salaryMin ? parseInt(formData.salaryMin) : null,
+        salaryMax: formData.salaryMax ? parseInt(formData.salaryMax) : null,
+        skills: formData.skills,
+        benefits: formData.benefits,
+        requiresAssessment: formData.requiresAssessment,
+        minSkillsScore: formData.requiresAssessment ? formData.minScore : null,
+        status: formData.status.toUpperCase(),
+      };
 
-      // Redirect to job dashboard
+      const response = await fetch(`/api/jobs/${resolvedParams.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save job");
+      }
+
+      // Redirect to job dashboard on success
       router.push("/employer/dashboard");
-    } catch (err) {
-      setError("Failed to save job. Please try again.");
+    } catch (err: any) {
+      console.error("Error saving job:", err);
+      setError(err.message || "Failed to save job. Please try again.");
       setIsSaving(false);
     }
   };
@@ -150,12 +193,23 @@ export default function EditJobPage({ params }: EditJobPageProps) {
     }
 
     setIsDeleting(true);
+    setError("");
+
     try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch(`/api/jobs/${resolvedParams.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete job");
+      }
+
+      // Redirect to dashboard on success
       router.push("/employer/dashboard");
-    } catch (err) {
-      setError("Failed to delete job");
+    } catch (err: any) {
+      console.error("Error deleting job:", err);
+      setError(err.message || "Failed to delete job");
       setIsDeleting(false);
     }
   };

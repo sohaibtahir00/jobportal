@@ -180,19 +180,21 @@ export default function EmployerDashboardPage() {
       value: summary.totalApplications || 0,
       badge: summary.pendingReviews > 0 ? `${summary.pendingReviews} new` : null,
       gradient: "from-purple-500 to-purple-600",
-      link: "/employer/applications",
+      link: "/employer/applicants",
     },
     {
       icon: Users,
       label: "Candidates Interviewed",
       value: (applicationStats.interviewed || 0) + (applicationStats.interviewScheduled || 0),
       gradient: "from-green-500 to-emerald-600",
+      link: "/employer/applicants?status=INTERVIEWED,INTERVIEW_SCHEDULED",
     },
     {
       icon: CheckCircle2,
       label: "Successful Hires",
       value: successfulHires,
       gradient: "from-emerald-500 to-teal-600",
+      link: "/employer/placements",
     },
     {
       icon: DollarSign,
@@ -200,7 +202,7 @@ export default function EmployerDashboardPage() {
       value: summary.pendingPayments || 0,
       formatted: formatCurrency(summary.pendingPayments || 0),
       gradient: "from-orange-500 to-amber-600",
-      link: "/employer/payments",
+      link: "/employer/invoices",
     },
   ];
 
@@ -496,7 +498,7 @@ export default function EmployerDashboardPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-secondary-900">Recent Applications</h3>
                   <Link
-                    href="/employer/applications"
+                    href="/employer/applicants"
                     className="text-sm text-primary-600 hover:text-primary-700 font-medium"
                   >
                     View All →
@@ -539,7 +541,7 @@ export default function EmployerDashboardPage() {
                           </div>
                         </div>
                         <Button size="sm" variant="outline" asChild>
-                          <Link href={`/employer/applications/${app.id}`}>View</Link>
+                          <Link href={`/employer/applicants/${app.id}`}>View</Link>
                         </Button>
                       </div>
                     ))}
