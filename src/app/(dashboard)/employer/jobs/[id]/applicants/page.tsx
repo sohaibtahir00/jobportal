@@ -20,6 +20,7 @@ import {
   Loader2,
   Filter,
   Search,
+  AlertCircle,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 
@@ -31,14 +32,25 @@ interface Applicant {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  location: string;
-  appliedDate: string;
-  skillsScore: number;
-  tier: string;
-  experience: string;
+  phone: string | null;
+  location: string | null;
+  appliedAt: string;
+  skillsScore: number | null;
+  testTier: string | null;
+  experience: number | null;
   status: string;
-  avatar?: string;
+  coverLetter: string | null;
+  candidate: {
+    user: {
+      name: string;
+      email: string;
+    };
+    phone: string | null;
+    location: string | null;
+    experience: number | null;
+    testScore: number | null;
+    testTier: string | null;
+  };
 }
 
 export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePageProps) {
@@ -46,21 +58,20 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterScore, setFilterScore] = useState("all");
-
-  const [jobTitle, setJobTitle] = useState("Senior Machine Learning Engineer");
-
-  // Pipeline stages
-  const stages = [
-    { id: "applied", label: "Applied", count: 0, color: "bg-secondary-100" },
-    { id: "screening", label: "Screening", count: 0, color: "bg-blue-100" },
-    { id: "interview", label: "Interview", count: 0, color: "bg-yellow-100" },
-    { id: "offer", label: "Offer", count: 0, color: "bg-green-100" },
-    { id: "rejected", label: "Rejected", count: 0, color: "bg-red-100" },
-  ];
-
+  const [jobTitle, setJobTitle] = useState("");
   const [applicants, setApplicants] = useState<Applicant[]>([]);
+
+  // Pipeline stages mapped to application statuses
+  const stages = [
+    { id: "PENDING", label: "Applied", color: "bg-secondary-100" },
+    { id: "REVIEWED", label: "Screening", color: "bg-blue-100" },
+    { id: "INTERVIEW_SCHEDULED,INTERVIEWED", label: "Interview", color: "bg-yellow-100" },
+    { id: "OFFERED,ACCEPTED", label: "Offer", color: "bg-green-100" },
+    { id: "REJECTED,WITHDRAWN", label: "Rejected", color: "bg-red-100" },
+  ];
 
   // Redirect if not logged in or not employer
   useEffect(() => {
@@ -72,121 +83,96 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
     }
   }, [status, session, router]);
 
-  // Load applicants
+  // Load applicants from API
   useEffect(() => {
     const loadApplicants = async () => {
       try {
-        // Mock data
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setIsLoading(true);
+        setError("");
 
-        const mockApplicants: Applicant[] = [
-          {
-            id: "1",
-            name: "Sarah Chen",
-            email: "sarah.chen@email.com",
-            phone: "+1 (555) 123-4567",
-            location: "San Francisco, CA",
-            appliedDate: "2025-01-05",
-            skillsScore: 92,
-            tier: "Elite",
-            experience: "7 years",
-            status: "applied",
-          },
-          {
-            id: "2",
-            name: "Michael Rodriguez",
-            email: "m.rodriguez@email.com",
-            phone: "+1 (555) 234-5678",
-            location: "Austin, TX",
-            appliedDate: "2025-01-06",
-            skillsScore: 85,
-            tier: "Advanced",
-            experience: "5 years",
-            status: "screening",
-          },
-          {
-            id: "3",
-            name: "Emily Watson",
-            email: "emily.w@email.com",
-            phone: "+1 (555) 345-6789",
-            location: "Seattle, WA",
-            appliedDate: "2025-01-07",
-            skillsScore: 88,
-            tier: "Advanced",
-            experience: "6 years",
-            status: "interview",
-          },
-          {
-            id: "4",
-            name: "David Kim",
-            email: "dkim@email.com",
-            phone: "+1 (555) 456-7890",
-            location: "New York, NY",
-            appliedDate: "2025-01-04",
-            skillsScore: 78,
-            tier: "Proficient",
-            experience: "4 years",
-            status: "applied",
-          },
-          {
-            id: "5",
-            name: "Lisa Patel",
-            email: "lisa.patel@email.com",
-            phone: "+1 (555) 567-8901",
-            location: "Boston, MA",
-            appliedDate: "2025-01-08",
-            skillsScore: 95,
-            tier: "Elite",
-            experience: "8 years",
-            status: "offer",
-          },
-        ];
+        // Fetch job details
+        const jobResponse = await fetch(`/api/jobs/${resolvedParams.id}`);
+        if (!jobResponse.ok) {
+          throw new Error("Failed to load job details");
+        }
+        const jobData = await jobResponse.json();
+        const job = jobData.job || jobData;
+        setJobTitle(job.title);
 
-        setApplicants(mockApplicants);
+        // Fetch applications for this job
+        const appsResponse = await fetch(`/api/applications?jobId=${resolvedParams.id}`);
+        if (!appsResponse.ok) {
+          throw new Error("Failed to load applications");
+        }
+        const appsData = await appsResponse.json();
+        setApplicants(appsData.applications || []);
         setIsLoading(false);
-      } catch (err) {
+      } catch (err: any) {
+        console.error("Error loading applicants:", err);
+        setError(err.message || "Failed to load applicants");
         setIsLoading(false);
       }
     };
 
-    if (status === "authenticated") {
+    if (status === "authenticated" && resolvedParams.id) {
       loadApplicants();
     }
   }, [resolvedParams.id, status]);
 
-  const moveApplicant = (applicantId: string, newStatus: string) => {
-    setApplicants((prev) =>
-      prev.map((app) =>
-        app.id === applicantId ? { ...app, status: newStatus } : app
-      )
-    );
+  const updateApplicantStatus = async (applicantId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/applications/${applicantId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update status");
+      }
+
+      // Update local state
+      setApplicants((prev) =>
+        prev.map((app) =>
+          app.id === applicantId ? { ...app, status: newStatus } : app
+        )
+      );
+    } catch (err) {
+      console.error("Error updating status:", err);
+      alert("Failed to update applicant status");
+    }
   };
 
-  const getStageApplicants = (stageId: string) => {
+  const getStageApplicants = (stageStatuses: string) => {
+    const statusList = stageStatuses.split(",");
     return applicants.filter((app) => {
-      const matchesStage = app.status === stageId;
+      const matchesStage = statusList.includes(app.status);
       const matchesSearch =
         searchQuery === "" ||
-        app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.email.toLowerCase().includes(searchQuery.toLowerCase());
+        app.candidate.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        app.candidate.user.email.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const score = app.candidate.testScore || 0;
       const matchesScore =
         filterScore === "all" ||
-        (filterScore === "elite" && app.skillsScore >= 90) ||
-        (filterScore === "advanced" && app.skillsScore >= 80 && app.skillsScore < 90) ||
-        (filterScore === "proficient" && app.skillsScore >= 70 && app.skillsScore < 80);
+        (filterScore === "elite" && score >= 90) ||
+        (filterScore === "advanced" && score >= 80 && score < 90) ||
+        (filterScore === "proficient" && score >= 70 && score < 80);
 
       return matchesStage && matchesSearch && matchesScore;
     });
   };
 
-  const getTierColor = (tier: string) => {
+  const getTierColor = (tier: string | null) => {
     switch (tier) {
-      case "Elite":
+      case "ELITE":
         return "text-yellow-600 bg-yellow-50";
-      case "Advanced":
+      case "ADVANCED":
         return "text-accent-600 bg-accent-50";
-      case "Proficient":
+      case "INTERMEDIATE":
         return "text-primary-600 bg-primary-50";
+      case "BEGINNER":
+        return "text-secondary-600 bg-secondary-50";
       default:
         return "text-secondary-600 bg-secondary-50";
     }
@@ -203,14 +189,21 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary-50">
+        <div className="text-center">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-600 mb-4" />
+          <p className="text-red-600 mb-2 text-lg font-semibold">Failed to load applicants</p>
+          <p className="text-sm text-secondary-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!session) {
     return null;
   }
-
-  // Update stage counts
-  stages.forEach((stage) => {
-    stage.count = getStageApplicants(stage.id).length;
-  });
 
   return (
     <div className="min-h-screen bg-secondary-50 py-8">
@@ -222,7 +215,11 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
               Dashboard
             </Link>
             <ChevronRight className="h-4 w-4" />
-            <span>Applicants Pipeline</span>
+            <Link href="/employer/jobs" className="hover:text-primary-600">
+              Jobs
+            </Link>
+            <ChevronRight className="h-4 w-4" />
+            <span>Applicants</span>
           </div>
 
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -237,7 +234,7 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
                 </span>
                 <span className="flex items-center gap-1">
                   <Award className="h-4 w-4" />
-                  {applicants.filter((a) => a.skillsScore >= 80).length} Verified
+                  {applicants.filter((a) => (a.candidate.testScore || 0) >= 80).length} Verified
                 </span>
               </div>
             </div>
@@ -247,10 +244,6 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
                 <Link href={`/employer/jobs/${resolvedParams.id}/edit`}>
                   Edit Job
                 </Link>
-              </Button>
-              <Button variant="primary">
-                <MessageSquare className="mr-2 h-5 w-5" />
-                Message All
               </Button>
             </div>
           </div>
@@ -295,7 +288,7 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-secondary-900">{stage.label}</h3>
                     <Badge variant="secondary" size="sm">
-                      {stage.count}
+                      {stageApplicants.length}
                     </Badge>
                   </div>
                 </div>
@@ -313,27 +306,33 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
                             href={`/employer/applicants/${applicant.id}`}
                             className="mb-1 font-bold text-secondary-900 hover:text-primary-600"
                           >
-                            {applicant.name}
+                            {applicant.candidate.user.name}
                           </Link>
-                          <div className="flex items-center gap-2">
-                            <div className={`flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold ${getTierColor(applicant.tier)}`}>
-                              <Star className="h-3 w-3" />
-                              {applicant.skillsScore}
+                          {applicant.candidate.testScore !== null && (
+                            <div className="flex items-center gap-2">
+                              <div className={`flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold ${getTierColor(applicant.candidate.testTier)}`}>
+                                <Star className="h-3 w-3" />
+                                {applicant.candidate.testScore}
+                              </div>
+                              {applicant.candidate.testTier && (
+                                <Badge variant="secondary" size="sm">
+                                  {applicant.candidate.testTier}
+                                </Badge>
+                              )}
                             </div>
-                            <Badge variant="secondary" size="sm">
-                              {applicant.tier}
-                            </Badge>
-                          </div>
+                          )}
                         </div>
 
                         <div className="mb-3 space-y-1 text-xs text-secondary-600">
-                          <p className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {applicant.location}
-                          </p>
+                          {applicant.candidate.location && (
+                            <p className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {applicant.candidate.location}
+                            </p>
+                          )}
                           <p className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            Applied {new Date(applicant.appliedDate).toLocaleDateString()}
+                            Applied {new Date(applicant.appliedAt).toLocaleDateString()}
                           </p>
                         </div>
 
@@ -350,36 +349,6 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
                               View
                             </Link>
                           </Button>
-
-                          {stage.id !== "rejected" && stage.id !== "offer" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-xs"
-                              onClick={() => {
-                                const nextStage =
-                                  stage.id === "applied"
-                                    ? "screening"
-                                    : stage.id === "screening"
-                                    ? "interview"
-                                    : "offer";
-                                moveApplicant(applicant.id, nextStage);
-                              }}
-                            >
-                              <Check className="h-3 w-3" />
-                            </Button>
-                          )}
-
-                          {stage.id !== "rejected" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-red-200 text-xs text-red-600 hover:bg-red-50"
-                              onClick={() => moveApplicant(applicant.id, "rejected")}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -409,25 +378,28 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
               </div>
               <div>
                 <p className="mb-1 text-2xl font-bold text-yellow-600">
-                  {applicants.filter((a) => a.skillsScore >= 90).length}
+                  {applicants.filter((a) => (a.candidate.testScore || 0) >= 90).length}
                 </p>
                 <p className="text-sm text-secondary-600">Elite Candidates</p>
               </div>
               <div>
                 <p className="mb-1 text-2xl font-bold text-green-600">
-                  {getStageApplicants("offer").length}
+                  {getStageApplicants("OFFERED,ACCEPTED").length}
                 </p>
                 <p className="text-sm text-secondary-600">Offers Extended</p>
               </div>
               <div>
                 <p className="mb-1 text-2xl font-bold text-blue-600">
-                  {getStageApplicants("interview").length}
+                  {getStageApplicants("INTERVIEW_SCHEDULED,INTERVIEWED").length}
                 </p>
                 <p className="text-sm text-secondary-600">In Interview</p>
               </div>
               <div>
                 <p className="mb-1 text-2xl font-bold text-secondary-600">
-                  {Math.round((applicants.reduce((sum, a) => sum + a.skillsScore, 0) / applicants.length) || 0)}
+                  {Math.round(
+                    applicants.reduce((sum, a) => sum + (a.candidate.testScore || 0), 0) /
+                    applicants.length
+                  ) || 0}
                 </p>
                 <p className="text-sm text-secondary-600">Avg Skills Score</p>
               </div>

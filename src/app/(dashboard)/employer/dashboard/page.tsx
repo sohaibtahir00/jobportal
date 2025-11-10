@@ -47,7 +47,8 @@ function formatRelativeTime(date: string | Date): string {
   if (diffInSeconds < 60) return "just now";
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  if (diffInSeconds < 604800)
+    return `${Math.floor(diffInSeconds / 86400)}d ago`;
   return past.toLocaleDateString();
 }
 
@@ -111,8 +112,12 @@ export default function EmployerDashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <AlertCircle className="h-12 w-12 text-red-600 mb-4" />
-        <p className="text-red-600 mb-2 text-lg font-semibold">Failed to load dashboard</p>
-        <p className="text-sm text-secondary-600">{(error as any)?.message || "Please try again later"}</p>
+        <p className="text-red-600 mb-2 text-lg font-semibold">
+          Failed to load dashboard
+        </p>
+        <p className="text-sm text-secondary-600">
+          {(error as any)?.message || "Please try again later"}
+        </p>
       </div>
     );
   }
@@ -154,10 +159,12 @@ export default function EmployerDashboardPage() {
   const successfulHires = applicationStats.accepted || 0;
 
   // Calculate skills verification percentage
-  const totalApplicantsWithTests = candidateQualityMetrics.totalCandidatesWithTests || 0;
-  const skillsVerificationPercentage = summary.totalApplications > 0
-    ? Math.round((totalApplicantsWithTests / summary.totalApplications) * 100)
-    : 0;
+  const totalApplicantsWithTests =
+    candidateQualityMetrics.totalCandidatesWithTests || 0;
+  const skillsVerificationPercentage =
+    summary.totalApplications > 0
+      ? Math.round((totalApplicantsWithTests / summary.totalApplications) * 100)
+      : 0;
 
   // Check for unclaimed jobs (placeholder - would need backend support)
   const unclaimedJobs = 0;
@@ -178,14 +185,17 @@ export default function EmployerDashboardPage() {
       icon: FileText,
       label: "Total Applications",
       value: summary.totalApplications || 0,
-      badge: summary.pendingReviews > 0 ? `${summary.pendingReviews} new` : null,
+      badge:
+        summary.pendingReviews > 0 ? `${summary.pendingReviews} new` : null,
       gradient: "from-purple-500 to-purple-600",
       link: "/employer/applicants",
     },
     {
       icon: Users,
       label: "Candidates Interviewed",
-      value: (applicationStats.interviewed || 0) + (applicationStats.interviewScheduled || 0),
+      value:
+        (applicationStats.interviewed || 0) +
+        (applicationStats.interviewScheduled || 0),
       gradient: "from-green-500 to-emerald-600",
       link: "/employer/applicants?status=INTERVIEWED,INTERVIEW_SCHEDULED",
     },
@@ -263,14 +273,21 @@ export default function EmployerDashboardPage() {
                         <Icon className="h-6 w-6 text-white" />
                       </div>
                       {stat.badge && (
-                        <Badge variant="danger" className="bg-red-100 text-red-700 border-red-300">
+                        <Badge
+                          variant="danger"
+                          className="bg-red-100 text-red-700 border-red-300"
+                        >
                           {stat.badge}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm font-medium text-secondary-600 mb-1">{stat.label}</p>
+                    <p className="text-sm font-medium text-secondary-600 mb-1">
+                      {stat.label}
+                    </p>
                     <p className="text-3xl font-bold text-secondary-900">
-                      {stat.formatted || <CountUp end={stat.value} duration={2} />}
+                      {stat.formatted || (
+                        <CountUp end={stat.value} duration={2} />
+                      )}
                     </p>
                     {stat.link && (
                       <Link
@@ -297,7 +314,9 @@ export default function EmployerDashboardPage() {
         >
           <Card className="border-2 border-primary-100 shadow-lg">
             <CardContent className="p-6">
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">Quick Actions</h3>
+              <h3 className="text-xl font-bold text-secondary-900 mb-4">
+                Quick Actions
+              </h3>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Post New Job */}
                 <Button
@@ -305,7 +324,10 @@ export default function EmployerDashboardPage() {
                   size="lg"
                   className="h-auto py-4 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700"
                 >
-                  <Link href="/employer/jobs/new" className="flex flex-col items-center gap-2">
+                  <Link
+                    href="/employer/jobs/new"
+                    className="flex flex-col items-center gap-2"
+                  >
                     <Plus className="h-6 w-6" />
                     <span>Post New Job</span>
                   </Link>
@@ -319,7 +341,10 @@ export default function EmployerDashboardPage() {
                     variant="outline"
                     className="h-auto py-4 border-2 border-orange-300 hover:bg-orange-50"
                   >
-                    <Link href="/employer/claim-jobs" className="flex flex-col items-center gap-2">
+                    <Link
+                      href="/employer/claim-jobs"
+                      className="flex flex-col items-center gap-2"
+                    >
                       <Target className="h-6 w-6 text-orange-600" />
                       <span>Claim Your Jobs</span>
                     </Link>
@@ -333,7 +358,10 @@ export default function EmployerDashboardPage() {
                   variant="outline"
                   className="h-auto py-4 border-2 border-purple-300 hover:bg-purple-50"
                 >
-                  <Link href="/employer/search-candidates" className="flex flex-col items-center gap-2">
+                  <Link
+                    href="/employer/search-candidates"
+                    className="flex flex-col items-center gap-2"
+                  >
                     <Users className="h-6 w-6 text-purple-600" />
                     <span>Search Candidates</span>
                   </Link>
@@ -346,7 +374,10 @@ export default function EmployerDashboardPage() {
                   variant="outline"
                   className="h-auto py-4 border-2 border-green-300 hover:bg-green-50"
                 >
-                  <Link href="/contact" className="flex flex-col items-center gap-2">
+                  <Link
+                    href="/contact"
+                    className="flex flex-col items-center gap-2"
+                  >
                     <Phone className="h-6 w-6 text-green-600" />
                     <span>Schedule Call</span>
                   </Link>
@@ -374,12 +405,18 @@ export default function EmployerDashboardPage() {
                     </div>
                     <div className="flex-1">
                       <h3 className="text-lg font-bold text-secondary-900 mb-2">
-                        You have {unclaimedJobs} unclaimed job{unclaimedJobs > 1 ? "s" : ""} with applicants
+                        You have {unclaimedJobs} unclaimed job
+                        {unclaimedJobs > 1 ? "s" : ""} with applicants
                       </h3>
                       <p className="text-sm text-secondary-600 mb-4">
-                        These jobs are publicly listed but not officially claimed by your company. Claim them to manage applications.
+                        These jobs are publicly listed but not officially
+                        claimed by your company. Claim them to manage
+                        applications.
                       </p>
-                      <Button asChild className="bg-orange-600 hover:bg-orange-700">
+                      <Button
+                        asChild
+                        className="bg-orange-600 hover:bg-orange-700"
+                      >
                         <Link href="/employer/claim-jobs">Claim Now</Link>
                       </Button>
                     </div>
@@ -409,7 +446,9 @@ export default function EmployerDashboardPage() {
             <Card className="shadow-lg h-full">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-secondary-900">Active Jobs</h3>
+                  <h3 className="text-xl font-bold text-secondary-900">
+                    Active Jobs
+                  </h3>
                   <Link
                     href="/employer/jobs"
                     className="text-sm text-primary-600 hover:text-primary-700 font-medium"
@@ -421,7 +460,9 @@ export default function EmployerDashboardPage() {
                 {topJobs.length === 0 ? (
                   <div className="text-center py-12">
                     <Briefcase className="h-12 w-12 text-secondary-300 mx-auto mb-3" />
-                    <p className="text-secondary-600 mb-4">No active jobs yet</p>
+                    <p className="text-secondary-600 mb-4">
+                      No active jobs yet
+                    </p>
                     <Button asChild size="sm">
                       <Link href="/employer/jobs/new">Post Your First Job</Link>
                     </Button>
@@ -441,7 +482,9 @@ export default function EmployerDashboardPage() {
                             >
                               {job.title}
                             </Link>
-                            <p className="text-sm text-secondary-600 mt-1">{job.location}</p>
+                            <p className="text-sm text-secondary-600 mt-1">
+                              {job.location}
+                            </p>
                           </div>
                           <Badge className={jobStatusColors[job.status]}>
                             {job.status}
@@ -452,7 +495,13 @@ export default function EmployerDashboardPage() {
                             <FileText className="h-4 w-4" />
                             {job.applicationsCount} applications
                             {job.applicationsCount > 0 && (
-                              <Badge variant="danger" size="sm" className="ml-1">New</Badge>
+                              <Badge
+                                variant="danger"
+                                size="sm"
+                                className="ml-1"
+                              >
+                                New
+                              </Badge>
                             )}
                           </span>
                           <span className="flex items-center gap-1">
@@ -470,13 +519,25 @@ export default function EmployerDashboardPage() {
                           Posted {formatRelativeTime(job.postedAt)}
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" asChild className="flex-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            asChild
+                            className="flex-1"
+                          >
                             <Link href={`/employer/jobs/${job.id}/applicants`}>
                               View Applicants
                             </Link>
                           </Button>
-                          <Button size="sm" variant="outline" asChild className="flex-1">
-                            <Link href={`/employer/jobs/${job.id}/edit`}>Edit</Link>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            asChild
+                            className="flex-1"
+                          >
+                            <Link href={`/employer/jobs/${job.id}/edit`}>
+                              Edit
+                            </Link>
                           </Button>
                         </div>
                       </div>
@@ -496,7 +557,9 @@ export default function EmployerDashboardPage() {
             <Card className="shadow-lg h-full">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-secondary-900">Recent Applications</h3>
+                  <h3 className="text-xl font-bold text-secondary-900">
+                    Recent Applications
+                  </h3>
                   <Link
                     href="/employer/applicants"
                     className="text-sm text-primary-600 hover:text-primary-700 font-medium"
@@ -524,13 +587,18 @@ export default function EmployerDashboardPage() {
                           <p className="font-semibold text-secondary-900 truncate">
                             {app.candidateName || "Candidate"}
                           </p>
-                          <p className="text-sm text-secondary-600 truncate">{app.jobTitle}</p>
+                          <p className="text-sm text-secondary-600 truncate">
+                            {app.jobTitle}
+                          </p>
                           <div className="flex items-center gap-2 mt-2 flex-wrap">
                             <Badge className={statusColors[app.status]}>
                               {app.status.replace(/_/g, " ")}
                             </Badge>
                             {app.candidateTestTier && (
-                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                              <Badge
+                                variant="outline"
+                                className="bg-green-50 text-green-700 border-green-300"
+                              >
                                 <Award className="h-3 w-3 mr-1" />
                                 {app.candidateTestTier}
                               </Badge>
@@ -541,7 +609,9 @@ export default function EmployerDashboardPage() {
                           </div>
                         </div>
                         <Button size="sm" variant="outline" asChild>
-                          <Link href={`/employer/applicants/${app.id}`}>View</Link>
+                          <Link href={`/employer/applicants/${app.id}`}>
+                            View
+                          </Link>
                         </Button>
                       </div>
                     ))}
@@ -573,22 +643,30 @@ export default function EmployerDashboardPage() {
                         Skills Verification Stats
                       </h3>
                       <p className="text-sm text-secondary-600">
-                        {skillsVerificationPercentage}% of your applicants have verified skills
+                        {skillsVerificationPercentage}% of your applicants have
+                        verified skills
                       </p>
                     </div>
                   </div>
 
-                  <Progress value={skillsVerificationPercentage} className="h-3 mb-4" />
+                  <Progress
+                    value={skillsVerificationPercentage}
+                    className="h-3 mb-4"
+                  />
 
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="bg-white/80 rounded-lg p-3 border border-green-100">
-                      <p className="text-sm text-secondary-600">Total Verified</p>
+                      <p className="text-sm text-secondary-600">
+                        Total Verified
+                      </p>
                       <p className="text-2xl font-bold text-green-700">
                         {totalApplicantsWithTests}
                       </p>
                     </div>
                     <div className="bg-white/80 rounded-lg p-3 border border-green-100">
-                      <p className="text-sm text-secondary-600">Total Applicants</p>
+                      <p className="text-sm text-secondary-600">
+                        Total Applicants
+                      </p>
                       <p className="text-2xl font-bold text-secondary-900">
                         {summary.totalApplications}
                       </p>
@@ -613,7 +691,9 @@ export default function EmployerDashboardPage() {
                         </p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-secondary-600">Intermediate</p>
+                        <p className="text-xs text-secondary-600">
+                          Intermediate
+                        </p>
                         <p className="text-lg font-bold text-green-600">
                           {candidateQualityMetrics.intermediate || 0}
                         </p>
@@ -630,10 +710,12 @@ export default function EmployerDashboardPage() {
                 <div className="lg:w-64 bg-white/80 rounded-lg p-4 border border-green-200">
                   <CheckCircle2 className="h-8 w-8 text-green-600 mb-3" />
                   <p className="text-sm font-semibold text-secondary-900 mb-2">
-                    Candidates with Skills Scores are 3x more likely to be good fits
+                    Candidates with Skills Scores are 3x more likely to be good
+                    fits
                   </p>
                   <p className="text-xs text-secondary-600">
-                    Verified candidates have completed our comprehensive skills assessment.
+                    Verified candidates have completed our comprehensive skills
+                    assessment.
                   </p>
                 </div>
               </div>
@@ -651,31 +733,64 @@ export default function EmployerDashboardPage() {
         >
           <Card className="shadow-lg">
             <CardContent className="p-6">
-              <h3 className="text-xl font-bold text-secondary-900 mb-6">Pipeline Overview</h3>
+              <h3 className="text-xl font-bold text-secondary-900 mb-6">
+                Pipeline Overview
+              </h3>
               <div className="space-y-3">
                 {[
-                  { label: "New Applications", count: applicationStats.pending || 0, color: "bg-yellow-500" },
-                  { label: "Under Review", count: applicationStats.reviewed || 0, color: "bg-blue-500" },
-                  { label: "Shortlisted", count: applicationStats.shortlisted || 0, color: "bg-purple-500" },
-                  { label: "Interview Scheduled", count: applicationStats.interviewScheduled || 0, color: "bg-indigo-500" },
-                  { label: "Offer Extended", count: applicationStats.offered || 0, color: "bg-green-500" },
-                  { label: "Hired", count: applicationStats.accepted || 0, color: "bg-emerald-500" },
+                  {
+                    label: "New Applications",
+                    count: applicationStats.pending || 0,
+                    color: "bg-yellow-500",
+                  },
+                  {
+                    label: "Under Review",
+                    count: applicationStats.reviewed || 0,
+                    color: "bg-blue-500",
+                  },
+                  {
+                    label: "Shortlisted",
+                    count: applicationStats.shortlisted || 0,
+                    color: "bg-purple-500",
+                  },
+                  {
+                    label: "Interview Scheduled",
+                    count: applicationStats.interviewScheduled || 0,
+                    color: "bg-indigo-500",
+                  },
+                  {
+                    label: "Offer Extended",
+                    count: applicationStats.offered || 0,
+                    color: "bg-green-500",
+                  },
+                  {
+                    label: "Hired",
+                    count: applicationStats.accepted || 0,
+                    color: "bg-emerald-500",
+                  },
                 ].map((stage, index) => {
-                  const maxCount = Math.max(...[
-                    applicationStats.pending || 0,
-                    applicationStats.reviewed || 0,
-                    applicationStats.shortlisted || 0,
-                    applicationStats.interviewScheduled || 0,
-                    applicationStats.offered || 0,
-                    applicationStats.accepted || 0,
-                  ]);
-                  const percentage = maxCount > 0 ? (stage.count / maxCount) * 100 : 0;
+                  const maxCount = Math.max(
+                    ...[
+                      applicationStats.pending || 0,
+                      applicationStats.reviewed || 0,
+                      applicationStats.shortlisted || 0,
+                      applicationStats.interviewScheduled || 0,
+                      applicationStats.offered || 0,
+                      applicationStats.accepted || 0,
+                    ]
+                  );
+                  const percentage =
+                    maxCount > 0 ? (stage.count / maxCount) * 100 : 0;
 
                   return (
                     <div key={stage.label}>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-secondary-700">{stage.label}</span>
-                        <span className="text-sm font-bold text-secondary-900">{stage.count}</span>
+                        <span className="text-sm font-medium text-secondary-700">
+                          {stage.label}
+                        </span>
+                        <span className="text-sm font-bold text-secondary-900">
+                          {stage.count}
+                        </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                         <div

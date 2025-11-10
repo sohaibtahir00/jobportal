@@ -81,13 +81,28 @@ export default function EditJobPage({ params }: EditJobPageProps) {
         const job = data.job || data;
 
         // Map API data to form state
+        // Map backend enum values to frontend form values
+        const expLevelMap: Record<string, string> = {
+          "ENTRY_LEVEL": "entry",
+          "MID_LEVEL": "mid",
+          "SENIOR_LEVEL": "senior",
+          "EXECUTIVE": "lead",
+        };
+
+        const typeMap: Record<string, string> = {
+          "FULL_TIME": "full-time",
+          "PART_TIME": "part-time",
+          "CONTRACT": "contract",
+          "INTERNSHIP": "internship",
+        };
+
         setFormData({
           title: job.title || "",
           company: job.employer?.companyName || "",
           location: job.location || "",
           locationType: job.remote ? "remote" : (job.remoteType?.toLowerCase() || "onsite"),
-          employmentType: job.type?.toLowerCase().replace("_", "-") || "full-time",
-          experienceLevel: job.experienceLevel?.toLowerCase().replace("_level", "").replace("_", "-") || "mid",
+          employmentType: typeMap[job.type] || "full-time",
+          experienceLevel: expLevelMap[job.experienceLevel] || "mid",
           salaryMin: job.salaryMin?.toString() || "",
           salaryMax: job.salaryMax?.toString() || "",
           description: job.description || "",
