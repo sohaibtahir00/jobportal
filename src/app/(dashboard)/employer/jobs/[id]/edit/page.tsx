@@ -72,7 +72,8 @@ export default function EditJobPage({ params }: EditJobPageProps) {
         setError("");
 
         // Fetch real job data from API
-        const response = await fetch(`/api/jobs/${jobId}`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const response = await fetch(`${apiUrl}/api/jobs/${jobId}`);
 
         if (!response.ok) {
           throw new Error(`Failed to load job: ${response.statusText}`);
@@ -187,7 +188,8 @@ export default function EditJobPage({ params }: EditJobPageProps) {
         status: formData.status.toUpperCase(),
       };
 
-      const response = await fetch(`/api/jobs/${jobId}`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/jobs/${jobId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -222,7 +224,8 @@ export default function EditJobPage({ params }: EditJobPageProps) {
     setError("");
 
     try {
-      const response = await fetch(`/api/jobs/${jobId}`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/jobs/${jobId}`, {
         method: "DELETE",
       });
 

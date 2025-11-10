@@ -98,7 +98,8 @@ export default function ApplicantsPipelinePage({
         setError("");
 
         // Fetch job details
-        const jobResponse = await fetch(`/api/jobs/${jobId}`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const jobResponse = await fetch(`${apiUrl}/api/jobs/${jobId}`);
         if (!jobResponse.ok) {
           throw new Error("Failed to load job details");
         }
@@ -107,7 +108,7 @@ export default function ApplicantsPipelinePage({
         setJobTitle(job.title);
 
         // Fetch applications for this job
-        const appsResponse = await fetch(`/api/applications?jobId=${jobId}`);
+        const appsResponse = await fetch(`${apiUrl}/api/applications?jobId=${jobId}`);
         if (!appsResponse.ok) {
           throw new Error("Failed to load applications");
         }
@@ -131,7 +132,8 @@ export default function ApplicantsPipelinePage({
     newStatus: string
   ) => {
     try {
-      const response = await fetch(`/api/applications/${applicantId}/status`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/applications/${applicantId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
