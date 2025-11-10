@@ -23,6 +23,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
+import { api } from "@/lib/api";
 
 interface ApplicantsPipelinePageProps {
   params: { id: string };
@@ -98,22 +99,13 @@ export default function ApplicantsPipelinePage({
         setError("");
 
         // Fetch job details
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-        const jobResponse = await fetch(`${apiUrl}/api/jobs/${jobId}`);
-        if (!jobResponse.ok) {
-          throw new Error("Failed to load job details");
-        }
-        const jobData = await jobResponse.json();
-        const job = jobData.job || jobData;
+        const jobResponse = await api.get(`/api/jobs/${jobId}`);
+        const job = jobResponse.data.job || jobResponse.data;
         setJobTitle(job.title);
 
         // Fetch applications for this job
-        const appsResponse = await fetch(`${apiUrl}/api/applications?jobId=${jobId}`);
-        if (!appsResponse.ok) {
-          throw new Error("Failed to load applications");
-        }
-        const appsData = await appsResponse.json();
-        setApplicants(appsData.applications || []);
+        const appsResponse = await api.get(`/api/applications?jobId=${jobId}`);
+        setApplicants(appsResponse.data.applications || []);
         setIsLoading(false);
       } catch (err: any) {
         console.error("Error loading applicants:", err);
@@ -132,16 +124,7 @@ export default function ApplicantsPipelinePage({
     newStatus: string
   ) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      const response = await fetch(`${apiUrl}/api/applications/${applicantId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update status");
-      }
+      await api.patch(`/api/applications/${applicantId}/status`, { status: newStatus });
 
       // Update local state
       setApplicants((prev) =>

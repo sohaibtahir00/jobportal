@@ -17,6 +17,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
+import { api } from "@/lib/api";
 
 interface EditJobPageProps {
   params: { id: string };
@@ -72,15 +73,8 @@ export default function EditJobPage({ params }: EditJobPageProps) {
         setError("");
 
         // Fetch real job data from API
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-        const response = await fetch(`${apiUrl}/api/jobs/${jobId}`);
-
-        if (!response.ok) {
-          throw new Error(`Failed to load job: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        const job = data.job || data;
+        const response = await api.get(`/api/jobs/${jobId}`);
+        const job = response.data.job || response.data;
 
         // Map API data to form state
         // Map backend enum values to frontend form values
@@ -188,19 +182,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
         status: formData.status.toUpperCase(),
       };
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      const response = await fetch(`${apiUrl}/api/jobs/${jobId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updateData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save job");
-      }
+      await api.patch(`/api/jobs/${jobId}`, updateData);
 
       // Redirect to job dashboard on success
       router.push("/employer/dashboard");
@@ -224,15 +206,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
     setError("");
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      const response = await fetch(`${apiUrl}/api/jobs/${jobId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete job");
-      }
+      await api.delete(`/api/jobs/${jobId}`);
 
       // Redirect to dashboard on success
       router.push("/employer/dashboard");
