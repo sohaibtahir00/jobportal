@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
@@ -24,10 +24,6 @@ import {
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 import { api } from "@/lib/api";
-
-interface ApplicantsPipelinePageProps {
-  params: { id: string };
-}
 
 interface Applicant {
   id: string;
@@ -54,9 +50,9 @@ interface Applicant {
   };
 }
 
-export default function ApplicantsPipelinePage({
-  params,
-}: ApplicantsPipelinePageProps) {
+export default function ApplicantsPipelinePage() {
+  const params = useParams();
+  const jobId = params.id as string;
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
@@ -65,8 +61,6 @@ export default function ApplicantsPipelinePage({
   const [filterScore, setFilterScore] = useState("all");
   const [jobTitle, setJobTitle] = useState("");
   const [applicants, setApplicants] = useState<Applicant[]>([]);
-
-  const jobId = params.id;
 
   // Pipeline stages mapped to application statuses
   const stages = [

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   Briefcase,
@@ -19,19 +19,15 @@ import {
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 import { api } from "@/lib/api";
 
-interface EditJobPageProps {
-  params: { id: string };
-}
-
-export default function EditJobPage({ params }: EditJobPageProps) {
+export default function EditJobPage() {
+  const params = useParams();
+  const jobId = params.id as string;
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
-
-  const jobId = params.id;
 
   // Form state
   const [formData, setFormData] = useState({
