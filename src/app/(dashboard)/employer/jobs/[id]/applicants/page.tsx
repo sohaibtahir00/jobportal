@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -25,7 +25,7 @@ import {
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 
 interface ApplicantsPipelinePageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 interface Applicant {
@@ -54,7 +54,6 @@ interface Applicant {
 }
 
 export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePageProps) {
-  const resolvedParams = use(params);
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
@@ -91,7 +90,7 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
         setError("");
 
         // Fetch job details
-        const jobResponse = await fetch(`/api/jobs/${resolvedParams.id}`);
+        const jobResponse = await fetch(`/api/jobs/${params.id}`);
         if (!jobResponse.ok) {
           throw new Error("Failed to load job details");
         }
@@ -100,7 +99,7 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
         setJobTitle(job.title);
 
         // Fetch applications for this job
-        const appsResponse = await fetch(`/api/applications?jobId=${resolvedParams.id}`);
+        const appsResponse = await fetch(`/api/applications?jobId=${params.id}`);
         if (!appsResponse.ok) {
           throw new Error("Failed to load applications");
         }
@@ -114,10 +113,10 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
       }
     };
 
-    if (status === "authenticated" && resolvedParams.id) {
+    if (status === "authenticated" && params.id) {
       loadApplicants();
     }
-  }, [resolvedParams.id, status]);
+  }, [params.id, status]);
 
   const updateApplicantStatus = async (applicantId: string, newStatus: string) => {
     try {
@@ -241,7 +240,7 @@ export default function ApplicantsPipelinePage({ params }: ApplicantsPipelinePag
 
             <div className="flex gap-3">
               <Button variant="outline" asChild>
-                <Link href={`/employer/jobs/${resolvedParams.id}/edit`}>
+                <Link href={`/employer/jobs/${params.id}/edit`}>
                   Edit Job
                 </Link>
               </Button>

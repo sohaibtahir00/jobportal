@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
@@ -19,11 +19,10 @@ import {
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 
 interface EditJobPageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default function EditJobPage({ params }: EditJobPageProps) {
-  const resolvedParams = use(params);
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
@@ -71,7 +70,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
         setError("");
 
         // Fetch real job data from API
-        const response = await fetch(`/api/jobs/${resolvedParams.id}`);
+        const response = await fetch(`/api/jobs/${params.id}`);
 
         if (!response.ok) {
           throw new Error(`Failed to load job: ${response.statusText}`);
@@ -122,10 +121,10 @@ export default function EditJobPage({ params }: EditJobPageProps) {
       }
     };
 
-    if (status === "authenticated" && resolvedParams.id) {
+    if (status === "authenticated" && params.id) {
       loadJob();
     }
-  }, [resolvedParams.id, status]);
+  }, [params.id, status]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -180,7 +179,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
         status: formData.status.toUpperCase(),
       };
 
-      const response = await fetch(`/api/jobs/${resolvedParams.id}`, {
+      const response = await fetch(`/api/jobs/${params.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -211,7 +210,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
     setError("");
 
     try {
-      const response = await fetch(`/api/jobs/${resolvedParams.id}`, {
+      const response = await fetch(`/api/jobs/${params.id}`, {
         method: "DELETE",
       });
 
