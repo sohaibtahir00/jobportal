@@ -359,7 +359,7 @@ export default function EmployerDashboardPage() {
                   className="h-auto py-4 border-2 border-purple-300 hover:bg-purple-50"
                 >
                   <Link
-                    href="/employer/search-candidates"
+                    href="/employer/search"
                     className="flex flex-col items-center gap-2"
                   >
                     <Users className="h-6 w-6 text-purple-600" />
