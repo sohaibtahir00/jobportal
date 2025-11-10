@@ -108,10 +108,14 @@ export default function ApplicantsPipelinePage() {
         setJobTitle(job.title);
 
         console.log("🔍 [Applicants Page] Fetching applications for job:", jobId);
+        console.log("🔍 [Applicants Page] JobId value:", jobId, "Type:", typeof jobId);
 
-        // Fetch applications for this job
-        const appsResponse = await api.get(`/api/applications?jobId=${jobId}`);
+        // Fetch applications for this job using axios params
+        const appsResponse = await api.get('/api/applications', {
+          params: { jobId: jobId }
+        });
         console.log("📦 [Applicants Page] Applications response:", appsResponse.data);
+        console.log("📦 [Applicants Page] Request URL was:", appsResponse.config.url);
 
         const applications = appsResponse.data.applications || [];
         console.log("✅ [Applicants Page] Found", applications.length, "applications");
