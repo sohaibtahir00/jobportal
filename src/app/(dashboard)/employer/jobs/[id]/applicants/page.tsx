@@ -25,7 +25,7 @@ import {
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 
 interface ApplicantsPipelinePageProps {
-  params: Promise<{ id: string }>; // ✅ FIXED: params is now a Promise
+  params: { id: string };
 }
 
 interface Applicant {
@@ -64,16 +64,8 @@ export default function ApplicantsPipelinePage({
   const [filterScore, setFilterScore] = useState("all");
   const [jobTitle, setJobTitle] = useState("");
   const [applicants, setApplicants] = useState<Applicant[]>([]);
-  const [jobId, setJobId] = useState<string>(""); // ✅ ADDED: Store resolved jobId
 
-  // ✅ ADDED: Resolve params on mount
-  useEffect(() => {
-    async function resolveParams() {
-      const resolved = await params;
-      setJobId(resolved.id);
-    }
-    resolveParams();
-  }, [params]);
+  const jobId = params.id;
 
   // Pipeline stages mapped to application statuses
   const stages = [
@@ -101,8 +93,6 @@ export default function ApplicantsPipelinePage({
   // Load applicants from API
   useEffect(() => {
     const loadApplicants = async () => {
-      if (!jobId) return; // ✅ FIXED: Wait for jobId to be resolved
-
       try {
         setIsLoading(true);
         setError("");
@@ -131,10 +121,10 @@ export default function ApplicantsPipelinePage({
       }
     };
 
-    if (status === "authenticated" && jobId) {
+    if (status === "authenticated") {
       loadApplicants();
     }
-  }, [jobId, status]); // ✅ FIXED: Depend on jobId instead of params.id
+  }, [status]);
 
   const updateApplicantStatus = async (
     applicantId: string,
@@ -202,8 +192,7 @@ export default function ApplicantsPipelinePage({
     }
   };
 
-  if (status === "loading" || isLoading || !jobId) {
-    // ✅ FIXED: Also check for jobId
+  if (status === "loading" || isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary-50">
         <div className="text-center">

@@ -19,7 +19,7 @@ import {
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 
 interface EditJobPageProps {
-  params: Promise<{ id: string }>; // ✅ FIXED: params is now a Promise
+  params: { id: string };
 }
 
 export default function EditJobPage({ params }: EditJobPageProps) {
@@ -29,16 +29,8 @@ export default function EditJobPage({ params }: EditJobPageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
-  const [jobId, setJobId] = useState<string>(""); // ✅ ADDED: Store resolved jobId
 
-  // ✅ ADDED: Resolve params on mount
-  useEffect(() => {
-    async function resolveParams() {
-      const resolved = await params;
-      setJobId(resolved.id);
-    }
-    resolveParams();
-  }, [params]);
+  const jobId = params.id;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -75,8 +67,6 @@ export default function EditJobPage({ params }: EditJobPageProps) {
   // Load job data
   useEffect(() => {
     const loadJob = async () => {
-      if (!jobId) return; // ✅ FIXED: Wait for jobId to be resolved
-
       try {
         setIsLoading(true);
         setError("");
@@ -135,10 +125,10 @@ export default function EditJobPage({ params }: EditJobPageProps) {
       }
     };
 
-    if (status === "authenticated" && jobId) {
+    if (status === "authenticated") {
       loadJob();
     }
-  }, [jobId, status]); // ✅ FIXED: Depend on jobId
+  }, [status]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -250,8 +240,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
     }
   };
 
-  if (status === "loading" || isLoading || !jobId) {
-    // ✅ FIXED: Also check for jobId
+  if (status === "loading" || isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary-50">
         <div className="text-center">
