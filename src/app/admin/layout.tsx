@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { Footer } from "@/components/layout";
 
 const adminNavItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -187,6 +188,9 @@ export default function AdminLayout({
         <main className="p-4 lg:p-8">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
+
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   );

@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { Footer } from "@/components/layout";
 
 // This will be replaced with actual auth check later
 const MOCK_CANDIDATE_USER = {
@@ -217,6 +218,9 @@ export default function DashboardLayout({
         <main className="p-4 lg:p-8">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
+
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   );

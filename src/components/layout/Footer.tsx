@@ -79,7 +79,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   return (
     <footer
       className={cn(
-        "border-t border-secondary-200 bg-secondary-50 lg:pl-64",
+        "border-t border-secondary-200 bg-secondary-50",
         className
       )}
     >
