@@ -302,6 +302,14 @@ export default function NewJobPage() {
 
   // Transform form data to backend payload
   const transformToBackendPayload = () => {
+    // Map frontend experience levels to backend enum values
+    const experienceLevelMap: Record<string, string> = {
+      "ENTRY": "ENTRY_LEVEL",
+      "MID": "MID_LEVEL",
+      "SENIOR": "SENIOR_LEVEL",
+      "LEAD": "EXECUTIVE"
+    };
+
     return {
       // Basic info
       title: formData.title,
@@ -309,7 +317,7 @@ export default function NewJobPage() {
       type: formData.employmentType,
       location: formData.location,
       remote: formData.remoteType === "REMOTE",
-      experienceLevel: formData.experienceLevel,
+      experienceLevel: experienceLevelMap[formData.experienceLevel] || formData.experienceLevel,
 
       // New comprehensive fields
       nicheCategory: formData.nicheCategory,
