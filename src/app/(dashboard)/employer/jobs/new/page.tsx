@@ -425,7 +425,7 @@ export default function NewJobPage() {
               Job Posted Successfully!
             </h2>
             <p className="text-secondary-600 text-center mb-6">
-              Your job posting has been created and saved as a draft. You can publish it from your dashboard.
+              Your job is now live and accepting applications. Candidates can start applying immediately.
             </p>
             <Button variant="primary" asChild>
               <Link href="/employer/dashboard">Go to Dashboard</Link>
@@ -1357,8 +1357,8 @@ export default function NewJobPage() {
                   Ready to Submit
                 </h4>
                 <p className="text-sm text-green-700">
-                  Review all the information you've entered. Your job will be saved as a draft
-                  and you can publish it later from your dashboard.
+                  Review all the information you've entered. Your job will be posted immediately
+                  and will be live for candidates to apply.
                 </p>
               </div>
             </CardContent>
