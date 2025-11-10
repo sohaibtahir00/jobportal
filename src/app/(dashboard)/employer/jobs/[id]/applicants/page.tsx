@@ -94,30 +94,51 @@ export default function ApplicantsPipelinePage({
   // Load applicants from API
   useEffect(() => {
     const loadApplicants = async () => {
+      if (!jobId) {
+        console.log("⚠️ [Applicants Page] No jobId yet");
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError("");
 
+        console.log("🔍 [Applicants Page] Fetching job:", jobId);
+
         // Fetch job details
         const jobResponse = await api.get(`/api/jobs/${jobId}`);
+        console.log("📦 [Applicants Page] Job response:", jobResponse.data);
+
         const job = jobResponse.data.job || jobResponse.data;
+        console.log("✅ [Applicants Page] Job title:", job.title);
         setJobTitle(job.title);
+
+        console.log("🔍 [Applicants Page] Fetching applications for job:", jobId);
 
         // Fetch applications for this job
         const appsResponse = await api.get(`/api/applications?jobId=${jobId}`);
-        setApplicants(appsResponse.data.applications || []);
+        console.log("📦 [Applicants Page] Applications response:", appsResponse.data);
+
+        const applications = appsResponse.data.applications || [];
+        console.log("✅ [Applicants Page] Found", applications.length, "applications");
+        setApplicants(applications);
         setIsLoading(false);
       } catch (err: any) {
-        console.error("Error loading applicants:", err);
-        setError(err.message || "Failed to load applicants");
+        console.error("❌ [Applicants Page] Error loading applicants:", err);
+        console.error("❌ [Applicants Page] Error message:", err.message);
+        console.error("❌ [Applicants Page] Error response:", err.response);
+        setError(err.response?.data?.error || err.message || "Failed to load applicants");
         setIsLoading(false);
       }
     };
 
     if (status === "authenticated") {
+      console.log("🔑 [Applicants Page] User authenticated, loading applicants...");
       loadApplicants();
+    } else {
+      console.log("⏳ [Applicants Page] Waiting for authentication, status:", status);
     }
-  }, [status]);
+  }, [status, jobId]);
 
   const updateApplicantStatus = async (
     applicantId: string,

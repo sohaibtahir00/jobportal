@@ -68,13 +68,31 @@ export default function EditJobPage({ params }: EditJobPageProps) {
   // Load job data
   useEffect(() => {
     const loadJob = async () => {
+      if (!jobId) {
+        console.log("⚠️ [Edit Page] No jobId yet");
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError("");
 
+        console.log("🔍 [Edit Page] Fetching job:", jobId);
+
         // Fetch real job data from API
         const response = await api.get(`/api/jobs/${jobId}`);
+
+        console.log("📡 [Edit Page] API response:", response);
+        console.log("📦 [Edit Page] Response data:", response.data);
+
         const job = response.data.job || response.data;
+
+        console.log("📦 [Edit Page] Job object:", job);
+
+        if (!job || !job.title) {
+          console.error("❌ [Edit Page] Invalid job data:", job);
+          throw new Error("Invalid job data received");
+        }
 
         // Map API data to form state
         // Map backend enum values to frontend form values
@@ -92,7 +110,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
           INTERNSHIP: "internship",
         };
 
-        setFormData({
+        const formValues = {
           title: job.title || "",
           company: job.employer?.companyName || "",
           location: job.location || "",
@@ -111,19 +129,28 @@ export default function EditJobPage({ params }: EditJobPageProps) {
           requiresAssessment: job.requiresAssessment || false,
           minScore: job.minSkillsScore || 70,
           status: job.status?.toLowerCase() || "active",
-        });
+        };
+
+        console.log("✅ [Edit Page] Setting form data:", formValues);
+        setFormData(formValues);
         setIsLoading(false);
+        console.log("✅ [Edit Page] Job loaded successfully!");
       } catch (err: any) {
-        console.error("Error loading job:", err);
-        setError(err.message || "Failed to load job data");
+        console.error("❌ [Edit Page] Error loading job:", err);
+        console.error("❌ [Edit Page] Error message:", err.message);
+        console.error("❌ [Edit Page] Error response:", err.response);
+        setError(err.response?.data?.error || err.message || "Failed to load job data");
         setIsLoading(false);
       }
     };
 
     if (status === "authenticated") {
+      console.log("🔑 [Edit Page] User authenticated, loading job...");
       loadJob();
+    } else {
+      console.log("⏳ [Edit Page] Waiting for authentication, status:", status);
     }
-  }, [status]);
+  }, [status, jobId]);
 
   const handleChange = (
     e: React.ChangeEvent<
