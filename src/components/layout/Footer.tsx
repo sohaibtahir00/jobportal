@@ -21,24 +21,26 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   const footerLinks = {
     forCandidates: [
       { name: "Browse Jobs", href: "/jobs" },
+      { name: "AI/ML Jobs", href: "/ai-ml-jobs" },
+      { name: "Healthcare IT Jobs", href: "/healthcare-it-jobs" },
+      { name: "Fintech Jobs", href: "/fintech-jobs" },
+      { name: "Cybersecurity Jobs", href: "/cybersecurity-jobs" },
       { name: "Skills Assessment", href: "/skills-assessment" },
-      { name: "Career Resources", href: "/blog" },
-      { name: "How It Works", href: "/about" },
-      { name: "My Profile", href: "/candidate/profile" },
     ],
     forEmployers: [
-      { name: "How It Works", href: "/employers" },
-      { name: "Pricing (15-20% fee)", href: "/claim" },
+      { name: "For Employers", href: "/employers" },
+      { name: "Pricing", href: "/pricing" },
       { name: "Claim Your Job", href: "/claim" },
       { name: "Post a Job", href: "/employer/jobs/new" },
-      { name: "Schedule a Call", href: "/claim" },
+      { name: "Search Candidates", href: "/employer/search" },
     ],
-    resources: [
-      { name: "Blog", href: "/blog" },
-      { name: "Salary Guides", href: "/blog?category=Salary+Data" },
-      { name: "Interview Prep", href: "/blog?category=Interview+Tips" },
-      { name: "Assessment Prep", href: "/blog?category=Skills+Assessment" },
+    company: [
       { name: "About Us", href: "/about" },
+      { name: "How It Works", href: "/how-it-works" },
+      { name: "Contact", href: "/contact" },
+      { name: "FAQ", href: "/faq" },
+      { name: "Resources", href: "/resources" },
+      { name: "Blog", href: "/blog" },
     ],
     legal: [
       { name: "Privacy Policy", href: "/privacy" },
@@ -201,13 +203,13 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             </ul>
           </div>
 
-          {/* Resources */}
+          {/* Company */}
           <div>
             <h3 className="mb-4 text-sm font-semibold text-secondary-900">
-              Resources
+              Company
             </h3>
             <ul className="space-y-3">
-              {footerLinks.resources.map((link) => (
+              {footerLinks.company.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}

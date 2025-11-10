@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Briefcase, Menu, X, User, LogOut } from "lucide-react";
+import { Briefcase, Menu, X, User, LogOut, Shield } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
@@ -108,6 +108,16 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                 {session.user?.role === "EMPLOYER" && (
                   <Button variant="primary" size="sm" asChild>
                     <Link href="/employer/jobs/new">Post a Job</Link>
+                  </Button>
+                )}
+
+                {/* Show Admin Panel button for admins only */}
+                {session.user?.role === "ADMIN" && (
+                  <Button variant="outline" size="sm" asChild className="border-purple-600 text-purple-600 hover:bg-purple-50">
+                    <Link href="/admin">
+                      <Shield className="h-4 w-4 mr-1.5" />
+                      Admin Panel
+                    </Link>
                   </Button>
                 )}
 
@@ -267,6 +277,23 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                     </Button>
                   )}
 
+                  {/* Admin Panel for Admins */}
+                  {session.user?.role === "ADMIN" && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-center border-purple-600 text-purple-600 hover:bg-purple-50"
+                      asChild
+                    >
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin Panel
+                      </Link>
+                    </Button>
+                  )}
+
                   {/* Dashboard Link */}
                   <Button
                     variant="outline"
@@ -383,7 +410,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                     asChild
                   >
                     <Link
-                      href="/register"
+                      href="/signup"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Get Started

@@ -16,6 +16,12 @@ import {
   Receipt,
   BarChart3,
   Loader2,
+  Star,
+  Calendar,
+  UserPlus,
+  Search,
+  CheckCircle2,
+  Bookmark,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -39,22 +45,24 @@ const candidateNavItems = [
   { href: "/candidate/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/candidate/profile", label: "My Profile", icon: FileText },
   { href: "/candidate/jobs", label: "Browse Jobs", icon: Briefcase },
-  // Coming soon pages:
-  // { href: "/candidate/applications", label: "My Applications", icon: FileText },
-  // { href: "/candidate/messages", label: "Messages", icon: MessageSquare },
-  // { href: "/candidate/settings", label: "Settings", icon: Settings },
+  { href: "/candidate/exclusive-jobs", label: "Exclusive Jobs", icon: Star },
+  { href: "/candidate/applications", label: "My Applications", icon: FileText },
+  { href: "/candidate/saved", label: "Saved Jobs", icon: Bookmark },
+  { href: "/candidate/messages", label: "Messages", icon: MessageSquare },
+  { href: "/candidate/interviews", label: "Interviews", icon: Calendar },
+  { href: "/candidate/referrals", label: "Referrals", icon: UserPlus },
+  { href: "/candidate/settings", label: "Settings", icon: Settings },
 ];
 
 const employerNavItems = [
   { href: "/employer/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/employer/jobs/new", label: "Post New Job", icon: Briefcase },
-  // Coming soon pages:
-  // { href: "/employer/jobs", label: "My Jobs", icon: Briefcase },
-  // { href: "/employer/applications", label: "Applications", icon: Users },
-  // { href: "/employer/analytics", label: "Analytics", icon: BarChart3 },
-  // { href: "/employer/invoices", label: "Invoices", icon: Receipt },
-  // { href: "/employer/messages", label: "Messages", icon: MessageSquare },
-  // { href: "/employer/settings", label: "Settings", icon: Settings },
+  { href: "/employer/applicants", label: "All Applicants", icon: Users },
+  { href: "/employer/search", label: "Search Candidates", icon: Search },
+  { href: "/employer/claim", label: "Claim Jobs", icon: Briefcase },
+  { href: "/employer/placements", label: "Placements", icon: CheckCircle2 },
+  { href: "/employer/invoices", label: "Invoices", icon: Receipt },
+  { href: "/employer/settings", label: "Settings", icon: Settings },
 ];
 
 export default function DashboardLayout({
