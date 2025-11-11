@@ -26,6 +26,7 @@ import {
   Shield,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
+import { api } from "@/lib/api";
 
 interface ApplicantDetailPageProps {
   params: Promise<{ id: string }>;
@@ -36,6 +37,7 @@ export default function ApplicantDetailPage({ params }: ApplicantDetailPageProps
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
   const [applicantData, setApplicantData] = useState<any>(null);
 
   // Redirect if not logged in or not employer
@@ -52,76 +54,67 @@ export default function ApplicantDetailPage({ params }: ApplicantDetailPageProps
   useEffect(() => {
     const loadApplicant = async () => {
       try {
-        // Mock data
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setIsLoading(true);
+        setError("");
 
-        setApplicantData({
-          id: resolvedParams.id,
-          name: "Sarah Chen",
-          email: "sarah.chen@email.com",
-          phone: "+1 (555) 123-4567",
-          location: "San Francisco, CA",
-          appliedDate: "2025-01-05",
-          experience: "7 years",
-          currentRole: "Senior ML Engineer at DataCorp",
-          education: "MS Computer Science, Stanford University",
-          resume: "/resumes/sarah-chen.pdf",
-          linkedin: "https://linkedin.com/in/sarahchen",
-          github: "https://github.com/sarahchen",
-          portfolio: "https://sarahchen.dev",
+        console.log("🔍 [Applicant Detail] Fetching application:", resolvedParams.id);
+
+        // Fetch real data from API using the same pattern as other pages
+        const response = await api.get(`/api/applications/${resolvedParams.id}`);
+        console.log("📦 [Applicant Detail] Response:", response.data);
+
+        const app = response.data.application;
+
+        if (!app) {
+          throw new Error("Application not found");
+        }
+
+        // Transform API data to match the UI structure
+        const transformedData = {
+          id: app.id,
+          name: app.candidate.user.name || app.candidate.user.email,
+          email: app.candidate.user.email,
+          phone: app.candidate.phone || "Not provided",
+          location: app.candidate.location || "Not specified",
+          appliedDate: app.appliedAt,
+          experience: app.candidate.experience ? `${app.candidate.experience} years` : "Not specified",
+          currentRole: app.candidate.currentTitle || "Not specified",
+          currentCompany: app.candidate.currentCompany,
+          education: "Not specified", // TODO: Add if available in schema
+          resume: app.candidate.resume,
+          linkedin: null, // TODO: Add if available
+          github: null, // TODO: Add if available
+          portfolio: null, // TODO: Add if available
 
           // Skills Assessment
-          skillsScore: 92,
-          tier: "Elite",
-          percentile: 5,
-          assessmentDate: "2025-01-03",
+          skillsScore: app.candidate.testScore || 0,
+          tier: app.candidate.testTier || "Not Assessed",
+          percentile: app.candidate.testPercentile,
+          assessmentDate: null, // TODO: Add if available
+          hasTakenTest: app.candidate.hasTakenTest,
 
-          sectionScores: [
-            { name: "Technical Skills", score: 95, maxScore: 100 },
-            { name: "Practical Coding", score: 90, maxScore: 100 },
-            { name: "System Design", score: 91, maxScore: 100 },
-          ],
+          sectionScores: app.testResults || [],
 
-          skills: [
-            { name: "Python", level: 95 },
-            { name: "PyTorch", level: 92 },
-            { name: "TensorFlow", level: 88 },
-            { name: "AWS", level: 85 },
-            { name: "Kubernetes", level: 82 },
-            { name: "SQL", level: 90 },
-            { name: "Docker", level: 87 },
-            { name: "System Design", level: 91 },
-          ],
+          skills: app.candidate.skills ? app.candidate.skills.map((skill: string) => ({
+            name: skill,
+            level: 0, // TODO: Add if skill levels available
+          })) : [],
 
-          // Work Experience
-          workExperience: [
-            {
-              title: "Senior ML Engineer",
-              company: "DataCorp",
-              duration: "2022 - Present",
-              description: "Led development of recommendation systems serving 10M+ users. Improved model accuracy by 23%.",
-            },
-            {
-              title: "ML Engineer",
-              company: "TechStart Inc",
-              duration: "2019 - 2022",
-              description: "Built NLP pipelines for customer sentiment analysis. Deployed models to production using Kubernetes.",
-            },
-            {
-              title: "Data Scientist",
-              company: "Analytics Co",
-              duration: "2018 - 2019",
-              description: "Developed predictive models for customer churn. Collaborated with product teams on A/B testing.",
-            },
-          ],
+          // Work Experience - would need separate API or schema update
+          workExperience: [],
 
           // Application Status
-          applicationStatus: "screening",
-          appliedFor: "Senior Machine Learning Engineer",
-          coverLetter: "I am excited to apply for the Senior ML Engineer position. With 7 years of experience in machine learning and a proven track record of deploying models to production, I believe I would be a great fit for your team. My recent work on recommendation systems at DataCorp aligns well with the challenges described in your job posting...",
-        });
+          applicationStatus: app.status.toLowerCase(),
+          appliedFor: app.job.title,
+          coverLetter: app.coverLetter || "No cover letter provided",
+        };
+
+        console.log("✅ [Applicant Detail] Transformed data:", transformedData);
+        setApplicantData(transformedData);
         setIsLoading(false);
-      } catch (err) {
+      } catch (err: any) {
+        console.error("❌ [Applicant Detail] Error:", err);
+        setError(err.response?.data?.error || err.message || "Failed to load applicant details");
         setIsLoading(false);
       }
     };
