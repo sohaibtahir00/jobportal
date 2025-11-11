@@ -210,7 +210,7 @@ export default function EmployerPlacementsPage() {
                 <p className="text-secondary-600 mb-6">
                   Successful hires will appear here once candidates complete their probation period
                 </p>
-                <Link href="/employer/applications">
+                <Link href="/employer/applicants">
                   <Button>View Applications</Button>
                 </Link>
               </div>
