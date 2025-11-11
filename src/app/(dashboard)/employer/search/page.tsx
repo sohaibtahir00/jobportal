@@ -21,6 +21,7 @@ import {
   Code,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
+import { api } from "@/lib/api";
 
 interface Candidate {
   id: string;
@@ -68,111 +69,57 @@ export default function EmployerSearchPage() {
   useEffect(() => {
     const loadCandidates = async () => {
       try {
-        // Mock data
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setIsLoading(true);
+        console.log("🔍 [Search] Fetching real candidates from API...");
 
-        const mockCandidates: Candidate[] = [
-          {
-            id: "1",
-            name: "Sarah Chen",
-            title: "Senior ML Engineer",
-            location: "San Francisco, CA",
-            experience: "7 years",
-            skillsScore: 92,
-            tier: "Elite",
-            skills: ["Python", "PyTorch", "AWS", "Kubernetes"],
-            seeking: "Full-time",
-            available: true,
-          },
-          {
-            id: "2",
-            name: "Michael Rodriguez",
-            title: "Full Stack Developer",
-            location: "Austin, TX",
-            experience: "5 years",
-            skillsScore: 85,
-            tier: "Advanced",
-            skills: ["React", "Node.js", "PostgreSQL", "Docker"],
-            seeking: "Full-time",
-            available: true,
-          },
-          {
-            id: "3",
-            name: "Emily Watson",
-            title: "DevOps Engineer",
-            location: "Seattle, WA",
-            experience: "6 years",
-            skillsScore: 88,
-            tier: "Advanced",
-            skills: ["Kubernetes", "Terraform", "AWS", "CI/CD"],
-            seeking: "Full-time / Contract",
-            available: false,
-          },
-          {
-            id: "4",
-            name: "David Kim",
-            title: "Backend Engineer",
-            location: "New York, NY",
-            experience: "4 years",
-            skillsScore: 78,
-            tier: "Proficient",
-            skills: ["Java", "Spring Boot", "MySQL", "Redis"],
-            seeking: "Full-time",
-            available: true,
-          },
-          {
-            id: "5",
-            name: "Lisa Patel",
-            title: "Data Scientist",
-            location: "Boston, MA",
-            experience: "8 years",
-            skillsScore: 95,
-            tier: "Elite",
-            skills: ["Python", "R", "TensorFlow", "SQL"],
-            seeking: "Full-time",
-            available: true,
-          },
-          {
-            id: "6",
-            name: "James Wilson",
-            title: "Security Engineer",
-            location: "Remote",
-            experience: "6 years",
-            skillsScore: 89,
-            tier: "Advanced",
-            skills: ["Penetration Testing", "SIEM", "Python", "Cloud Security"],
-            seeking: "Full-time",
-            available: true,
-          },
-          {
-            id: "7",
-            name: "Maria Garcia",
-            title: "Frontend Developer",
-            location: "Los Angeles, CA",
-            experience: "4 years",
-            skillsScore: 82,
-            tier: "Advanced",
-            skills: ["React", "TypeScript", "CSS", "Webpack"],
-            seeking: "Full-time / Part-time",
-            available: true,
-          },
-          {
-            id: "8",
-            name: "Robert Brown",
-            title: "Cloud Architect",
-            location: "Chicago, IL",
-            experience: "10 years",
-            skillsScore: 93,
-            tier: "Elite",
-            skills: ["AWS", "Azure", "Terraform", "Kubernetes"],
-            seeking: "Full-time",
-            available: false,
-          },
-        ];
+        // Build query parameters based on filters
+        const params = new URLSearchParams();
+        if (searchQuery) params.append("q", searchQuery);
+        if (filters.location) params.append("location", filters.location);
+        if (filters.minScore) params.append("testScoreMin", filters.minScore.toString());
+        if (filters.tier !== "all") params.append("testTier", filters.tier.toUpperCase());
+        if (filters.availability !== "all") {
+          params.append("availability", filters.availability === "available" ? "true" : "false");
+        }
 
-        setCandidates(mockCandidates);
+        // Experience mapping
+        if (filters.experience !== "all") {
+          if (filters.experience === "junior") {
+            params.append("experienceMax", "2");
+          } else if (filters.experience === "mid") {
+            params.append("experienceMin", "3");
+            params.append("experienceMax", "6");
+          } else if (filters.experience === "senior") {
+            params.append("experienceMin", "7");
+          }
+        }
+
+        // Fetch real candidates
+        const response = await api.get(`/api/candidates/search?${params.toString()}`);
+        console.log("📦 [Search] API Response:", response.data);
+
+        const apiCandidates = response.data.candidates || [];
+
+        // Transform API data to match UI structure
+        const transformedCandidates: Candidate[] = apiCandidates.map((c: any) => ({
+          id: c.id,
+          name: c.user.name || c.user.email,
+          title: c.currentTitle || "Not specified",
+          location: c.location || "Not specified",
+          experience: c.experience ? `${c.experience} years` : "Not specified",
+          skillsScore: c.testScore || 0,
+          tier: c.testTier || "Not Assessed",
+          skills: c.skills || [],
+          seeking: c.preferredJobType || "Not specified",
+          available: c.availability || false,
+        }));
+
+        console.log("✅ [Search] Found", transformedCandidates.length, "candidates");
+        setCandidates(transformedCandidates);
         setIsLoading(false);
-      } catch (err) {
+      } catch (err: any) {
+        console.error("❌ [Search] Error:", err);
+        setCandidates([]);
         setIsLoading(false);
       }
     };
@@ -180,46 +127,10 @@ export default function EmployerSearchPage() {
     if (status === "authenticated") {
       loadCandidates();
     }
-  }, [status]);
+  }, [status, searchQuery, filters]);
 
-  const filteredCandidates = candidates.filter((candidate) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      candidate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      candidate.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      candidate.skills.some((skill) =>
-        skill.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-    const matchesScore = candidate.skillsScore >= filters.minScore;
-
-    const matchesLocation =
-      filters.location === "" ||
-      candidate.location.toLowerCase().includes(filters.location.toLowerCase());
-
-    const matchesExperience =
-      filters.experience === "all" ||
-      (filters.experience === "junior" && parseInt(candidate.experience) < 3) ||
-      (filters.experience === "mid" && parseInt(candidate.experience) >= 3 && parseInt(candidate.experience) < 7) ||
-      (filters.experience === "senior" && parseInt(candidate.experience) >= 7);
-
-    const matchesTier =
-      filters.tier === "all" || candidate.tier === filters.tier;
-
-    const matchesAvailability =
-      filters.availability === "all" ||
-      (filters.availability === "available" && candidate.available) ||
-      (filters.availability === "not-available" && !candidate.available);
-
-    return (
-      matchesSearch &&
-      matchesScore &&
-      matchesLocation &&
-      matchesExperience &&
-      matchesTier &&
-      matchesAvailability
-    );
-  });
+  // API handles all filtering, so we use candidates directly
+  const filteredCandidates = candidates;
 
   const getTierColor = (tier: string) => {
     switch (tier) {
