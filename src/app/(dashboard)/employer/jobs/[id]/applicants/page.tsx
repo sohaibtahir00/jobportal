@@ -97,29 +97,19 @@ export default function ApplicantsPipelinePage() {
         setIsLoading(true);
         setError("");
 
-        console.log("🔍 [Applicants Page] Fetching job:", jobId);
-
-        // Fetch job details
-        const jobResponse = await api.get(`/api/jobs/${jobId}`);
-        console.log("📦 [Applicants Page] Job response:", jobResponse.data);
-
-        const job = jobResponse.data.job || jobResponse.data;
-        console.log("✅ [Applicants Page] Job title:", job.title);
-        setJobTitle(job.title);
-
         console.log("🔍 [Applicants Page] Fetching applications for job:", jobId);
-        console.log("🔍 [Applicants Page] JobId value:", jobId, "Type:", typeof jobId);
 
-        // Fetch applications for this job using axios params
-        const appsResponse = await api.get('/api/applications', {
-          params: { jobId: jobId }
-        });
-        console.log("📦 [Applicants Page] Applications response:", appsResponse.data);
-        console.log("📦 [Applicants Page] Request URL was:", appsResponse.config.url);
+        // Fetch applications using the same pattern as edit page
+        // This endpoint works like /api/jobs/[id] - simple and straightforward
+        const response = await api.get(`/api/jobs/${jobId}/applications`);
+        console.log("📦 [Applicants Page] Response:", response.data);
 
-        const applications = appsResponse.data.applications || [];
-        console.log("✅ [Applicants Page] Found", applications.length, "applications");
-        setApplicants(applications);
+        const { applications, job } = response.data;
+        console.log("✅ [Applicants Page] Job title:", job?.title || 'Unknown');
+        console.log("✅ [Applicants Page] Found", applications?.length || 0, "applications");
+
+        setJobTitle(job?.title || '');
+        setApplicants(applications || []);
         setIsLoading(false);
       } catch (err: any) {
         console.error("❌ [Applicants Page] Error loading applicants:", err);
