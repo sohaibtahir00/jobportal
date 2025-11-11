@@ -45,7 +45,7 @@ export default function EmployerSearchPage() {
 
   // Filters
   const [filters, setFilters] = useState({
-    minScore: 70,
+    minScore: 0, // Changed from 70 to 0 to show all candidates by default
     location: "",
     experience: "all",
     tier: "all",
@@ -80,7 +80,8 @@ export default function EmployerSearchPage() {
           const params = new URLSearchParams();
           if (searchQuery) params.append("q", searchQuery);
           if (filters.location) params.append("location", filters.location);
-          if (filters.minScore) params.append("testScoreMin", filters.minScore.toString());
+          // Only filter by minScore if it's greater than 0 (to include candidates without test scores)
+          if (filters.minScore && filters.minScore > 0) params.append("testScoreMin", filters.minScore.toString());
           if (filters.tier !== "all") params.append("testTier", filters.tier.toUpperCase());
           if (filters.availability !== "all") {
             params.append("availability", filters.availability === "available" ? "true" : "false");
