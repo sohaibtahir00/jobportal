@@ -62,7 +62,8 @@ export default function ApplicantDetailPage() {
         console.log("🔍 [Applicant Detail] Fetching application:", applicantId);
 
         // Fetch real data from API using the same pattern as other pages
-        const response = await api.get(`/api/applications/${applicantId}`);
+        // Use the new employer-specific endpoint that has proper ownership validation
+        const response = await api.get(`/api/employer/applications/${applicantId}`);
         console.log("📦 [Applicant Detail] Response:", response.data);
 
         const app = response.data.application;
