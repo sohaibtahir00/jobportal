@@ -1,7 +1,7 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
@@ -28,12 +28,9 @@ import {
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
 import { api } from "@/lib/api";
 
-interface ApplicantDetailPageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default function ApplicantDetailPage({ params }: ApplicantDetailPageProps) {
-  const resolvedParams = use(params);
+export default function ApplicantDetailPage() {
+  const params = useParams();
+  const applicantId = params.id as string;
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
@@ -53,14 +50,19 @@ export default function ApplicantDetailPage({ params }: ApplicantDetailPageProps
   // Load applicant data
   useEffect(() => {
     const loadApplicant = async () => {
+      if (!applicantId) {
+        console.log("⚠️ [Applicant Detail] No applicant ID yet");
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError("");
 
-        console.log("🔍 [Applicant Detail] Fetching application:", resolvedParams.id);
+        console.log("🔍 [Applicant Detail] Fetching application:", applicantId);
 
         // Fetch real data from API using the same pattern as other pages
-        const response = await api.get(`/api/applications/${resolvedParams.id}`);
+        const response = await api.get(`/api/applications/${applicantId}`);
         console.log("📦 [Applicant Detail] Response:", response.data);
 
         const app = response.data.application;
@@ -122,7 +124,7 @@ export default function ApplicantDetailPage({ params }: ApplicantDetailPageProps
     if (status === "authenticated") {
       loadApplicant();
     }
-  }, [resolvedParams.id, status]);
+  }, [applicantId, status]);
 
   const getTierColor = (tier: string) => {
     switch (tier) {
