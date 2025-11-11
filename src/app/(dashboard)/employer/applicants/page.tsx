@@ -128,7 +128,7 @@ export default function EmployerApplicantsPage() {
   const [sortBy, setSortBy] = useState<string>("recent");
   const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
 
-  // Fetch applications
+  // Fetch applications using the new simple endpoint
   const { data, isLoading } = useQuery({
     queryKey: ["applications", selectedJob, selectedStatus, selectedSkillsFilter, sortBy],
     queryFn: async () => {
@@ -138,19 +138,11 @@ export default function EmployerApplicantsPage() {
       if (selectedSkillsFilter !== "all") params.append("skillsFilter", selectedSkillsFilter);
       params.append("sortBy", sortBy);
 
-      const response = await api.get(`/api/applications?${params.toString()}`);
+      // Use the new endpoint that matches the pattern of /api/jobs/[id]/applications
+      const response = await api.get(`/api/employer/applications?${params.toString()}`);
       return response.data;
     },
     staleTime: 30 * 1000,
-  });
-
-  // Fetch employer jobs for filter dropdown
-  const { data: jobsData } = useQuery({
-    queryKey: ["employer-jobs"],
-    queryFn: async () => {
-      const response = await api.get("/api/jobs?limit=100");
-      return response.data;
-    },
   });
 
   // Bulk update mutation
@@ -174,7 +166,7 @@ export default function EmployerApplicantsPage() {
 
   const applications: Application[] = data?.applications || [];
   const stats: Stats | null = data?.stats || null;
-  const jobs = jobsData?.jobs || [];
+  const jobs = data?.jobs || []; // Jobs now come from the same endpoint
 
   // Calculate match score (simple version based on skills overlap)
   const calculateMatchScore = (app: Application): number => {
