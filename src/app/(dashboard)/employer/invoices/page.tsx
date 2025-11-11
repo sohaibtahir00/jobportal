@@ -15,15 +15,18 @@ import {
   Eye,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
+import { api } from "@/lib/api";
 
 interface Invoice {
   id: string;
+  placementId: string;
   invoiceNumber: string;
   amount: number;
   status: string;
   dueDate: string;
   paidAt?: string;
   createdAt: string;
+  description: string;
   placement: {
     candidate: {
       user: {
@@ -69,11 +72,8 @@ export default function EmployerInvoicesPage() {
   const fetchInvoices = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/employer/invoices");
-      if (!response.ok) {
-        throw new Error("Failed to fetch invoices");
-      }
-      const data = await response.json();
+      const response = await api.get("/api/employer/invoices");
+      const data = response.data;
       setInvoices(data.invoices || []);
 
       // Calculate stats
@@ -122,9 +122,10 @@ export default function EmployerInvoicesPage() {
     );
   };
 
-  const downloadInvoice = (invoiceId: string) => {
-    // Implement download functionality
-    window.open(`/api/employer/invoices/${invoiceId}/download`, "_blank");
+  const downloadInvoice = (placementId: string) => {
+    // Open the placement invoice endpoint
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://job-portal-backend-production-cd05.up.railway.app";
+    window.open(`${backendUrl}/api/placements/${placementId}/invoice`, "_blank");
   };
 
   if (status === "loading" || isLoading) {
@@ -318,12 +319,10 @@ export default function EmployerInvoicesPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => downloadInvoice(invoice.id)}
+                              onClick={() => downloadInvoice(invoice.placementId)}
+                              title="Download Invoice"
                             >
                               <Download className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="w-4 h-4" />
                             </Button>
                           </div>
                         </td>

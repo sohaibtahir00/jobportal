@@ -7,6 +7,7 @@ import { Users, DollarSign, TrendingUp, Loader2, Eye, CheckCircle2, Clock, Alert
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { api } from "@/lib/api";
 
 interface Placement {
   id: string;
@@ -60,11 +61,8 @@ export default function EmployerPlacementsPage() {
   const fetchPlacements = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/employer/placements");
-      if (!response.ok) {
-        throw new Error("Failed to fetch placements");
-      }
-      const data = await response.json();
+      const response = await api.get("/api/placements");
+      const data = response.data;
       setPlacements(data.placements || []);
 
       // Calculate stats
