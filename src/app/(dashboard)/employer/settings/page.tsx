@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import {
   Building2,
   Mail,
@@ -18,6 +18,7 @@ import {
   Upload,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
+import { api } from "@/lib/api";
 
 export default function EmployerSettingsPage() {
   const router = useRouter();
@@ -75,28 +76,30 @@ export default function EmployerSettingsPage() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        // Mock data for now - will connect to API
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const response = await api.get("/api/employers/profile");
+        const data = response.data;
 
+        // Map employer data to form fields
         setProfileData({
-          companyName: "TechCorp Inc.",
+          companyName: data.employer.companyName || "",
           email: session?.user?.email || "",
-          phone: "+1 (555) 123-4567",
-          website: "https://techcorp.com",
-          location: "San Francisco, CA",
-          companySize: "50-200",
-          industry: "Technology",
-          description: "Leading AI/ML solutions provider",
+          phone: data.employer.phone || "",
+          website: data.employer.companyWebsite || "",
+          location: data.employer.location || "",
+          companySize: data.employer.companySize || "",
+          industry: data.employer.industry || "",
+          description: data.employer.description || "",
         });
 
         setIsLoading(false);
-      } catch (err) {
-        setErrorMessage("Failed to load settings");
+      } catch (err: any) {
+        console.error("Failed to load settings:", err);
+        setErrorMessage(err.response?.data?.error || "Failed to load settings");
         setIsLoading(false);
       }
     };
 
-    if (status === "authenticated") {
+    if (status === "authenticated" && session?.user?.role === "EMPLOYER") {
       loadSettings();
     }
   }, [status, session]);
@@ -108,15 +111,23 @@ export default function EmployerSettingsPage() {
     setSuccessMessage("");
 
     try {
-      // API call will go here
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await api.patch("/api/employers/profile", {
+        companyName: profileData.companyName,
+        phone: profileData.phone,
+        companyWebsite: profileData.website,
+        location: profileData.location,
+        companySize: profileData.companySize,
+        industry: profileData.industry,
+        description: profileData.description,
+      });
 
       setSuccessMessage("Profile updated successfully!");
       setIsSaving(false);
 
       setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setErrorMessage("Failed to update profile");
+    } catch (err: any) {
+      console.error("Failed to update profile:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to update profile");
       setIsSaving(false);
     }
   };
@@ -139,8 +150,10 @@ export default function EmployerSettingsPage() {
     setSuccessMessage("");
 
     try {
-      // API call will go here
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await api.post("/api/settings/password", {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
 
       setSuccessMessage("Password changed successfully!");
       setPasswordData({
@@ -151,8 +164,9 @@ export default function EmployerSettingsPage() {
       setIsSaving(false);
 
       setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setErrorMessage("Failed to change password");
+    } catch (err: any) {
+      console.error("Failed to change password:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to change password");
       setIsSaving(false);
     }
   };
@@ -163,15 +177,17 @@ export default function EmployerSettingsPage() {
     setSuccessMessage("");
 
     try {
-      // API call will go here
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await api.patch("/api/settings", {
+        emailNotifications: notificationSettings.emailNotifications,
+      });
 
       setSuccessMessage("Notification preferences updated!");
       setIsSaving(false);
 
       setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setErrorMessage("Failed to update preferences");
+    } catch (err: any) {
+      console.error("Failed to update preferences:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to update preferences");
       setIsSaving(false);
     }
   };
@@ -190,14 +206,17 @@ export default function EmployerSettingsPage() {
     if (!doubleConfirm) return;
 
     setIsSaving(true);
+    setErrorMessage("");
 
     try {
-      // API call will go here
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await api.delete("/api/settings");
 
+      // Sign out the user after account deletion
+      await signOut({ redirect: false });
       router.push("/");
-    } catch (err) {
-      setErrorMessage("Failed to delete account");
+    } catch (err: any) {
+      console.error("Failed to delete account:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to delete account");
       setIsSaving(false);
     }
   };
