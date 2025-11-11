@@ -55,15 +55,8 @@ export default function EmployerSearchPage() {
 
   const [candidates, setCandidates] = useState<Candidate[]>([]);
 
-  // Redirect if not logged in or not employer
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login?redirect=/employer/search");
-    }
-    if (status === "authenticated" && session?.user?.role !== "EMPLOYER") {
-      router.push("/");
-    }
-  }, [status, session, router]);
+  // Note: Role verification is handled by the EmployerLayout component
+  // No need to check role here - layout already ensures only employers can access this page
 
   // Load candidates with debouncing
   useEffect(() => {
