@@ -65,68 +65,74 @@ export default function EmployerSearchPage() {
     }
   }, [status, session, router]);
 
-  // Load candidates
+  // Load candidates with debouncing
   useEffect(() => {
-    const loadCandidates = async () => {
-      try {
-        setIsLoading(true);
-        console.log("🔍 [Search] Fetching real candidates from API...");
+    if (status !== "authenticated") return;
 
-        // Build query parameters based on filters
-        const params = new URLSearchParams();
-        if (searchQuery) params.append("q", searchQuery);
-        if (filters.location) params.append("location", filters.location);
-        if (filters.minScore) params.append("testScoreMin", filters.minScore.toString());
-        if (filters.tier !== "all") params.append("testTier", filters.tier.toUpperCase());
-        if (filters.availability !== "all") {
-          params.append("availability", filters.availability === "available" ? "true" : "false");
-        }
+    // Debounce: wait 500ms after user stops typing before fetching
+    const debounceTimer = setTimeout(() => {
+      const loadCandidates = async () => {
+        try {
+          setIsLoading(true);
+          console.log("🔍 [Search] Fetching real candidates from API...");
 
-        // Experience mapping
-        if (filters.experience !== "all") {
-          if (filters.experience === "junior") {
-            params.append("experienceMax", "2");
-          } else if (filters.experience === "mid") {
-            params.append("experienceMin", "3");
-            params.append("experienceMax", "6");
-          } else if (filters.experience === "senior") {
-            params.append("experienceMin", "7");
+          // Build query parameters based on filters
+          const params = new URLSearchParams();
+          if (searchQuery) params.append("q", searchQuery);
+          if (filters.location) params.append("location", filters.location);
+          if (filters.minScore) params.append("testScoreMin", filters.minScore.toString());
+          if (filters.tier !== "all") params.append("testTier", filters.tier.toUpperCase());
+          if (filters.availability !== "all") {
+            params.append("availability", filters.availability === "available" ? "true" : "false");
           }
+
+          // Experience mapping
+          if (filters.experience !== "all") {
+            if (filters.experience === "junior") {
+              params.append("experienceMax", "2");
+            } else if (filters.experience === "mid") {
+              params.append("experienceMin", "3");
+              params.append("experienceMax", "6");
+            } else if (filters.experience === "senior") {
+              params.append("experienceMin", "7");
+            }
+          }
+
+          // Fetch real candidates
+          const response = await api.get(`/api/candidates/search?${params.toString()}`);
+          console.log("📦 [Search] API Response:", response.data);
+
+          const apiCandidates = response.data.candidates || [];
+
+          // Transform API data to match UI structure
+          const transformedCandidates: Candidate[] = apiCandidates.map((c: any) => ({
+            id: c.id,
+            name: c.user.name || c.user.email,
+            title: c.currentTitle || "Not specified",
+            location: c.location || "Not specified",
+            experience: c.experience ? `${c.experience} years` : "Not specified",
+            skillsScore: c.testScore || 0,
+            tier: c.testTier || "Not Assessed",
+            skills: c.skills || [],
+            seeking: c.preferredJobType || "Not specified",
+            available: c.availability || false,
+          }));
+
+          console.log("✅ [Search] Found", transformedCandidates.length, "candidates");
+          setCandidates(transformedCandidates);
+          setIsLoading(false);
+        } catch (err: any) {
+          console.error("❌ [Search] Error:", err);
+          setCandidates([]);
+          setIsLoading(false);
         }
+      };
 
-        // Fetch real candidates
-        const response = await api.get(`/api/candidates/search?${params.toString()}`);
-        console.log("📦 [Search] API Response:", response.data);
-
-        const apiCandidates = response.data.candidates || [];
-
-        // Transform API data to match UI structure
-        const transformedCandidates: Candidate[] = apiCandidates.map((c: any) => ({
-          id: c.id,
-          name: c.user.name || c.user.email,
-          title: c.currentTitle || "Not specified",
-          location: c.location || "Not specified",
-          experience: c.experience ? `${c.experience} years` : "Not specified",
-          skillsScore: c.testScore || 0,
-          tier: c.testTier || "Not Assessed",
-          skills: c.skills || [],
-          seeking: c.preferredJobType || "Not specified",
-          available: c.availability || false,
-        }));
-
-        console.log("✅ [Search] Found", transformedCandidates.length, "candidates");
-        setCandidates(transformedCandidates);
-        setIsLoading(false);
-      } catch (err: any) {
-        console.error("❌ [Search] Error:", err);
-        setCandidates([]);
-        setIsLoading(false);
-      }
-    };
-
-    if (status === "authenticated") {
       loadCandidates();
-    }
+    }, 500); // Wait 500ms after user stops typing
+
+    // Cleanup: cancel the timer if user keeps typing
+    return () => clearTimeout(debounceTimer);
   }, [status, searchQuery, filters]);
 
   // API handles all filtering, so we use candidates directly
