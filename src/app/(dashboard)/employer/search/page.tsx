@@ -100,6 +100,10 @@ export default function EmployerSearchPage() {
           }
 
           // Fetch real candidates
+          console.log("🔍 [Search] Request URL:", `/api/candidates/search?${params.toString()}`);
+          console.log("🔍 [Search] Session user:", session?.user);
+          console.log("🔍 [Search] User role:", session?.user?.role);
+
           const response = await api.get(`/api/candidates/search?${params.toString()}`);
           console.log("📦 [Search] API Response:", response.data);
 
@@ -124,6 +128,16 @@ export default function EmployerSearchPage() {
           setIsLoading(false);
         } catch (err: any) {
           console.error("❌ [Search] Error:", err);
+          console.error("❌ [Search] Error response:", err?.response?.data);
+          console.error("❌ [Search] Error status:", err?.response?.status);
+
+          // If 403, show helpful message about role requirement
+          if (err?.response?.status === 403) {
+            console.error("🚫 [Search] 403 Forbidden - You need EMPLOYER role to access candidate search");
+            console.error("🚫 [Search] Current user role:", session?.user?.role);
+            console.error("🚫 [Search] Please log in with an EMPLOYER account");
+          }
+
           setCandidates([]);
           setIsLoading(false);
         }
