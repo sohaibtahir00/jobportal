@@ -60,6 +60,7 @@ const employerNavItems = [
   { href: "/employer/jobs/new", label: "Post New Job", icon: Briefcase },
   { href: "/employer/applicants", label: "All Applicants", icon: Users },
   { href: "/employer/search", label: "Search Candidates", icon: Search },
+  { href: "/employer/messages", label: "Messages", icon: MessageSquare },
   { href: "/employer/claim", label: "Claim Jobs", icon: Briefcase },
   { href: "/employer/placements", label: "Placements", icon: CheckCircle2 },
   { href: "/employer/invoices", label: "Invoices", icon: Receipt },

@@ -75,6 +75,8 @@ export default function ApplicantDetailPage() {
         // Transform API data to match the UI structure
         const transformedData = {
           id: app.id,
+          candidateId: app.candidate.id,
+          candidateUserId: app.candidate.userId,
           name: app.candidate.user.name || app.candidate.user.email,
           email: app.candidate.user.email,
           phone: app.candidate.phone || "Not provided",
@@ -251,7 +253,11 @@ export default function ApplicantDetailPage() {
               <CardContent className="p-6">
                 <h3 className="mb-4 font-bold text-secondary-900">Actions</h3>
                 <div className="space-y-3">
-                  <Button variant="primary" className="w-full">
+                  <Button
+                    variant="primary"
+                    className="w-full"
+                    onClick={() => router.push(`/employer/messages?candidateId=${applicantData.candidateUserId}`)}
+                  >
                     <MessageSquare className="mr-2 h-5 w-5" />
                     Send Message
                   </Button>
