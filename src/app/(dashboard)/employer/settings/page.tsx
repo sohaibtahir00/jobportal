@@ -22,7 +22,7 @@ import { api } from "@/lib/api";
 
 export default function EmployerSettingsPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -111,6 +111,7 @@ export default function EmployerSettingsPage() {
     setSuccessMessage("");
 
     try {
+      // Update employer profile
       await api.patch("/api/employers/profile", {
         companyName: profileData.companyName,
         phone: profileData.phone,
@@ -120,6 +121,14 @@ export default function EmployerSettingsPage() {
         industry: profileData.industry,
         description: profileData.description,
       });
+
+      // Update user name (for display in header/sidebar)
+      await api.patch("/api/settings", {
+        name: profileData.companyName,
+      });
+
+      // Refresh the session to update displayed name
+      await update();
 
       setSuccessMessage("Profile updated successfully!");
       setIsSaving(false);
