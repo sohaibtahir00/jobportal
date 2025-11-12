@@ -99,11 +99,11 @@ export default function EmployerSettingsPage() {
         if (settingsData.settings) {
           setNotificationSettings({
             emailNotifications: settingsData.settings.emailNotifications ?? true,
-            newApplications: true, // These are UI-only for now
-            interviewReminders: true,
-            messages: true,
-            placementUpdates: true,
-            marketingEmails: false,
+            newApplications: settingsData.settings.notifyNewApplications ?? true,
+            interviewReminders: settingsData.settings.notifyInterviewReminders ?? true,
+            messages: settingsData.settings.notifyMessages ?? true,
+            placementUpdates: settingsData.settings.notifyPlacementUpdates ?? true,
+            marketingEmails: settingsData.settings.notifyMarketingEmails ?? false,
           });
         }
 
@@ -207,6 +207,11 @@ export default function EmployerSettingsPage() {
     try {
       await api.patch("/api/settings", {
         emailNotifications: notificationSettings.emailNotifications,
+        notifyNewApplications: notificationSettings.newApplications,
+        notifyInterviewReminders: notificationSettings.interviewReminders,
+        notifyMessages: notificationSettings.messages,
+        notifyPlacementUpdates: notificationSettings.placementUpdates,
+        notifyMarketingEmails: notificationSettings.marketingEmails,
       });
 
       setSuccessMessage("Notification preferences updated!");

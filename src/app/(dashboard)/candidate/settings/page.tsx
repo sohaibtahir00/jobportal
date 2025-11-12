@@ -92,11 +92,11 @@ export default function CandidateSettingsPage() {
         if (settingsData.settings) {
           setNotificationSettings({
             emailNotifications: settingsData.settings.emailNotifications ?? true,
-            jobAlerts: true, // These are UI-only for now
-            applicationUpdates: true,
-            messages: true,
-            weeklyDigest: false,
-            marketingEmails: false,
+            jobAlerts: settingsData.settings.notifyJobAlerts ?? true,
+            applicationUpdates: settingsData.settings.notifyApplicationUpdates ?? true,
+            messages: settingsData.settings.notifyMessages ?? true,
+            weeklyDigest: settingsData.settings.notifyWeeklyDigest ?? false,
+            marketingEmails: settingsData.settings.notifyMarketingEmails ?? false,
           });
 
           setPrivacySettings({
@@ -202,6 +202,11 @@ export default function CandidateSettingsPage() {
     try {
       await api.patch("/api/settings", {
         emailNotifications: notificationSettings.emailNotifications,
+        notifyJobAlerts: notificationSettings.jobAlerts,
+        notifyApplicationUpdates: notificationSettings.applicationUpdates,
+        notifyMessages: notificationSettings.messages,
+        notifyWeeklyDigest: notificationSettings.weeklyDigest,
+        notifyMarketingEmails: notificationSettings.marketingEmails,
       });
 
       setSuccessMessage("Notification preferences updated!");
