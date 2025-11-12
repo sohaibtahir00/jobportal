@@ -76,20 +76,36 @@ export default function EmployerSettingsPage() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const response = await api.get("/api/employers/profile");
-        const data = response.data;
+        // Load employer profile
+        const profileResponse = await api.get("/api/employers/profile");
+        const profileData = profileResponse.data;
 
         // Map employer data to form fields
         setProfileData({
-          companyName: data.employer.companyName || "",
+          companyName: profileData.employer.companyName || "",
           email: session?.user?.email || "",
-          phone: data.employer.phone || "",
-          website: data.employer.companyWebsite || "",
-          location: data.employer.location || "",
-          companySize: data.employer.companySize || "",
-          industry: data.employer.industry || "",
-          description: data.employer.description || "",
+          phone: profileData.employer.phone || "",
+          website: profileData.employer.companyWebsite || "",
+          location: profileData.employer.location || "",
+          companySize: profileData.employer.companySize || "",
+          industry: profileData.employer.industry || "",
+          description: profileData.employer.description || "",
         });
+
+        // Load user settings (for notifications)
+        const settingsResponse = await api.get("/api/settings");
+        const settingsData = settingsResponse.data;
+
+        if (settingsData.settings) {
+          setNotificationSettings({
+            emailNotifications: settingsData.settings.emailNotifications ?? true,
+            newApplications: true, // These are UI-only for now
+            interviewReminders: true,
+            messages: true,
+            placementUpdates: true,
+            marketingEmails: false,
+          });
+        }
 
         setIsLoading(false);
       } catch (err: any) {
