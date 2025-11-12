@@ -66,13 +66,39 @@ export const authOptions: AuthOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      // Initial sign in
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
         token.role = user.role;
       }
+
+      // Handle session update (when update() is called)
+      if (trigger === "update" && session) {
+        // Fetch updated user data from backend
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/settings`, {
+            headers: {
+              "X-User-Id": token.id as string,
+              "X-User-Email": token.email as string,
+              "X-User-Role": token.role as string,
+            },
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.settings) {
+              token.name = data.settings.name || token.name;
+              token.email = data.settings.email || token.email;
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch updated user data:", error);
+        }
+      }
+
       return token;
     },
 

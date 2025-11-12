@@ -128,6 +128,7 @@ export default function EmployerSettingsPage() {
       });
 
       // Refresh the session to update displayed name
+      // Trigger a full session refetch from the server
       await update();
 
       setSuccessMessage("Profile updated successfully!");
