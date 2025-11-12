@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Progress } from "@/components/ui/progress";
+import { api } from "@/lib/api";
 import {
   Send,
   Eye,
@@ -68,10 +69,27 @@ export default function CandidateDashboardPage() {
   const { data: dashboardData, isLoading: dashboardLoading } = useCandidateDashboard();
 
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [profileViewsCount, setProfileViewsCount] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Fetch profile views count
+  useEffect(() => {
+    const fetchProfileViewsCount = async () => {
+      try {
+        const response = await api.get('/api/profile-views?limit=1');
+        if (response.data.stats) {
+          setProfileViewsCount(response.data.stats.totalViews);
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile views count:', error);
+      }
+    };
+
+    fetchProfileViewsCount();
   }, []);
 
   const isLoading = profileLoading || dashboardLoading;
@@ -121,7 +139,7 @@ export default function CandidateDashboardPage() {
     {
       icon: Eye,
       label: "Profile Views",
-      value: 0, // TODO: Add profile views tracking
+      value: profileViewsCount,
       gradient: "from-purple-500 to-purple-600",
       link: "/candidate/profile-views",
     },
