@@ -115,6 +115,19 @@ export default function ApplicantDetailPage() {
         console.log("✅ [Applicant Detail] Transformed data:", transformedData);
         setApplicantData(transformedData);
         setIsLoading(false);
+
+        // Record profile view
+        try {
+          await api.post("/api/profile-views", {
+            candidateId: app.candidate.id,
+            source: "application",
+            jobId: app.jobId,
+          });
+          console.log("✅ [Applicant Detail] Profile view recorded");
+        } catch (viewErr) {
+          // Don't block the page if profile view recording fails
+          console.error("⚠️ [Applicant Detail] Failed to record profile view:", viewErr);
+        }
       } catch (err: any) {
         console.error("❌ [Applicant Detail] Error:", err);
         setError(err.response?.data?.error || err.message || "Failed to load applicant details");
