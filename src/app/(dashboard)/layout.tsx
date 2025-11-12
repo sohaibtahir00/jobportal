@@ -22,6 +22,7 @@ import {
   Search,
   CheckCircle2,
   Bookmark,
+  Video,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -60,6 +61,7 @@ const employerNavItems = [
   { href: "/employer/applicants", label: "All Applicants", icon: Users },
   { href: "/employer/search", label: "Search Candidates", icon: Search },
   { href: "/employer/messages", label: "Messages", icon: MessageSquare },
+  { href: "/employer/interviews", label: "Interviews", icon: Video },
   { href: "/employer/claim", label: "Claim Jobs", icon: Briefcase },
   { href: "/employer/placements", label: "Placements", icon: CheckCircle2 },
   { href: "/employer/invoices", label: "Invoices", icon: Receipt },
@@ -83,9 +85,10 @@ export default function DashboardLayout({
   // Redirect to login if not authenticated
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login");
+      const redirect = isEmployer ? "/employer/dashboard" : "/candidate/dashboard";
+      router.push(`/login?redirect=${redirect}`);
     }
-  }, [status, router]);
+  }, [status, router, isEmployer]);
 
   // Loading state
   if (status === "loading") {
