@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
 import { api } from "@/lib/api";
-import InterviewScheduleModal from "@/components/interviews/InterviewScheduleModal";
 
 export default function ApplicantDetailPage() {
   const params = useParams();
@@ -43,7 +42,6 @@ export default function ApplicantDetailPage() {
   const [applicantData, setApplicantData] = useState<any>(null);
   const [interviews, setInterviews] = useState<any[]>([]);
   const [isLoadingInterviews, setIsLoadingInterviews] = useState(false);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   // Redirect if not logged in or not employer
   useEffect(() => {
@@ -326,7 +324,7 @@ export default function ApplicantDetailPage() {
                   <Button
                     variant="primary"
                     className="w-full"
-                    onClick={() => setShowScheduleModal(true)}
+                    onClick={() => router.push("/employer/interviews")}
                   >
                     <Video className="mr-2 h-5 w-5" />
                     Schedule Interview
@@ -458,7 +456,7 @@ export default function ApplicantDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowScheduleModal(true)}
+                  onClick={() => router.push("/employer/interviews")}
                 >
                   <Video className="mr-2 h-4 w-4" />
                   Schedule New
@@ -480,7 +478,7 @@ export default function ApplicantDetailPage() {
                   </p>
                   <Button
                     variant="primary"
-                    onClick={() => setShowScheduleModal(true)}
+                    onClick={() => router.push("/employer/interviews")}
                   >
                     <Video className="mr-2 h-4 w-4" />
                     Schedule Interview
@@ -583,16 +581,6 @@ export default function ApplicantDetailPage() {
           </Card>
         </div>
       </div>
-
-      {/* Interview Schedule Modal */}
-      <InterviewScheduleModal
-        isOpen={showScheduleModal}
-        onClose={() => setShowScheduleModal(false)}
-        applicationId={applicantId}
-        candidateName={applicantData.name}
-        jobTitle={applicantData.appliedFor}
-        onSuccess={handleInterviewSuccess}
-      />
     </div>
   );
 }
