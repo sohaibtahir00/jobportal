@@ -128,8 +128,10 @@ export default function EmployerSettingsPage() {
       });
 
       // Refresh the session to update displayed name
-      // Trigger a full session refetch from the server
-      await update();
+      // Pass the updated name directly to force immediate update
+      await update({
+        name: profileData.companyName,
+      });
 
       setSuccessMessage("Profile updated successfully!");
       setIsSaving(false);

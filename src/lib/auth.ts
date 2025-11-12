@@ -76,26 +76,36 @@ export const authOptions: AuthOptions = {
       }
 
       // Handle session update (when update() is called)
-      if (trigger === "update" && session) {
-        // Fetch updated user data from backend
-        try {
-          const res = await fetch(`${BACKEND_URL}/api/settings`, {
-            headers: {
-              "X-User-Id": token.id as string,
-              "X-User-Email": token.email as string,
-              "X-User-Role": token.role as string,
-            },
-          });
+      if (trigger === "update") {
+        // If session data is passed directly, use it
+        if (session?.name) {
+          token.name = session.name;
+        }
+        if (session?.email) {
+          token.email = session.email;
+        }
 
-          if (res.ok) {
-            const data = await res.json();
-            if (data.settings) {
-              token.name = data.settings.name || token.name;
-              token.email = data.settings.email || token.email;
+        // Otherwise, fetch updated user data from backend
+        if (!session?.name && !session?.email) {
+          try {
+            const res = await fetch(`${BACKEND_URL}/api/settings`, {
+              headers: {
+                "X-User-Id": token.id as string,
+                "X-User-Email": token.email as string,
+                "X-User-Role": token.role as string,
+              },
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              if (data.settings) {
+                token.name = data.settings.name || token.name;
+                token.email = data.settings.email || token.email;
+              }
             }
+          } catch (error) {
+            console.error("Failed to fetch updated user data:", error);
           }
-        } catch (error) {
-          console.error("Failed to fetch updated user data:", error);
         }
       }
 
