@@ -30,7 +30,7 @@ export default function EmployerInterviewsPage() {
   // Redirect if not employer
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login");
+      router.push("/login?redirect=/employer/interviews");
     }
     if (status === "authenticated" && session?.user?.role !== "EMPLOYER") {
       router.push("/");
@@ -129,7 +129,22 @@ export default function EmployerInterviewsPage() {
     cancelled: interviews.filter((i) => i.status === "CANCELLED").length,
   };
 
-  if (status === "loading" || isLoading) {
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary-50">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary-600" />
+          <p className="mt-4 text-secondary-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary-50">
         <div className="text-center">
@@ -138,10 +153,6 @@ export default function EmployerInterviewsPage() {
         </div>
       </div>
     );
-  }
-
-  if (!session) {
-    return null;
   }
 
   return (

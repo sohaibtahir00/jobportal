@@ -223,7 +223,22 @@ export default function ApplicantDetailPage() {
     }
   };
 
-  if (status === "loading" || isLoading) {
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary-50">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary-600" />
+          <p className="mt-4 text-secondary-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary-50">
         <div className="text-center">
@@ -234,8 +249,14 @@ export default function ApplicantDetailPage() {
     );
   }
 
-  if (!session || !applicantData) {
-    return null;
+  if (!applicantData) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary-50">
+        <div className="text-center">
+          <p className="text-secondary-600">Applicant not found</p>
+        </div>
+      </div>
+    );
   }
 
   return (
