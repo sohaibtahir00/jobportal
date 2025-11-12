@@ -138,11 +138,6 @@ export interface Candidate {
   testInviteToken: string | null;
   testInviteSentAt: string | null; // ISO 8601 DateTime
 
-  // Referrals
-  referralCode: string | null;
-  referredBy: string | null;
-  referralEarnings: number;      // In cents, default: 0
-
   createdAt: string;             // ISO 8601 DateTime
   updatedAt: string;             // ISO 8601 DateTime
 
@@ -353,24 +348,6 @@ export interface EmailCampaign {
 
   // Relations
   employer?: Employer;
-}
-
-export interface Referral {
-  id: string;
-  referrerId: string;
-  referredEmail: string;
-  code: string;
-  status: string;
-  registeredAt: string | null;   // ISO 8601 DateTime
-  placementId: string | null;
-  earningsPaid: boolean;
-  paidAt: string | null;         // ISO 8601 DateTime
-  createdAt: string;             // ISO 8601 DateTime
-  updatedAt: string;             // ISO 8601 DateTime
-
-  // Relations
-  referrer?: User;
-  placement?: Placement;
 }
 
 export interface BlogPost {

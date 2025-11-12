@@ -51,7 +51,6 @@ const candidateNavItems = [
   { href: "/candidate/saved", label: "Saved Jobs", icon: Bookmark },
   { href: "/candidate/messages", label: "Messages", icon: MessageSquare },
   { href: "/candidate/interviews", label: "Interviews", icon: Calendar },
-  { href: "/candidate/referrals", label: "Referrals", icon: UserPlus },
   { href: "/candidate/settings", label: "Settings", icon: Settings },
 ];
 
