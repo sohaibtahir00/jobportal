@@ -80,6 +80,7 @@ export default function EmployerMessagesPage() {
   const [currentThread, setCurrentThread] = useState<ConversationThread | null>(null);
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [error, setError] = useState("");
+  const [candidateInfo, setCandidateInfo] = useState<Participant | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Redirect if not logged in or not employer
@@ -101,16 +102,18 @@ export default function EmployerMessagesPage() {
 
   // Set active conversation from URL parameter or first conversation
   useEffect(() => {
-    if (candidateIdParam && conversations.length > 0) {
+    if (candidateIdParam) {
+      // Always set active conversation when candidateId is in URL
+      setActiveConversation(candidateIdParam);
+
       // Check if this candidate exists in conversations
       const candidateConversation = conversations.find(
         (c) => c.participant.id === candidateIdParam
       );
-      if (candidateConversation) {
-        setActiveConversation(candidateIdParam);
-      } else {
-        // Candidate not in conversations yet, we need to initiate
-        setActiveConversation(candidateIdParam);
+
+      if (!candidateConversation) {
+        // Candidate not in conversations yet, fetch their info
+        fetchCandidateInfo(candidateIdParam);
       }
     } else if (!activeConversation && conversations.length > 0) {
       setActiveConversation(conversations[0].participant.id);
@@ -146,6 +149,28 @@ export default function EmployerMessagesPage() {
       setError(err.response?.data?.error || "Failed to load conversations");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchCandidateInfo = async (userId: string) => {
+    try {
+      // Set a placeholder for new conversation
+      setCandidateInfo({
+        id: userId,
+        name: "New Conversation",
+        email: "",
+        role: "CANDIDATE",
+        image: null,
+      });
+
+      // Initialize empty thread for new conversation
+      setCurrentThread({
+        messages: [],
+        totalCount: 0,
+        participants: [],
+      });
+    } catch (err: any) {
+      console.error("Failed to initialize candidate info:", err);
     }
   };
 
@@ -256,8 +281,21 @@ export default function EmployerMessagesPage() {
   // Get participant info for new conversation
   const getParticipantName = () => {
     if (activeConv) return activeConv.participant.name;
-    if (candidateIdParam) return "Candidate";
+    if (candidateInfo) return candidateInfo.name;
+    if (candidateIdParam) return "Loading candidate...";
     return "Select a candidate";
+  };
+
+  const getParticipantImage = () => {
+    if (activeConv) return activeConv.participant.image;
+    if (candidateInfo) return candidateInfo.image;
+    return null;
+  };
+
+  const getParticipantRole = () => {
+    if (activeConv) return activeConv.participant.role;
+    if (candidateInfo) return candidateInfo.role;
+    return "CANDIDATE";
   };
 
   return (
@@ -403,10 +441,10 @@ export default function EmployerMessagesPage() {
                     <div className="flex items-center justify-between border-b border-secondary-200 p-4">
                       <div className="flex items-center gap-3">
                         <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
-                          {activeConv?.participant.image ? (
+                          {getParticipantImage() ? (
                             <img
-                              src={activeConv.participant.image}
-                              alt={activeConv.participant.name}
+                              src={getParticipantImage()!}
+                              alt={getParticipantName()}
                               className="w-12 h-12 rounded-full object-cover"
                             />
                           ) : (
@@ -419,9 +457,9 @@ export default function EmployerMessagesPage() {
                           </h2>
                           <p className="flex items-center gap-2 text-sm text-secondary-600">
                             <Briefcase className="h-4 w-4" />
-                            {activeConv?.participant.role === "CANDIDATE"
+                            {getParticipantRole() === "CANDIDATE"
                               ? "Candidate"
-                              : activeConv?.participant.role || "Candidate"}
+                              : getParticipantRole()}
                           </p>
                         </div>
                       </div>
