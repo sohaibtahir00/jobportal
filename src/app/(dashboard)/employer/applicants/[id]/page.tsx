@@ -345,7 +345,7 @@ export default function ApplicantDetailPage() {
                   <Button
                     variant="primary"
                     className="w-full"
-                    onClick={() => router.push("/employer/interviews")}
+                    onClick={() => router.push(`/employer/interviews/availability/${applicantId}`)}
                   >
                     <Video className="mr-2 h-5 w-5" />
                     Schedule Interview
@@ -477,7 +477,7 @@ export default function ApplicantDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push("/employer/interviews")}
+                  onClick={() => router.push(`/employer/interviews/availability/${applicantId}`)}
                 >
                   <Video className="mr-2 h-4 w-4" />
                   Schedule New
@@ -499,7 +499,7 @@ export default function ApplicantDetailPage() {
                   </p>
                   <Button
                     variant="primary"
-                    onClick={() => router.push("/employer/interviews")}
+                    onClick={() => router.push(`/employer/interviews/availability/${applicantId}`)}
                   >
                     <Video className="mr-2 h-4 w-4" />
                     Schedule Interview
