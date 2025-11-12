@@ -24,9 +24,14 @@ import {
   Code,
   Database,
   Shield,
+  Video,
+  Edit,
+  Trash2,
+  CheckCircle,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
 import { api } from "@/lib/api";
+import InterviewScheduleModal from "@/components/interviews/InterviewScheduleModal";
 
 export default function ApplicantDetailPage() {
   const params = useParams();
@@ -36,6 +41,9 @@ export default function ApplicantDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [applicantData, setApplicantData] = useState<any>(null);
+  const [interviews, setInterviews] = useState<any[]>([]);
+  const [isLoadingInterviews, setIsLoadingInterviews] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   // Redirect if not logged in or not employer
   useEffect(() => {
@@ -141,6 +149,68 @@ export default function ApplicantDetailPage() {
       loadApplicant();
     }
   }, [applicantId, status]);
+
+  // Load interviews for this application
+  const loadInterviews = async () => {
+    if (!applicantId) return;
+
+    try {
+      setIsLoadingInterviews(true);
+      const response = await api.get(`/api/interviews?applicationId=${applicantId}`);
+      setInterviews(response.data.interviews || []);
+    } catch (err) {
+      console.error("Failed to load interviews:", err);
+    } finally {
+      setIsLoadingInterviews(false);
+    }
+  };
+
+  useEffect(() => {
+    if (status === "authenticated" && applicantId) {
+      loadInterviews();
+    }
+  }, [applicantId, status]);
+
+  const handleInterviewSuccess = () => {
+    loadInterviews(); // Reload interviews after scheduling
+  };
+
+  const handleCancelInterview = async (interviewId: string) => {
+    if (!confirm("Are you sure you want to cancel this interview?")) return;
+
+    try {
+      await api.delete(`/api/interviews/${interviewId}`);
+      loadInterviews();
+    } catch (err) {
+      console.error("Failed to cancel interview:", err);
+      alert("Failed to cancel interview");
+    }
+  };
+
+  const handleMarkCompleted = async (interviewId: string) => {
+    try {
+      await api.patch(`/api/interviews/${interviewId}`, { status: "COMPLETED" });
+      loadInterviews();
+    } catch (err) {
+      console.error("Failed to mark interview as completed:", err);
+      alert("Failed to update interview status");
+    }
+  };
+
+  const getInterviewStatusBadge = (status: string) => {
+    switch (status) {
+      case "SCHEDULED":
+        return <Badge variant="primary">Scheduled</Badge>;
+      case "COMPLETED":
+        return <Badge variant="success">Completed</Badge>;
+      case "CANCELLED":
+        return <Badge variant="danger">Cancelled</Badge>;
+      case "RESCHEDULED":
+        return <Badge variant="warning">Rescheduled</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
 
   const getTierColor = (tier: string) => {
     switch (tier) {
@@ -256,6 +326,14 @@ export default function ApplicantDetailPage() {
                   <Button
                     variant="primary"
                     className="w-full"
+                    onClick={() => setShowScheduleModal(true)}
+                  >
+                    <Video className="mr-2 h-5 w-5" />
+                    Schedule Interview
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
                     onClick={() => router.push(`/employer/messages?candidateId=${applicantData.candidateUserId}`)}
                   >
                     <MessageSquare className="mr-2 h-5 w-5" />
@@ -370,6 +448,128 @@ export default function ApplicantDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Interviews Section */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-secondary-900">
+                  Scheduled Interviews
+                </h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowScheduleModal(true)}
+                >
+                  <Video className="mr-2 h-4 w-4" />
+                  Schedule New
+                </Button>
+              </div>
+
+              {isLoadingInterviews ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : interviews.length === 0 ? (
+                <div className="rounded-lg border-2 border-dashed border-secondary-200 bg-secondary-50 p-8 text-center">
+                  <Video className="mx-auto mb-3 h-12 w-12 text-secondary-400" />
+                  <h3 className="mb-2 text-lg font-semibold text-secondary-900">
+                    No Interviews Scheduled
+                  </h3>
+                  <p className="mb-4 text-sm text-secondary-600">
+                    Schedule a video interview with this candidate to discuss the position
+                  </p>
+                  <Button
+                    variant="primary"
+                    onClick={() => setShowScheduleModal(true)}
+                  >
+                    <Video className="mr-2 h-4 w-4" />
+                    Schedule Interview
+                  </Button>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-secondary-200 text-left text-sm font-semibold text-secondary-700">
+                        <th className="pb-3">Date & Time</th>
+                        <th className="pb-3">Type</th>
+                        <th className="pb-3">Duration</th>
+                        <th className="pb-3">Status</th>
+                        <th className="pb-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {interviews.map((interview) => (
+                        <tr
+                          key={interview.id}
+                          className="border-b border-secondary-100 last:border-0"
+                        >
+                          <td className="py-4">
+                            <div className="flex flex-col">
+                              <span className="font-medium text-secondary-900">
+                                {new Date(interview.scheduledAt).toLocaleDateString()}
+                              </span>
+                              <span className="text-sm text-secondary-600">
+                                {new Date(interview.scheduledAt).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-4">
+                            <Badge variant="primary" size="sm" className="gap-1">
+                              <Video className="h-3 w-3" />
+                              Video
+                            </Badge>
+                          </td>
+                          <td className="py-4 text-sm text-secondary-700">
+                            {interview.duration} min
+                          </td>
+                          <td className="py-4">
+                            {getInterviewStatusBadge(interview.status)}
+                          </td>
+                          <td className="py-4">
+                            <div className="flex items-center justify-end gap-2">
+                              {interview.meetingLink && (
+                                <a
+                                  href={interview.meetingLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="rounded-lg border border-primary-300 bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 hover:bg-primary-100"
+                                >
+                                  Join Meeting
+                                </a>
+                              )}
+                              {interview.status === "SCHEDULED" && (
+                                <>
+                                  <button
+                                    onClick={() => handleMarkCompleted(interview.id)}
+                                    className="rounded-lg border border-green-300 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100"
+                                    title="Mark as Completed"
+                                  >
+                                    <CheckCircle className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleCancelInterview(interview.id)}
+                                    className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
+                                    title="Cancel Interview"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Cover Letter */}
           <Card>
             <CardContent className="p-6">
@@ -383,6 +583,16 @@ export default function ApplicantDetailPage() {
           </Card>
         </div>
       </div>
+
+      {/* Interview Schedule Modal */}
+      <InterviewScheduleModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        applicationId={applicantId}
+        candidateName={applicantData.name}
+        jobTitle={applicantData.appliedFor}
+        onSuccess={handleInterviewSuccess}
+      />
     </div>
   );
 }

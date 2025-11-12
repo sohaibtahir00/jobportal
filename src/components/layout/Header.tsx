@@ -181,6 +181,15 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                         )}
                         {session.user?.role === "EMPLOYER" && (
                           <Link
+                            href="/employer/interviews"
+                            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            Interviews
+                          </Link>
+                        )}
+                        {session.user?.role === "EMPLOYER" && (
+                          <Link
                             href="/employer/claim"
                             className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
                             onClick={() => setUserMenuOpen(false)}
