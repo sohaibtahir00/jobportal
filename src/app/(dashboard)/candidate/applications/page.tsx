@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Briefcase, Filter, TrendingUp, Clock, CheckCircle, XCircle } from "lucide-react";
 import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { ApplicationCard } from "@/components/applications/ApplicationCard";
@@ -8,14 +9,28 @@ import { ApplicationDetailModal } from "@/components/applications/ApplicationDet
 import { useApplications } from "@/hooks/useApplications";
 import type { Application } from "@/types";
 
-type FilterTab = "all" | "active" | "archived";
+type FilterTab = "all" | "active" | "archived" | "interview";
 type SortOption = "recent" | "oldest" | "company";
 
 export default function ApplicationsPage() {
+  const searchParams = useSearchParams();
+  const filterParam = searchParams.get("filter");
+
   const [filterTab, setFilterTab] = useState<FilterTab>("all");
   const [sortBy, setSortBy] = useState<SortOption>("recent");
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Set initial filter from URL parameter
+  useEffect(() => {
+    if (filterParam === "interview") {
+      setFilterTab("interview");
+    } else if (filterParam === "active") {
+      setFilterTab("active");
+    } else if (filterParam === "archived") {
+      setFilterTab("archived");
+    }
+  }, [filterParam]);
 
   // Fetch applications
   const { data, isLoading, error, refetch } = useApplications();
@@ -34,6 +49,10 @@ export default function ApplicationsPage() {
     } else if (filterTab === "archived") {
       filtered = filtered.filter(app =>
         ["REJECTED", "WITHDRAWN", "ACCEPTED"].includes(app.status)
+      );
+    } else if (filterTab === "interview") {
+      filtered = filtered.filter(app =>
+        app.status === "INTERVIEW_SCHEDULED"
       );
     }
 

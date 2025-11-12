@@ -123,13 +123,14 @@ export default function CandidateDashboardPage() {
       label: "Profile Views",
       value: 0, // TODO: Add profile views tracking
       gradient: "from-purple-500 to-purple-600",
+      link: "/candidate/profile-views",
     },
     {
       icon: Bookmark,
       label: "Saved Jobs",
       value: 0, // TODO: Add saved jobs feature
       gradient: "from-green-500 to-emerald-600",
-      link: "/candidate/saved-jobs",
+      link: "/candidate/saved",
     },
     {
       icon: Calendar,
