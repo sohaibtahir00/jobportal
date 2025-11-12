@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import {
   User,
   Mail,
@@ -17,10 +17,11 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
+import { api } from "@/lib/api";
 
 export default function CandidateSettingsPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -72,26 +73,52 @@ export default function CandidateSettingsPage() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        // Mock data
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Load candidate profile
+        const profileResponse = await api.get("/api/candidates/profile");
+        const profileData = profileResponse.data;
 
+        // Map candidate data to form fields
         setProfileData({
-          name: "John Doe",
-          email: "john.doe@email.com",
-          phone: "+1 (555) 123-4567",
-          location: "San Francisco, CA",
+          name: session?.user?.name || "",
+          email: session?.user?.email || "",
+          phone: profileData.candidate.phone || "",
+          location: profileData.candidate.location || "",
         });
 
+        // Load user settings (for notifications and privacy)
+        const settingsResponse = await api.get("/api/settings");
+        const settingsData = settingsResponse.data;
+
+        if (settingsData.settings) {
+          setNotificationSettings({
+            emailNotifications: settingsData.settings.emailNotifications ?? true,
+            jobAlerts: true, // These are UI-only for now
+            applicationUpdates: true,
+            messages: true,
+            weeklyDigest: false,
+            marketingEmails: false,
+          });
+
+          setPrivacySettings({
+            profileVisibility: settingsData.settings.profileVisibility ? "public" : "private",
+            showEmail: false, // UI-only
+            showPhone: false, // UI-only
+            allowRecruiterContact: settingsData.settings.allowRecruiterContact ?? true,
+          });
+        }
+
         setIsLoading(false);
-      } catch (err) {
+      } catch (err: any) {
+        console.error("Failed to load settings:", err);
+        setErrorMessage(err.response?.data?.error || "Failed to load settings");
         setIsLoading(false);
       }
     };
 
-    if (status === "authenticated") {
+    if (status === "authenticated" && session?.user?.role === "CANDIDATE") {
       loadSettings();
     }
-  }, [status]);
+  }, [status, session]);
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,15 +127,29 @@ export default function CandidateSettingsPage() {
     setErrorMessage("");
 
     try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Update candidate profile
+      await api.patch("/api/candidates/profile", {
+        phone: profileData.phone,
+        location: profileData.location,
+      });
+
+      // Update user name
+      await api.patch("/api/settings", {
+        name: profileData.name,
+      });
+
+      // Refresh session to update displayed name
+      await update({
+        name: profileData.name,
+      });
 
       setSuccessMessage("Profile updated successfully!");
       setIsSaving(false);
 
       setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setErrorMessage("Failed to update profile. Please try again.");
+    } catch (err: any) {
+      console.error("Failed to update profile:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to update profile. Please try again.");
       setIsSaving(false);
     }
   };
@@ -131,8 +172,10 @@ export default function CandidateSettingsPage() {
     setErrorMessage("");
 
     try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await api.post("/api/settings/password", {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
 
       setSuccessMessage("Password updated successfully!");
       setPasswordData({
@@ -143,8 +186,9 @@ export default function CandidateSettingsPage() {
       setIsSaving(false);
 
       setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setErrorMessage("Failed to update password. Please try again.");
+    } catch (err: any) {
+      console.error("Failed to update password:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to update password. Please try again.");
       setIsSaving(false);
     }
   };
@@ -153,17 +197,20 @@ export default function CandidateSettingsPage() {
     e.preventDefault();
     setIsSaving(true);
     setSuccessMessage("");
+    setErrorMessage("");
 
     try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await api.patch("/api/settings", {
+        emailNotifications: notificationSettings.emailNotifications,
+      });
 
       setSuccessMessage("Notification preferences updated!");
       setIsSaving(false);
 
       setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setErrorMessage("Failed to update preferences.");
+    } catch (err: any) {
+      console.error("Failed to update preferences:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to update preferences.");
       setIsSaving(false);
     }
   };
@@ -172,32 +219,51 @@ export default function CandidateSettingsPage() {
     e.preventDefault();
     setIsSaving(true);
     setSuccessMessage("");
+    setErrorMessage("");
 
     try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await api.patch("/api/settings", {
+        profileVisibility: privacySettings.profileVisibility === "public",
+        allowRecruiterContact: privacySettings.allowRecruiterContact,
+      });
 
       setSuccessMessage("Privacy settings updated!");
       setIsSaving(false);
 
       setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setErrorMessage("Failed to update privacy settings.");
+    } catch (err: any) {
+      console.error("Failed to update privacy settings:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to update privacy settings.");
       setIsSaving(false);
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-      return;
-    }
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    const doubleConfirm = window.confirm(
+      "This will permanently delete all your applications, profile data, and saved jobs. Are you absolutely sure?"
+    );
+
+    if (!doubleConfirm) return;
+
+    setIsSaving(true);
+    setErrorMessage("");
 
     try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await api.delete("/api/settings");
+
+      // Sign out the user after account deletion
+      await signOut({ redirect: false });
       router.push("/");
-    } catch (err) {
-      setErrorMessage("Failed to delete account.");
+    } catch (err: any) {
+      console.error("Failed to delete account:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to delete account.");
+      setIsSaving(false);
     }
   };
 
