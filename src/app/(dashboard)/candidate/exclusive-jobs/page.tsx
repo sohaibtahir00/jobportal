@@ -7,6 +7,7 @@ import { Award, Lock, Loader2, Briefcase, AlertCircle } from "lucide-react";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 import { JobCard } from "@/components/jobs/JobCard";
 import Link from "next/link";
+import { api } from "@/lib/api";
 
 export default function ExclusiveJobsPage() {
   const router = useRouter();
@@ -42,32 +43,29 @@ export default function ExclusiveJobsPage() {
     setError("");
 
     try {
-      const response = await fetch(
+      const response = await api.get(
         `/api/jobs/exclusive?page=${currentPage}&limit=12`
       );
 
-      if (response.status === 403) {
-        const data = await response.json();
+      const data = response.data;
+      setJobs(data.jobs || []);
+      setHasAccess(data.hasAccess || false);
+      setTotalPages(data.pagination?.totalPages || 1);
+      setTotalCount(data.pagination?.totalCount || 0);
+    } catch (err: any) {
+      console.error("Failed to fetch exclusive jobs:", err);
+
+      if (err.response?.status === 403) {
+        const data = err.response?.data;
         if (data.requiresAssessment) {
           setRequiresAssessment(true);
           setHasAccess(false);
         } else {
           setError(data.message || "Access denied");
         }
-        return;
+      } else {
+        setError(err.response?.data?.error || "Failed to load exclusive jobs");
       }
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch exclusive jobs");
-      }
-
-      const data = await response.json();
-      setJobs(data.jobs || []);
-      setHasAccess(data.hasAccess || false);
-      setTotalPages(data.pagination?.totalPages || 1);
-      setTotalCount(data.pagination?.totalCount || 0);
-    } catch (err: any) {
-      setError(err.message || "Failed to load exclusive jobs");
     } finally {
       setIsLoading(false);
     }
