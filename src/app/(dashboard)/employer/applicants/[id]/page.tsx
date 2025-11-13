@@ -171,7 +171,11 @@ export default function ApplicantDetailPage() {
     try {
       setIsLoadingInterviews(true);
       const response = await api.get(`/api/interviews?applicationId=${applicantId}`);
-      setInterviews(response.data.interviews || []);
+      const interviewsList = response.data.interviews || [];
+      console.log("🎯 [Interviews Debug] Raw interviews data:", interviewsList);
+      console.log("🎯 [Interviews Debug] Interview statuses:", interviewsList.map((i: any) => i.status));
+      console.log("🎯 [Interviews Debug] Has COMPLETED?", interviewsList.some((i: any) => i.status === "COMPLETED"));
+      setInterviews(interviewsList);
     } catch (err) {
       console.error("Failed to load interviews:", err);
     } finally {
@@ -424,6 +428,16 @@ export default function ApplicantDetailPage() {
                     <Video className="mr-2 h-5 w-5" />
                     Schedule Interview
                   </Button>
+
+                  {/* Debug Info - Remove after testing */}
+                  <div className="rounded border border-yellow-200 bg-yellow-50 p-2 text-xs">
+                    <div>App Status: {applicantData.applicationStatus}</div>
+                    <div>Interviews Count: {interviews.length}</div>
+                    <div>Interview Statuses: {interviews.map(i => i.status).join(", ")}</div>
+                    <div>Has COMPLETED: {interviews.some((interview) => interview.status === "COMPLETED") ? "YES" : "NO"}</div>
+                    <div>Should Show Button: {(applicantData.applicationStatus === "shortlisted" || interviews.some((interview) => interview.status === "COMPLETED")) ? "YES" : "NO"}</div>
+                  </div>
+
                   {(applicantData.applicationStatus === "shortlisted" ||
                     interviews.some((interview) => interview.status === "COMPLETED")) && (
                     <Button
