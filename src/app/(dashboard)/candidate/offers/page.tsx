@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import {
   Gift,
   DollarSign,
@@ -54,8 +52,6 @@ interface Offer {
 }
 
 export default function CandidateOffersPage() {
-  const router = useRouter();
-  const { data: session, status } = useSession();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -67,21 +63,9 @@ export default function CandidateOffersPage() {
   // Filter states
   const [filter, setFilter] = useState<"all" | "pending" | "accepted" | "declined">("all");
 
-  // Redirect if not logged in or not candidate
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login?redirect=/candidate/offers");
-    }
-    if (status === "authenticated" && session?.user?.role !== "CANDIDATE") {
-      router.push("/");
-    }
-  }, [status, session, router]);
-
-  useEffect(() => {
-    if (status === "authenticated" && session?.user?.role === "CANDIDATE") {
-      fetchOffers();
-    }
-  }, [status, session]);
+    fetchOffers();
+  }, []);
 
   const fetchOffers = async () => {
     setIsLoading(true);
@@ -219,7 +203,7 @@ export default function CandidateOffersPage() {
     ).length,
   };
 
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="text-center">
