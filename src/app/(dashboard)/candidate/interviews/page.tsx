@@ -57,15 +57,24 @@ export default function CandidateInterviewsPage() {
     }
   }, [status, session, router]);
 
-  // Load pending interview requests (awaiting candidate selection)
+  // Load pending interview requests (awaiting candidate selection OR employer confirmation)
   useEffect(() => {
     const loadPendingInterviews = async () => {
       if (status !== "authenticated") return;
 
       try {
         const { api } = await import("@/lib/api");
-        const response = await api.get("/api/interviews?status=AWAITING_CANDIDATE");
-        setPendingInterviews(response.data.interviews || []);
+        // Fetch both AWAITING_CANDIDATE and AWAITING_CONFIRMATION interviews
+        const [awaitingCandidate, awaitingConfirmation] = await Promise.all([
+          api.get("/api/interviews?status=AWAITING_CANDIDATE"),
+          api.get("/api/interviews?status=AWAITING_CONFIRMATION"),
+        ]);
+
+        const allPending = [
+          ...(awaitingCandidate.data.interviews || []),
+          ...(awaitingConfirmation.data.interviews || []),
+        ];
+        setPendingInterviews(allPending);
       } catch (error) {
         console.error("Failed to load pending interviews:", error);
       }
@@ -286,53 +295,86 @@ export default function CandidateInterviewsPage() {
             </Card>
           </div>
 
-          {/* Pending Interview Requests - Awaiting Time Selection */}
+          {/* Pending Interview Requests - Awaiting Time Selection or Employer Confirmation */}
           {pendingInterviews.length > 0 && (
             <div className="mb-8">
               <div className="mb-4 flex items-center gap-2">
                 <AlertCircle className="h-6 w-6 text-warning-600" />
                 <h2 className="text-2xl font-bold text-secondary-900">
-                  Action Required: Select Interview Times
+                  Interview Requests In Progress
                 </h2>
                 <Badge variant="warning">{pendingInterviews.length}</Badge>
               </div>
               <div className="space-y-4">
-                {pendingInterviews.map((interview) => (
-                  <Card key={interview.id} className="border-2 border-warning-200 bg-warning-50">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="flex-1">
-                          <h3 className="mb-1 text-xl font-bold text-secondary-900">
-                            {interview.application?.job?.title || "Unknown Position"}
-                          </h3>
-                          <p className="mb-3 text-secondary-600">
-                            Employer has sent you available time slots for an interview
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            <Badge variant="warning">Awaiting Your Response</Badge>
-                            <Badge variant="secondary" size="sm">
-                              <Video className="mr-1 h-3 w-3" />
-                              {interview.type === "VIDEO" ? "Video Interview" : interview.type}
-                            </Badge>
-                            <Badge variant="secondary" size="sm">
-                              {interview.duration} minutes
-                            </Badge>
+                {pendingInterviews.map((interview) => {
+                  const isAwaitingCandidate = interview.status === "AWAITING_CANDIDATE";
+                  const isAwaitingConfirmation = interview.status === "AWAITING_CONFIRMATION";
+
+                  return (
+                    <Card
+                      key={interview.id}
+                      className={`border-2 ${
+                        isAwaitingCandidate
+                          ? "border-warning-200 bg-warning-50"
+                          : "border-blue-200 bg-blue-50"
+                      }`}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="flex-1">
+                            <h3 className="mb-1 text-xl font-bold text-secondary-900">
+                              {interview.application?.job?.title || "Unknown Position"}
+                            </h3>
+                            <p className="mb-3 text-secondary-600">
+                              {isAwaitingCandidate
+                                ? "Employer has sent you available time slots for an interview"
+                                : "You've selected your preferred times - waiting for employer to confirm"}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {isAwaitingCandidate ? (
+                                <Badge variant="warning">Action Required</Badge>
+                              ) : (
+                                <Badge variant="primary">Awaiting Employer Confirmation</Badge>
+                              )}
+                              <Badge variant="secondary" size="sm">
+                                <Video className="mr-1 h-3 w-3" />
+                                {interview.type === "VIDEO" ? "Video Interview" : interview.type}
+                              </Badge>
+                              <Badge variant="secondary" size="sm">
+                                {interview.duration} minutes
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            {isAwaitingCandidate ? (
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() =>
+                                  router.push(`/candidate/interviews/select/${interview.id}`)
+                                }
+                              >
+                                <Calendar className="mr-2 h-4 w-4" />
+                                Select Time Slots
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  router.push(`/candidate/interviews/select/${interview.id}`)
+                                }
+                              >
+                                <Calendar className="mr-2 h-4 w-4" />
+                                Change Selection
+                              </Button>
+                            )}
                           </div>
                         </div>
-                        <div className="flex flex-col gap-2">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => router.push(`/candidate/interviews/select/${interview.id}`)}
-                          >
-                            <Calendar className="mr-2 h-4 w-4" />
-                            Select Time Slots
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           )}
