@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Users,
@@ -118,6 +118,7 @@ const SKILLS_FILTER_OPTIONS = [
 
 export default function EmployerApplicantsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
 
@@ -127,6 +128,18 @@ export default function EmployerApplicantsPage() {
   const [selectedSkillsFilter, setSelectedSkillsFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("recent");
   const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
+
+  // Read URL parameters on mount
+  useEffect(() => {
+    const statusParam = searchParams.get("status");
+    if (statusParam) {
+      // Handle single status or first status from comma-separated list
+      const firstStatus = statusParam.split(",")[0];
+      if (firstStatus && firstStatus !== "all") {
+        setSelectedStatus(firstStatus);
+      }
+    }
+  }, [searchParams]);
 
   // Fetch applications using the new simple endpoint
   const { data, isLoading } = useQuery({

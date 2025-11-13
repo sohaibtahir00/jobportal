@@ -52,13 +52,14 @@ function formatRelativeTime(date: string | Date): string {
   return past.toLocaleDateString();
 }
 
-function formatCurrency(amount: number): string {
+function formatCurrency(amountInCents: number): string {
+  const dollars = amountInCents / 100;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(dollars);
 }
 
 const statusColors: Record<string, string> = {
@@ -193,11 +194,9 @@ export default function EmployerDashboardPage() {
     {
       icon: Users,
       label: "Candidates Interviewed",
-      value:
-        (applicationStats.interviewed || 0) +
-        (applicationStats.interviewScheduled || 0),
+      value: applicationStats.interviewed || 0,
       gradient: "from-green-500 to-emerald-600",
-      link: "/employer/applicants?status=INTERVIEWED,INTERVIEW_SCHEDULED",
+      link: "/employer/applicants?status=INTERVIEWED",
     },
     {
       icon: CheckCircle2,

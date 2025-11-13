@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api";
 import { format } from "date-fns";
 
@@ -52,6 +53,7 @@ interface Offer {
 }
 
 export default function CandidateOffersPage() {
+  const { showToast } = useToast();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -74,11 +76,14 @@ export default function CandidateOffersPage() {
       const response = await api.get("/api/offers");
       console.log("✅ [Offers] Received response:", response.data);
       setOffers(response.data.offers || []);
+      setError("");
     } catch (err: any) {
       console.error("❌ [Offers] Error fetching offers:", err);
       console.error("❌ [Offers] Error response:", err.response?.data);
       console.error("❌ [Offers] Error status:", err.response?.status);
-      setError(err.response?.data?.error || err.message || "Failed to load offers");
+      const errorMessage = err.response?.data?.error || err.message || "Failed to load offers";
+      setError(errorMessage);
+      showToast("error", "Error Loading Offers", errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -155,16 +160,19 @@ export default function CandidateOffersPage() {
   };
 
   const handleAcceptOffer = async (offerId: string) => {
-    if (!confirm("Are you sure you want to accept this offer?")) return;
-
     setIsProcessing(true);
     try {
       await api.post(`/api/offers/${offerId}/accept`);
       await fetchOffers();
       setError("");
-      alert("Congratulations! You've accepted the offer. A placement has been created.");
+      showToast(
+        "success",
+        "Offer Accepted!",
+        "Congratulations! You've accepted the offer. A placement has been created."
+      );
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to accept offer");
+      const errorMessage = err.response?.data?.error || "Failed to accept offer";
+      showToast("error", "Error", errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -183,8 +191,14 @@ export default function CandidateOffersPage() {
       setSelectedOffer(null);
       setDeclineReason("");
       setError("");
+      showToast(
+        "success",
+        "Offer Declined",
+        "You have successfully declined the offer."
+      );
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to decline offer");
+      const errorMessage = err.response?.data?.error || "Failed to decline offer";
+      showToast("error", "Error", errorMessage);
     } finally {
       setIsProcessing(false);
     }
