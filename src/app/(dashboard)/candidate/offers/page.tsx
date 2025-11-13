@@ -70,10 +70,15 @@ export default function CandidateOffersPage() {
   const fetchOffers = async () => {
     setIsLoading(true);
     try {
+      console.log("🎯 [Offers] Fetching offers from API...");
       const response = await api.get("/api/offers");
+      console.log("✅ [Offers] Received response:", response.data);
       setOffers(response.data.offers || []);
     } catch (err: any) {
-      setError(err.message || "Failed to load offers");
+      console.error("❌ [Offers] Error fetching offers:", err);
+      console.error("❌ [Offers] Error response:", err.response?.data);
+      console.error("❌ [Offers] Error status:", err.response?.status);
+      setError(err.response?.data?.error || err.message || "Failed to load offers");
     } finally {
       setIsLoading(false);
     }
