@@ -394,6 +394,19 @@ export default function EmployerInterviewsPage() {
                         </div>
 
                         <div className="flex flex-wrap gap-2 lg:flex-col">
+                          {interview.status === "AWAITING_CONFIRMATION" && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() =>
+                                router.push(`/employer/interviews/confirm/${interview.id}`)
+                              }
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              Review & Confirm
+                            </Button>
+                          )}
+
                           {interview.meetingLink && isUpcoming && (
                             <a
                               href={interview.meetingLink}
