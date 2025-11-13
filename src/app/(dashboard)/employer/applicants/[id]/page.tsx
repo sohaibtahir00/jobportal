@@ -422,7 +422,9 @@ export default function ApplicantDetailPage() {
                     <Video className="mr-2 h-5 w-5" />
                     Schedule Interview
                   </Button>
-                  {(applicantData.applicationStatus === "interviewed" || applicantData.applicationStatus === "shortlisted") && (
+                  {(applicantData.applicationStatus === "interviewed" ||
+                    applicantData.applicationStatus === "shortlisted" ||
+                    applicantData.applicationStatus === "interview_scheduled") && (
                     <Button
                       variant="primary"
                       className="w-full bg-green-600 hover:bg-green-700"
