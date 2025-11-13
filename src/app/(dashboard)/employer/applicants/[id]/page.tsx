@@ -213,9 +213,6 @@ export default function ApplicantDetailPage() {
     }
   };
 
-  // Check if candidate has any completed interviews
-  const hasCompletedInterview = interviews.some((interview) => interview.status === "COMPLETED");
-
   const handleMakeOffer = async () => {
     setIsCreatingOffer(true);
     try {
@@ -427,7 +424,8 @@ export default function ApplicantDetailPage() {
                     <Video className="mr-2 h-5 w-5" />
                     Schedule Interview
                   </Button>
-                  {(applicantData.applicationStatus === "shortlisted" || hasCompletedInterview) && (
+                  {(applicantData.applicationStatus === "shortlisted" ||
+                    interviews.some((interview) => interview.status === "COMPLETED")) && (
                     <Button
                       variant="primary"
                       className="w-full bg-green-600 hover:bg-green-700"
