@@ -205,11 +205,16 @@ export default function ApplicantDetailPage() {
     try {
       await api.patch(`/api/interviews/${interviewId}`, { status: "COMPLETED" });
       loadInterviews();
+      // Reload applicant data to show updated UI
+      window.location.reload();
     } catch (err) {
       console.error("Failed to mark interview as completed:", err);
       alert("Failed to update interview status");
     }
   };
+
+  // Check if candidate has any completed interviews
+  const hasCompletedInterview = interviews.some((interview) => interview.status === "COMPLETED");
 
   const handleMakeOffer = async () => {
     setIsCreatingOffer(true);
@@ -422,9 +427,7 @@ export default function ApplicantDetailPage() {
                     <Video className="mr-2 h-5 w-5" />
                     Schedule Interview
                   </Button>
-                  {(applicantData.applicationStatus === "interviewed" ||
-                    applicantData.applicationStatus === "shortlisted" ||
-                    applicantData.applicationStatus === "interview_scheduled") && (
+                  {(applicantData.applicationStatus === "shortlisted" || hasCompletedInterview) && (
                     <Button
                       variant="primary"
                       className="w-full bg-green-600 hover:bg-green-700"
