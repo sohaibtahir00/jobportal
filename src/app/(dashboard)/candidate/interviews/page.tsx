@@ -83,13 +83,38 @@ export default function CandidateInterviewsPage() {
     loadPendingInterviews();
   }, [status]);
 
-  // Load interviews
+  // Load interviews (both scheduled from backend and mock data)
   useEffect(() => {
     const loadInterviews = async () => {
-      try {
-        // Mock data
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (status !== "authenticated") return;
 
+      try {
+        // Load scheduled interviews from backend
+        const { api } = await import("@/lib/api");
+        const response = await api.get("/api/interviews?status=SCHEDULED");
+        const scheduledFromBackend = response.data.interviews || [];
+
+        // Transform backend interviews to match mock format
+        const transformedInterviews = scheduledFromBackend.map((interview: any) => {
+          const scheduledDate = new Date(interview.scheduledAt);
+          return {
+            id: interview.id,
+            jobTitle: interview.application?.job?.title || "Unknown Position",
+            companyName: "Company Name", // TODO: Add company name to backend
+            type: interview.type?.toLowerCase() || "video",
+            status: scheduledDate >= new Date() ? "upcoming" : "completed",
+            date: scheduledDate.toISOString().split("T")[0],
+            time: scheduledDate.toTimeString().slice(0, 5),
+            duration: `${interview.duration} minutes`,
+            meetingLink: interview.meetingLink,
+            interviewerName: "Hiring Manager", // TODO: Add interviewer info to backend
+            interviewerTitle: "Employer",
+            round: "Interview Round",
+            notes: interview.notes,
+          };
+        });
+
+        // Mock data
         const mockInterviews: Interview[] = [
           {
             id: "1",
@@ -163,16 +188,17 @@ export default function CandidateInterviewsPage() {
           },
         ];
 
-        setInterviews(mockInterviews);
+        // Combine backend interviews with mock data
+        const allInterviews = [...transformedInterviews, ...mockInterviews];
+        setInterviews(allInterviews);
         setIsLoading(false);
-      } catch (err) {
+      } catch (error) {
+        console.error("Failed to load interviews:", error);
         setIsLoading(false);
       }
     };
 
-    if (status === "authenticated") {
-      loadInterviews();
-    }
+    loadInterviews();
   }, [status]);
 
   const filteredInterviews = interviews.filter((interview) => {
