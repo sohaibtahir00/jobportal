@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Loader2,
   FileText,
+  X,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 import { api } from "@/lib/api";
