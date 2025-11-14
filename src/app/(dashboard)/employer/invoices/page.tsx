@@ -26,6 +26,7 @@ interface Placement {
   salary?: number;
   status: string;
   paymentStatus: string;
+  feePercentage: number;
   placementFee?: number;
   upfrontAmount?: number;
   remainingAmount?: number;

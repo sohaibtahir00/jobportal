@@ -22,6 +22,7 @@ interface Placement {
     niche: string;
   };
   status: string;
+  feePercentage: number;
   placementFee: number;
   startDate: string;
   probationEndDate: string;
