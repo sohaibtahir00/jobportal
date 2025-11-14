@@ -279,7 +279,7 @@ export default function EmployerPlacementsPage() {
                         <td className="py-4 px-4">
                           <div>
                             <p className="font-semibold text-secondary-900">
-                              ${placement.placementFee.toLocaleString()}
+                              ${(placement.placementFee / 100).toLocaleString()}
                             </p>
                             <p className="text-xs text-secondary-600">
                               {placement.feePercentage}% fee

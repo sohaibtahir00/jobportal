@@ -345,7 +345,7 @@ export default function PlacementDetailPage() {
                       Placement Fee
                     </p>
                     <p className="text-3xl font-bold text-secondary-900">
-                      ${placement.placementFee.toLocaleString()}
+                      ${(placement.placementFee / 100).toLocaleString()}
                     </p>
                   </div>
 
