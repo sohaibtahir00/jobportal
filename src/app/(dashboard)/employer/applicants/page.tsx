@@ -97,6 +97,7 @@ const STATUS_OPTIONS = [
   { value: "REVIEWED", label: "Under Review" },
   { value: "SHORTLISTED", label: "Shortlisted" },
   { value: "INTERVIEW_SCHEDULED", label: "Interview Scheduled" },
+  { value: "INTERVIEWED", label: "Interviewed" },
   { value: "OFFERED", label: "Offer Extended" },
   { value: "ACCEPTED", label: "Hired" },
   { value: "REJECTED", label: "Rejected" },
@@ -212,6 +213,7 @@ export default function EmployerApplicantsPage() {
       case "REVIEWED": return "primary";
       case "SHORTLISTED": return "success";
       case "INTERVIEW_SCHEDULED": return "primary";
+      case "INTERVIEWED": return "primary";
       case "OFFERED": return "success";
       case "ACCEPTED": return "success";
       case "REJECTED": return "danger";
