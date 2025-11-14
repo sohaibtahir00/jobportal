@@ -276,9 +276,14 @@ export default function EmployerPlacementsPage() {
                           {getStatusBadge(placement.status)}
                         </td>
                         <td className="py-4 px-4">
-                          <p className="font-semibold text-secondary-900">
-                            ${placement.placementFee.toLocaleString()}
-                          </p>
+                          <div>
+                            <p className="font-semibold text-secondary-900">
+                              ${placement.placementFee.toLocaleString()}
+                            </p>
+                            <p className="text-xs text-secondary-600">
+                              {placement.feePercentage}% fee
+                            </p>
+                          </div>
                         </td>
                         <td className="py-4 px-4">
                           <Link href={`/employer/placements/${placement.id}`}>

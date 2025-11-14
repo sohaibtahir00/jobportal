@@ -359,7 +359,7 @@ export default function PlacementDetailPage() {
                     <div className="flex justify-between">
                       <span className="text-secondary-600">Fee %:</span>
                       <span className="font-medium text-secondary-900">
-                        15-20%
+                        {placement.feePercentage}%
                       </span>
                     </div>
                   </div>

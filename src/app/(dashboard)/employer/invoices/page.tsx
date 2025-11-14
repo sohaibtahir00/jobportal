@@ -344,9 +344,14 @@ export default function EmployerInvoicesPage() {
                           </p>
                         </td>
                         <td className="px-4 py-4">
-                          <p className="font-semibold text-secondary-900">
-                            {formatAmount(placement.placementFee)}
-                          </p>
+                          <div>
+                            <p className="font-semibold text-secondary-900">
+                              {formatAmount(placement.placementFee)}
+                            </p>
+                            <p className="text-xs text-secondary-600">
+                              ({placement.feePercentage}% of salary)
+                            </p>
+                          </div>
                         </td>
                         <td className="px-4 py-4">
                           <div>
