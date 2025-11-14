@@ -283,23 +283,25 @@ export interface Placement {
   jobId: string;
   candidateId: string;
   employerId: string;
-  applicationId: string;
+  applicationId?: string;
+  jobTitle: string;
+  companyName: string;
   status: PlacementStatus;
   startDate: string;             // ISO 8601 DateTime
   endDate: string | null;        // ISO 8601 DateTime
   salary: number;                // In cents
-  feePercentage: number;         // Decimal (e.g., 0.15 for 15%)
-  totalFee: number;              // In cents
-  upfrontFee: number;            // In cents
-  remainingFee: number;          // In cents
+  feePercentage: number;         // Percentage as number (e.g., 15, 18, 20)
+  placementFee: number;          // In cents (replaces totalFee)
+  upfrontAmount: number;         // In cents (replaces upfrontFee)
+  remainingAmount: number;       // In cents (replaces remainingFee)
   paymentStatus: PaymentStatus;
   upfrontPaidAt: string | null;  // ISO 8601 DateTime
   remainingPaidAt: string | null; // ISO 8601 DateTime
-  guaranteePeriod: number;       // Days
-  guaranteeExpiry: string;       // ISO 8601 DateTime
-  isActive: boolean;
-  terminationDate: string | null; // ISO 8601 DateTime
-  terminationReason: string | null;
+  guaranteePeriodDays: number;   // Days (replaces guaranteePeriod)
+  guaranteeEndDate: string | null; // ISO 8601 DateTime (replaces guaranteeExpiry)
+  isActive?: boolean;
+  terminationDate?: string | null; // ISO 8601 DateTime
+  terminationReason?: string | null;
   createdAt: string;             // ISO 8601 DateTime
   updatedAt: string;             // ISO 8601 DateTime
 
