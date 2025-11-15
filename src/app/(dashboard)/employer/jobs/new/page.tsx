@@ -179,7 +179,8 @@ export default function NewJobPage() {
     const checkProfile = async () => {
       try {
         const response = await api.get('/api/employers/profile');
-        if (!response.data.companyName) {
+        // Backend returns { employer, applicationStats }, so check employer.companyName
+        if (!response.data.employer?.companyName) {
           router.push('/employer/settings?required=true');
           return;
         }
