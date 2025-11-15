@@ -122,27 +122,82 @@ const QUESTION_TYPES = [
   { value: "yes_no", label: "Yes/No" },
 ];
 
-// Autofill suggestions
-const JOB_TITLE_SUGGESTIONS = [
-  "Senior Machine Learning Engineer",
-  "ML Engineer",
-  "Data Scientist",
-  "AI Research Scientist",
-  "Computer Vision Engineer",
-  "NLP Engineer",
-  "Deep Learning Engineer",
-  "MLOps Engineer",
-  "AI Product Manager",
-  "Research Engineer",
-  "Senior Software Engineer",
-  "Full Stack Developer",
-  "Backend Engineer",
-  "Frontend Developer",
-  "DevOps Engineer",
-  "Security Engineer",
-  "Cloud Architect",
-  "Data Engineer",
-];
+// Niche-specific job title suggestions
+const JOB_TITLE_SUGGESTIONS_BY_NICHE: Record<string, string[]> = {
+  "AI_ML": [
+    "Senior Machine Learning Engineer",
+    "Machine Learning Engineer",
+    "ML Engineer",
+    "Data Scientist",
+    "AI Research Scientist",
+    "Computer Vision Engineer",
+    "NLP Engineer",
+    "Deep Learning Engineer",
+    "MLOps Engineer",
+    "AI Product Manager",
+    "Applied Scientist",
+    "Research Engineer - AI/ML",
+    "ML Infrastructure Engineer",
+    "AI Solutions Architect",
+  ],
+  "FINTECH": [
+    "Quantitative Developer",
+    "Financial Software Engineer",
+    "Blockchain Developer",
+    "Payment Systems Engineer",
+    "Risk Analytics Engineer",
+    "Trading Platform Developer",
+    "Cryptocurrency Engineer",
+    "Financial Data Engineer",
+    "Fintech Product Manager",
+    "Compliance Engineer",
+    "Algorithmic Trading Developer",
+    "Digital Banking Engineer",
+  ],
+  "CYBERSECURITY": [
+    "Security Engineer",
+    "Cybersecurity Analyst",
+    "Penetration Tester",
+    "Security Architect",
+    "Security Operations Engineer",
+    "Incident Response Analyst",
+    "Cloud Security Engineer",
+    "Application Security Engineer",
+    "Threat Intelligence Analyst",
+    "Security Compliance Engineer",
+    "Malware Analyst",
+    "SIEM Engineer",
+  ],
+  "HEALTHCARE_IT": [
+    "Healthcare Software Engineer",
+    "Medical Device Software Developer",
+    "Health Informatics Engineer",
+    "HIPAA Compliance Engineer",
+    "Clinical Data Engineer",
+    "Telemedicine Platform Developer",
+    "Healthcare Systems Analyst",
+    "Medical Imaging Engineer",
+    "EHR Integration Engineer",
+    "Healthcare Data Scientist",
+    "Digital Health Product Manager",
+  ],
+  "GENERAL_TECH": [
+    "Software Engineer",
+    "Senior Software Engineer",
+    "Full Stack Developer",
+    "Backend Engineer",
+    "Frontend Developer",
+    "DevOps Engineer",
+    "Cloud Architect",
+    "Data Engineer",
+    "Site Reliability Engineer",
+    "Platform Engineer",
+    "Mobile Developer",
+    "Systems Engineer",
+    "Solutions Architect",
+    "Technical Lead",
+  ],
+};
 
 const LOCATION_SUGGESTIONS = [
   "San Francisco, CA",
@@ -739,26 +794,6 @@ export default function NewJobPage() {
             <CardContent className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Job Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  list="job-titles"
-                  value={formData.title}
-                  onChange={(e) => updateFormData({ title: e.target.value })}
-                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="e.g., Senior Machine Learning Engineer"
-                />
-                <datalist id="job-titles">
-                  {JOB_TITLE_SUGGESTIONS.map((title) => (
-                    <option key={title} value={title} />
-                  ))}
-                </datalist>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-secondary-900 mb-2">
                   Niche Category *
                 </label>
                 <select
@@ -776,6 +811,31 @@ export default function NewJobPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary-900 mb-2">
+                  Job Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  list="job-titles"
+                  value={formData.title}
+                  onChange={(e) => updateFormData({ title: e.target.value })}
+                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder={
+                    formData.nicheCategory
+                      ? "Start typing to see suggestions..."
+                      : "Select a niche first to see suggestions"
+                  }
+                />
+                <datalist id="job-titles">
+                  {formData.nicheCategory &&
+                    JOB_TITLE_SUGGESTIONS_BY_NICHE[formData.nicheCategory]?.map((title) => (
+                      <option key={title} value={title} />
+                    ))}
+                </datalist>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
