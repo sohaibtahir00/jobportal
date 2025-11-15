@@ -180,13 +180,13 @@ export default function NewJobPage() {
       try {
         const response = await api.get('/api/employers/profile');
         if (!response.data.companyName) {
-          router.push('/employer/profile?required=true');
+          router.push('/employer/settings?required=true');
           return;
         }
         setProfileCheckDone(true);
       } catch (error) {
         console.error('Failed to fetch employer profile:', error);
-        router.push('/employer/profile?required=true');
+        router.push('/employer/settings?required=true');
       }
     };
     checkProfile();
