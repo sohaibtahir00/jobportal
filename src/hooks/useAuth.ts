@@ -40,15 +40,17 @@ export function useAuth() {
     }
 
     // Redirect based on role after successful login
+    // Use window.location.href instead of router.push to trigger full page reload
+    // This allows Chrome to detect successful login and prompt to save password
     const response = await fetch("/api/auth/session");
     const sessionData = await response.json();
 
     if (sessionData?.user?.role) {
       const role = sessionData.user.role.toLowerCase();
       if (role === "employer") {
-        router.push("/employer/dashboard");
+        window.location.href = "/employer/dashboard";
       } else {
-        router.push("/candidate/dashboard");
+        window.location.href = "/candidate/dashboard";
       }
     }
   };
