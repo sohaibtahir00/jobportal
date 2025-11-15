@@ -42,8 +42,8 @@ interface JobFormData {
   techStack: string[];
 
   // Step 3: Compensation & Benefits
-  salaryMin: string;
-  salaryMax: string;
+  salaryMin: number;
+  salaryMax: number;
   isCompetitive: boolean;
   equityOffered: boolean;
   specificBenefits: string[];
@@ -56,11 +56,17 @@ interface JobFormData {
     question: string;
     type: string;
     weight: number;
+    options?: string[]; // For multiple choice
+    correctAnswer?: string | number; // Correct answer for validation
   }>;
 
-  // Step 5: Interview Process
-  interviewRounds: string;
-  interviewProcess: string;
+  // Step 5: Interview Process - DETAILED
+  interviewRoundsDetailed: Array<{
+    roundNumber: number;
+    roundName: string;
+    roundDescription: string;
+    duration: string;
+  }>;
   hiringTimeline: string;
   startDateNeeded: string;
 
@@ -116,6 +122,44 @@ const QUESTION_TYPES = [
   { value: "yes_no", label: "Yes/No" },
 ];
 
+// Autofill suggestions
+const JOB_TITLE_SUGGESTIONS = [
+  "Senior Machine Learning Engineer",
+  "ML Engineer",
+  "Data Scientist",
+  "AI Research Scientist",
+  "Computer Vision Engineer",
+  "NLP Engineer",
+  "Deep Learning Engineer",
+  "MLOps Engineer",
+  "AI Product Manager",
+  "Research Engineer",
+  "Senior Software Engineer",
+  "Full Stack Developer",
+  "Backend Engineer",
+  "Frontend Developer",
+  "DevOps Engineer",
+  "Security Engineer",
+  "Cloud Architect",
+  "Data Engineer",
+];
+
+const LOCATION_SUGGESTIONS = [
+  "San Francisco, CA",
+  "New York, NY",
+  "Austin, TX",
+  "Seattle, WA",
+  "Boston, MA",
+  "Los Angeles, CA",
+  "Chicago, IL",
+  "Denver, CO",
+  "Remote (US)",
+  "Remote (Global)",
+  "Palo Alto, CA",
+  "Mountain View, CA",
+  "Sunnyvale, CA",
+];
+
 export default function NewJobPage() {
   const router = useRouter();
   const createJob = useCreateJob();
@@ -143,8 +187,8 @@ export default function NewJobPage() {
       skills: [],
       niceToHaveSkills: [],
       techStack: [],
-      salaryMin: "",
-      salaryMax: "",
+      salaryMin: 0,
+      salaryMax: 0,
       isCompetitive: false,
       equityOffered: false,
       specificBenefits: [],
@@ -152,8 +196,7 @@ export default function NewJobPage() {
       minSkillsScore: 0,
       requiredTier: "ANY",
       customAssessmentQuestions: [],
-      interviewRounds: "",
-      interviewProcess: "",
+      interviewRoundsDetailed: [],
       hiringTimeline: "",
       startDateNeeded: "",
       deadline: "",
@@ -222,7 +265,13 @@ export default function NewJobPage() {
   // Helper: Update custom question
   const updateCustomQuestion = (
     index: number,
-    updates: Partial<{ question: string; type: string; weight: number }>
+    updates: Partial<{
+      question: string;
+      type: string;
+      weight: number;
+      options: string[];
+      correctAnswer: string | number;
+    }>
   ) => {
     const updated = [...formData.customAssessmentQuestions];
     updated[index] = { ...updated[index], ...updates };
@@ -249,6 +298,75 @@ export default function NewJobPage() {
     updateFormData({ screeningQuestions: updated });
   };
 
+  // Helper: Import job from JSON
+  const handleImportJob = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target?.result as string);
+        // Merge with existing data, preserving structure
+        updateFormData({
+          ...formData,
+          ...imported,
+        });
+        alert("Job data imported successfully!");
+      } catch (error) {
+        alert("Failed to import job. Please ensure the file is valid JSON.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Helper: Export current job as JSON
+  const handleExportJob = () => {
+    const dataStr = JSON.stringify(formData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `job-${formData.title || "draft"}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Helper: Add interview round
+  const addInterviewRound = () => {
+    const newRound = {
+      roundNumber: formData.interviewRoundsDetailed.length + 1,
+      roundName: "",
+      roundDescription: "",
+      duration: "",
+    };
+    updateFormData({
+      interviewRoundsDetailed: [...formData.interviewRoundsDetailed, newRound],
+    });
+  };
+
+  // Helper: Update interview round
+  const updateInterviewRound = (
+    index: number,
+    updates: Partial<{
+      roundName: string;
+      roundDescription: string;
+      duration: string;
+    }>
+  ) => {
+    const updated = [...formData.interviewRoundsDetailed];
+    updated[index] = { ...updated[index], ...updates };
+    updateFormData({ interviewRoundsDetailed: updated });
+  };
+
+  // Helper: Remove interview round
+  const removeInterviewRound = (index: number) => {
+    const updated = formData.interviewRoundsDetailed
+      .filter((_, i) => i !== index)
+      .map((round, idx) => ({ ...round, roundNumber: idx + 1 }));
+    updateFormData({ interviewRoundsDetailed: updated });
+  };
+
   // Step validation
   const validateStep = (step: number): boolean => {
     switch (step) {
@@ -271,8 +389,14 @@ export default function NewJobPage() {
           return !!(formData.minSkillsScore >= 0 && formData.requiredTier);
         }
         return true;
-      case 4: // Interview Process
-        return true; // Optional fields
+      case 4: // Interview Process - NOW REQUIRED
+        return !!(
+          formData.interviewRoundsDetailed.length > 0 &&
+          formData.interviewRoundsDetailed.every(
+            (round) => round.roundName && round.roundDescription
+          ) &&
+          formData.hiringTimeline
+        );
       case 5: // Application Settings
         return true; // Optional fields
       default:
@@ -313,7 +437,11 @@ export default function NewJobPage() {
       (formData.minSkillsScore >= 0 && formData.requiredTier)
     )
       completed++;
-    if (formData.interviewProcess || formData.hiringTimeline) completed++;
+    if (
+      formData.interviewRoundsDetailed.length > 0 &&
+      formData.hiringTimeline
+    )
+      completed++;
     completed++; // Application settings are optional
 
     return Math.round((completed / total) * 100);
@@ -351,8 +479,8 @@ export default function NewJobPage() {
       techStack: formData.techStack,
 
       // Compensation
-      salaryMin: formData.salaryMin ? parseInt(formData.salaryMin) : null,
-      salaryMax: formData.salaryMax ? parseInt(formData.salaryMax) : null,
+      salaryMin: formData.salaryMin || null,
+      salaryMax: formData.salaryMax || null,
       equityOffered: formData.equityOffered,
       specificBenefits: formData.specificBenefits,
 
@@ -368,11 +496,21 @@ export default function NewJobPage() {
           ? formData.customAssessmentQuestions
           : null,
 
-      // Interview Process
-      interviewRounds: formData.interviewRounds
-        ? parseInt(formData.interviewRounds)
+      // Interview Process - transformed to backend format
+      interviewRounds: formData.interviewRoundsDetailed.length || null,
+      interviewProcess: formData.interviewRoundsDetailed.length > 0
+        ? formData.interviewRoundsDetailed
+            .map(
+              (r, i) =>
+                `Round ${r.roundNumber}: ${r.roundName}\n${r.roundDescription}${
+                  r.duration ? ` (${r.duration})` : ""
+                }`
+            )
+            .join("\n\n")
         : null,
-      interviewProcess: formData.interviewProcess || null,
+      interviewRoundsDetailed: formData.interviewRoundsDetailed.length > 0
+        ? formData.interviewRoundsDetailed
+        : null,
       hiringTimeline: formData.hiringTimeline || null,
       startDateNeeded: formData.startDateNeeded
         ? new Date(formData.startDateNeeded).toISOString()
@@ -494,12 +632,38 @@ export default function NewJobPage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-bold text-secondary-900">
-          Post a New Job
-        </h1>
-        <p className="text-secondary-600 mt-2">
-          Complete all 6 steps to create your comprehensive job posting
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-secondary-900">
+              Post a New Job
+            </h1>
+            <p className="text-secondary-600 mt-2">
+              Complete all 6 steps to create your comprehensive job posting
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleExportJob}
+              title="Export job data as JSON"
+            >
+              Export JSON
+            </Button>
+            <label className="cursor-pointer inline-block">
+              <span className="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-secondary-700 bg-white border border-secondary-300 rounded-lg hover:bg-secondary-50 transition-colors">
+                Import JSON
+              </span>
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImportJob}
+                className="hidden"
+              />
+            </label>
+          </div>
+        </div>
       </div>
 
       {/* Progress Bar */}
@@ -554,11 +718,17 @@ export default function NewJobPage() {
                 <input
                   type="text"
                   required
+                  list="job-titles"
                   value={formData.title}
                   onChange={(e) => updateFormData({ title: e.target.value })}
                   className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="e.g., Senior Machine Learning Engineer"
                 />
+                <datalist id="job-titles">
+                  {JOB_TITLE_SUGGESTIONS.map((title) => (
+                    <option key={title} value={title} />
+                  ))}
+                </datalist>
               </div>
 
               <div>
@@ -633,11 +803,17 @@ export default function NewJobPage() {
                 <input
                   type="text"
                   required
+                  list="locations"
                   value={formData.location}
                   onChange={(e) => updateFormData({ location: e.target.value })}
                   className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="e.g., San Francisco, CA"
                 />
+                <datalist id="locations">
+                  {LOCATION_SUGGESTIONS.map((loc) => (
+                    <option key={loc} value={loc} />
+                  ))}
+                </datalist>
               </div>
 
               <div>
@@ -922,30 +1098,152 @@ export default function NewJobPage() {
                   <label className="block text-sm font-medium text-secondary-900 mb-2">
                     Min Salary (Annual)
                   </label>
-                  <input
-                    type="number"
-                    value={formData.salaryMin}
-                    onChange={(e) =>
-                      updateFormData({ salaryMin: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="e.g., 100000"
-                  />
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 flex items-center border border-secondary-300 rounded-lg overflow-hidden">
+                      <span className="px-3 py-2 bg-secondary-50 text-secondary-600">
+                        $
+                      </span>
+                      <input
+                        type="text"
+                        value={formData.salaryMin.toLocaleString()}
+                        readOnly
+                        className="flex-1 px-4 py-2 focus:outline-none text-right"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          updateFormData({
+                            salaryMin: formData.salaryMin + 5000,
+                          })
+                        }
+                        className="px-2 py-1 text-xs"
+                      >
+                        +5K
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          updateFormData({
+                            salaryMin: formData.salaryMin + 1000,
+                          })
+                        }
+                        className="px-2 py-1 text-xs"
+                      >
+                        +1K
+                      </Button>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          updateFormData({
+                            salaryMin: Math.max(0, formData.salaryMin - 5000),
+                          })
+                        }
+                        className="px-2 py-1 text-xs"
+                      >
+                        -5K
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          updateFormData({
+                            salaryMin: Math.max(0, formData.salaryMin - 1000),
+                          })
+                        }
+                        className="px-2 py-1 text-xs"
+                      >
+                        -1K
+                      </Button>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-secondary-900 mb-2">
                     Max Salary (Annual)
                   </label>
-                  <input
-                    type="number"
-                    value={formData.salaryMax}
-                    onChange={(e) =>
-                      updateFormData({ salaryMax: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="e.g., 150000"
-                  />
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 flex items-center border border-secondary-300 rounded-lg overflow-hidden">
+                      <span className="px-3 py-2 bg-secondary-50 text-secondary-600">
+                        $
+                      </span>
+                      <input
+                        type="text"
+                        value={formData.salaryMax.toLocaleString()}
+                        readOnly
+                        className="flex-1 px-4 py-2 focus:outline-none text-right"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          updateFormData({
+                            salaryMax: formData.salaryMax + 5000,
+                          })
+                        }
+                        className="px-2 py-1 text-xs"
+                      >
+                        +5K
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          updateFormData({
+                            salaryMax: formData.salaryMax + 1000,
+                          })
+                        }
+                        className="px-2 py-1 text-xs"
+                      >
+                        +1K
+                      </Button>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          updateFormData({
+                            salaryMax: Math.max(0, formData.salaryMax - 5000),
+                          })
+                        }
+                        className="px-2 py-1 text-xs"
+                      >
+                        -5K
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          updateFormData({
+                            salaryMax: Math.max(0, formData.salaryMax - 1000),
+                          })
+                        }
+                        className="px-2 py-1 text-xs"
+                      >
+                        -1K
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1198,6 +1496,73 @@ export default function NewJobPage() {
                               />
                             </div>
                           </div>
+
+                          {/* Multiple Choice Options */}
+                          {q.type === "multiple_choice" && (
+                            <div className="mt-3 pt-3 border-t border-secondary-200">
+                              <label className="block text-xs text-secondary-600 mb-2">
+                                Answer Options (one per line)
+                              </label>
+                              <textarea
+                                placeholder="Option A&#10;Option B&#10;Option C&#10;Option D"
+                                value={(q.options || []).join("\n")}
+                                onChange={(e) =>
+                                  updateCustomQuestion(index, {
+                                    options: e.target.value
+                                      .split("\n")
+                                      .filter((o) => o.trim()),
+                                  })
+                                }
+                                rows={4}
+                                className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              />
+                              {q.options && q.options.length > 0 && (
+                                <div className="mt-2">
+                                  <label className="block text-xs text-secondary-600 mb-1">
+                                    Correct Answer
+                                  </label>
+                                  <select
+                                    value={q.correctAnswer || ""}
+                                    onChange={(e) =>
+                                      updateCustomQuestion(index, {
+                                        correctAnswer: e.target.value,
+                                      })
+                                    }
+                                    className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                  >
+                                    <option value="">Select correct answer...</option>
+                                    {q.options.map((opt, optIdx) => (
+                                      <option key={optIdx} value={opt}>
+                                        {opt}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Yes/No - Store correct answer */}
+                          {q.type === "yes_no" && (
+                            <div className="mt-3 pt-3 border-t border-secondary-200">
+                              <label className="block text-xs text-secondary-600 mb-2">
+                                Correct Answer
+                              </label>
+                              <select
+                                value={q.correctAnswer || ""}
+                                onChange={(e) =>
+                                  updateCustomQuestion(index, {
+                                    correctAnswer: e.target.value,
+                                  })
+                                }
+                                className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              >
+                                <option value="">Select correct answer...</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                              </select>
+                            </div>
+                          )}
                         </div>
                       ))}
 
@@ -1220,57 +1585,120 @@ export default function NewJobPage() {
           </Card>
         )}
 
-        {/* STEP 5: Interview Process */}
+        {/* STEP 5: Interview Process - DETAILED */}
         {currentStep === 4 && (
           <Card>
             <CardHeader>
-              <CardTitle>Step 5: Interview Process</CardTitle>
+              <CardTitle>Step 5: Interview Process *</CardTitle>
+              <p className="text-sm text-secondary-600 mt-1">
+                Define each interview round in detail
+              </p>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Number of Interview Rounds
+                <label className="block text-sm font-medium text-secondary-900 mb-3">
+                  Interview Rounds * (Add at least one)
                 </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formData.interviewRounds}
-                  onChange={(e) =>
-                    updateFormData({ interviewRounds: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="e.g., 3"
-                />
+                <div className="space-y-4">
+                  {formData.interviewRoundsDetailed.map((round, index) => (
+                    <div
+                      key={index}
+                      className="border border-secondary-300 rounded-lg p-4 space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-secondary-700">
+                          Round {round.roundNumber}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeInterviewRound(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-secondary-600 mb-1">
+                          Round Name/Type *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g., Technical Phone Screen, System Design, Behavioral"
+                          value={round.roundName}
+                          onChange={(e) =>
+                            updateInterviewRound(index, {
+                              roundName: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-secondary-600 mb-1">
+                          Description *
+                        </label>
+                        <textarea
+                          required
+                          placeholder="Describe what this round covers, who conducts it, and what to expect..."
+                          value={round.roundDescription}
+                          onChange={(e) =>
+                            updateInterviewRound(index, {
+                              roundDescription: e.target.value,
+                            })
+                          }
+                          rows={3}
+                          className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-secondary-600 mb-1">
+                          Duration (optional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g., 45 minutes, 1 hour"
+                          value={round.duration}
+                          onChange={(e) =>
+                            updateInterviewRound(index, {
+                              duration: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addInterviewRound}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Interview Round
+                  </Button>
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Interview Process Description
-                </label>
-                <textarea
-                  value={formData.interviewProcess}
-                  onChange={(e) =>
-                    updateFormData({ interviewProcess: e.target.value })
-                  }
-                  rows={4}
-                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="Describe your interview process (e.g., phone screen, technical assessment, team interview, final interview with leadership)"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Hiring Timeline
+                  Overall Hiring Timeline *
                 </label>
                 <input
                   type="text"
+                  required
                   value={formData.hiringTimeline}
                   onChange={(e) =>
                     updateFormData({ hiringTimeline: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="e.g., 2-4 weeks"
+                  placeholder="e.g., 2-4 weeks from application to offer"
                 />
               </div>
 
@@ -1296,8 +1724,24 @@ export default function NewJobPage() {
           <Card>
             <CardHeader>
               <CardTitle>Step 6: Application Settings</CardTitle>
+              <p className="text-sm text-secondary-600 mt-1">
+                Configure application deadline and screening questions (optional)
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-semibold text-blue-900 mb-1">
+                      Final Step - Review Before Posting
+                    </h4>
+                    <p className="text-sm text-blue-700">
+                      These settings are optional. Click "Create Job" at the bottom when you're ready to post.
+                    </p>
+                  </div>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-secondary-900 mb-2">
