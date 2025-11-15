@@ -3,7 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateJob } from "@/hooks/useJobs";
-import { Loader2, CheckCircle2, XCircle, ArrowLeft, Plus, Trash2, Info } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Info,
+} from "lucide-react";
 import {
   Button,
   Card,
@@ -11,10 +19,10 @@ import {
   CardHeader,
   CardTitle,
   Stepper,
-  Progress
+  Progress,
 } from "@/components/ui";
 import Link from "next/link";
-import api from "@/lib/api";
+import { api } from "@/lib/api";
 
 // Form data interface matching all backend fields
 interface JobFormData {
@@ -290,10 +298,21 @@ export default function NewJobPage() {
     let completed = 0;
     let total = 6;
 
-    if (formData.title && formData.nicheCategory && formData.location) completed++;
-    if (formData.description && formData.keyResponsibilities.length > 0) completed++;
-    if (formData.salaryMin || formData.salaryMax || formData.specificBenefits.length > 0) completed++;
-    if (!formData.requiresAssessment || (formData.minSkillsScore >= 0 && formData.requiredTier)) completed++;
+    if (formData.title && formData.nicheCategory && formData.location)
+      completed++;
+    if (formData.description && formData.keyResponsibilities.length > 0)
+      completed++;
+    if (
+      formData.salaryMin ||
+      formData.salaryMax ||
+      formData.specificBenefits.length > 0
+    )
+      completed++;
+    if (
+      !formData.requiresAssessment ||
+      (formData.minSkillsScore >= 0 && formData.requiredTier)
+    )
+      completed++;
     if (formData.interviewProcess || formData.hiringTimeline) completed++;
     completed++; // Application settings are optional
 
@@ -304,10 +323,10 @@ export default function NewJobPage() {
   const transformToBackendPayload = () => {
     // Map frontend experience levels to backend enum values
     const experienceLevelMap: Record<string, string> = {
-      "ENTRY": "ENTRY_LEVEL",
-      "MID": "MID_LEVEL",
-      "SENIOR": "SENIOR_LEVEL",
-      "LEAD": "EXECUTIVE"
+      ENTRY: "ENTRY_LEVEL",
+      MID: "MID_LEVEL",
+      SENIOR: "SENIOR_LEVEL",
+      LEAD: "EXECUTIVE",
     };
 
     return {
@@ -317,7 +336,9 @@ export default function NewJobPage() {
       type: formData.employmentType,
       location: formData.location,
       remote: formData.remoteType === "REMOTE",
-      experienceLevel: experienceLevelMap[formData.experienceLevel] || formData.experienceLevel,
+      experienceLevel:
+        experienceLevelMap[formData.experienceLevel] ||
+        formData.experienceLevel,
 
       // New comprehensive fields
       nicheCategory: formData.nicheCategory,
@@ -337,22 +358,37 @@ export default function NewJobPage() {
 
       // Skills Assessment (CRITICAL)
       requiresAssessment: formData.requiresAssessment,
-      minSkillsScore: formData.requiresAssessment ? formData.minSkillsScore : null,
-      requiredTier: formData.requiresAssessment ? formData.requiredTier : null,
-      customAssessmentQuestions: formData.requiresAssessment && formData.customAssessmentQuestions.length > 0
-        ? formData.customAssessmentQuestions
+      minSkillsScore: formData.requiresAssessment
+        ? formData.minSkillsScore
         : null,
+      requiredTier: formData.requiresAssessment ? formData.requiredTier : null,
+      customAssessmentQuestions:
+        formData.requiresAssessment &&
+        formData.customAssessmentQuestions.length > 0
+          ? formData.customAssessmentQuestions
+          : null,
 
       // Interview Process
-      interviewRounds: formData.interviewRounds ? parseInt(formData.interviewRounds) : null,
+      interviewRounds: formData.interviewRounds
+        ? parseInt(formData.interviewRounds)
+        : null,
       interviewProcess: formData.interviewProcess || null,
       hiringTimeline: formData.hiringTimeline || null,
-      startDateNeeded: formData.startDateNeeded ? new Date(formData.startDateNeeded).toISOString() : null,
+      startDateNeeded: formData.startDateNeeded
+        ? new Date(formData.startDateNeeded).toISOString()
+        : null,
 
       // Application Settings
-      deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
-      maxApplicants: formData.maxApplicants ? parseInt(formData.maxApplicants) : null,
-      screeningQuestions: formData.screeningQuestions.length > 0 ? formData.screeningQuestions : null,
+      deadline: formData.deadline
+        ? new Date(formData.deadline).toISOString()
+        : null,
+      maxApplicants: formData.maxApplicants
+        ? parseInt(formData.maxApplicants)
+        : null,
+      screeningQuestions:
+        formData.screeningQuestions.length > 0
+          ? formData.screeningQuestions
+          : null,
 
       // Dummy fields required by backend
       requirements: formData.skills.join(", "),
@@ -425,7 +461,8 @@ export default function NewJobPage() {
               Job Posted Successfully!
             </h2>
             <p className="text-secondary-600 text-center mb-6">
-              Your job is now live and accepting applications. Candidates can start applying immediately.
+              Your job is now live and accepting applications. Candidates can
+              start applying immediately.
             </p>
             <Button variant="primary" asChild>
               <Link href="/employer/dashboard">Go to Dashboard</Link>
@@ -457,7 +494,9 @@ export default function NewJobPage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-bold text-secondary-900">Post a New Job</h1>
+        <h1 className="text-3xl font-bold text-secondary-900">
+          Post a New Job
+        </h1>
         <p className="text-secondary-600 mt-2">
           Complete all 6 steps to create your comprehensive job posting
         </p>
@@ -772,7 +811,9 @@ export default function NewJobPage() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => removeArrayItem("niceToHaveSkills", index)}
+                        onClick={() =>
+                          removeArrayItem("niceToHaveSkills", index)
+                        }
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -1008,8 +1049,9 @@ export default function NewJobPage() {
                       About Skills Assessment
                     </h4>
                     <p className="text-sm text-blue-700">
-                      Require candidates to complete a skills assessment before applying.
-                      You can set minimum score requirements and tier levels to filter qualified applicants.
+                      Require candidates to complete a skills assessment before
+                      applying. You can set minimum score requirements and tier
+                      levels to filter qualified applicants.
                     </p>
                   </div>
                 </div>
@@ -1097,7 +1139,10 @@ export default function NewJobPage() {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                removeArrayItem("customAssessmentQuestions", index)
+                                removeArrayItem(
+                                  "customAssessmentQuestions",
+                                  index
+                                )
                               }
                             >
                               <Trash2 className="h-4 w-4" />
@@ -1357,8 +1402,8 @@ export default function NewJobPage() {
                   Ready to Submit
                 </h4>
                 <p className="text-sm text-green-700">
-                  Review all the information you've entered. Your job will be posted immediately
-                  and will be live for candidates to apply.
+                  Review all the information you've entered. Your job will be
+                  posted immediately and will be live for candidates to apply.
                 </p>
               </div>
             </CardContent>
