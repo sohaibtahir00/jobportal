@@ -189,7 +189,6 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   type="email"
-                  name="email"
                   id="email"
                   placeholder="you@example.com"
                   autoComplete="username"
@@ -230,7 +229,6 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  name="password"
                   id="password"
                   placeholder="••••••••"
                   autoComplete="current-password"
