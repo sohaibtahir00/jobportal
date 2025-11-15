@@ -189,8 +189,10 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   type="email"
+                  name="email"
+                  id="email"
                   placeholder="you@example.com"
-                  autoComplete="username email"
+                  autoComplete="username"
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-primary-500/20 transition-all outline-none pr-12 ${
                     errors.email
                       ? "border-red-500 focus:border-red-500"
@@ -228,6 +230,8 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="password"
+                  id="password"
                   placeholder="••••••••"
                   autoComplete="current-password"
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-primary-500/20 transition-all outline-none pr-12 ${
