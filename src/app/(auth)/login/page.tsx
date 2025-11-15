@@ -36,6 +36,7 @@ export default function LoginPage() {
       await login({
         email: data.email,
         password: data.password,
+        rememberMe: data.rememberMe,
       });
 
       // Success toast
@@ -189,6 +190,7 @@ export default function LoginPage() {
                 <input
                   type="email"
                   placeholder="you@example.com"
+                  autoComplete="username email"
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-primary-500/20 transition-all outline-none pr-12 ${
                     errors.email
                       ? "border-red-500 focus:border-red-500"
@@ -227,6 +229,7 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
+                  autoComplete="current-password"
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-primary-500/20 transition-all outline-none pr-12 ${
                     errors.password
                       ? "border-red-500 focus:border-red-500"

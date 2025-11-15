@@ -27,10 +27,11 @@ export function useAuth() {
       }
     : null;
 
-  const login = async ({ email, password }: { email: string; password: string }) => {
+  const login = async ({ email, password, rememberMe }: { email: string; password: string; rememberMe?: boolean }) => {
     const result = await signIn("credentials", {
       email,
       password,
+      rememberMe: String(rememberMe || false),
       redirect: false,
     });
 

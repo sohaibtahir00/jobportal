@@ -10,6 +10,7 @@ export const authOptions: AuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        rememberMe: { label: "Remember Me", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -44,6 +45,7 @@ export const authOptions: AuthOptions = {
               image: user.image || null,
               role: user.role,
               status: user.status,
+              rememberMe: credentials.rememberMe === "true",
             };
           }
 
@@ -58,11 +60,11 @@ export const authOptions: AuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60, // 30 days (max)
   },
 
   jwt: {
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 30 * 24 * 60 * 60, // 30 days (max)
   },
 
   callbacks: {
@@ -73,6 +75,17 @@ export const authOptions: AuthOptions = {
         token.email = user.email;
         token.name = user.name;
         token.role = user.role;
+        token.rememberMe = (user as any).rememberMe || false;
+
+        // Set expiration based on rememberMe
+        const now = Math.floor(Date.now() / 1000);
+        if (token.rememberMe) {
+          // Remember me: 30 days
+          token.exp = now + (30 * 24 * 60 * 60);
+        } else {
+          // Don't remember: 1 day
+          token.exp = now + (24 * 60 * 60);
+        }
       }
 
       // Handle session update (when update() is called)
