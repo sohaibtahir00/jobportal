@@ -169,13 +169,7 @@ export default function NewJobPage() {
 
   // Initialize form data with localStorage if available
   const [formData, setFormData] = useState<JobFormData>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("jobFormDraft");
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    }
-    return {
+    const defaultData = {
       title: "",
       nicheCategory: "",
       employmentType: "FULL_TIME",
@@ -203,6 +197,38 @@ export default function NewJobPage() {
       maxApplicants: "",
       screeningQuestions: [],
     };
+
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("jobFormDraft");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          // Merge with defaults to ensure all new fields exist
+          return {
+            ...defaultData,
+            ...parsed,
+            // Ensure array fields are always arrays
+            keyResponsibilities: Array.isArray(parsed.keyResponsibilities) ? parsed.keyResponsibilities : [],
+            skills: Array.isArray(parsed.skills) ? parsed.skills : [],
+            niceToHaveSkills: Array.isArray(parsed.niceToHaveSkills) ? parsed.niceToHaveSkills : [],
+            techStack: Array.isArray(parsed.techStack) ? parsed.techStack : [],
+            specificBenefits: Array.isArray(parsed.specificBenefits) ? parsed.specificBenefits : [],
+            customAssessmentQuestions: Array.isArray(parsed.customAssessmentQuestions) ? parsed.customAssessmentQuestions : [],
+            interviewRoundsDetailed: Array.isArray(parsed.interviewRoundsDetailed) ? parsed.interviewRoundsDetailed : [],
+            screeningQuestions: Array.isArray(parsed.screeningQuestions) ? parsed.screeningQuestions : [],
+            // Ensure numbers are numbers
+            salaryMin: typeof parsed.salaryMin === 'number' ? parsed.salaryMin : 0,
+            salaryMax: typeof parsed.salaryMax === 'number' ? parsed.salaryMax : 0,
+          };
+        } catch (error) {
+          console.error("Failed to parse localStorage draft, using defaults:", error);
+          // Clear corrupted data
+          localStorage.removeItem("jobFormDraft");
+          return defaultData;
+        }
+      }
+    }
+    return defaultData;
   });
 
   // Auto-save to localStorage
