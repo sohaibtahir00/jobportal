@@ -124,7 +124,7 @@ const QUESTION_TYPES = [
 
 // Niche-specific job title suggestions
 const JOB_TITLE_SUGGESTIONS_BY_NICHE: Record<string, string[]> = {
-  "AI_ML": [
+  "AI/ML": [
     "Senior Machine Learning Engineer",
     "Machine Learning Engineer",
     "ML Engineer",
@@ -140,7 +140,7 @@ const JOB_TITLE_SUGGESTIONS_BY_NICHE: Record<string, string[]> = {
     "ML Infrastructure Engineer",
     "AI Solutions Architect",
   ],
-  "FINTECH": [
+  "Fintech": [
     "Quantitative Developer",
     "Financial Software Engineer",
     "Blockchain Developer",
@@ -154,7 +154,7 @@ const JOB_TITLE_SUGGESTIONS_BY_NICHE: Record<string, string[]> = {
     "Algorithmic Trading Developer",
     "Digital Banking Engineer",
   ],
-  "CYBERSECURITY": [
+  "Cybersecurity": [
     "Security Engineer",
     "Cybersecurity Analyst",
     "Penetration Tester",
@@ -168,7 +168,7 @@ const JOB_TITLE_SUGGESTIONS_BY_NICHE: Record<string, string[]> = {
     "Malware Analyst",
     "SIEM Engineer",
   ],
-  "HEALTHCARE_IT": [
+  "Healthcare IT": [
     "Healthcare Software Engineer",
     "Medical Device Software Developer",
     "Health Informatics Engineer",
@@ -181,21 +181,75 @@ const JOB_TITLE_SUGGESTIONS_BY_NICHE: Record<string, string[]> = {
     "Healthcare Data Scientist",
     "Digital Health Product Manager",
   ],
-  "GENERAL_TECH": [
-    "Software Engineer",
-    "Senior Software Engineer",
-    "Full Stack Developer",
-    "Backend Engineer",
-    "Frontend Developer",
-    "DevOps Engineer",
+  "Cloud Computing": [
     "Cloud Architect",
-    "Data Engineer",
+    "Cloud Solutions Engineer",
+    "AWS Solutions Architect",
+    "Azure Cloud Engineer",
+    "GCP Engineer",
+    "Cloud Security Engineer",
+    "Cloud Infrastructure Engineer",
+    "Cloud DevOps Engineer",
+    "Cloud Migration Specialist",
+    "Multi-Cloud Architect",
+  ],
+  "DevOps": [
+    "DevOps Engineer",
+    "Senior DevOps Engineer",
     "Site Reliability Engineer",
     "Platform Engineer",
+    "Infrastructure Engineer",
+    "CI/CD Engineer",
+    "Release Engineer",
+    "Automation Engineer",
+    "Build Engineer",
+    "DevSecOps Engineer",
+  ],
+  "Data Science": [
+    "Data Scientist",
+    "Senior Data Scientist",
+    "Data Analyst",
+    "Business Intelligence Analyst",
+    "Analytics Engineer",
+    "Data Engineer",
+    "Big Data Engineer",
+    "Data Architect",
+    "Machine Learning Scientist",
+    "Quantitative Analyst",
+  ],
+  "Web Development": [
+    "Full Stack Developer",
+    "Frontend Developer",
+    "Backend Developer",
+    "React Developer",
+    "Node.js Developer",
+    "JavaScript Developer",
+    "Web Application Developer",
+    "UI Developer",
+    "WordPress Developer",
+    "PHP Developer",
+  ],
+  "Mobile Development": [
     "Mobile Developer",
-    "Systems Engineer",
-    "Solutions Architect",
-    "Technical Lead",
+    "iOS Developer",
+    "Android Developer",
+    "React Native Developer",
+    "Flutter Developer",
+    "Mobile App Engineer",
+    "Cross-Platform Developer",
+    "Mobile UI/UX Developer",
+    "Mobile Solutions Architect",
+  ],
+  "Blockchain": [
+    "Blockchain Developer",
+    "Smart Contract Developer",
+    "Solidity Developer",
+    "Cryptocurrency Developer",
+    "Web3 Developer",
+    "DeFi Engineer",
+    "Blockchain Architect",
+    "Blockchain Security Engineer",
+    "NFT Platform Developer",
   ],
 };
 
