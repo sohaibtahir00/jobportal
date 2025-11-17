@@ -611,8 +611,13 @@ export default function EmployerApplicantsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleBulkAction("SHORTLISTED")}
-                            disabled={!isSelected}
+                            onClick={() => {
+                              bulkUpdateMutation.mutate({
+                                applicationIds: [app.id],
+                                newStatus: "SHORTLISTED",
+                              });
+                            }}
+                            disabled={bulkUpdateMutation.isPending}
                           >
                             Shortlist
                           </Button>
@@ -621,8 +626,13 @@ export default function EmployerApplicantsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleBulkAction("REJECTED")}
-                            disabled={!isSelected}
+                            onClick={() => {
+                              bulkUpdateMutation.mutate({
+                                applicationIds: [app.id],
+                                newStatus: "REJECTED",
+                              });
+                            }}
+                            disabled={bulkUpdateMutation.isPending}
                           >
                             Reject
                           </Button>
