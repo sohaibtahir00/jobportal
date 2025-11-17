@@ -92,16 +92,30 @@ interface Stats {
 }
 
 const STATUS_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "PENDING", label: "New" },
-  { value: "REVIEWED", label: "Under Review" },
-  { value: "SHORTLISTED", label: "Shortlisted" },
-  { value: "INTERVIEW_SCHEDULED", label: "Interview Scheduled" },
-  { value: "INTERVIEWED", label: "Interviewed" },
-  { value: "OFFERED", label: "Offer Extended" },
-  { value: "ACCEPTED", label: "Hired" },
-  { value: "REJECTED", label: "Rejected" },
+  { value: "all", label: "All", icon: "📋" },
+  { value: "PENDING", label: "New", icon: "🆕" },
+  { value: "REVIEWED", label: "Reviewing", icon: "👀" },
+  { value: "SHORTLISTED", label: "Shortlisted", icon: "⭐" },
+  { value: "INTERVIEW_SCHEDULED", label: "Interview Scheduled", icon: "📅" },
+  { value: "INTERVIEWED", label: "Interviewed", icon: "💬" },
+  { value: "OFFERED", label: "Offer", icon: "📧" },
+  { value: "ACCEPTED", label: "Hired", icon: "🎉" },
+  { value: "REJECTED", label: "Rejected", icon: "❌" },
+  { value: "WITHDRAWN", label: "Withdrawn", icon: "🚪" },
 ];
+
+// Status colors for badges
+const STATUS_COLORS: Record<string, string> = {
+  PENDING: "bg-gray-100 text-gray-800 border-gray-300",
+  REVIEWED: "bg-blue-100 text-blue-800 border-blue-300",
+  SHORTLISTED: "bg-yellow-100 text-yellow-800 border-yellow-300",
+  INTERVIEW_SCHEDULED: "bg-purple-100 text-purple-800 border-purple-300",
+  INTERVIEWED: "bg-purple-100 text-purple-800 border-purple-300",
+  OFFERED: "bg-indigo-100 text-indigo-800 border-indigo-300",
+  ACCEPTED: "bg-green-100 text-green-800 border-green-300",
+  REJECTED: "bg-red-100 text-red-800 border-red-300",
+  WITHDRAWN: "bg-gray-100 text-gray-600 border-gray-300",
+};
 
 const SORT_OPTIONS = [
   { value: "recent", label: "Most Recent" },
@@ -206,19 +220,10 @@ export default function EmployerApplicantsPage() {
     }
   };
 
-  // Get status badge variant
-  const getStatusVariant = (status: string): any => {
-    switch (status) {
-      case "PENDING": return "secondary";
-      case "REVIEWED": return "primary";
-      case "SHORTLISTED": return "success";
-      case "INTERVIEW_SCHEDULED": return "primary";
-      case "INTERVIEWED": return "primary";
-      case "OFFERED": return "success";
-      case "ACCEPTED": return "success";
-      case "REJECTED": return "danger";
-      default: return "secondary";
-    }
+  // Get status label with icon
+  const getStatusLabel = (status: string): string => {
+    const option = STATUS_OPTIONS.find(opt => opt.value === status);
+    return option ? `${option.icon} ${option.label}` : status;
   };
 
   // Handle select all
@@ -351,7 +356,7 @@ export default function EmployerApplicantsPage() {
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {option.icon} {option.label}
                   </option>
                 ))}
               </select>
@@ -506,9 +511,9 @@ export default function EmployerApplicantsPage() {
                             </p>
                           )}
                         </div>
-                        <Badge variant={getStatusVariant(app.status)}>
-                          {STATUS_OPTIONS.find(s => s.value === app.status)?.label || app.status}
-                        </Badge>
+                        <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[app.status] || "bg-gray-100 text-gray-800 border-gray-300"}`}>
+                          {getStatusLabel(app.status)}
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">

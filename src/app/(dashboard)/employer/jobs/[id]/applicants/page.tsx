@@ -64,16 +64,49 @@ export default function ApplicantsPipelinePage() {
 
   // Pipeline stages mapped to application statuses
   const stages = [
-    { id: "PENDING", label: "Applied", color: "bg-secondary-100" },
-    { id: "REVIEWED", label: "Screening", color: "bg-blue-100" },
+    { id: "PENDING", label: "New", color: "bg-gray-100", statuses: ["PENDING"] },
+    { id: "REVIEWED", label: "Reviewing", color: "bg-blue-100", statuses: ["REVIEWED"] },
+    { id: "SHORTLISTED", label: "Shortlisted", color: "bg-yellow-100", statuses: ["SHORTLISTED"] },
     {
-      id: "INTERVIEW_SCHEDULED,INTERVIEWED",
+      id: "INTERVIEW",
       label: "Interview",
-      color: "bg-yellow-100",
+      color: "bg-purple-100",
+      statuses: ["INTERVIEW_SCHEDULED", "INTERVIEWED"],
     },
-    { id: "OFFERED,ACCEPTED", label: "Offer", color: "bg-green-100" },
-    { id: "REJECTED,WITHDRAWN", label: "Rejected", color: "bg-red-100" },
+    { id: "OFFERED", label: "Offer", color: "bg-indigo-100", statuses: ["OFFERED"] },
+    { id: "ACCEPTED", label: "Hired", color: "bg-green-100", statuses: ["ACCEPTED"] },
+    {
+      id: "REJECTED",
+      label: "Rejected",
+      color: "bg-red-100",
+      statuses: ["REJECTED", "WITHDRAWN"],
+    },
   ];
+
+  // Status icons and colors for badges
+  const STATUS_ICONS: Record<string, string> = {
+    PENDING: "🆕",
+    REVIEWED: "👀",
+    SHORTLISTED: "⭐",
+    INTERVIEW_SCHEDULED: "📅",
+    INTERVIEWED: "💬",
+    OFFERED: "📧",
+    ACCEPTED: "🎉",
+    REJECTED: "❌",
+    WITHDRAWN: "🚪",
+  };
+
+  const STATUS_COLORS: Record<string, string> = {
+    PENDING: "bg-gray-100 text-gray-800",
+    REVIEWED: "bg-blue-100 text-blue-800",
+    SHORTLISTED: "bg-yellow-100 text-yellow-800",
+    INTERVIEW_SCHEDULED: "bg-purple-100 text-purple-800",
+    INTERVIEWED: "bg-purple-100 text-purple-800",
+    OFFERED: "bg-indigo-100 text-indigo-800",
+    ACCEPTED: "bg-green-100 text-green-800",
+    REJECTED: "bg-red-100 text-red-800",
+    WITHDRAWN: "bg-gray-100 text-gray-600",
+  };
 
   // Redirect if not logged in or not employer
   useEffect(() => {
@@ -147,8 +180,7 @@ export default function ApplicantsPipelinePage() {
     }
   };
 
-  const getStageApplicants = (stageStatuses: string) => {
-    const statusList = stageStatuses.split(",");
+  const getStageApplicants = (statusList: string[]) => {
     return applicants.filter((app) => {
       const matchesStage = statusList.includes(app.status);
       const matchesSearch =
@@ -289,9 +321,9 @@ export default function ApplicantsPipelinePage() {
         </div>
 
         {/* Pipeline Kanban */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
           {stages.map((stage) => {
-            const stageApplicants = getStageApplicants(stage.id);
+            const stageApplicants = getStageApplicants(stage.statuses);
 
             return (
               <div key={stage.id} className="flex flex-col">
@@ -339,6 +371,11 @@ export default function ApplicantsPipelinePage() {
                               )}
                             </div>
                           )}
+                          {/* Status Badge with Icon */}
+                          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[applicant.status] || "bg-gray-100 text-gray-800"}`}>
+                            <span>{STATUS_ICONS[applicant.status] || "📋"}</span>
+                            <span>{stage.label}</span>
+                          </div>
                         </div>
 
                         <div className="mb-3 space-y-1 text-xs text-secondary-600">
@@ -410,13 +447,13 @@ export default function ApplicantsPipelinePage() {
               </div>
               <div>
                 <p className="mb-1 text-2xl font-bold text-green-600">
-                  {getStageApplicants("OFFERED,ACCEPTED").length}
+                  {getStageApplicants(["OFFERED", "ACCEPTED"]).length}
                 </p>
                 <p className="text-sm text-secondary-600">Offers Extended</p>
               </div>
               <div>
                 <p className="mb-1 text-2xl font-bold text-blue-600">
-                  {getStageApplicants("INTERVIEW_SCHEDULED,INTERVIEWED").length}
+                  {getStageApplicants(["INTERVIEW_SCHEDULED", "INTERVIEWED"]).length}
                 </p>
                 <p className="text-sm text-secondary-600">In Interview</p>
               </div>
