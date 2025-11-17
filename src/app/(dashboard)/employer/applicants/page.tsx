@@ -176,6 +176,7 @@ export default function EmployerApplicantsPage() {
   // Bulk update mutation
   const bulkUpdateMutation = useMutation({
     mutationFn: async ({ applicationIds, newStatus }: { applicationIds: string[]; newStatus: string }) => {
+      console.log("🔄 [Frontend] Bulk update request:", { applicationIds, newStatus });
       const response = await api.post("/api/applications/bulk", {
         applicationIds,
         newStatus,
@@ -183,12 +184,15 @@ export default function EmployerApplicantsPage() {
       return response.data;
     },
     onSuccess: (data) => {
+      console.log("✅ [Frontend] Bulk update success:", data);
       showToast("success", "Success", data.message);
       queryClient.invalidateQueries({ queryKey: ["applications"] });
       setSelectedApplicants([]);
     },
     onError: (error: any) => {
-      showToast("error", "Error", error.response?.data?.message || "Failed to update applications");
+      console.error("❌ [Frontend] Bulk update error:", error);
+      console.error("❌ [Frontend] Error response:", error.response?.data);
+      showToast("error", "Error", error.response?.data?.error || "Failed to update applications");
     },
   });
 
@@ -612,6 +616,12 @@ export default function EmployerApplicantsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => {
+                              console.log("🟡 [Frontend] Shortlist button clicked for application:", {
+                                id: app.id,
+                                candidateName: app.candidate.user.name,
+                                jobTitle: app.job.title,
+                                currentStatus: app.status,
+                              });
                               bulkUpdateMutation.mutate({
                                 applicationIds: [app.id],
                                 newStatus: "SHORTLISTED",
@@ -627,6 +637,12 @@ export default function EmployerApplicantsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => {
+                              console.log("🔴 [Frontend] Reject button clicked for application:", {
+                                id: app.id,
+                                candidateName: app.candidate.user.name,
+                                jobTitle: app.job.title,
+                                currentStatus: app.status,
+                              });
                               bulkUpdateMutation.mutate({
                                 applicationIds: [app.id],
                                 newStatus: "REJECTED",
