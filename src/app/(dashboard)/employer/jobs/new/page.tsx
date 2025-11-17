@@ -335,8 +335,8 @@ export default function NewJobPage() {
       return formData.hiringTimeline !== '';
     }
     if (step === 2) {
-      // Application Settings - at least deadline
-      return formData.deadline !== '';
+      // Application Settings - always valid (all fields optional)
+      return true;
     }
     return false;
   };
@@ -1371,37 +1371,74 @@ export default function NewJobPage() {
           <div className="mb-6">
             <h2 className="text-2xl font-bold mb-2">Application Settings</h2>
             <p className="text-gray-600">
-              Set application deadline and add screening questions.
+              Configure deadline and screening questions (all optional).
             </p>
           </div>
 
+          {/* Info Banner */}
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+            <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-900">
+              <p className="font-medium mb-1">All settings on this page are optional</p>
+              <p className="text-blue-700">
+                You can skip this step and publish your job immediately, or customize these settings to better filter candidates.
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-6">
-            {/* Application Deadline */}
+            {/* Application Deadline with Quick Presets */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                Application Deadline *
+                Application Deadline
               </label>
+              <p className="text-xs text-gray-600 mb-3">
+                Leave blank for no deadline
+              </p>
+
+              {/* Quick Preset Buttons */}
+              <div className="flex gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const date = new Date();
+                    date.setDate(date.getDate() + 7);
+                    updateFormData({ deadline: date.toISOString().split('T')[0] });
+                  }}
+                  className="px-4 py-2 bg-blue-50 border border-blue-300 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                >
+                  7 Days
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const date = new Date();
+                    date.setDate(date.getDate() + 14);
+                    updateFormData({ deadline: date.toISOString().split('T')[0] });
+                  }}
+                  className="px-4 py-2 bg-blue-50 border border-blue-300 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                >
+                  14 Days
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const date = new Date();
+                    date.setDate(date.getDate() + 30);
+                    updateFormData({ deadline: date.toISOString().split('T')[0] });
+                  }}
+                  className="px-4 py-2 bg-blue-50 border border-blue-300 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                >
+                  30 Days
+                </button>
+              </div>
+
+              {/* Date Picker */}
               <input
                 type="date"
-                required
                 value={formData.deadline}
                 onChange={(e) => updateFormData({ deadline: e.target.value })}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Max Applicants */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Maximum Applicants (Optional)
-              </label>
-              <input
-                type="number"
-                placeholder="Leave empty for unlimited"
-                value={formData.maxApplicants}
-                onChange={(e) => updateFormData({ maxApplicants: e.target.value })}
-                min="1"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -1412,55 +1449,101 @@ export default function NewJobPage() {
                 Screening Questions
               </label>
               <p className="text-sm text-gray-600 mb-4">
-                Ask candidates specific questions before they apply
+                Ask candidates specific questions before they apply (max 5 questions)
               </p>
 
-              {formData.screeningQuestions.map((q, idx) => (
-                <div key={idx} className="mb-3 p-3 border rounded-lg">
-                  <div className="flex gap-2 items-start">
-                    <input
-                      placeholder="Question"
-                      value={q.question}
-                      onChange={(e) => {
-                        const updated = [...formData.screeningQuestions];
-                        updated[idx] = { ...updated[idx], question: e.target.value };
-                        updateFormData({ screeningQuestions: updated });
-                      }}
-                      className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <label className="flex items-center gap-2 whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={q.required}
-                        onChange={(e) => {
-                          const updated = [...formData.screeningQuestions];
-                          updated[idx] = { ...updated[idx], required: e.target.checked };
-                          updateFormData({ screeningQuestions: updated });
-                        }}
-                        className="w-4 h-4"
-                      />
-                      <span className="text-sm">Required</span>
-                    </label>
-                    <button
-                      onClick={() => removeFromArray('screeningQuestions', idx)}
-                      className="text-red-600 hover:text-red-700 p-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+              {formData.screeningQuestions.length === 0 ? (
+                // Empty State with Examples
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <div className="text-gray-400 mb-3">
+                    <Plus className="w-8 h-8 mx-auto" />
                   </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    No screening questions added yet
+                  </p>
+                  <div className="text-xs text-gray-500 mb-4 space-y-1">
+                    <p>💡 Example questions:</p>
+                    <p className="text-gray-600">"Are you authorized to work in the US?"</p>
+                    <p className="text-gray-600">"Do you have at least 3 years of experience with React?"</p>
+                    <p className="text-gray-600">"Are you willing to relocate to San Francisco?"</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => addToArray('screeningQuestions', {
+                      question: '',
+                      required: false
+                    })}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Add Your First Question
+                  </button>
                 </div>
-              ))}
+              ) : (
+                <>
+                  {/* Question Cards */}
+                  {formData.screeningQuestions.map((q, idx) => (
+                    <div key={idx} className="mb-3 p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                      <div className="flex items-start gap-3">
+                        <span className="text-xs font-semibold text-gray-500 mt-2">
+                          Question {idx + 1}
+                        </span>
+                        <input
+                          placeholder="Enter your question"
+                          value={q.question}
+                          onChange={(e) => {
+                            const updated = [...formData.screeningQuestions];
+                            updated[idx] = { ...updated[idx], question: e.target.value };
+                            updateFormData({ screeningQuestions: updated });
+                          }}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        />
+                        <label className="flex items-center gap-2 whitespace-nowrap mt-2">
+                          <input
+                            type="checkbox"
+                            checked={q.required}
+                            onChange={(e) => {
+                              const updated = [...formData.screeningQuestions];
+                              updated[idx] = { ...updated[idx], required: e.target.checked };
+                              updateFormData({ screeningQuestions: updated });
+                            }}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm">Required</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => removeFromArray('screeningQuestions', idx)}
+                          className="text-red-600 hover:text-red-700 p-2 mt-1"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
 
-              <button
-                onClick={() => addToArray('screeningQuestions', {
-                  question: '',
-                  required: false
-                })}
-                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                <Plus className="w-4 h-4" />
-                Add Screening Question
-              </button>
+                  {/* Add Another Question Button (only show if less than 5) */}
+                  {formData.screeningQuestions.length < 5 && (
+                    <button
+                      type="button"
+                      onClick={() => addToArray('screeningQuestions', {
+                        question: '',
+                        required: false
+                      })}
+                      className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 font-medium"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Another Question ({formData.screeningQuestions.length}/5)
+                    </button>
+                  )}
+
+                  {/* Max Limit Message */}
+                  {formData.screeningQuestions.length >= 5 && (
+                    <p className="text-xs text-gray-500 italic">
+                      Maximum of 5 screening questions reached
+                    </p>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
