@@ -777,25 +777,63 @@ export default function NewJobPage() {
                   </label>
                 </div>
 
-                <div className="mt-4">
-                  <label className="block text-sm font-medium mb-2">Benefits</label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {BENEFITS_OPTIONS.map(benefit => (
-                      <label key={benefit} className="flex items-center gap-2 text-sm cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.specificBenefits.includes(benefit)}
-                          onChange={(e) => {
-                            const updated = e.target.checked
-                              ? [...formData.specificBenefits, benefit]
-                              : formData.specificBenefits.filter(b => b !== benefit);
-                            updateFormData({ specificBenefits: updated });
-                          }}
-                          className="w-4 h-4"
-                        />
-                        {benefit}
-                      </label>
-                    ))}
+                {/* Benefits Section - Hybrid Design */}
+                <div className="mt-6">
+                  <label className="block text-sm font-medium mb-3">Benefits</label>
+
+                  {/* Imported Benefits (as removable tags) */}
+                  {formData.specificBenefits && formData.specificBenefits.length > 0 && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-xs text-blue-700 font-medium mb-2">
+                        Imported from job posting ({formData.specificBenefits.length})
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.specificBenefits.map((benefit, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-full text-sm"
+                          >
+                            {benefit}
+                            <button
+                              onClick={() => {
+                                const updated = formData.specificBenefits.filter((_, i) => i !== idx);
+                                updateFormData({ specificBenefits: updated });
+                              }}
+                              className="hover:bg-blue-700 rounded-full p-0.5"
+                              type="button"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Additional Benefits (checkboxes for benefits NOT already imported) */}
+                  <div>
+                    <p className="text-xs text-gray-600 mb-2">
+                      Additional benefits (optional)
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {BENEFITS_OPTIONS.filter(benefit => !formData.specificBenefits.includes(benefit)).map(benefit => (
+                        <label key={benefit} className="flex items-center gap-2 text-sm p-2 hover:bg-gray-50 rounded cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={false}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                updateFormData({
+                                  specificBenefits: [...formData.specificBenefits, benefit]
+                                });
+                              }
+                            }}
+                            className="w-4 h-4"
+                          />
+                          {benefit}
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
