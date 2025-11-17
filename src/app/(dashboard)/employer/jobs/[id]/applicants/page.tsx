@@ -168,12 +168,12 @@ export default function ApplicantsPipelinePage() {
     try {
       await api.patch(`/api/applications/${applicantId}/status`, { status: newStatus });
 
-      // Update local state
-      setApplicants((prev) =>
-        prev.map((app) =>
-          app.id === applicantId ? { ...app, status: newStatus } : app
-        )
-      );
+      // Refetch from server to get updated data
+      console.log("🔄 [Kanban] Refetching applicants after status update");
+      const response = await api.get(`/api/jobs/${jobId}/applications`);
+      const { applications } = response.data;
+      setApplicants(applications || []);
+      console.log("✅ [Kanban] Applicants refreshed from server");
     } catch (err) {
       console.error("Error updating status:", err);
       alert("Failed to update applicant status");
