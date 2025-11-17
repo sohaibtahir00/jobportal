@@ -331,9 +331,8 @@ export default function NewJobPage() {
       return true;
     }
     if (step === 1) {
-      // Interview Process - at least one round with name
-      return formData.interviewRoundsDetailed.length > 0 &&
-             formData.interviewRoundsDetailed[0].roundName.trim() !== '';
+      // Hiring Process - hiring timeline is required
+      return formData.hiringTimeline !== '';
     }
     if (step === 2) {
       // Application Settings - at least deadline
@@ -887,7 +886,7 @@ export default function NewJobPage() {
             Skills Assessment
           </span>
           <span className={customizationStep === 1 ? 'text-blue-600 font-medium' : 'text-gray-500'}>
-            Interview Process
+            Hiring Process
           </span>
           <span className={customizationStep === 2 ? 'text-blue-600 font-medium' : 'text-gray-500'}>
             Application Settings
@@ -1232,110 +1231,101 @@ export default function NewJobPage() {
               className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
               type="button"
             >
-              Next: Interview Process
+              Next: Hiring Process
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
       )}
 
-      {/* CUSTOMIZATION STEP 2: Interview Process (Current Step 5) */}
+      {/* CUSTOMIZATION STEP 2: Hiring Process (Current Step 5) */}
       {customizationStep === 1 && (
         <div className="bg-white rounded-xl border shadow-sm p-8">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Interview Process Setup</h2>
+            <h2 className="text-2xl font-bold mb-2">Hiring Process Setup</h2>
             <p className="text-gray-600">
-              Define your interview rounds so candidates know what to expect.
+              Set your hiring timeline and expected start date.
             </p>
           </div>
 
-          <div className="space-y-6">
-            {/* Interview Rounds */}
+          <div className="space-y-8">
+            {/* Hiring Timeline - Visual Cards */}
             <div>
-              <label className="block text-sm font-medium mb-2">Interview Rounds</label>
-
-              {formData.interviewRoundsDetailed.map((round, idx) => (
-                <div key={idx} className="mb-4 p-4 border rounded-lg">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium">Round {round.roundNumber}</h4>
-                    {formData.interviewRoundsDetailed.length > 1 && (
-                      <button
-                        onClick={() => {
-                          const updated = formData.interviewRoundsDetailed
-                            .filter((_, i) => i !== idx)
-                            .map((r, i) => ({ ...r, roundNumber: i + 1 }));
-                          updateFormData({ interviewRoundsDetailed: updated });
-                        }}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    <input
-                      placeholder="Round name (e.g., Technical Screen)"
-                      value={round.roundName}
-                      onChange={(e) => {
-                        const updated = [...formData.interviewRoundsDetailed];
-                        updated[idx] = { ...updated[idx], roundName: e.target.value };
-                        updateFormData({ interviewRoundsDetailed: updated });
-                      }}
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-
-                    <textarea
-                      placeholder="Round description (what will be covered)"
-                      value={round.roundDescription}
-                      onChange={(e) => {
-                        const updated = [...formData.interviewRoundsDetailed];
-                        updated[idx] = { ...updated[idx], roundDescription: e.target.value };
-                        updateFormData({ interviewRoundsDetailed: updated });
-                      }}
-                      rows={2}
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-
-                    <input
-                      placeholder="Duration (e.g., 45 minutes)"
-                      value={round.duration}
-                      onChange={(e) => {
-                        const updated = [...formData.interviewRoundsDetailed];
-                        updated[idx] = { ...updated[idx], duration: e.target.value };
-                        updateFormData({ interviewRoundsDetailed: updated });
-                      }}
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-              ))}
-
-              <button
-                onClick={() => addToArray('interviewRoundsDetailed', {
-                  roundNumber: formData.interviewRoundsDetailed.length + 1,
-                  roundName: '',
-                  roundDescription: '',
-                  duration: ''
-                })}
-                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                <Plus className="w-4 h-4" />
-                Add Interview Round
-              </button>
-            </div>
-
-            {/* Hiring Timeline */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Hiring Timeline
+              <label className="block text-sm font-medium mb-3">
+                Hiring Timeline <span className="text-red-500">*</span>
               </label>
-              <input
-                placeholder="e.g., 2-3 weeks from first interview"
-                value={formData.hiringTimeline}
-                onChange={(e) => updateFormData({ hiringTimeline: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <p className="text-sm text-gray-600 mb-4">
+                How quickly do you need to fill this role?
+              </p>
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Urgent Card */}
+                <button
+                  type="button"
+                  onClick={() => updateFormData({ hiringTimeline: '1-2 weeks' })}
+                  className={`p-4 border-2 rounded-lg text-center transition-all ${
+                    formData.hiringTimeline === '1-2 weeks'
+                      ? 'border-red-500 bg-red-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">🔥</div>
+                  <div className="font-semibold text-gray-900">ASAP</div>
+                  <div className="text-xs text-gray-600 mt-1">1-2 weeks</div>
+                  <div className="text-xs mt-2 text-gray-500">Urgent</div>
+                </button>
+
+                {/* Fast Card */}
+                <button
+                  type="button"
+                  onClick={() => updateFormData({ hiringTimeline: '2-3 weeks' })}
+                  className={`p-4 border-2 rounded-lg text-center transition-all ${
+                    formData.hiringTimeline === '2-3 weeks'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">⚡</div>
+                  <div className="font-semibold text-gray-900">Fast</div>
+                  <div className="text-xs text-gray-600 mt-1">2-3 weeks</div>
+                  <div className="text-xs mt-2 text-gray-500">Priority</div>
+                  <span className="inline-block mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                    Most Popular
+                  </span>
+                </button>
+
+                {/* Standard Card */}
+                <button
+                  type="button"
+                  onClick={() => updateFormData({ hiringTimeline: '3-4 weeks' })}
+                  className={`p-4 border-2 rounded-lg text-center transition-all ${
+                    formData.hiringTimeline === '3-4 weeks'
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">📅</div>
+                  <div className="font-semibold text-gray-900">Standard</div>
+                  <div className="text-xs text-gray-600 mt-1">3-4 weeks</div>
+                  <div className="text-xs mt-2 text-gray-500">Normal</div>
+                </button>
+
+                {/* Flexible Card */}
+                <button
+                  type="button"
+                  onClick={() => updateFormData({ hiringTimeline: '1-2+ months' })}
+                  className={`p-4 border-2 rounded-lg text-center transition-all ${
+                    formData.hiringTimeline === '1-2+ months'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">🌱</div>
+                  <div className="font-semibold text-gray-900">Flexible</div>
+                  <div className="text-xs text-gray-600 mt-1">1-2+ months</div>
+                  <div className="text-xs mt-2 text-gray-500">Patient</div>
+                </button>
+              </div>
             </div>
 
             {/* Start Date */}
@@ -1357,14 +1347,16 @@ export default function NewJobPage() {
             <button
               onClick={() => setCustomizationStep(0)}
               className="px-6 py-3 border-2 border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
+              type="button"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
             <button
               onClick={() => setCustomizationStep(2)}
-              disabled={!isCustomizationStepValid(1)}
+              disabled={!formData.hiringTimeline}
               className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              type="button"
             >
               Next: Application Settings
               <ChevronRight className="w-5 h-5" />
