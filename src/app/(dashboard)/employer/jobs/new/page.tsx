@@ -924,31 +924,62 @@ export default function NewJobPage() {
           </div>
 
           {formData.requiresAssessment && (
-            <div className="space-y-6">
-              {/* Minimum Score */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Minimum Score Required (%)
+            <div className="space-y-8">
+              {/* Minimum Score - Visual Slider */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                <label className="block text-sm font-semibold mb-4 text-gray-800">
+                  Minimum Score Required
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formData.minSkillsScore}
-                  onChange={(e) => updateFormData({ minSkillsScore: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+
+                {/* Large Percentage Display */}
+                <div className="text-center mb-6">
+                  <div className="text-6xl font-bold text-blue-600">
+                    {formData.minSkillsScore}%
+                  </div>
+                  <p className="text-sm text-gray-600 mt-2">
+                    {formData.minSkillsScore === 0 && "No minimum score required"}
+                    {formData.minSkillsScore > 0 && formData.minSkillsScore < 40 && "Entry-level candidates can apply"}
+                    {formData.minSkillsScore >= 40 && formData.minSkillsScore < 60 && "Beginner+ level required"}
+                    {formData.minSkillsScore >= 60 && formData.minSkillsScore < 80 && "Intermediate+ level required"}
+                    {formData.minSkillsScore >= 80 && formData.minSkillsScore < 90 && "Advanced+ level required"}
+                    {formData.minSkillsScore >= 90 && "Elite level only - top performers"}
+                  </p>
+                </div>
+
+                {/* Slider */}
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={formData.minSkillsScore}
+                    onChange={(e) => updateFormData({ minSkillsScore: Number(e.target.value) })}
+                    className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                    style={{
+                      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${formData.minSkillsScore}%, #e5e7eb ${formData.minSkillsScore}%, #e5e7eb 100%)`
+                    }}
+                  />
+
+                  {/* Tier Markers */}
+                  <div className="flex justify-between mt-3 text-xs text-gray-500">
+                    <span className="text-left">0%<br/>Any</span>
+                    <span className="text-center">40%<br/>Beginner</span>
+                    <span className="text-center">60%<br/>Intermediate</span>
+                    <span className="text-center">80%<br/>Advanced</span>
+                    <span className="text-right">90%+<br/>Elite</span>
+                  </div>
+                </div>
               </div>
 
               {/* Required Tier */}
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-3 text-gray-800">
                   Required Skill Tier
                 </label>
                 <select
                   value={formData.requiredTier}
                   onChange={(e) => updateFormData({ requiredTier: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
                 >
                   {TIER_OPTIONS.map(tier => (
                     <option key={tier.value} value={tier.value}>{tier.label}</option>
@@ -956,80 +987,219 @@ export default function NewJobPage() {
                 </select>
               </div>
 
-              {/* Custom Assessment Questions */}
+              {/* Custom Assessment Questions - Card Design */}
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Custom Assessment Questions (Optional)
-                </label>
-                <p className="text-sm text-gray-600 mb-4">
-                  Add custom questions specific to this role in addition to our standard skills test
-                </p>
-
-                {formData.customAssessmentQuestions.map((q, idx) => (
-                  <div key={idx} className="mb-4 p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium">Question {idx + 1}</h4>
-                      <button
-                        onClick={() => removeFromArray('customAssessmentQuestions', idx)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-3">
-                      <input
-                        placeholder="Question text"
-                        value={q.question}
-                        onChange={(e) => {
-                          const updated = [...formData.customAssessmentQuestions];
-                          updated[idx] = { ...updated[idx], question: e.target.value };
-                          updateFormData({ customAssessmentQuestions: updated });
-                        }}
-                        className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <select
-                          value={q.type}
-                          onChange={(e) => {
-                            const updated = [...formData.customAssessmentQuestions];
-                            updated[idx] = { ...updated[idx], type: e.target.value };
-                            updateFormData({ customAssessmentQuestions: updated });
-                          }}
-                          className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Select type...</option>
-                          {QUESTION_TYPES.map(type => (
-                            <option key={type.value} value={type.value}>{type.label}</option>
-                          ))}
-                        </select>
-
-                        <input
-                          type="number"
-                          placeholder="Weight (points)"
-                          value={q.weight || ''}
-                          onChange={(e) => {
-                            const updated = [...formData.customAssessmentQuestions];
-                            updated[idx] = { ...updated[idx], weight: Number(e.target.value) };
-                            updateFormData({ customAssessmentQuestions: updated });
-                          }}
-                          className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                    </div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800">
+                      Custom Assessment Questions
+                    </label>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Add role-specific questions to complement our standard skills test
+                    </p>
                   </div>
-                ))}
+                </div>
 
+                {/* Empty State */}
+                {formData.customAssessmentQuestions.length === 0 && (
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50">
+                    <div className="text-gray-400 mb-3">
+                      <Info className="w-12 h-12 mx-auto" />
+                    </div>
+                    <p className="text-gray-600 mb-2 font-medium">No custom questions yet</p>
+                    <p className="text-sm text-gray-500 mb-4">Example questions:</p>
+                    <ul className="text-sm text-gray-500 text-left max-w-md mx-auto space-y-1">
+                      <li>• "Describe your experience with [specific technology]"</li>
+                      <li>• "How many years of experience do you have?"</li>
+                      <li>• "Are you authorized to work in the US?"</li>
+                    </ul>
+                  </div>
+                )}
+
+                {/* Question Cards */}
+                <div className="space-y-4">
+                  {formData.customAssessmentQuestions.map((q, idx) => {
+                    const getTypeName = (type: string) => {
+                      const typeMap: Record<string, string> = {
+                        'text': 'Text Answer',
+                        'number': 'Number',
+                        'multiple_choice': 'Multiple Choice',
+                        'yes_no': 'Yes/No'
+                      };
+                      return typeMap[type] || 'Select Type';
+                    };
+
+                    return (
+                      <div key={idx} className="border-2 border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 transition-colors">
+                        {/* Card Header */}
+                        <div className="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+                          <h4 className="font-semibold text-gray-800">
+                            Question {idx + 1} {q.type && `- ${getTypeName(q.type)}`}
+                          </h4>
+                          <button
+                            onClick={() => removeFromArray('customAssessmentQuestions', idx)}
+                            className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                            type="button"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Card Body */}
+                        <div className="p-5 space-y-4">
+                          {/* Question Text */}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-2">Question</label>
+                            <input
+                              placeholder="Enter your question here..."
+                              value={q.question}
+                              onChange={(e) => {
+                                const updated = [...formData.customAssessmentQuestions];
+                                updated[idx] = { ...updated[idx], question: e.target.value };
+                                updateFormData({ customAssessmentQuestions: updated });
+                              }}
+                              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </div>
+
+                          {/* Type Selector - Icon Buttons */}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-2">Question Type</label>
+                            <div className="grid grid-cols-4 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...formData.customAssessmentQuestions];
+                                  updated[idx] = { ...updated[idx], type: 'text' };
+                                  updateFormData({ customAssessmentQuestions: updated });
+                                }}
+                                className={`p-3 rounded-lg border-2 transition-all ${
+                                  q.type === 'text'
+                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                    : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                                }`}
+                              >
+                                <div className="text-2xl mb-1">📝</div>
+                                <div className="text-xs font-medium">Text</div>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...formData.customAssessmentQuestions];
+                                  updated[idx] = { ...updated[idx], type: 'number' };
+                                  updateFormData({ customAssessmentQuestions: updated });
+                                }}
+                                className={`p-3 rounded-lg border-2 transition-all ${
+                                  q.type === 'number'
+                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                    : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                                }`}
+                              >
+                                <div className="text-2xl mb-1">123</div>
+                                <div className="text-xs font-medium">Number</div>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...formData.customAssessmentQuestions];
+                                  updated[idx] = { ...updated[idx], type: 'multiple_choice' };
+                                  updateFormData({ customAssessmentQuestions: updated });
+                                }}
+                                className={`p-3 rounded-lg border-2 transition-all ${
+                                  q.type === 'multiple_choice'
+                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                    : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                                }`}
+                              >
+                                <div className="text-2xl mb-1">☐</div>
+                                <div className="text-xs font-medium">Choice</div>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...formData.customAssessmentQuestions];
+                                  updated[idx] = { ...updated[idx], type: 'yes_no' };
+                                  updateFormData({ customAssessmentQuestions: updated });
+                                }}
+                                className={`p-3 rounded-lg border-2 transition-all ${
+                                  q.type === 'yes_no'
+                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                    : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                                }`}
+                              >
+                                <div className="text-2xl mb-1">✓✗</div>
+                                <div className="text-xs font-medium">Yes/No</div>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Multiple Choice Options (conditional) */}
+                          {q.type === 'multiple_choice' && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                              <label className="block text-xs font-medium text-blue-900 mb-2">
+                                Multiple Choice Options
+                              </label>
+                              <p className="text-xs text-blue-700 mb-3">
+                                Add the possible answer choices for this question
+                              </p>
+                              <textarea
+                                placeholder="Enter options (one per line)"
+                                rows={3}
+                                className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                              />
+                            </div>
+                          )}
+
+                          {/* Weight Slider */}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-2">
+                              Question Weight (Points)
+                            </label>
+                            <div className="flex items-center gap-4">
+                              <span className="text-xs text-gray-500 w-12">Low</span>
+                              <div className="flex-1">
+                                <input
+                                  type="range"
+                                  min="1"
+                                  max="10"
+                                  value={q.weight || 5}
+                                  onChange={(e) => {
+                                    const updated = [...formData.customAssessmentQuestions];
+                                    updated[idx] = { ...updated[idx], weight: Number(e.target.value) };
+                                    updateFormData({ customAssessmentQuestions: updated });
+                                  }}
+                                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                  style={{
+                                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((q.weight || 5) - 1) * 11.11}%, #e5e7eb ${((q.weight || 5) - 1) * 11.11}%, #e5e7eb 100%)`
+                                  }}
+                                />
+                              </div>
+                              <span className="text-xs text-gray-500 w-12 text-right">High</span>
+                              <div className="w-12 text-center">
+                                <span className="text-lg font-bold text-blue-600">{q.weight || 5}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Add Question Button */}
                 <button
                   onClick={() => addToArray('customAssessmentQuestions', {
                     question: '',
                     type: 'text',
-                    weight: 10
+                    weight: 5
                   })}
-                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  className="mt-4 w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-blue-600 hover:border-blue-400 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 font-medium"
+                  type="button"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-5 h-5" />
                   Add Custom Question
                 </button>
               </div>
@@ -1041,6 +1211,7 @@ export default function NewJobPage() {
             <button
               onClick={() => setFlow('review')}
               className="px-6 py-3 border-2 border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
+              type="button"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Review
@@ -1048,6 +1219,7 @@ export default function NewJobPage() {
             <button
               onClick={() => setCustomizationStep(1)}
               className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              type="button"
             >
               Next: Interview Process
               <ChevronRight className="w-5 h-5" />
