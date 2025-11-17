@@ -928,7 +928,7 @@ export default function NewJobPage() {
               {/* Minimum Score - Visual Slider */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
                 <label className="block text-sm font-semibold mb-4 text-gray-800">
-                  Minimum Score Required
+                  Minimum Score & Required Skill Tier
                 </label>
 
                 {/* Large Percentage Display */}
@@ -937,8 +937,8 @@ export default function NewJobPage() {
                     {formData.minSkillsScore}%
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
-                    {formData.minSkillsScore === 0 && "No minimum score required"}
-                    {formData.minSkillsScore > 0 && formData.minSkillsScore < 40 && "Entry-level candidates can apply"}
+                    {formData.minSkillsScore === 0 && "No minimum score required - Any Tier"}
+                    {formData.minSkillsScore > 0 && formData.minSkillsScore < 40 && "Entry-level candidates can apply - Any Tier"}
                     {formData.minSkillsScore >= 40 && formData.minSkillsScore < 60 && "Beginner+ level required"}
                     {formData.minSkillsScore >= 60 && formData.minSkillsScore < 80 && "Intermediate+ level required"}
                     {formData.minSkillsScore >= 80 && formData.minSkillsScore < 90 && "Advanced+ level required"}
@@ -953,7 +953,20 @@ export default function NewJobPage() {
                     min="0"
                     max="100"
                     value={formData.minSkillsScore}
-                    onChange={(e) => updateFormData({ minSkillsScore: Number(e.target.value) })}
+                    onChange={(e) => {
+                      const score = Number(e.target.value);
+                      // Auto-set tier based on score
+                      let tier = "ANY";
+                      if (score >= 90) tier = "ELITE";
+                      else if (score >= 80) tier = "ADVANCED";
+                      else if (score >= 60) tier = "INTERMEDIATE";
+                      else if (score >= 40) tier = "BEGINNER";
+
+                      updateFormData({
+                        minSkillsScore: score,
+                        requiredTier: tier
+                      });
+                    }}
                     className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
                     style={{
                       background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${formData.minSkillsScore}%, #e5e7eb ${formData.minSkillsScore}%, #e5e7eb 100%)`
@@ -969,22 +982,6 @@ export default function NewJobPage() {
                     <span className="text-right">90%+<br/>Elite</span>
                   </div>
                 </div>
-              </div>
-
-              {/* Required Tier */}
-              <div>
-                <label className="block text-sm font-medium mb-3 text-gray-800">
-                  Required Skill Tier
-                </label>
-                <select
-                  value={formData.requiredTier}
-                  onChange={(e) => updateFormData({ requiredTier: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-                >
-                  {TIER_OPTIONS.map(tier => (
-                    <option key={tier.value} value={tier.value}>{tier.label}</option>
-                  ))}
-                </select>
               </div>
 
               {/* Custom Assessment Questions - Card Design */}
@@ -1139,17 +1136,31 @@ export default function NewJobPage() {
                           {/* Multiple Choice Options (conditional) */}
                           {q.type === 'multiple_choice' && (
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                              <label className="block text-xs font-medium text-blue-900 mb-2">
+                              <label className="block text-xs font-medium text-blue-900 mb-3">
                                 Multiple Choice Options
                               </label>
-                              <p className="text-xs text-blue-700 mb-3">
-                                Add the possible answer choices for this question
-                              </p>
-                              <textarea
-                                placeholder="Enter options (one per line)"
-                                rows={3}
-                                className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                              />
+                              <div className="space-y-2">
+                                {[0, 1, 2, 3].map((optionIdx) => (
+                                  <div key={optionIdx} className="flex items-center gap-2">
+                                    <span className="text-xs font-medium text-blue-700 w-8">
+                                      {String.fromCharCode(65 + optionIdx)}.
+                                    </span>
+                                    <input
+                                      type="text"
+                                      placeholder={`Option ${String.fromCharCode(65 + optionIdx)}`}
+                                      value={q.options?.[optionIdx] || ''}
+                                      onChange={(e) => {
+                                        const updated = [...formData.customAssessmentQuestions];
+                                        const currentOptions = updated[idx].options || ['', '', '', ''];
+                                        currentOptions[optionIdx] = e.target.value;
+                                        updated[idx] = { ...updated[idx], options: currentOptions };
+                                        updateFormData({ customAssessmentQuestions: updated });
+                                      }}
+                                      className="flex-1 px-3 py-2 border border-blue-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
 
