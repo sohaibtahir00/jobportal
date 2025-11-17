@@ -19,6 +19,8 @@ import {
   Loader2,
   Star,
   TrendingUp,
+  MessageSquare,
+  DollarSign,
 } from "lucide-react";
 import {
   Button,
@@ -58,6 +60,8 @@ interface Application {
     testTier: string | null;
     currentTitle: string | null;
     currentCompany: string | null;
+    expectedSalary: number | null;
+    resume: string | null;
     user: {
       name: string;
       email: string;
@@ -228,6 +232,27 @@ export default function EmployerApplicantsPage() {
   const getStatusLabel = (status: string): string => {
     const option = STATUS_OPTIONS.find(opt => opt.value === status);
     return option ? `${option.icon} ${option.label}` : status;
+  };
+
+  // Calculate days ago
+  const getDaysAgo = (dateString: string): string => {
+    const now = new Date();
+    const appliedDate = new Date(dateString);
+    const diffTime = Math.abs(now.getTime() - appliedDate.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "1 day ago";
+    return `${diffDays} days ago`;
+  };
+
+  // Format salary
+  const formatSalary = (salary: number | null): string => {
+    if (!salary) return "Not specified";
+    if (salary >= 1000) {
+      return `$${(salary / 1000).toFixed(0)}k`;
+    }
+    return `$${salary}`;
   };
 
   // Handle select all
@@ -504,104 +529,71 @@ export default function EmployerApplicantsPage() {
 
                     {/* Main Content */}
                     <div className="flex-1">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="text-lg font-semibold text-secondary-900">
-                            {app.candidate.user.name}
-                          </h3>
-                          {app.candidate.currentTitle && app.candidate.currentCompany && (
-                            <p className="text-sm text-secondary-600">
-                              {app.candidate.currentTitle} at {app.candidate.currentCompany}
-                            </p>
-                          )}
-                        </div>
+                      {/* Applied For Job Title */}
+                      <p className="text-sm text-secondary-500 mb-1">
+                        Applied for: {app.job.title}
+                      </p>
+
+                      {/* Candidate Name & Status */}
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="text-lg font-semibold text-secondary-900">
+                          {app.candidate.user.name}
+                        </h3>
                         <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[app.status] || "bg-gray-100 text-gray-800 border-gray-300"}`}>
                           {getStatusLabel(app.status)}
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      {/* Current Title & Company */}
+                      {app.candidate.currentTitle && app.candidate.currentCompany && (
+                        <p className="text-sm text-secondary-600 mb-3">
+                          {app.candidate.currentTitle} at {app.candidate.currentCompany}
+                        </p>
+                      )}
+
+                      {/* Info Row: Location, Experience, Salary, Days Ago */}
+                      <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-secondary-600">
                         {app.candidate.location && (
-                          <div className="flex items-center gap-2 text-sm text-secondary-600">
+                          <div className="flex items-center gap-1">
                             <MapPin className="h-4 w-4" />
                             {app.candidate.location}
                           </div>
                         )}
                         {app.candidate.experience !== null && (
-                          <div className="flex items-center gap-2 text-sm text-secondary-600">
+                          <div className="flex items-center gap-1">
                             <Briefcase className="h-4 w-4" />
-                            {app.candidate.experience} years exp
+                            {app.candidate.experience} years
                           </div>
                         )}
-                        <div className="flex items-center gap-2 text-sm text-secondary-600">
+                        {app.candidate.expectedSalary && (
+                          <div className="flex items-center gap-1">
+                            <DollarSign className="h-4 w-4" />
+                            {formatSalary(app.candidate.expectedSalary)}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          Applied {new Date(app.appliedAt).toLocaleDateString()}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-secondary-600">
-                          <TrendingUp className="h-4 w-4" />
-                          {matchScore}% match
+                          {getDaysAgo(app.appliedAt)}
                         </div>
                       </div>
 
-                      {/* Skills Score Card */}
-                      {app.candidate.hasTakenTest ? (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <CheckCircle className="h-5 w-5 text-green-600" />
-                                <span className="font-semibold text-green-900">Skills Verified</span>
-                              </div>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div>
-                                  <p className="text-xs text-green-700 mb-1">Score</p>
-                                  <p className="text-2xl font-bold text-green-900">
-                                    {app.candidate.testScore || 0}/100
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-green-700 mb-1">Tier</p>
-                                  <Badge className={getTierColor(app.candidate.testTier)} size="sm">
-                                    {app.candidate.testTier || "N/A"}
-                                  </Badge>
-                                </div>
-                                {app.candidate.testPercentile !== null && (
-                                  <div>
-                                    <p className="text-xs text-green-700 mb-1">Percentile</p>
-                                    <p className="text-sm font-semibold text-green-900">
-                                      Top {Math.round(100 - app.candidate.testPercentile)}%
-                                    </p>
-                                  </div>
-                                )}
-                                {app.testResults.length > 0 && (
-                                  <div>
-                                    <p className="text-xs text-green-700 mb-1">Top Skills</p>
-                                    <div className="space-y-1">
-                                      {app.testResults.slice(0, 3).map((test) => (
-                                        <p key={test.id} className="text-xs text-green-900">
-                                          {test.testName}: {test.score}/{test.maxScore}
-                                        </p>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                          <div className="flex items-center gap-3">
-                            <AlertCircle className="h-5 w-5 text-yellow-600" />
-                            <span className="text-yellow-900 font-medium">Skills Not Verified</span>
-                            <Button variant="outline" size="sm" className="ml-auto">
-                              Invite to Take Assessment
-                            </Button>
-                          </div>
+                      {/* Skills Tags (Top 4 with +N more) */}
+                      {app.candidate.skills && app.candidate.skills.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {app.candidate.skills.slice(0, 4).map((skill, idx) => (
+                            <Badge key={idx} className="bg-primary-50 text-primary-700 border-primary-200" size="sm">
+                              {skill}
+                            </Badge>
+                          ))}
+                          {app.candidate.skills.length > 4 && (
+                            <Badge className="bg-secondary-100 text-secondary-700 border-secondary-300" size="sm">
+                              +{app.candidate.skills.length - 4} more
+                            </Badge>
+                          )}
                         </div>
                       )}
 
-                      {/* Action Buttons */}
+                      {/* Action Buttons Row */}
                       <div className="flex items-center gap-3">
                         <Button
                           variant="primary"
@@ -609,7 +601,32 @@ export default function EmployerApplicantsPage() {
                           onClick={() => router.push(`/employer/applicants/${app.id}`)}
                         >
                           <Eye className="h-4 w-4 mr-2" />
-                          View Full Profile
+                          View Profile
+                        </Button>
+                        {app.candidate.resume && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (app.candidate.resume) {
+                                window.open(app.candidate.resume, "_blank");
+                              }
+                            }}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Resume
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // TODO: Implement messaging
+                            showToast("info", "Coming Soon", "Messaging feature will be available soon");
+                          }}
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Message
                         </Button>
                         {app.status !== "SHORTLISTED" && (
                           <Button
