@@ -107,17 +107,19 @@ export default function ApplicantDetailPage() {
           experience: app.candidate.experience ? `${app.candidate.experience} years` : "Not specified",
           currentRole: app.candidate.currentTitle || "Not specified",
           currentCompany: app.candidate.currentCompany,
-          education: "Not specified", // TODO: Add if available in schema
+          education: app.candidate.education || "Not specified",
           resume: app.candidate.resume,
-          linkedin: null, // TODO: Add if available
-          github: null, // TODO: Add if available
-          portfolio: null, // TODO: Add if available
+          linkedin: app.candidate.linkedIn,
+          github: app.candidate.github,
+          portfolio: app.candidate.portfolio,
+          personalWebsite: app.candidate.personalWebsite,
+          bio: app.candidate.bio,
 
           // Skills Assessment
           skillsScore: app.candidate.testScore || 0,
           tier: app.candidate.testTier || "Not Assessed",
           percentile: app.candidate.testPercentile,
-          assessmentDate: null, // TODO: Add if available
+          assessmentDate: app.candidate.lastTestDate,
           hasTakenTest: app.candidate.hasTakenTest,
 
           sectionScores: app.testResults || [],
@@ -127,8 +129,17 @@ export default function ApplicantDetailPage() {
             level: 0, // TODO: Add if skill levels available
           })) : [],
 
-          // Work Experience - would need separate API or schema update
-          workExperience: [],
+          // Work Experience & Education from relations
+          workExperience: app.candidate.workExperiences || [],
+          educationEntries: app.candidate.educationEntries || [],
+
+          // Compensation & Availability
+          expectedSalary: app.candidate.expectedSalary,
+          availability: app.candidate.availability,
+          startDateAvailability: app.candidate.startDateAvailability,
+          remotePreference: app.candidate.remotePreference,
+          openToContract: app.candidate.openToContract,
+          willingToRelocate: app.candidate.willingToRelocate,
 
           // Application Status
           applicationStatus: app.status.toLowerCase(),
@@ -535,29 +546,152 @@ export default function ApplicantDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Work Experience */}
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <h2 className="mb-6 text-2xl font-bold text-secondary-900">
-                Work Experience
-              </h2>
-              <div className="space-y-6">
-                {applicantData.workExperience.map((job: any, idx: number) => (
-                  <div key={idx} className="border-l-2 border-primary-200 pl-6">
-                    <h3 className="mb-1 text-lg font-bold text-secondary-900">
-                      {job.title}
-                    </h3>
-                    <div className="mb-2 flex items-center gap-3 text-sm text-secondary-600">
-                      <span className="font-medium">{job.company}</span>
-                      <span>•</span>
-                      <span>{job.duration}</span>
+          {/* Professional Links */}
+          {(applicantData.linkedin || applicantData.github || applicantData.portfolio || applicantData.personalWebsite) && (
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-secondary-900">
+                  <ExternalLink className="h-5 w-5" />
+                  Professional Links
+                </h2>
+                <div className="space-y-2">
+                  {applicantData.linkedin && (
+                    <a href={applicantData.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:underline">
+                      💼 LinkedIn
+                    </a>
+                  )}
+                  {applicantData.github && (
+                    <a href={applicantData.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:underline">
+                      💻 GitHub
+                    </a>
+                  )}
+                  {applicantData.portfolio && (
+                    <a href={applicantData.portfolio} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:underline">
+                      🌐 Portfolio
+                    </a>
+                  )}
+                  {applicantData.personalWebsite && (
+                    <a href={applicantData.personalWebsite} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:underline">
+                      🌐 Website
+                    </a>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Work Experience - Full Details */}
+          {applicantData.workExperience && applicantData.workExperience.length > 0 && (
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold text-secondary-900">
+                  <Briefcase className="h-6 w-6" />
+                  Work Experience
+                </h2>
+                <div className="space-y-6">
+                  {applicantData.workExperience.map((exp: any, idx: number) => (
+                    <div key={idx} className="border-l-4 border-green-500 pl-4">
+                      <h3 className="text-lg font-semibold">{exp.title}</h3>
+                      <p className="text-secondary-700">{exp.company}</p>
+                      <p className="mb-2 text-sm text-secondary-500">
+                        {new Date(exp.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} -
+                        {exp.current ? ' Present' : ` ${new Date(exp.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`}
+                        {exp.location && ` • ${exp.location}`}
+                      </p>
+                      {exp.description && (
+                        <p className="whitespace-pre-line text-sm text-secondary-600">{exp.description}</p>
+                      )}
                     </div>
-                    <p className="text-secondary-700">{job.description}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Education - Full Details */}
+          {applicantData.educationEntries && applicantData.educationEntries.length > 0 && (
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-secondary-900">
+                  🎓 Education
+                </h2>
+                <div className="space-y-4">
+                  {applicantData.educationEntries.map((edu: any, idx: number) => (
+                    <div key={idx} className="border-l-4 border-blue-500 pl-4">
+                      <h3 className="font-semibold">{edu.degree}</h3>
+                      <p className="text-secondary-600">{edu.institution}</p>
+                      <p className="text-sm text-secondary-500">
+                        {edu.graduationYear} {edu.fieldOfStudy && `• ${edu.fieldOfStudy}`}
+                      </p>
+                      {edu.description && (
+                        <p className="mt-2 text-sm text-secondary-600">{edu.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Compensation & Availability */}
+          {(applicantData.expectedSalary || applicantData.availability !== null || applicantData.startDateAvailability || applicantData.remotePreference) && (
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-secondary-900">
+                  <DollarSign className="h-5 w-5" />
+                  Compensation & Availability
+                </h2>
+                <div className="space-y-3">
+                  {applicantData.expectedSalary && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-secondary-600">Expected Salary:</span>
+                      <span className="font-medium">${(applicantData.expectedSalary / 100).toLocaleString()}</span>
+                    </div>
+                  )}
+                  {applicantData.availability !== null && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-secondary-600">Availability:</span>
+                      <span className="font-medium">{applicantData.availability ? 'Available' : 'Not Available'}</span>
+                    </div>
+                  )}
+                  {applicantData.startDateAvailability && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-secondary-600">Can Start:</span>
+                      <span className="font-medium">{new Date(applicantData.startDateAvailability).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  {applicantData.remotePreference && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-secondary-600">Remote Preference:</span>
+                      <span className="font-medium capitalize">{applicantData.remotePreference.toLowerCase().replace('_', ' ')}</span>
+                    </div>
+                  )}
+                  {applicantData.openToContract !== null && applicantData.openToContract !== undefined && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-secondary-600">Open to Contract:</span>
+                      <span className="font-medium">{applicantData.openToContract ? 'Yes' : 'No'}</span>
+                    </div>
+                  )}
+                  {applicantData.willingToRelocate !== null && applicantData.willingToRelocate !== undefined && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-secondary-600">Willing to Relocate:</span>
+                      <span className="font-medium">{applicantData.willingToRelocate ? 'Yes' : 'No'}</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Bio */}
+          {applicantData.bio && (
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="mb-4 text-xl font-semibold text-secondary-900">About</h2>
+                <p className="whitespace-pre-line text-secondary-700">{applicantData.bio}</p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Interviews Section */}
           <Card className="mb-6">
