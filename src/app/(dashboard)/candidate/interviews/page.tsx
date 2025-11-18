@@ -95,20 +95,25 @@ export default function CandidateInterviewsPage() {
         const allBackendInterviews = response.data.interviews || [];
 
         // Transform backend interviews to match mock format
-        // Include both SCHEDULED and COMPLETED interviews
-        const scheduledInterviews = allBackendInterviews.filter((interview: any) =>
-          interview.status === "SCHEDULED" || interview.status === "COMPLETED"
+        // Include SCHEDULED, COMPLETED, and CANCELLED interviews
+        const relevantInterviews = allBackendInterviews.filter((interview: any) =>
+          interview.status === "SCHEDULED" ||
+          interview.status === "COMPLETED" ||
+          interview.status === "CANCELLED"
         );
 
-        const transformedInterviews = scheduledInterviews.map((interview: any) => {
+        const transformedInterviews = relevantInterviews.map((interview: any) => {
           const scheduledDate = new Date(interview.scheduledAt);
           const now = new Date();
 
-          // Determine status: if marked as COMPLETED in DB, show completed regardless of date
-          let displayStatus = "upcoming";
-          if (interview.status === "COMPLETED") {
+          // Determine display status based on database status
+          let displayStatus: "upcoming" | "completed" | "cancelled" = "upcoming";
+          if (interview.status === "CANCELLED") {
+            displayStatus = "cancelled";
+          } else if (interview.status === "COMPLETED") {
             displayStatus = "completed";
           } else if (scheduledDate < now) {
+            // Past interviews that haven't been marked completed should show as completed
             displayStatus = "completed";
           }
 
@@ -223,6 +228,7 @@ export default function CandidateInterviewsPage() {
 
   const upcomingCount = interviews.filter((i) => i.status === "upcoming").length;
   const completedCount = interviews.filter((i) => i.status === "completed").length;
+  const cancelledCount = interviews.filter((i) => i.status === "cancelled").length;
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -460,7 +466,7 @@ export default function CandidateInterviewsPage() {
                   : "bg-white text-secondary-700 hover:bg-secondary-100"
               }`}
             >
-              Cancelled
+              Cancelled ({cancelledCount})
             </button>
           </div>
 
