@@ -612,6 +612,46 @@ export default function EmployerApplicantsPage() {
                         </div>
                       )}
 
+                      {/* Skills Assessment Results */}
+                      {app.candidate.hasTakenTest ? (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-semibold text-green-900">Skills Verified</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <p className="text-xs text-green-700">Score</p>
+                                <p className="text-lg font-bold text-green-900">
+                                  {app.candidate.testScore || 0}/100
+                                </p>
+                              </div>
+                              {app.candidate.testTier && (
+                                <Badge className={getTierColor(app.candidate.testTier)} size="sm">
+                                  {app.candidate.testTier}
+                                </Badge>
+                              )}
+                              {app.candidate.testPercentile !== null && (
+                                <div className="text-right">
+                                  <p className="text-xs text-green-700">Percentile</p>
+                                  <p className="text-sm font-semibold text-green-900">
+                                    Top {Math.round(100 - app.candidate.testPercentile)}%
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4 text-yellow-600" />
+                            <span className="text-sm font-medium text-yellow-900">Skills Not Verified</span>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Action Buttons Row */}
                       <div className="flex items-center gap-3">
                         <Button
