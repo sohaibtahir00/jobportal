@@ -118,6 +118,7 @@ export default function InterviewScheduleModal({
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<"standard" | "fastTrack" | "executive" | null>(null);
   const [isSettingUpRounds, setIsSettingUpRounds] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Fetch interview rounds when modal opens
   useEffect(() => {
@@ -172,6 +173,22 @@ export default function InterviewScheduleModal({
   const skipSetup = () => {
     setShowSetupModal(false);
     setSelectedTemplate(null);
+  };
+
+  const resetInterviewRounds = async () => {
+    setIsSettingUpRounds(true);
+    try {
+      await api.delete(`/api/employer/jobs/${jobId}/interview-rounds`);
+      setInterviewRounds([]);
+      setSelectedRound("");
+      setShowResetConfirm(false);
+      setShowSetupModal(true);
+    } catch (err) {
+      console.error("Failed to reset interview rounds:", err);
+      setError("Failed to reset interview rounds. Please try again.");
+    } finally {
+      setIsSettingUpRounds(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -277,12 +294,21 @@ export default function InterviewScheduleModal({
           {/* Interview Round Selector */}
           {interviewRounds.length > 0 && (
             <div>
-              <label
-                htmlFor="round"
-                className="block text-sm font-semibold text-secondary-700 mb-2"
-              >
-                Interview Round <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label
+                  htmlFor="round"
+                  className="block text-sm font-semibold text-secondary-700"
+                >
+                  Interview Round <span className="text-red-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowResetConfirm(true)}
+                  className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                >
+                  Change Template
+                </button>
+              </div>
               <select
                 id="round"
                 value={selectedRound}
@@ -582,6 +608,54 @@ export default function InterviewScheduleModal({
                   "Use This Template"
                 )}
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Confirmation Modal */}
+      {showResetConfirm && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 rounded-lg">
+          <div className="w-full max-w-md bg-white rounded-lg shadow-2xl m-4">
+            <div className="p-6">
+              <h3 className="text-lg font-bold text-secondary-900 mb-2">
+                Change Interview Template?
+              </h3>
+              <p className="text-sm text-secondary-600 mb-4">
+                This will delete all current interview rounds for this job and allow you to select a new template.
+                <span className="font-semibold"> This action cannot be undone.</span>
+              </p>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                <p className="text-xs text-yellow-800">
+                  <strong>Note:</strong> Any interviews already scheduled will not be affected, but future interviews will use the new template.
+                </p>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowResetConfirm(false)}
+                  disabled={isSettingUpRounds}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={resetInterviewRounds}
+                  disabled={isSettingUpRounds}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {isSettingUpRounds ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Resetting...
+                    </>
+                  ) : (
+                    "Reset & Change Template"
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
