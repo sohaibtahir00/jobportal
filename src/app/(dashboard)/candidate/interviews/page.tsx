@@ -89,27 +89,34 @@ export default function CandidateInterviewsPage() {
       if (status !== "authenticated") return;
 
       try {
-        // Load scheduled interviews from backend
+        // Load all interviews from backend (all statuses)
         const { api } = await import("@/lib/api");
-        const response = await api.get("/api/interviews?status=SCHEDULED");
-        const scheduledFromBackend = response.data.interviews || [];
+        const response = await api.get("/api/interviews");
+        const allBackendInterviews = response.data.interviews || [];
 
         // Transform backend interviews to match mock format
-        const transformedInterviews = scheduledFromBackend.map((interview: any) => {
+        // Only include interviews with SCHEDULED status (actual confirmed interviews)
+        const scheduledInterviews = allBackendInterviews.filter((interview: any) =>
+          interview.status === "SCHEDULED"
+        );
+
+        const transformedInterviews = scheduledInterviews.map((interview: any) => {
           const scheduledDate = new Date(interview.scheduledAt);
+          const now = new Date();
+
           return {
             id: interview.id,
             jobTitle: interview.application?.job?.title || "Unknown Position",
-            companyName: "Company Name", // TODO: Add company name to backend
+            companyName: interview.application?.job?.employer?.companyName || "Company Name",
             type: interview.type?.toLowerCase() || "video",
-            status: scheduledDate >= new Date() ? "upcoming" : "completed",
+            status: scheduledDate >= now ? "upcoming" : "completed",
             date: scheduledDate.toISOString().split("T")[0],
             time: scheduledDate.toTimeString().slice(0, 5),
             duration: `${interview.duration} minutes`,
             meetingLink: interview.meetingLink,
-            interviewerName: "Hiring Manager", // TODO: Add interviewer info to backend
+            interviewerName: "Hiring Manager",
             interviewerTitle: "Employer",
-            round: "Interview Round",
+            round: interview.round || "Interview Round",
             notes: interview.notes,
           };
         });

@@ -506,10 +506,6 @@ export default function ApplicantDetailPage() {
                       Download Resume
                     </Button>
                   )}
-                  <Button variant="outline" className="w-full border-green-300 text-green-600 hover:bg-green-50">
-                    <Check className="mr-2 h-5 w-5" />
-                    Move to Interview
-                  </Button>
                   <Button variant="outline" className="w-full border-red-300 text-red-600 hover:bg-red-50">
                     <X className="mr-2 h-5 w-5" />
                     Reject
