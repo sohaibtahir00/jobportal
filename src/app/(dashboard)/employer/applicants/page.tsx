@@ -34,6 +34,20 @@ import {
 } from "@/components/ui";
 import api from "@/lib/api";
 
+// Backend URL for file downloads
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://job-portal-backend-production-cd05.up.railway.app';
+
+// Helper function to get full resume URL
+const getResumeUrl = (resumePath: string | null): string | null => {
+  if (!resumePath) return null;
+  // If it's already a full URL, return as is
+  if (resumePath.startsWith('http://') || resumePath.startsWith('https://')) {
+    return resumePath;
+  }
+  // Otherwise, prepend backend URL
+  return `${BACKEND_URL}${resumePath}`;
+};
+
 // Types
 interface Application {
   id: string;
@@ -609,10 +623,11 @@ export default function EmployerApplicantsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              if (app.candidate.resume) {
+                              const resumeUrl = getResumeUrl(app.candidate.resume);
+                              if (resumeUrl) {
                                 // Create a temporary link element to trigger download
                                 const link = document.createElement('a');
-                                link.href = app.candidate.resume;
+                                link.href = resumeUrl;
                                 link.download = `${app.candidate.user.name.replace(/\s+/g, '_')}_Resume.pdf`;
                                 link.target = '_blank';
                                 document.body.appendChild(link);
