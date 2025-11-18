@@ -66,6 +66,7 @@ interface Application {
       name: string;
       email: string;
       image: string | null;
+      id: string;
     };
   };
   testResults: Array<{
@@ -609,7 +610,14 @@ export default function EmployerApplicantsPage() {
                             size="sm"
                             onClick={() => {
                               if (app.candidate.resume) {
-                                window.open(app.candidate.resume, "_blank");
+                                // Create a temporary link element to trigger download
+                                const link = document.createElement('a');
+                                link.href = app.candidate.resume;
+                                link.download = `${app.candidate.user.name.replace(/\s+/g, '_')}_Resume.pdf`;
+                                link.target = '_blank';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
                               }
                             }}
                           >
@@ -620,10 +628,7 @@ export default function EmployerApplicantsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            // TODO: Implement messaging
-                            showToast("info", "Coming Soon", "Messaging feature will be available soon");
-                          }}
+                          onClick={() => router.push(`/employer/messages?candidateId=${app.candidate.user.id}`)}
                         >
                           <MessageSquare className="h-4 w-4 mr-2" />
                           Message

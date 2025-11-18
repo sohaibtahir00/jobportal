@@ -461,10 +461,27 @@ export default function ApplicantDetailPage() {
                     <MessageSquare className="mr-2 h-5 w-5" />
                     Send Message
                   </Button>
-                  <Button variant="outline" className="w-full">
-                    <Download className="mr-2 h-5 w-5" />
-                    Download Resume
-                  </Button>
+                  {applicantData.resume && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        if (applicantData.resume) {
+                          // Create a temporary link element to trigger download
+                          const link = document.createElement('a');
+                          link.href = applicantData.resume;
+                          link.download = `${applicantData.candidateName.replace(/\s+/g, '_')}_Resume.pdf`;
+                          link.target = '_blank';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }
+                      }}
+                    >
+                      <Download className="mr-2 h-5 w-5" />
+                      Download Resume
+                    </Button>
+                  )}
                   <Button variant="outline" className="w-full border-green-300 text-green-600 hover:bg-green-50">
                     <Check className="mr-2 h-5 w-5" />
                     Move to Interview
