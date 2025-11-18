@@ -1,9 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Video, Loader2, Calendar as CalendarIcon, Clock, ListOrdered } from "lucide-react";
+import { X, Video, Loader2, Calendar as CalendarIcon, Clock, ListOrdered, Plus } from "lucide-react";
 import { Button, Input, Badge } from "@/components/ui";
 import { api } from "@/lib/api";
+
+interface TimeSlot {
+  date: string;
+  startTime: string;
+  endTime: string;
+}
 
 // Interview round templates
 export const INTERVIEW_TEMPLATES = {
@@ -105,12 +111,12 @@ export default function InterviewScheduleModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Form state
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  // Form state - Availability slots
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([
+    { date: "", startTime: "", endTime: "" },
+  ]);
   const [duration, setDuration] = useState("60");
-  const [meetingLink, setMeetingLink] = useState("");
-  const [notes, setNotes] = useState("");
+  const [manualRound, setManualRound] = useState("");
 
   // Interview rounds state
   const [interviewRounds, setInterviewRounds] = useState<InterviewRound[]>([]);
@@ -191,43 +197,110 @@ export default function InterviewScheduleModal({
     }
   };
 
+  // Time slot management functions
+  const addTimeSlot = () => {
+    setTimeSlots([...timeSlots, { date: "", startTime: "", endTime: "" }]);
+  };
+
+  const removeTimeSlot = (index: number) => {
+    if (timeSlots.length === 1) return;
+    setTimeSlots(timeSlots.filter((_, i) => i !== index));
+  };
+
+  const updateTimeSlot = (index: number, field: keyof TimeSlot, value: string) => {
+    const updated = [...timeSlots];
+    updated[index] = { ...updated[index], [field]: value };
+    setTimeSlots(updated);
+  };
+
+  const validateSlots = (): boolean => {
+    // Check all slots are filled
+    for (const slot of timeSlots) {
+      if (!slot.date || !slot.startTime || !slot.endTime) {
+        setError("Please fill in all time slots");
+        return false;
+      }
+
+      // Check end time is after start time
+      if (slot.endTime <= slot.startTime) {
+        setError("End time must be after start time");
+        return false;
+      }
+
+      // Check date is in the future
+      const slotDate = new Date(`${slot.date}T${slot.startTime}`);
+      if (slotDate <= new Date()) {
+        setError("All time slots must be in the future");
+        return false;
+      }
+    }
+
+    // Check for overlapping slots
+    for (let i = 0; i < timeSlots.length; i++) {
+      for (let j = i + 1; j < timeSlots.length; j++) {
+        const slot1 = timeSlots[i];
+        const slot2 = timeSlots[j];
+
+        if (slot1.date === slot2.date) {
+          const start1 = new Date(`${slot1.date}T${slot1.startTime}`);
+          const end1 = new Date(`${slot1.date}T${slot1.endTime}`);
+          const start2 = new Date(`${slot2.date}T${slot2.startTime}`);
+          const end2 = new Date(`${slot2.date}T${slot2.endTime}`);
+
+          if (
+            (start1 < end2 && end1 > start2) ||
+            (start2 < end1 && end2 > start1)
+          ) {
+            setError("Time slots cannot overlap");
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!validateSlots()) return;
+
+    // If template was skipped, validate manual round input
+    if (interviewRounds.length === 0 && !manualRound.trim()) {
+      setError("Please enter the interview round name");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Combine date and time
-      const scheduledAt = new Date(`${date}T${time}`);
-
-      // Validate future date
-      if (scheduledAt <= new Date()) {
-        throw new Error("Interview must be scheduled in the future");
-      }
-
       // Find selected round details
       const round = interviewRounds.find((r) => r.id === selectedRound);
+      const roundName = round ? round.name : manualRound.trim();
 
-      // Create interview
-      const response = await api.post("/api/interviews", {
+      // Create interview with availability slots
+      const response = await api.post("/api/interviews/availability", {
         applicationId,
-        type: "VIDEO", // Always VIDEO as per requirement
-        scheduledAt: scheduledAt.toISOString(),
+        type: "VIDEO",
         duration: parseInt(duration),
-        meetingLink,
-        notes,
-        round: round ? round.name : undefined, // Include round name if available
+        availabilitySlots: timeSlots.map((slot) => ({
+          startTime: new Date(`${slot.date}T${slot.startTime}`).toISOString(),
+          endTime: new Date(`${slot.date}T${slot.endTime}`).toISOString(),
+        })),
+        round: roundName || undefined,
       });
 
-      console.log("✅ Interview scheduled:", response.data);
+      console.log("✅ Availability sent:", response.data);
 
       // Success
       if (onSuccess) onSuccess();
       handleClose();
     } catch (err: any) {
-      console.error("❌ Failed to schedule interview:", err);
+      console.error("❌ Failed to send availability:", err);
       setError(
-        err.response?.data?.error || err.message || "Failed to schedule interview"
+        err.response?.data?.error || err.message || "Failed to send availability"
       );
     } finally {
       setIsLoading(false);
@@ -245,11 +318,9 @@ export default function InterviewScheduleModal({
 
   const handleClose = () => {
     // Reset form
-    setDate("");
-    setTime("");
+    setTimeSlots([{ date: "", startTime: "", endTime: "" }]);
     setDuration("60");
-    setMeetingLink("");
-    setNotes("");
+    setManualRound("");
     setError("");
     onClose();
   };
@@ -263,7 +334,7 @@ export default function InterviewScheduleModal({
         <div className="flex items-center justify-between border-b border-secondary-200 p-6">
           <div>
             <h2 className="text-2xl font-bold text-secondary-900">
-              Schedule Interview
+              Send Interview Availability
             </h2>
             <p className="mt-1 text-sm text-secondary-600">
               {candidateName} • {jobTitle}
@@ -291,8 +362,8 @@ export default function InterviewScheduleModal({
             </Badge>
           </div>
 
-          {/* Interview Round Selector */}
-          {interviewRounds.length > 0 && (
+          {/* Interview Round Selector or Manual Input */}
+          {interviewRounds.length > 0 ? (
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label
@@ -327,51 +398,28 @@ export default function InterviewScheduleModal({
                 Select which interview round this is for
               </p>
             </div>
+          ) : (
+            <div>
+              <label
+                htmlFor="manualRound"
+                className="block text-sm font-semibold text-secondary-700 mb-2"
+              >
+                Interview Round <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="manualRound"
+                type="text"
+                value={manualRound}
+                onChange={(e) => setManualRound(e.target.value)}
+                placeholder="e.g., Technical Interview, Phone Screen, etc."
+                required
+                className="w-full"
+              />
+              <p className="mt-1.5 text-xs text-secondary-500">
+                Enter the name of this interview round
+              </p>
+            </div>
           )}
-
-          {/* Date and Time */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="date"
-                className="block text-sm font-semibold text-secondary-700 mb-2"
-              >
-                Date <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  id="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  min={new Date().toISOString().split("T")[0]}
-                  required
-                  className="w-full px-4 py-2.5 border-2 border-secondary-300 rounded-lg focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 transition-all outline-none"
-                />
-                <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-secondary-400 pointer-events-none" />
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="time"
-                className="block text-sm font-semibold text-secondary-700 mb-2"
-              >
-                Time <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="time"
-                  id="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  required
-                  className="w-full px-4 py-2.5 border-2 border-secondary-300 rounded-lg focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 transition-all outline-none"
-                />
-                <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-secondary-400 pointer-events-none" />
-              </div>
-            </div>
-          </div>
 
           {/* Duration */}
           <div>
@@ -396,44 +444,106 @@ export default function InterviewScheduleModal({
             </select>
           </div>
 
-          {/* Meeting Link */}
+          {/* Available Time Slots */}
           <div>
-            <label
-              htmlFor="meetingLink"
-              className="block text-sm font-semibold text-secondary-700 mb-2"
-            >
-              Video Meeting Link <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="meetingLink"
-              type="url"
-              value={meetingLink}
-              onChange={(e) => setMeetingLink(e.target.value)}
-              placeholder="https://zoom.us/j/... or Google Meet link"
-              required
-              className="w-full"
-            />
-            <p className="mt-1.5 text-xs text-secondary-500">
-              Provide a Zoom, Google Meet, or Microsoft Teams link
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-semibold text-secondary-700">
+                Your Available Time Slots <span className="text-red-500">*</span>
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addTimeSlot}
+                disabled={isLoading}
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                Add Slot
+              </Button>
+            </div>
+            <p className="mb-4 text-xs text-secondary-500">
+              Add multiple time slots when you're available. The candidate will select their preferred time.
             </p>
-          </div>
 
-          {/* Notes */}
-          <div>
-            <label
-              htmlFor="notes"
-              className="block text-sm font-semibold text-secondary-700 mb-2"
-            >
-              Notes for Candidate (Optional)
-            </label>
-            <textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-              placeholder="Add any preparation instructions or what to expect..."
-              className="w-full px-4 py-2.5 border-2 border-secondary-300 rounded-lg focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 transition-all outline-none resize-none"
-            />
+            <div className="space-y-4">
+              {timeSlots.map((slot, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-4 rounded-lg border border-secondary-200 bg-secondary-50 p-4"
+                >
+                  <div className="flex-1 space-y-4">
+                    {/* Date */}
+                    <div>
+                      <label className="mb-2 block text-xs font-semibold text-secondary-700">
+                        Date
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="date"
+                          value={slot.date}
+                          onChange={(e) => updateTimeSlot(index, "date", e.target.value)}
+                          min={new Date().toISOString().split("T")[0]}
+                          disabled={isLoading}
+                          required
+                          className="w-full rounded-lg border-2 border-secondary-300 px-4 py-2.5 outline-none transition-all focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 disabled:opacity-50"
+                        />
+                        <CalendarIcon className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
+                      </div>
+                    </div>
+
+                    {/* Time Range */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="mb-2 block text-xs font-semibold text-secondary-700">
+                          Start Time
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="time"
+                            value={slot.startTime}
+                            onChange={(e) => updateTimeSlot(index, "startTime", e.target.value)}
+                            disabled={isLoading}
+                            required
+                            className="w-full rounded-lg border-2 border-secondary-300 px-4 py-2.5 outline-none transition-all focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 disabled:opacity-50"
+                          />
+                          <Clock className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-xs font-semibold text-secondary-700">
+                          End Time
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="time"
+                            value={slot.endTime}
+                            onChange={(e) => updateTimeSlot(index, "endTime", e.target.value)}
+                            disabled={isLoading}
+                            required
+                            className="w-full rounded-lg border-2 border-secondary-300 px-4 py-2.5 outline-none transition-all focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 disabled:opacity-50"
+                          />
+                          <Clock className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Remove Button */}
+                  {timeSlots.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeTimeSlot(index)}
+                      disabled={isLoading}
+                      className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                      title="Remove slot"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Error Message */}
@@ -457,10 +567,10 @@ export default function InterviewScheduleModal({
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Scheduling...
+                  Sending...
                 </>
               ) : (
-                "Schedule Interview"
+                "Send Availability"
               )}
             </Button>
           </div>
