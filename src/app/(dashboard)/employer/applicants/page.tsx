@@ -44,8 +44,12 @@ const getResumeUrl = (resumePath: string | null): string | null => {
   if (resumePath.startsWith('http://') || resumePath.startsWith('https://')) {
     return resumePath;
   }
-  // Otherwise, prepend backend URL
-  return `${BACKEND_URL}${resumePath}`;
+  // Convert /uploads/... to /api/uploads/... for backend serving
+  const apiPath = resumePath.startsWith('/uploads/')
+    ? resumePath.replace('/uploads/', '/api/uploads/')
+    : resumePath;
+  // Prepend backend URL
+  return `${BACKEND_URL}${apiPath}`;
 };
 
 // Types
