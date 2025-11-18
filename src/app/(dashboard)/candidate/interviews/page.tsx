@@ -95,21 +95,29 @@ export default function CandidateInterviewsPage() {
         const allBackendInterviews = response.data.interviews || [];
 
         // Transform backend interviews to match mock format
-        // Only include interviews with SCHEDULED status (actual confirmed interviews)
+        // Include both SCHEDULED and COMPLETED interviews
         const scheduledInterviews = allBackendInterviews.filter((interview: any) =>
-          interview.status === "SCHEDULED"
+          interview.status === "SCHEDULED" || interview.status === "COMPLETED"
         );
 
         const transformedInterviews = scheduledInterviews.map((interview: any) => {
           const scheduledDate = new Date(interview.scheduledAt);
           const now = new Date();
 
+          // Determine status: if marked as COMPLETED in DB, show completed regardless of date
+          let displayStatus = "upcoming";
+          if (interview.status === "COMPLETED") {
+            displayStatus = "completed";
+          } else if (scheduledDate < now) {
+            displayStatus = "completed";
+          }
+
           return {
             id: interview.id,
             jobTitle: interview.application?.job?.title || "Unknown Position",
             companyName: interview.application?.job?.employer?.companyName || "Company Name",
             type: interview.type?.toLowerCase() || "video",
-            status: scheduledDate >= now ? "upcoming" : "completed",
+            status: displayStatus,
             date: scheduledDate.toISOString().split("T")[0],
             time: scheduledDate.toTimeString().slice(0, 5),
             duration: `${interview.duration} minutes`,
