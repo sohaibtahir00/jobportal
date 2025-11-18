@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
 import { api } from "@/lib/api";
+import InterviewScheduleModal from "@/components/interviews/InterviewScheduleModal";
 
 // Backend URL for file downloads
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://job-portal-backend-production-cd05.up.railway.app';
@@ -76,6 +77,9 @@ export default function ApplicantDetailPage() {
     expiresAt: "",
     customMessage: "",
   });
+
+  // Interview schedule modal state
+  const [showInterviewModal, setShowInterviewModal] = useState(false);
 
   // Redirect if not logged in or not employer
   useEffect(() => {
@@ -162,6 +166,7 @@ export default function ApplicantDetailPage() {
           // Application Status
           applicationStatus: app.status.toLowerCase(),
           appliedFor: app.job.title,
+          jobId: app.jobId,
           coverLetter: app.coverLetter || "No cover letter provided",
         };
 
@@ -448,7 +453,7 @@ export default function ApplicantDetailPage() {
                   <Button
                     variant="primary"
                     className="w-full"
-                    onClick={() => router.push(`/employer/interviews/availability/${applicantId}`)}
+                    onClick={() => setShowInterviewModal(true)}
                   >
                     <Video className="mr-2 h-5 w-5" />
                     Schedule Interview
@@ -739,7 +744,7 @@ export default function ApplicantDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push(`/employer/interviews/availability/${applicantId}`)}
+                  onClick={() => setShowInterviewModal(true)}
                 >
                   <Video className="mr-2 h-4 w-4" />
                   Schedule New
@@ -761,7 +766,7 @@ export default function ApplicantDetailPage() {
                   </p>
                   <Button
                     variant="primary"
-                    onClick={() => router.push(`/employer/interviews/availability/${applicantId}`)}
+                    onClick={() => setShowInterviewModal(true)}
                   >
                     <Video className="mr-2 h-4 w-4" />
                     Schedule Interview
@@ -1076,6 +1081,23 @@ export default function ApplicantDetailPage() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Interview Schedule Modal */}
+      {applicantData && (
+        <InterviewScheduleModal
+          isOpen={showInterviewModal}
+          onClose={() => setShowInterviewModal(false)}
+          applicationId={applicantId}
+          candidateName={applicantData.name}
+          jobTitle={applicantData.appliedFor}
+          jobId={applicantData.jobId}
+          onSuccess={() => {
+            setShowInterviewModal(false);
+            // Reload interviews
+            loadInterviews();
+          }}
+        />
       )}
     </div>
   );
