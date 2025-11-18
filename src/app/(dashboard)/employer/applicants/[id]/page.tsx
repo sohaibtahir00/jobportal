@@ -80,6 +80,7 @@ export default function ApplicantDetailPage() {
 
   // Interview schedule modal state
   const [showInterviewModal, setShowInterviewModal] = useState(false);
+  const [suggestedNextRound, setSuggestedNextRound] = useState<string | null>(null);
 
   // Redirect if not logged in or not employer
   useEffect(() => {
@@ -205,12 +206,45 @@ export default function ApplicantDetailPage() {
     try {
       setIsLoadingInterviews(true);
       const response = await api.get(`/api/interviews?applicationId=${applicantId}`);
-      setInterviews(response.data.interviews || []);
+      const fetchedInterviews = response.data.interviews || [];
+      setInterviews(fetchedInterviews);
+
+      // Calculate suggested next round based on completed interviews
+      calculateNextRound(fetchedInterviews);
     } catch (err) {
       console.error("Failed to load interviews:", err);
     } finally {
       setIsLoadingInterviews(false);
     }
+  };
+
+  // Calculate the next interview round based on completed interviews
+  const calculateNextRound = (interviewList: any[]) => {
+    // Get all completed interview rounds
+    const completedRounds = interviewList
+      .filter((i) => i.status === "COMPLETED")
+      .map((i) => i.round)
+      .filter(Boolean);
+
+    // Standard interview round progression
+    const standardRounds = [
+      "Phone Screen",
+      "Technical Interview",
+      "System Design",
+      "Behavioral Interview",
+      "Final Interview"
+    ];
+
+    // Find the next round that hasn't been completed
+    for (const round of standardRounds) {
+      if (!completedRounds.includes(round)) {
+        setSuggestedNextRound(round);
+        return;
+      }
+    }
+
+    // If all standard rounds are completed, suggest "Final Interview" or null
+    setSuggestedNextRound(null);
   };
 
   useEffect(() => {
@@ -743,7 +777,7 @@ export default function ApplicantDetailPage() {
                   onClick={() => setShowInterviewModal(true)}
                 >
                   <Video className="mr-2 h-4 w-4" />
-                  Schedule New
+                  Schedule Next
                 </Button>
               </div>
 
@@ -777,7 +811,7 @@ export default function ApplicantDetailPage() {
                         <th className="pb-3">Type</th>
                         <th className="pb-3">Duration</th>
                         <th className="pb-3">Status</th>
-                        <th className="pb-3 text-right">Actions</th>
+                        <th className="pb-3">Interview Round</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -812,36 +846,9 @@ export default function ApplicantDetailPage() {
                             {getInterviewStatusBadge(interview.status)}
                           </td>
                           <td className="py-4">
-                            <div className="flex items-center justify-end gap-2">
-                              {interview.meetingLink && (
-                                <a
-                                  href={interview.meetingLink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="rounded-lg border border-primary-300 bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 hover:bg-primary-100"
-                                >
-                                  Join Meeting
-                                </a>
-                              )}
-                              {interview.status === "SCHEDULED" && (
-                                <>
-                                  <button
-                                    onClick={() => handleMarkCompleted(interview.id)}
-                                    className="rounded-lg border border-green-300 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100"
-                                    title="Mark as Completed"
-                                  >
-                                    <CheckCircle className="h-4 w-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleCancelInterview(interview.id)}
-                                    className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
-                                    title="Cancel Interview"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </>
-                              )}
-                            </div>
+                            <span className="font-medium text-secondary-900">
+                              {interview.round || "Interview Round"}
+                            </span>
                           </td>
                         </tr>
                       ))}
@@ -1088,6 +1095,7 @@ export default function ApplicantDetailPage() {
           candidateName={applicantData.name}
           jobTitle={applicantData.appliedFor}
           jobId={applicantData.jobId}
+          suggestedRound={suggestedNextRound}
           onSuccess={() => {
             setShowInterviewModal(false);
             // Reload interviews

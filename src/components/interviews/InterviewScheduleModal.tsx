@@ -97,6 +97,7 @@ interface InterviewScheduleModalProps {
   jobTitle: string;
   jobId: string;
   onSuccess?: () => void;
+  suggestedRound?: string | null;
 }
 
 export default function InterviewScheduleModal({
@@ -107,6 +108,7 @@ export default function InterviewScheduleModal({
   jobTitle,
   jobId,
   onSuccess,
+  suggestedRound,
 }: InterviewScheduleModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -142,15 +144,36 @@ export default function InterviewScheduleModal({
       // If no rounds exist, show setup modal
       if (rounds.length === 0) {
         setShowSetupModal(true);
+        // If we have a suggested round but no template rounds, use it for manual input
+        if (suggestedRound) {
+          setManualRound(suggestedRound);
+        }
       } else {
-        // Auto-select first round
-        setSelectedRound(rounds[0]?.id || "");
-        setDuration(rounds[0]?.duration?.toString() || "60");
+        // Try to auto-select the suggested round if provided
+        if (suggestedRound) {
+          const matchingRound = rounds.find((r: InterviewRound) => r.name === suggestedRound);
+          if (matchingRound) {
+            setSelectedRound(matchingRound.id || "");
+            setDuration(matchingRound.duration?.toString() || "60");
+          } else {
+            // If suggested round doesn't match any template, auto-select first round
+            setSelectedRound(rounds[0]?.id || "");
+            setDuration(rounds[0]?.duration?.toString() || "60");
+          }
+        } else {
+          // Auto-select first round if no suggestion
+          setSelectedRound(rounds[0]?.id || "");
+          setDuration(rounds[0]?.duration?.toString() || "60");
+        }
       }
     } catch (err) {
       console.error("Failed to fetch interview rounds:", err);
       // If fetching fails, show setup modal
       setShowSetupModal(true);
+      // If we have a suggested round, use it for manual input
+      if (suggestedRound) {
+        setManualRound(suggestedRound);
+      }
     }
   };
 
