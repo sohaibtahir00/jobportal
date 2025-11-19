@@ -127,8 +127,8 @@ export default function CandidateInterviewsPage() {
             time: scheduledDate.toTimeString().slice(0, 5),
             duration: `${interview.duration} minutes`,
             meetingLink: interview.meetingLink,
-            interviewerName: "Hiring Manager",
-            interviewerTitle: "Employer",
+            interviewerName: interview.interviewer?.name || "Hiring Manager",
+            interviewerTitle: interview.interviewer?.title || "Employer",
             round: interview.round || "Interview Round",
             notes: interview.notes,
           };

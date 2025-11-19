@@ -35,6 +35,7 @@ export default function ConfirmInterviewPage() {
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [isLoadingMembers, setIsLoadingMembers] = useState(true);
   const [selectedInterviewerId, setSelectedInterviewerId] = useState<string | null>(null);
+  const [notes, setNotes] = useState("");
 
   // Redirect if not employer
   useEffect(() => {
@@ -106,6 +107,7 @@ export default function ConfirmInterviewPage() {
         slotId: selectedSlotId,
         meetingPlatform,
         interviewerId: selectedInterviewerId,
+        notes: notes.trim() || null,
       });
 
       router.push("/employer/interviews");
@@ -345,6 +347,29 @@ export default function ConfirmInterviewPage() {
                   })}
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Interview Notes */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <h3 className="mb-4 text-xl font-bold text-secondary-900">
+                Interview Notes (Optional)
+              </h3>
+              <p className="mb-4 text-sm text-secondary-600">
+                Add any notes or instructions for the candidate (e.g., preparation tips, what to bring, topics to review)
+              </p>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                disabled={isConfirming}
+                className="w-full rounded-lg border-2 border-secondary-200 p-3 text-sm text-secondary-900 focus:border-primary-500 focus:outline-none disabled:opacity-50"
+                rows={4}
+                placeholder="e.g., Please prepare to discuss your experience with React and TypeScript. We'll also do a live coding exercise."
+              />
+              <p className="mt-2 text-xs text-secondary-500">
+                These notes will be visible to the candidate on their interview page
+              </p>
             </CardContent>
           </Card>
 
