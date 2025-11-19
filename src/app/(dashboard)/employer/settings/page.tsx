@@ -314,19 +314,31 @@ export default function EmployerSettingsPage() {
 
   const connectZoom = () => {
     const clientId = process.env.NEXT_PUBLIC_ZOOM_CLIENT_ID;
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+    if (!backendUrl) {
+      setErrorMessage("Backend URL not configured. Please contact support.");
+      return;
+    }
+
     const redirectUri = `${backendUrl}/api/employer/integrations/zoom/callback`;
-    const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${employerId}`;
+    const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${employerId}`;
     window.location.href = authUrl;
   };
 
   const connectGoogleMeet = () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+    if (!backendUrl) {
+      setErrorMessage("Backend URL not configured. Please contact support.");
+      return;
+    }
+
     const redirectUri = `${backendUrl}/api/employer/integrations/google-meet/callback`;
     const scope =
       "https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email";
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${employerId}&access_type=offline&prompt=consent`;
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${employerId}&access_type=offline&prompt=consent`;
     window.location.href = authUrl;
   };
 
