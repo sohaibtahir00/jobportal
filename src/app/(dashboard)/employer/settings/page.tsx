@@ -17,6 +17,8 @@ import {
   CheckCircle2,
   Upload,
   X,
+  Video,
+  ExternalLink,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -72,6 +74,10 @@ export default function EmployerSettingsPage() {
     title: "",
   });
 
+  // Video integration state
+  const [videoIntegration, setVideoIntegration] = useState<any>(null);
+  const [employerId, setEmployerId] = useState<string>("");
+
   // Load settings
   useEffect(() => {
     const loadSettings = async () => {
@@ -110,6 +116,18 @@ export default function EmployerSettingsPage() {
         // Load team members
         const teamResponse = await api.get("/api/employer/team-members");
         setTeamMembers(teamResponse.data.members || []);
+
+        // Store employer ID for OAuth
+        setEmployerId(profileData.employer.id);
+
+        // Load video integration
+        try {
+          const videoResponse = await api.get("/api/employer/integrations/video");
+          setVideoIntegration(videoResponse.data.integration);
+        } catch (err) {
+          // No integration yet, that's fine
+          setVideoIntegration(null);
+        }
 
         setIsLoading(false);
       } catch (err: any) {
@@ -267,6 +285,44 @@ export default function EmployerSettingsPage() {
     } catch (err: any) {
       console.error("Failed to delete team member:", err);
       setErrorMessage(err.response?.data?.error || "Failed to delete team member");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const connectZoom = () => {
+    const clientId = process.env.NEXT_PUBLIC_ZOOM_CLIENT_ID;
+    const redirectUri = `${window.location.origin}/api/employer/integrations/zoom/callback`;
+    const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${employerId}`;
+    window.location.href = authUrl;
+  };
+
+  const connectGoogleMeet = () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const redirectUri = `${window.location.origin}/api/employer/integrations/google-meet/callback`;
+    const scope =
+      "https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email";
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${employerId}&access_type=offline&prompt=consent`;
+    window.location.href = authUrl;
+  };
+
+  const disconnectVideo = async () => {
+    if (!confirm("Are you sure you want to disconnect your video integration?"))
+      return;
+
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      await api.delete("/api/employer/integrations/video");
+      setVideoIntegration(null);
+      setSuccessMessage("Video integration disconnected successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Failed to disconnect video integration:", err);
+      setErrorMessage(
+        err.response?.data?.error || "Failed to disconnect integration"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -847,6 +903,136 @@ export default function EmployerSettingsPage() {
               </Card>
             </div>
           )}
+
+          {/* Video Conferencing Integrations */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
+                  <Video className="h-5 w-5 text-primary-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-secondary-900">
+                    Video Conferencing
+                  </h2>
+                  <p className="text-sm text-secondary-600">
+                    Connect your video conferencing accounts to auto-generate meeting links
+                  </p>
+                </div>
+              </div>
+
+              {/* Zoom Integration */}
+              <div className="mb-4 rounded-lg border border-secondary-200 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+                      <Video className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-secondary-900">Zoom</h3>
+                      {videoIntegration?.platform === "ZOOM" ? (
+                        <p className="text-sm text-success-600">
+                          ✓ Connected as {videoIntegration.email}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-secondary-500">Not connected</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {videoIntegration?.platform === "ZOOM" ? (
+                    <Button
+                      variant="outline"
+                      onClick={disconnectVideo}
+                      disabled={isSaving}
+                      className="border-error-300 text-error-600 hover:bg-error-50"
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Disconnecting...
+                        </>
+                      ) : (
+                        "Disconnect"
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      onClick={connectZoom}
+                      disabled={
+                        isSaving ||
+                        (videoIntegration && videoIntegration.platform !== "ZOOM")
+                      }
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Connect Zoom
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Google Meet Integration */}
+              <div className="rounded-lg border border-secondary-200 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
+                      <Video className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-secondary-900">Google Meet</h3>
+                      {videoIntegration?.platform === "GOOGLE_MEET" ? (
+                        <p className="text-sm text-success-600">
+                          ✓ Connected as {videoIntegration.email}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-secondary-500">Not connected</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {videoIntegration?.platform === "GOOGLE_MEET" ? (
+                    <Button
+                      variant="outline"
+                      onClick={disconnectVideo}
+                      disabled={isSaving}
+                      className="border-error-300 text-error-600 hover:bg-error-50"
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Disconnecting...
+                        </>
+                      ) : (
+                        "Disconnect"
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      onClick={connectGoogleMeet}
+                      disabled={
+                        isSaving ||
+                        (videoIntegration &&
+                          videoIntegration.platform !== "GOOGLE_MEET")
+                      }
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Connect Google Meet
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-lg bg-blue-50 border border-blue-200 p-4">
+                <p className="text-sm text-blue-800">
+                  💡 <strong>Tip:</strong> Connect Zoom or Google Meet to automatically generate
+                  meeting links when scheduling interviews. You can only connect one platform at a
+                  time.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Danger Zone */}
           <Card className="border-2 border-error-200">
