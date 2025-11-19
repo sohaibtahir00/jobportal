@@ -74,11 +74,16 @@ export default function EmployerSettingsPage() {
 
   // Redirect if not logged in or not employer
   useEffect(() => {
+    if (status === "loading") return; // Wait for auth to finish loading
+
     if (status === "unauthenticated") {
       router.push("/login?redirect=/employer/settings");
+      return;
     }
-    if (status === "authenticated" && session?.user?.role !== "EMPLOYER") {
+
+    if (session?.user?.role !== "EMPLOYER") {
       router.push("/");
+      return;
     }
   }, [status, session, router]);
 
