@@ -13,6 +13,8 @@ import {
   Save,
   User,
   Briefcase,
+  FileText,
+  CheckCircle2,
 } from "lucide-react";
 import { Button, Card, CardContent, Badge } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -39,6 +41,11 @@ export default function SetAvailabilityPage() {
   ]);
   const [error, setError] = useState("");
 
+  // Template selection
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+
   // Redirect if not employer
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -49,7 +56,7 @@ export default function SetAvailabilityPage() {
     }
   }, [status, session, router]);
 
-  // Load application data
+  // Load application data and templates
   useEffect(() => {
     const loadData = async () => {
       if (status !== "authenticated") return;
@@ -58,6 +65,16 @@ export default function SetAvailabilityPage() {
         setIsLoading(true);
         const response = await api.get(`/api/employer/applications/${applicationId}`);
         setApplicationData(response.data.application);
+
+        // Load templates
+        const templatesResponse = await api.get("/api/employer/interview-templates");
+        setTemplates(templatesResponse.data.templates || []);
+
+        // Set default template if one exists
+        const defaultTemplate = templatesResponse.data.templates?.find((t: any) => t.isDefault);
+        if (defaultTemplate) {
+          setSelectedTemplate(defaultTemplate);
+        }
       } catch (err) {
         console.error("Failed to load application:", err);
         setError("Failed to load application details");
@@ -254,6 +271,154 @@ export default function SetAvailabilityPage() {
               </ol>
             </CardContent>
           </Card>
+
+          {/* Interview Template Selection */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
+                    <FileText className="h-5 w-5 text-primary-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-secondary-900">
+                      Interview Template
+                    </h3>
+                    <p className="text-sm text-secondary-600">
+                      {selectedTemplate
+                        ? `Using: ${selectedTemplate.name} (${selectedTemplate.rounds.length} rounds)`
+                        : "Choose a template for the interview process"}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowTemplateModal(true)}
+                  disabled={isSaving}
+                >
+                  {selectedTemplate ? "Change Template" : "Select Template"}
+                </Button>
+              </div>
+
+              {selectedTemplate && (
+                <div className="mt-4 rounded-lg border border-secondary-200 bg-secondary-50 p-4">
+                  <p className="mb-2 text-sm font-semibold text-secondary-700">
+                    Interview Rounds:
+                  </p>
+                  <ol className="space-y-2">
+                    {selectedTemplate.rounds.map((round: any, index: number) => (
+                      <li key={index} className="flex items-start text-sm">
+                        <span className="mr-2 font-bold text-primary-600">
+                          {index + 1}.
+                        </span>
+                        <div>
+                          <span className="font-medium">{round.name}</span>
+                          <span className="text-secondary-600">
+                            {" "}
+                            ({round.duration} minutes)
+                          </span>
+                          {round.description && (
+                            <p className="text-secondary-600">
+                              {round.description}
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Template Selection Modal */}
+          {showTemplateModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="mx-4 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-secondary-900">
+                    Choose Interview Template
+                  </h3>
+                  <button
+                    onClick={() => setShowTemplateModal(false)}
+                    className="text-secondary-400 hover:text-secondary-600"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {templates.map((template) => (
+                    <div
+                      key={template.id}
+                      onClick={() => {
+                        setSelectedTemplate(template);
+                        setShowTemplateModal(false);
+                      }}
+                      className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                        selectedTemplate?.id === template.id
+                          ? "border-primary-500 bg-primary-50"
+                          : "border-secondary-200 hover:border-primary-300 hover:bg-secondary-50"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-secondary-900">
+                              {template.name}
+                            </h4>
+                            {template.isDefault && (
+                              <Badge variant="success" size="sm">
+                                Default
+                              </Badge>
+                            )}
+                            {template.isBuiltIn && (
+                              <Badge variant="secondary" size="sm">
+                                Built-in
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="mt-1 text-sm text-secondary-600">
+                            {template.rounds.length} round
+                            {template.rounds.length !== 1 ? "s" : ""}
+                          </p>
+                          <ol className="mt-2 space-y-1">
+                            {template.rounds.map((round: any, index: number) => (
+                              <li
+                                key={index}
+                                className="text-sm text-secondary-700"
+                              >
+                                <span className="font-medium">{index + 1}.</span>{" "}
+                                {round.name} ({round.duration} min)
+                                {round.description && (
+                                  <span className="text-secondary-600">
+                                    {" "}
+                                    - {round.description}
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                        {selectedTemplate?.id === template.id && (
+                          <CheckCircle2 className="h-6 w-6 text-primary-600" />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowTemplateModal(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Time Slots Form */}
           <Card>

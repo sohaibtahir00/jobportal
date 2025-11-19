@@ -19,6 +19,10 @@ import {
   X,
   Video,
   ExternalLink,
+  FileText,
+  Plus,
+  Edit,
+  Star,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -78,6 +82,15 @@ export default function EmployerSettingsPage() {
   const [videoIntegration, setVideoIntegration] = useState<any>(null);
   const [employerId, setEmployerId] = useState<string>("");
 
+  // Interview templates state
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [showCreateTemplate, setShowCreateTemplate] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<any>(null);
+  const [newTemplate, setNewTemplate] = useState({
+    name: "",
+    rounds: [{ name: "", duration: 30, description: "" }],
+  });
+
   // Load settings
   useEffect(() => {
     const loadSettings = async () => {
@@ -127,6 +140,15 @@ export default function EmployerSettingsPage() {
         } catch (err) {
           // No integration yet, that's fine
           setVideoIntegration(null);
+        }
+
+        // Load interview templates
+        try {
+          const templatesResponse = await api.get("/api/employer/interview-templates");
+          setTemplates(templatesResponse.data.templates || []);
+        } catch (err) {
+          console.error("Failed to load templates:", err);
+          setTemplates([]);
         }
 
         setIsLoading(false);
@@ -326,6 +348,142 @@ export default function EmployerSettingsPage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Interview template functions
+  const handleCreateTemplate = async () => {
+    if (!newTemplate.name.trim()) {
+      setErrorMessage("Template name is required");
+      return;
+    }
+
+    if (newTemplate.rounds.some((r) => !r.name.trim() || !r.duration)) {
+      setErrorMessage("All rounds must have a name and duration");
+      return;
+    }
+
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      const response = await api.post("/api/employer/interview-templates", {
+        name: newTemplate.name,
+        rounds: newTemplate.rounds,
+        isDefault: false,
+      });
+
+      setTemplates([...templates, response.data.template]);
+      setNewTemplate({
+        name: "",
+        rounds: [{ name: "", duration: 30, description: "" }],
+      });
+      setShowCreateTemplate(false);
+      setSuccessMessage("Template created successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Failed to create template:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to create template");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUpdateTemplate = async () => {
+    if (!editingTemplate) return;
+
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      const response = await api.put(
+        `/api/employer/interview-templates/${editingTemplate.id}`,
+        {
+          name: editingTemplate.name,
+          rounds: editingTemplate.rounds,
+          isDefault: editingTemplate.isDefault,
+        }
+      );
+
+      setTemplates(
+        templates.map((t) =>
+          t.id === editingTemplate.id ? response.data.template : t
+        )
+      );
+      setEditingTemplate(null);
+      setSuccessMessage("Template updated successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Failed to update template:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to update template");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    if (!confirm("Are you sure you want to delete this template?")) return;
+
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      await api.delete(`/api/employer/interview-templates/${templateId}`);
+      setTemplates(templates.filter((t) => t.id !== templateId));
+      setSuccessMessage("Template deleted successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Failed to delete template:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to delete template");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSetDefaultTemplate = async (templateId: string) => {
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      const response = await api.put(
+        `/api/employer/interview-templates/${templateId}`,
+        { isDefault: true }
+      );
+
+      // Update all templates - set selected as default, others as not default
+      setTemplates(
+        templates.map((t) => ({
+          ...t,
+          isDefault: t.id === templateId,
+        }))
+      );
+
+      setSuccessMessage("Default template set successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Failed to set default template:", err);
+      setErrorMessage(
+        err.response?.data?.error || "Failed to set default template"
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const addRoundToNewTemplate = () => {
+    setNewTemplate({
+      ...newTemplate,
+      rounds: [
+        ...newTemplate.rounds,
+        { name: "", duration: 30, description: "" },
+      ],
+    });
+  };
+
+  const removeRoundFromNewTemplate = (index: number) => {
+    setNewTemplate({
+      ...newTemplate,
+      rounds: newTemplate.rounds.filter((_, i) => i !== index),
+    });
   };
 
   const handleAccountDeletion = async () => {
@@ -1031,6 +1189,435 @@ export default function EmployerSettingsPage() {
                   time.
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Interview Templates */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="mb-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
+                    <FileText className="h-5 w-5 text-primary-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-secondary-900">
+                      Interview Templates
+                    </h2>
+                    <p className="text-sm text-secondary-600">
+                      Manage custom interview templates for your hiring process
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={() => setShowCreateTemplate(true)}
+                  disabled={isSaving}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Template
+                </Button>
+              </div>
+
+              {/* Template List */}
+              <div className="space-y-3">
+                {templates.map((template) => (
+                  <div
+                    key={template.id}
+                    className="rounded-lg border border-secondary-200 p-4"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-secondary-900">
+                            {template.name}
+                          </h3>
+                          {template.isDefault && (
+                            <Badge variant="success">Default</Badge>
+                          )}
+                          {template.isBuiltIn && (
+                            <Badge variant="secondary">Built-in</Badge>
+                          )}
+                        </div>
+                        <p className="mt-1 text-sm text-secondary-600">
+                          {template.rounds.length} round
+                          {template.rounds.length !== 1 ? "s" : ""}:{" "}
+                          {template.rounds
+                            .map((r: any) => `${r.name} (${r.duration} min)`)
+                            .join(", ")}
+                        </p>
+                      </div>
+
+                      {!template.isBuiltIn && (
+                        <div className="flex gap-2">
+                          {!template.isDefault && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleSetDefaultTemplate(template.id)
+                              }
+                              disabled={isSaving}
+                            >
+                              <Star className="mr-1 h-3 w-3" />
+                              Set Default
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingTemplate(template)}
+                            disabled={isSaving}
+                          >
+                            <Edit className="mr-1 h-3 w-3" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteTemplate(template.id)}
+                            disabled={isSaving}
+                            className="border-error-300 text-error-600 hover:bg-error-50"
+                          >
+                            <Trash2 className="mr-1 h-3 w-3" />
+                            Delete
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {templates.length === 0 && (
+                  <div className="rounded-lg border-2 border-dashed border-secondary-200 p-8 text-center">
+                    <FileText className="mx-auto h-12 w-12 text-secondary-400" />
+                    <p className="mt-2 text-sm text-secondary-600">
+                      No custom templates yet. Create your first template to get
+                      started.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Create Template Modal */}
+              {showCreateTemplate && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="mx-4 w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-lg font-bold text-secondary-900">
+                        Create Interview Template
+                      </h3>
+                      <button
+                        onClick={() => setShowCreateTemplate(false)}
+                        className="text-secondary-400 hover:text-secondary-600"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-secondary-700">
+                          Template Name
+                        </label>
+                        <Input
+                          value={newTemplate.name}
+                          onChange={(e) =>
+                            setNewTemplate({
+                              ...newTemplate,
+                              name: e.target.value,
+                            })
+                          }
+                          placeholder="e.g., Engineering 3-Round"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="mb-2 flex items-center justify-between">
+                          <label className="text-sm font-medium text-secondary-700">
+                            Interview Rounds
+                          </label>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={addRoundToNewTemplate}
+                          >
+                            <Plus className="mr-1 h-3 w-3" />
+                            Add Round
+                          </Button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {newTemplate.rounds.map((round, index) => (
+                            <div
+                              key={index}
+                              className="rounded-lg border border-secondary-200 p-3"
+                            >
+                              <div className="mb-2 flex items-center justify-between">
+                                <span className="text-sm font-medium text-secondary-700">
+                                  Round {index + 1}
+                                </span>
+                                {newTemplate.rounds.length > 1 && (
+                                  <button
+                                    onClick={() =>
+                                      removeRoundFromNewTemplate(index)
+                                    }
+                                    className="text-error-600 hover:text-error-700"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                )}
+                              </div>
+
+                              <div className="grid gap-2">
+                                <Input
+                                  value={round.name}
+                                  onChange={(e) => {
+                                    const updatedRounds = [
+                                      ...newTemplate.rounds,
+                                    ];
+                                    updatedRounds[index].name = e.target.value;
+                                    setNewTemplate({
+                                      ...newTemplate,
+                                      rounds: updatedRounds,
+                                    });
+                                  }}
+                                  placeholder="Round name (e.g., Phone Screen)"
+                                />
+                                <div className="grid grid-cols-2 gap-2">
+                                  <Input
+                                    type="number"
+                                    value={round.duration}
+                                    onChange={(e) => {
+                                      const updatedRounds = [
+                                        ...newTemplate.rounds,
+                                      ];
+                                      updatedRounds[index].duration =
+                                        parseInt(e.target.value) || 30;
+                                      setNewTemplate({
+                                        ...newTemplate,
+                                        rounds: updatedRounds,
+                                      });
+                                    }}
+                                    placeholder="Duration (minutes)"
+                                  />
+                                  <Input
+                                    value={round.description}
+                                    onChange={(e) => {
+                                      const updatedRounds = [
+                                        ...newTemplate.rounds,
+                                      ];
+                                      updatedRounds[index].description =
+                                        e.target.value;
+                                      setNewTemplate({
+                                        ...newTemplate,
+                                        rounds: updatedRounds,
+                                      });
+                                    }}
+                                    placeholder="Description (optional)"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-end gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowCreateTemplate(false)}
+                        disabled={isSaving}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={handleCreateTemplate}
+                        disabled={isSaving}
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Creating...
+                          </>
+                        ) : (
+                          "Create Template"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Edit Template Modal */}
+              {editingTemplate && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="mx-4 w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-lg font-bold text-secondary-900">
+                        Edit Interview Template
+                      </h3>
+                      <button
+                        onClick={() => setEditingTemplate(null)}
+                        className="text-secondary-400 hover:text-secondary-600"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-secondary-700">
+                          Template Name
+                        </label>
+                        <Input
+                          value={editingTemplate.name}
+                          onChange={(e) =>
+                            setEditingTemplate({
+                              ...editingTemplate,
+                              name: e.target.value,
+                            })
+                          }
+                          placeholder="e.g., Engineering 3-Round"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="mb-2 flex items-center justify-between">
+                          <label className="text-sm font-medium text-secondary-700">
+                            Interview Rounds
+                          </label>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setEditingTemplate({
+                                ...editingTemplate,
+                                rounds: [
+                                  ...editingTemplate.rounds,
+                                  { name: "", duration: 30, description: "" },
+                                ],
+                              })
+                            }
+                          >
+                            <Plus className="mr-1 h-3 w-3" />
+                            Add Round
+                          </Button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {editingTemplate.rounds.map(
+                            (round: any, index: number) => (
+                              <div
+                                key={index}
+                                className="rounded-lg border border-secondary-200 p-3"
+                              >
+                                <div className="mb-2 flex items-center justify-between">
+                                  <span className="text-sm font-medium text-secondary-700">
+                                    Round {index + 1}
+                                  </span>
+                                  {editingTemplate.rounds.length > 1 && (
+                                    <button
+                                      onClick={() =>
+                                        setEditingTemplate({
+                                          ...editingTemplate,
+                                          rounds: editingTemplate.rounds.filter(
+                                            (_: any, i: number) => i !== index
+                                          ),
+                                        })
+                                      }
+                                      className="text-error-600 hover:text-error-700"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                </div>
+
+                                <div className="grid gap-2">
+                                  <Input
+                                    value={round.name}
+                                    onChange={(e) => {
+                                      const updatedRounds = [
+                                        ...editingTemplate.rounds,
+                                      ];
+                                      updatedRounds[index].name =
+                                        e.target.value;
+                                      setEditingTemplate({
+                                        ...editingTemplate,
+                                        rounds: updatedRounds,
+                                      });
+                                    }}
+                                    placeholder="Round name (e.g., Phone Screen)"
+                                  />
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <Input
+                                      type="number"
+                                      value={round.duration}
+                                      onChange={(e) => {
+                                        const updatedRounds = [
+                                          ...editingTemplate.rounds,
+                                        ];
+                                        updatedRounds[index].duration =
+                                          parseInt(e.target.value) || 30;
+                                        setEditingTemplate({
+                                          ...editingTemplate,
+                                          rounds: updatedRounds,
+                                        });
+                                      }}
+                                      placeholder="Duration (minutes)"
+                                    />
+                                    <Input
+                                      value={round.description}
+                                      onChange={(e) => {
+                                        const updatedRounds = [
+                                          ...editingTemplate.rounds,
+                                        ];
+                                        updatedRounds[index].description =
+                                          e.target.value;
+                                        setEditingTemplate({
+                                          ...editingTemplate,
+                                          rounds: updatedRounds,
+                                        });
+                                      }}
+                                      placeholder="Description (optional)"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-end gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => setEditingTemplate(null)}
+                        disabled={isSaving}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={handleUpdateTemplate}
+                        disabled={isSaving}
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Updating...
+                          </>
+                        ) : (
+                          "Update Template"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
