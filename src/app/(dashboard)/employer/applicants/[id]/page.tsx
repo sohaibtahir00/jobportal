@@ -289,6 +289,26 @@ export default function ApplicantDetailPage() {
     }
   };
 
+  const rescheduleInterview = async (interviewId: string) => {
+    // TODO: Implement reschedule logic
+    alert('Reschedule functionality - coming soon!');
+  };
+
+  const cancelInterview = async (interviewId: string) => {
+    if (!confirm('Are you sure you want to cancel this interview?')) return;
+
+    try {
+      await api.patch(`/api/interviews/${interviewId}`, {
+        status: 'CANCELLED'
+      });
+
+      // Refresh interviews
+      loadInterviews();
+    } catch (error) {
+      alert('Failed to cancel interview');
+    }
+  };
+
   const handleMarkCompleted = async (interviewId: string) => {
     try {
       await api.patch(`/api/interviews/${interviewId}`, { status: "COMPLETED" });
@@ -797,13 +817,20 @@ export default function ApplicantDetailPage() {
                     const roundInterview = interviews.find(
                       (i) => i.roundNumber === round.order && i.status !== "CANCELLED"
                     );
-                    const previousRound =
-                      idx === 0
-                        ? null
-                        : interviews.find(
-                            (i) => i.roundNumber === round.order - 1 && i.status === "COMPLETED"
-                          );
-                    const canSchedule = !roundInterview && (idx === 0 || previousRound);
+
+                    // Check if previous round is completed
+                    const previousRound = idx === 0
+                      ? { status: 'COMPLETED' } // First round is always unlocked
+                      : interviews.find(
+                          (i) => i.roundNumber === round.order - 1 && i.status === "COMPLETED"
+                        );
+
+                    const canSchedule = !roundInterview && (idx === 0 || previousRound?.status === 'COMPLETED');
+
+                    // Check if interview is happening soon (within 15 minutes)
+                    const isHappeningSoon = roundInterview &&
+                      new Date(roundInterview.scheduledAt).getTime() - Date.now() < 15 * 60 * 1000 &&
+                      new Date(roundInterview.scheduledAt).getTime() > Date.now();
 
                     return (
                       <div
@@ -826,41 +853,95 @@ export default function ApplicantDetailPage() {
                             </h3>
                             <p className="text-sm text-secondary-600">{round.duration} minutes</p>
                             {roundInterview && (
-                              <p className="text-sm text-secondary-500">
-                                {new Date(roundInterview.scheduledAt).toLocaleDateString()} at{" "}
-                                {new Date(roundInterview.scheduledAt).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </p>
+                              <>
+                                <p className="text-sm text-secondary-500">
+                                  {new Date(roundInterview.scheduledAt).toLocaleDateString()} at{" "}
+                                  {new Date(roundInterview.scheduledAt).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </p>
+                                {roundInterview.interviewer && (
+                                  <p className="text-xs text-secondary-500">
+                                    Interviewer: {roundInterview.interviewer.name}
+                                  </p>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
 
-                        <div>
+                        <div className="flex gap-2">
+                          {/* Completed */}
                           {roundInterview?.status === "COMPLETED" && (
-                            <Badge variant="success" size="sm">
-                              Completed
-                            </Badge>
+                            <>
+                              <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-800">
+                                ✓ Completed
+                              </span>
+                              <button className="rounded px-3 py-1 text-sm text-blue-600 hover:bg-blue-50">
+                                View Details
+                              </button>
+                            </>
                           )}
-                          {roundInterview?.status === "SCHEDULED" && (
-                            <Badge variant="primary" size="sm">
-                              Scheduled
-                            </Badge>
+
+                          {/* Scheduled - Happening Soon */}
+                          {roundInterview?.status === "SCHEDULED" && isHappeningSoon && (
+                            <>
+                              {roundInterview.meetingLink && (
+                                <a
+                                  href={roundInterview.meetingLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                                >
+                                  🎥 Join Meeting
+                                </a>
+                              )}
+                              <button
+                                onClick={() => rescheduleInterview(roundInterview.id)}
+                                className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
+                              >
+                                Reschedule
+                              </button>
+                            </>
                           )}
-                          {canSchedule && (
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => setShowInterviewModal(true)}
+
+                          {/* Scheduled - Future */}
+                          {roundInterview?.status === "SCHEDULED" && !isHappeningSoon && (
+                            <>
+                              <span className="flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
+                                📅 Scheduled
+                              </span>
+                              <button
+                                onClick={() => rescheduleInterview(roundInterview.id)}
+                                className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
+                              >
+                                Reschedule
+                              </button>
+                              <button
+                                onClick={() => cancelInterview(roundInterview.id)}
+                                className="rounded px-3 py-1 text-sm text-red-600 hover:bg-red-50"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          )}
+
+                          {/* Can Schedule */}
+                          {canSchedule && !roundInterview && (
+                            <button
+                              onClick={() => router.push(`/employer/interviews/availability/${applicantId}?round=${round.order}`)}
+                              className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                             >
                               Schedule
-                            </Button>
+                            </button>
                           )}
+
+                          {/* Locked */}
                           {!canSchedule && !roundInterview && (
-                            <Badge variant="secondary" size="sm">
-                              Locked
-                            </Badge>
+                            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
+                              🔒 Complete Round {round.order - 1} first
+                            </span>
                           )}
                         </div>
                       </div>
