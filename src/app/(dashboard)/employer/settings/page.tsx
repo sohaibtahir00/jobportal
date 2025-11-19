@@ -16,6 +16,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Upload,
+  X,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -62,6 +63,15 @@ export default function EmployerSettingsPage() {
     allowCandidateContact: true,
   });
 
+  // Team members state
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [newMember, setNewMember] = useState({
+    name: "",
+    email: "",
+    title: "",
+  });
+
   // Redirect if not logged in or not employer
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -106,6 +116,10 @@ export default function EmployerSettingsPage() {
             marketingEmails: settingsData.settings.notifyMarketingEmails ?? false,
           });
         }
+
+        // Load team members
+        const teamResponse = await api.get("/api/employer/team-members");
+        setTeamMembers(teamResponse.data.members || []);
 
         setIsLoading(false);
       } catch (err: any) {
@@ -221,6 +235,49 @@ export default function EmployerSettingsPage() {
     } catch (err: any) {
       console.error("Failed to update preferences:", err);
       setErrorMessage(err.response?.data?.error || "Failed to update preferences");
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddMember = async () => {
+    if (!newMember.name || !newMember.email) {
+      setErrorMessage("Name and email are required");
+      return;
+    }
+
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      const response = await api.post("/api/employer/team-members", newMember);
+      setTeamMembers([response.data.member, ...teamMembers]);
+      setNewMember({ name: "", email: "", title: "" });
+      setShowAddMember(false);
+      setSuccessMessage("Team member added successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Failed to add team member:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to add team member");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteMember = async (id: string) => {
+    if (!confirm("Are you sure you want to remove this team member?")) return;
+
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      await api.delete(`/api/employer/team-members?id=${id}`);
+      setTeamMembers(teamMembers.filter((m) => m.id !== id));
+      setSuccessMessage("Team member removed successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Failed to delete team member:", err);
+      setErrorMessage(err.response?.data?.error || "Failed to delete team member");
+    } finally {
       setIsSaving(false);
     }
   };
@@ -650,6 +707,156 @@ export default function EmployerSettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Team Members */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="mb-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
+                    <Building2 className="h-5 w-5 text-primary-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-secondary-900">
+                      Team Members
+                    </h2>
+                    <p className="text-sm text-secondary-600">
+                      Manage team members who conduct interviews
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={() => setShowAddMember(true)}
+                  disabled={isSaving}
+                >
+                  + Add Member
+                </Button>
+              </div>
+
+              {teamMembers.length === 0 ? (
+                <div className="rounded-lg border-2 border-dashed border-secondary-200 bg-secondary-50 p-8 text-center">
+                  <p className="text-secondary-600">
+                    No team members added yet. Add team members who will conduct interviews.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {teamMembers.map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between rounded-lg border border-secondary-200 p-4"
+                    >
+                      <div>
+                        <h3 className="font-semibold text-secondary-900">{member.name}</h3>
+                        <p className="text-sm text-secondary-600">{member.email}</p>
+                        {member.title && (
+                          <p className="text-sm text-secondary-500">{member.title}</p>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleDeleteMember(member.id)}
+                        disabled={isSaving}
+                        className="border-error-300 text-error-600 hover:bg-error-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Add Member Modal */}
+          {showAddMember && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+              <Card className="w-full max-w-md">
+                <CardContent className="p-6">
+                  <div className="mb-6 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-secondary-900">Add Team Member</h3>
+                    <button
+                      onClick={() => {
+                        setShowAddMember(false);
+                        setNewMember({ name: "", email: "", title: "" });
+                      }}
+                      className="rounded-lg p-2 hover:bg-secondary-100"
+                      disabled={isSaving}
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-secondary-700">
+                        Name <span className="text-error-600">*</span>
+                      </label>
+                      <Input
+                        value={newMember.name}
+                        onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                        placeholder="John Doe"
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-secondary-700">
+                        Email <span className="text-error-600">*</span>
+                      </label>
+                      <Input
+                        type="email"
+                        value={newMember.email}
+                        onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                        placeholder="john@company.com"
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-secondary-700">
+                        Title (Optional)
+                      </label>
+                      <Input
+                        value={newMember.title}
+                        onChange={(e) => setNewMember({ ...newMember, title: e.target.value })}
+                        placeholder="Engineering Manager"
+                        disabled={isSaving}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowAddMember(false);
+                        setNewMember({ name: "", email: "", title: "" });
+                      }}
+                      disabled={isSaving}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={handleAddMember}
+                      disabled={isSaving || !newMember.name || !newMember.email}
+                      className="flex-1"
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Adding...
+                        </>
+                      ) : (
+                        "Add Member"
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Danger Zone */}
           <Card className="border-2 border-error-200">
