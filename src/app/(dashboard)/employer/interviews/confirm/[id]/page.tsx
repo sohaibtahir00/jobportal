@@ -14,6 +14,8 @@ import {
   Briefcase,
   Video,
   ExternalLink,
+  Users,
+  Settings,
 } from "lucide-react";
 import { Button, Card, CardContent, Badge } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -30,6 +32,9 @@ export default function ConfirmInterviewPage() {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [meetingPlatform, setMeetingPlatform] = useState<"zoom" | "google_meet">("zoom");
   const [error, setError] = useState("");
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(true);
+  const [selectedInterviewerId, setSelectedInterviewerId] = useState<string | null>(null);
 
   // Redirect if not employer
   useEffect(() => {
@@ -61,9 +66,35 @@ export default function ConfirmInterviewPage() {
     loadData();
   }, [interviewId, status]);
 
+  // Load team members
+  useEffect(() => {
+    const loadTeamMembers = async () => {
+      if (status !== "authenticated") return;
+
+      try {
+        setIsLoadingMembers(true);
+        const response = await api.get("/api/employer/team-members");
+        setTeamMembers(response.data.members || []);
+      } catch (err) {
+        console.error("Failed to load team members:", err);
+        // Don't show error - just show empty state
+        setTeamMembers([]);
+      } finally {
+        setIsLoadingMembers(false);
+      }
+    };
+
+    loadTeamMembers();
+  }, [status]);
+
   const handleConfirm = async () => {
     if (!selectedSlotId) {
       setError("Please select a time slot to confirm");
+      return;
+    }
+
+    if (!selectedInterviewerId) {
+      setError("Please select an interviewer");
       return;
     }
 
@@ -74,6 +105,7 @@ export default function ConfirmInterviewPage() {
       await api.post(`/api/interviews/${interviewId}/confirm`, {
         slotId: selectedSlotId,
         meetingPlatform,
+        interviewerId: selectedInterviewerId,
       });
 
       router.push("/employer/interviews");
@@ -236,6 +268,86 @@ export default function ConfirmInterviewPage() {
             </CardContent>
           </Card>
 
+          {/* Interviewer Selection */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <h3 className="mb-4 text-xl font-bold text-secondary-900">
+                Select Interviewer
+              </h3>
+              <p className="mb-4 text-sm text-secondary-600">
+                Choose who will conduct this interview
+              </p>
+
+              {isLoadingMembers ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : teamMembers.length === 0 ? (
+                <div className="rounded-lg border-2 border-dashed border-secondary-200 bg-secondary-50 p-6 text-center">
+                  <Users className="mx-auto mb-3 h-12 w-12 text-secondary-400" />
+                  <h4 className="mb-2 text-lg font-semibold text-secondary-900">
+                    No Team Members
+                  </h4>
+                  <p className="mb-4 text-sm text-secondary-600">
+                    Add team members to assign them as interviewers
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => router.push("/employer/settings")}
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Go to Settings
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {teamMembers.map((member) => {
+                    const isSelected = selectedInterviewerId === member.id;
+                    return (
+                      <button
+                        key={member.id}
+                        onClick={() => setSelectedInterviewerId(member.id)}
+                        disabled={isConfirming}
+                        className={`flex w-full items-center gap-4 rounded-lg border-2 p-4 text-left transition-all disabled:opacity-50 ${
+                          isSelected
+                            ? "border-primary-600 bg-primary-50"
+                            : "border-secondary-200 bg-white hover:border-primary-300"
+                        }`}
+                      >
+                        <div
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
+                            isSelected
+                              ? "border-primary-600 bg-primary-600"
+                              : "border-secondary-300"
+                          }`}
+                        >
+                          {isSelected && <Check className="h-5 w-5 text-white" />}
+                        </div>
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary-200 text-secondary-600">
+                          <User className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-secondary-900 truncate">
+                            {member.name}
+                          </h4>
+                          <p className="text-sm text-secondary-600 truncate">
+                            {member.email}
+                          </p>
+                          {member.title && (
+                            <p className="text-xs text-secondary-500 truncate">
+                              {member.title}
+                            </p>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Meeting Platform Selection */}
           <Card className="mb-6">
             <CardContent className="p-6">
@@ -312,7 +424,7 @@ export default function ConfirmInterviewPage() {
             <Button
               variant="primary"
               onClick={handleConfirm}
-              disabled={isConfirming || !selectedSlotId}
+              disabled={isConfirming || !selectedSlotId || !selectedInterviewerId}
             >
               {isConfirming ? (
                 <>

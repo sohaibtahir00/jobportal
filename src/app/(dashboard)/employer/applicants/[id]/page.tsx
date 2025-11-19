@@ -63,6 +63,7 @@ export default function ApplicantDetailPage() {
   const [applicantData, setApplicantData] = useState<any>(null);
   const [interviews, setInterviews] = useState<any[]>([]);
   const [isLoadingInterviews, setIsLoadingInterviews] = useState(false);
+  const [interviewRounds, setInterviewRounds] = useState<any[]>([]);
 
   // Offer modal state
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -247,11 +248,30 @@ export default function ApplicantDetailPage() {
     setSuggestedNextRound(null);
   };
 
+  // Load interview rounds for this job
+  const loadInterviewRounds = async () => {
+    if (!applicantData?.jobId) return;
+
+    try {
+      const response = await api.get(`/api/employer/jobs/${applicantData.jobId}/interview-rounds`);
+      setInterviewRounds(response.data.rounds || []);
+    } catch (err) {
+      console.error("Failed to load interview rounds:", err);
+      setInterviewRounds([]);
+    }
+  };
+
   useEffect(() => {
     if (status === "authenticated" && applicantId) {
       loadInterviews();
     }
   }, [applicantId, status]);
+
+  useEffect(() => {
+    if (applicantData?.jobId) {
+      loadInterviewRounds();
+    }
+  }, [applicantData?.jobId]);
 
   const handleInterviewSuccess = () => {
     loadInterviews(); // Reload interviews after scheduling
@@ -764,28 +784,164 @@ export default function ApplicantDetailPage() {
             </Card>
           )}
 
-          {/* Interviews Section */}
+          {/* Interview Process Section */}
           <Card className="mb-6">
             <CardContent className="p-6">
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-secondary-900">
-                  Scheduled Interviews
-                </h2>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowInterviewModal(true)}
-                >
-                  <Video className="mr-2 h-4 w-4" />
-                  Schedule Next
-                </Button>
-              </div>
+              <h2 className="mb-4 text-2xl font-bold text-secondary-900">
+                Interview Process
+              </h2>
+
+              {interviewRounds && interviewRounds.length > 0 ? (
+                <div className="space-y-3">
+                  {interviewRounds.map((round: any, idx: number) => {
+                    const roundInterview = interviews.find(
+                      (i) => i.roundNumber === round.order && i.status !== "CANCELLED"
+                    );
+                    const previousRound =
+                      idx === 0
+                        ? null
+                        : interviews.find(
+                            (i) => i.roundNumber === round.order - 1 && i.status === "COMPLETED"
+                          );
+                    const canSchedule = !roundInterview && (idx === 0 || previousRound);
+
+                    return (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between rounded-lg border border-secondary-200 p-4"
+                      >
+                        <div className="flex items-center gap-4">
+                          <span className="text-2xl">
+                            {roundInterview?.status === "COMPLETED"
+                              ? "✅"
+                              : roundInterview
+                                ? "📅"
+                                : canSchedule
+                                  ? "⏳"
+                                  : "🔒"}
+                          </span>
+                          <div>
+                            <h3 className="font-medium text-secondary-900">
+                              Round {round.order}: {round.name}
+                            </h3>
+                            <p className="text-sm text-secondary-600">{round.duration} minutes</p>
+                            {roundInterview && (
+                              <p className="text-sm text-secondary-500">
+                                {new Date(roundInterview.scheduledAt).toLocaleDateString()} at{" "}
+                                {new Date(roundInterview.scheduledAt).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          {roundInterview?.status === "COMPLETED" && (
+                            <Badge variant="success" size="sm">
+                              Completed
+                            </Badge>
+                          )}
+                          {roundInterview?.status === "SCHEDULED" && (
+                            <Badge variant="primary" size="sm">
+                              Scheduled
+                            </Badge>
+                          )}
+                          {canSchedule && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => setShowInterviewModal(true)}
+                            >
+                              Schedule
+                            </Button>
+                          )}
+                          {!canSchedule && !roundInterview && (
+                            <Badge variant="secondary" size="sm">
+                              Locked
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  <div className="mt-4 text-sm text-secondary-600">
+                    Progress: {interviews.filter((i) => i.status === "COMPLETED").length}/
+                    {interviewRounds.length} rounds completed
+                  </div>
+                </div>
+              ) : (
+                <p className="text-secondary-500">No interview process defined for this job</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Interview History Section */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <h2 className="mb-4 text-2xl font-bold text-secondary-900">Interview History</h2>
 
               {isLoadingInterviews ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
                 </div>
-              ) : interviews.length === 0 ? (
+              ) : interviews && interviews.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="border-b border-secondary-200">
+                      <tr className="text-left">
+                        <th className="px-4 py-2 text-sm font-semibold text-secondary-700">
+                          Date & Time
+                        </th>
+                        <th className="px-4 py-2 text-sm font-semibold text-secondary-700">
+                          Round
+                        </th>
+                        <th className="px-4 py-2 text-sm font-semibold text-secondary-700">
+                          Status
+                        </th>
+                        <th className="px-4 py-2 text-sm font-semibold text-secondary-700">
+                          Duration
+                        </th>
+                        <th className="px-4 py-2 text-sm font-semibold text-secondary-700">
+                          Interviewer
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {interviews
+                        .sort((a: any, b: any) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
+                        .map((interview: any) => (
+                          <tr
+                            key={interview.id}
+                            className="border-b border-secondary-100 hover:bg-secondary-50 last:border-0"
+                          >
+                            <td className="px-4 py-3 text-sm text-secondary-900">
+                              {new Date(interview.scheduledAt).toLocaleDateString()} at{" "}
+                              {new Date(interview.scheduledAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-secondary-900">
+                              {interview.roundName || interview.round || "Interview Round"}
+                            </td>
+                            <td className="px-4 py-3">
+                              {getInterviewStatusBadge(interview.status)}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-secondary-700">
+                              {interview.duration || 30} min
+                            </td>
+                            <td className="px-4 py-3 text-sm text-secondary-700">
+                              {interview.interviewer?.name || "-"}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
                 <div className="rounded-lg border-2 border-dashed border-secondary-200 bg-secondary-50 p-8 text-center">
                   <Video className="mx-auto mb-3 h-12 w-12 text-secondary-400" />
                   <h3 className="mb-2 text-lg font-semibold text-secondary-900">
@@ -794,66 +950,10 @@ export default function ApplicantDetailPage() {
                   <p className="mb-4 text-sm text-secondary-600">
                     Schedule a video interview with this candidate to discuss the position
                   </p>
-                  <Button
-                    variant="primary"
-                    onClick={() => setShowInterviewModal(true)}
-                  >
+                  <Button variant="primary" onClick={() => setShowInterviewModal(true)}>
                     <Video className="mr-2 h-4 w-4" />
                     Schedule Interview
                   </Button>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-secondary-200 text-left text-sm font-semibold text-secondary-700">
-                        <th className="pb-3">Date & Time</th>
-                        <th className="pb-3">Type</th>
-                        <th className="pb-3">Duration</th>
-                        <th className="pb-3">Status</th>
-                        <th className="pb-3">Interview Round</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {interviews.map((interview) => (
-                        <tr
-                          key={interview.id}
-                          className="border-b border-secondary-100 last:border-0"
-                        >
-                          <td className="py-4">
-                            <div className="flex flex-col">
-                              <span className="font-medium text-secondary-900">
-                                {new Date(interview.scheduledAt).toLocaleDateString()}
-                              </span>
-                              <span className="text-sm text-secondary-600">
-                                {new Date(interview.scheduledAt).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="py-4">
-                            <Badge variant="primary" size="sm" className="gap-1">
-                              <Video className="h-3 w-3" />
-                              Video
-                            </Badge>
-                          </td>
-                          <td className="py-4 text-sm text-secondary-700">
-                            {interview.duration} min
-                          </td>
-                          <td className="py-4">
-                            {getInterviewStatusBadge(interview.status)}
-                          </td>
-                          <td className="py-4">
-                            <span className="font-medium text-secondary-900">
-                              {interview.round || "Interview Round"}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 </div>
               )}
             </CardContent>
