@@ -79,6 +79,13 @@ export default function WeeklyCalendarPicker({
     (slotInfo: SlotInfo) => {
       const start = slotInfo.start;
       const end = new Date(start.getTime() + duration * 60000);
+      const now = new Date();
+
+      // Check if slot is in the past
+      if (start < now) {
+        alert("Cannot select time slots in the past. Please choose a future date and time.");
+        return;
+      }
 
       // Check if slot overlaps with busy time
       const overlaps = busyEvents.some((busy) => {
@@ -159,6 +166,7 @@ export default function WeeklyCalendarPicker({
   const selectAllMornings = () => {
     const start = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Monday
     const newSlots: TimeSlot[] = [];
+    const now = new Date();
 
     for (let i = 0; i < 5; i++) {
       // Mon-Fri
@@ -168,6 +176,11 @@ export default function WeeklyCalendarPicker({
         const slotStart = new Date(day);
         slotStart.setHours(hour, 0, 0, 0);
         const slotEnd = new Date(slotStart.getTime() + duration * 60000);
+
+        // Skip if slot is in the past
+        if (slotStart < now) {
+          continue;
+        }
 
         // Check if not busy
         const overlaps = busyEvents.some(
@@ -197,6 +210,7 @@ export default function WeeklyCalendarPicker({
   const selectAllAfternoons = () => {
     const start = startOfWeek(currentWeek, { weekStartsOn: 1 });
     const newSlots: TimeSlot[] = [];
+    const now = new Date();
 
     for (let i = 0; i < 5; i++) {
       const day = addDays(start, i);
@@ -205,6 +219,11 @@ export default function WeeklyCalendarPicker({
         const slotStart = new Date(day);
         slotStart.setHours(hour, 0, 0, 0);
         const slotEnd = new Date(slotStart.getTime() + duration * 60000);
+
+        // Skip if slot is in the past
+        if (slotStart < now) {
+          continue;
+        }
 
         const overlaps = busyEvents.some(
           (busy) =>

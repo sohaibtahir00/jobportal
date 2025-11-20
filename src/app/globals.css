@@ -324,4 +324,14 @@
     color: #6b7280;
     font-weight: 500;
   }
+
+  /* Style for past time slots - make them visually disabled */
+  .rbc-day-slot .rbc-time-slot.rbc-now ~ .rbc-time-slot {
+    opacity: 1;
+  }
+
+  /* Add a subtle overlay to indicate past times */
+  .rbc-time-slot::before {
+    pointer-events: none;
+  }
 }
