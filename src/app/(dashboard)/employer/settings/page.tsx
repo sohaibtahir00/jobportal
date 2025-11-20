@@ -23,6 +23,7 @@ import {
   Plus,
   Edit,
   Star,
+  Calendar,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -82,6 +83,9 @@ export default function EmployerSettingsPage() {
   const [videoIntegration, setVideoIntegration] = useState<any>(null);
   const [employerId, setEmployerId] = useState<string>("");
 
+  // Google Calendar integration state
+  const [calendarIntegration, setCalendarIntegration] = useState<any>(null);
+
   // Interview templates state
   const [templates, setTemplates] = useState<any[]>([]);
   const [showCreateTemplate, setShowCreateTemplate] = useState(false);
@@ -140,6 +144,22 @@ export default function EmployerSettingsPage() {
         } catch (err) {
           // No integration yet, that's fine
           setVideoIntegration(null);
+        }
+
+        // Load Google Calendar integration
+        try {
+          const calendarResponse = await api.get("/api/employer/integrations/google-calendar/status");
+          if (calendarResponse.data.connected) {
+            setCalendarIntegration({
+              connected: true,
+              email: calendarResponse.data.email,
+            });
+          } else {
+            setCalendarIntegration(null);
+          }
+        } catch (err) {
+          // No integration yet, that's fine
+          setCalendarIntegration(null);
         }
 
         // Load interview templates
@@ -358,6 +378,28 @@ export default function EmployerSettingsPage() {
       console.error("Failed to disconnect video integration:", err);
       setErrorMessage(
         err.response?.data?.error || "Failed to disconnect integration"
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const disconnectCalendar = async () => {
+    if (!confirm("Are you sure you want to disconnect Google Calendar?"))
+      return;
+
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      await api.delete("/api/employer/integrations/google-calendar/disconnect");
+      setCalendarIntegration(null);
+      setSuccessMessage("Google Calendar disconnected successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Failed to disconnect Google Calendar:", err);
+      setErrorMessage(
+        err.response?.data?.error || "Failed to disconnect calendar"
       );
     } finally {
       setIsSaving(false);
@@ -1201,6 +1243,78 @@ export default function EmployerSettingsPage() {
                   💡 <strong>Tip:</strong> Connect Zoom or Google Meet to automatically generate
                   meeting links when scheduling interviews. You can only connect one platform at a
                   time.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Google Calendar Integration */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
+                  <Calendar className="h-5 w-5 text-primary-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-secondary-900">
+                    Google Calendar Integration
+                  </h2>
+                  <p className="text-sm text-secondary-600">
+                    Sync your calendar to prevent double-booking when scheduling interviews
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-secondary-200 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+                      <Calendar className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-secondary-900">Google Calendar</h3>
+                      {calendarIntegration?.connected ? (
+                        <p className="text-sm text-success-600">
+                          ✓ Connected as {calendarIntegration.email}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-secondary-500">Not connected</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {calendarIntegration?.connected ? (
+                    <Button
+                      variant="outline"
+                      onClick={disconnectCalendar}
+                      disabled={isSaving}
+                      className="border-error-300 text-error-600 hover:bg-error-50"
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Disconnecting...
+                        </>
+                      ) : (
+                        "Disconnect"
+                      )}
+                    </Button>
+                  ) : (
+                    <a
+                      href="/api/employer/integrations/google-calendar/oauth"
+                      className="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Connect Google Calendar
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-lg bg-blue-50 border border-blue-200 p-4">
+                <p className="text-sm text-blue-800">
+                  💡 <strong>Tip:</strong> When you connect Google Calendar, your busy times will automatically
+                  show when setting interview availability, helping you avoid scheduling conflicts.
                 </p>
               </div>
             </CardContent>

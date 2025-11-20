@@ -210,4 +210,39 @@
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     @apply bg-secondary-500;
   }
+
+  /* React Big Calendar custom styles */
+  .rbc-calendar {
+    font-family: inherit;
+  }
+
+  .rbc-header {
+    padding: 10px 0;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .rbc-time-slot {
+    min-height: 40px;
+  }
+
+  .rbc-timeslot-group {
+    min-height: 80px;
+  }
+
+  .rbc-event {
+    cursor: pointer;
+  }
+
+  .rbc-event.rbc-selected {
+    background-color: #1e40af !important;
+  }
+
+  .rbc-day-slot .rbc-time-slot {
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .rbc-time-header-content {
+    border-left: 1px solid #e5e7eb;
+  }
 }

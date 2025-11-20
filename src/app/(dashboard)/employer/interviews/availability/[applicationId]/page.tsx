@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button, Card, CardContent, Badge } from "@/components/ui";
 import { api } from "@/lib/api";
+import WeeklyCalendarPicker from "@/components/interviews/WeeklyCalendarPicker";
 
 interface TimeSlot {
   id?: string;
@@ -42,6 +43,12 @@ export default function SetAvailabilityPage() {
     { date: "", startTime: "", endTime: "" },
   ]);
   const [error, setError] = useState("");
+
+  // Calendar integration state
+  const [calendarSlots, setCalendarSlots] = useState<{ startTime: Date; endTime: Date }[]>([]);
+  const [busyTimes, setBusyTimes] = useState<{ start: string; end: string; title?: string }[]>([]);
+  const [calendarConnected, setCalendarConnected] = useState(false);
+  const [loadingBusyTimes, setLoadingBusyTimes] = useState(false);
 
   // Template selection
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -177,6 +184,51 @@ export default function SetAvailabilityPage() {
     }
   }, [selectedTemplate, existingInterviews, jobRounds, roundParam]);
 
+  // Check if Google Calendar is connected
+  useEffect(() => {
+    async function checkCalendar() {
+      try {
+        const res = await api.get("/api/employer/integrations/google-calendar/status");
+        setCalendarConnected(res.data.connected);
+      } catch (error) {
+        console.error("Failed to check calendar status:", error);
+      }
+    }
+    if (status === "authenticated") {
+      checkCalendar();
+    }
+  }, [status]);
+
+  // Fetch busy times if calendar connected
+  useEffect(() => {
+    if (!calendarConnected) return;
+
+    async function fetchBusyTimes() {
+      setLoadingBusyTimes(true);
+      try {
+        const start = new Date();
+        const end = new Date();
+        end.setDate(end.getDate() + 14); // 2 weeks ahead
+
+        const params = new URLSearchParams({
+          start: start.toISOString(),
+          end: end.toISOString(),
+        });
+
+        const res = await api.get(`/api/employer/integrations/google-calendar/busy-times?${params}`);
+        if (res.data.busyTimes) {
+          setBusyTimes(res.data.busyTimes);
+        }
+      } catch (error) {
+        console.error("Failed to fetch busy times:", error);
+      } finally {
+        setLoadingBusyTimes(false);
+      }
+    }
+
+    fetchBusyTimes();
+  }, [calendarConnected]);
+
   const addTimeSlot = () => {
     setTimeSlots([...timeSlots, { date: "", startTime: "", endTime: "" }]);
   };
@@ -269,7 +321,11 @@ export default function SetAvailabilityPage() {
   const handleSave = async () => {
     setError("");
 
-    if (!validateSlots()) return;
+    // Check if we have slots selected
+    if (calendarSlots.length === 0) {
+      setError("Please select at least one time slot");
+      return;
+    }
 
     // Check if we have a selected round
     if (!selectedRound) {
@@ -288,9 +344,9 @@ export default function SetAvailabilityPage() {
         roundNumber: selectedRound.order, // Send round number for unlocking logic
         round: selectedRound.name, // Send round name
         roundName: selectedRound.name, // Send round name for clarity
-        availabilitySlots: timeSlots.map((slot) => ({
-          startTime: new Date(`${slot.date}T${slot.startTime}`).toISOString(),
-          endTime: new Date(`${slot.date}T${slot.endTime}`).toISOString(),
+        availabilitySlots: calendarSlots.map((slot) => ({
+          startTime: slot.startTime.toISOString(),
+          endTime: slot.endTime.toISOString(),
         })),
       });
 
@@ -554,142 +610,99 @@ export default function SetAvailabilityPage() {
             </div>
           )}
 
-          {/* Time Slots Form */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="mb-6 flex items-center justify-between">
-                <h3 className="text-xl font-bold text-secondary-900">
-                  Your Available Time Slots
-                </h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addTimeSlot}
-                  disabled={isSaving}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Slot
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                {timeSlots.map((slot, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-4 rounded-lg border border-secondary-200 bg-secondary-50 p-4"
+          {/* Google Calendar Connection Banner */}
+          {!calendarConnected && (
+            <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <div className="flex items-start gap-3">
+                <CalendarIcon className="h-6 w-6 text-blue-600" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-blue-900">
+                    Connect Google Calendar
+                  </h3>
+                  <p className="mt-1 text-sm text-blue-700">
+                    Sync your calendar to automatically show busy times and
+                    prevent double-booking.
+                  </p>
+                  <a
+                    href="/api/employer/integrations/google-calendar/oauth"
+                    className="mt-3 inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
                   >
-                    <div className="flex-1 space-y-4">
-                      {/* Date */}
-                      <div>
-                        <label className="mb-2 block text-sm font-semibold text-secondary-700">
-                          Date
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="date"
-                            value={slot.date}
-                            onChange={(e) =>
-                              updateTimeSlot(index, "date", e.target.value)
-                            }
-                            min={new Date().toISOString().split("T")[0]}
-                            disabled={isSaving}
-                            className="w-full rounded-lg border-2 border-secondary-300 px-4 py-2.5 outline-none transition-all focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 disabled:opacity-50"
-                          />
-                          <CalendarIcon className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
-                        </div>
-                      </div>
-
-                      {/* Time Range */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="mb-2 block text-sm font-semibold text-secondary-700">
-                            Start Time
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="time"
-                              value={slot.startTime}
-                              onChange={(e) =>
-                                updateTimeSlot(index, "startTime", e.target.value)
-                              }
-                              disabled={isSaving}
-                              className="w-full rounded-lg border-2 border-secondary-300 px-4 py-2.5 outline-none transition-all focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 disabled:opacity-50"
-                            />
-                            <Clock className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="mb-2 block text-sm font-semibold text-secondary-700">
-                            End Time
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="time"
-                              value={slot.endTime}
-                              onChange={(e) =>
-                                updateTimeSlot(index, "endTime", e.target.value)
-                              }
-                              disabled={isSaving}
-                              className="w-full rounded-lg border-2 border-secondary-300 px-4 py-2.5 outline-none transition-all focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 disabled:opacity-50"
-                            />
-                            <Clock className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-secondary-400" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Remove Button */}
-                    {timeSlots.length > 1 && (
-                      <button
-                        onClick={() => removeTimeSlot(index)}
-                        disabled={isSaving}
-                        className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
-                        title="Remove slot"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4">
-                  <p className="text-sm text-red-600">{error}</p>
+                    Connect Google Calendar
+                  </a>
                 </div>
-              )}
-
-              {/* Actions */}
-              <div className="mt-8 flex justify-end gap-4">
-                <Button
-                  variant="outline"
-                  onClick={() => router.back()}
-                  disabled={isSaving}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Send to Candidate
-                    </>
-                  )}
-                </Button>
               </div>
+            </div>
+          )}
+
+          {calendarConnected && (
+            <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <span className="font-medium text-green-900">
+                  Google Calendar Connected
+                </span>
+                {loadingBusyTimes && (
+                  <span className="text-sm text-green-700">• Syncing...</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Calendar Picker */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <h2 className="mb-4 text-lg font-semibold">
+                Select Your Available Time Slots
+              </h2>
+              <p className="mb-4 text-sm text-gray-600">
+                Click on time slots to select your availability. Each slot is{" "}
+                {selectedRound?.duration || 60} minutes.
+                {calendarConnected && " Red blocks show times you're already busy."}
+              </p>
+
+              <WeeklyCalendarPicker
+                duration={selectedRound?.duration || 60}
+                onSlotsChange={setCalendarSlots}
+                busyTimes={busyTimes}
+                initialSlots={[]}
+              />
             </CardContent>
           </Card>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-end gap-4">
+            <Button
+              variant="outline"
+              onClick={() => router.back()}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSave}
+              disabled={calendarSlots.length === 0 || isSaving}
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Send to Candidate ({calendarSlots.length} slots)
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
