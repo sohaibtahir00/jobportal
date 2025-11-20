@@ -31,28 +31,32 @@ import {
   Gift,
   DollarSign,
 } from "lucide-react";
+import { useToast } from "@/components/ui";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
 import { api } from "@/lib/api";
 
 // Backend URL for file downloads
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://job-portal-backend-production-cd05.up.railway.app';
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://job-portal-backend-production-cd05.up.railway.app";
 
 // Helper function to get full resume URL
 const getResumeUrl = (resumePath: string | null): string | null => {
   if (!resumePath) return null;
   // If it's already a full URL, return as is
-  if (resumePath.startsWith('http://') || resumePath.startsWith('https://')) {
+  if (resumePath.startsWith("http://") || resumePath.startsWith("https://")) {
     return resumePath;
   }
   // Convert /uploads/... to /api/uploads/... for backend serving
-  const apiPath = resumePath.startsWith('/uploads/')
-    ? resumePath.replace('/uploads/', '/api/uploads/')
+  const apiPath = resumePath.startsWith("/uploads/")
+    ? resumePath.replace("/uploads/", "/api/uploads/")
     : resumePath;
   // Prepend backend URL
   return `${BACKEND_URL}${apiPath}`;
 };
 
 export default function ApplicantDetailPage() {
+  const { showToast } = useToast();
   const params = useParams();
   const applicantId = params.id as string;
   const router = useRouter();
@@ -104,7 +108,9 @@ export default function ApplicantDetailPage() {
 
         // Fetch real data from API using the same pattern as other pages
         // Use the new employer-specific endpoint that has proper ownership validation
-        const response = await api.get(`/api/employer/applications/${applicantId}`);
+        const response = await api.get(
+          `/api/employer/applications/${applicantId}`
+        );
         console.log("📦 [Applicant Detail] Response:", response.data);
 
         const app = response.data.application;
@@ -123,7 +129,9 @@ export default function ApplicantDetailPage() {
           phone: app.candidate.phone || "Not provided",
           location: app.candidate.location || "Not specified",
           appliedDate: app.appliedAt,
-          experience: app.candidate.experience ? `${app.candidate.experience} years` : "Not specified",
+          experience: app.candidate.experience
+            ? `${app.candidate.experience} years`
+            : "Not specified",
           currentRole: app.candidate.currentTitle || "Not specified",
           currentCompany: app.candidate.currentCompany,
           education: app.candidate.education || "Not specified",
@@ -143,10 +151,12 @@ export default function ApplicantDetailPage() {
 
           sectionScores: app.testResults || [],
 
-          skills: app.candidate.skills ? app.candidate.skills.map((skill: string) => ({
-            name: skill,
-            level: 0, // TODO: Add if skill levels available
-          })) : [],
+          skills: app.candidate.skills
+            ? app.candidate.skills.map((skill: string) => ({
+                name: skill,
+                level: 0, // TODO: Add if skill levels available
+              }))
+            : [],
 
           // Work Experience & Education from relations
           workExperience: app.candidate.workExperiences || [],
@@ -181,11 +191,18 @@ export default function ApplicantDetailPage() {
           console.log("✅ [Applicant Detail] Profile view recorded");
         } catch (viewErr) {
           // Don't block the page if profile view recording fails
-          console.error("⚠️ [Applicant Detail] Failed to record profile view:", viewErr);
+          console.error(
+            "⚠️ [Applicant Detail] Failed to record profile view:",
+            viewErr
+          );
         }
       } catch (err: any) {
         console.error("❌ [Applicant Detail] Error:", err);
-        setError(err.response?.data?.error || err.message || "Failed to load applicant details");
+        setError(
+          err.response?.data?.error ||
+            err.message ||
+            "Failed to load applicant details"
+        );
         setIsLoading(false);
       }
     };
@@ -201,7 +218,9 @@ export default function ApplicantDetailPage() {
 
     try {
       setIsLoadingInterviews(true);
-      const response = await api.get(`/api/interviews?applicationId=${applicantId}`);
+      const response = await api.get(
+        `/api/interviews?applicationId=${applicantId}`
+      );
       const fetchedInterviews = response.data.interviews || [];
       setInterviews(fetchedInterviews);
     } catch (err) {
@@ -216,7 +235,9 @@ export default function ApplicantDetailPage() {
     if (!applicantData?.jobId) return;
 
     try {
-      const response = await api.get(`/api/employer/jobs/${applicantData.jobId}/interview-rounds`);
+      const response = await api.get(
+        `/api/employer/jobs/${applicantData.jobId}/interview-rounds`
+      );
       setInterviewRounds(response.data.rounds || []);
     } catch (err) {
       console.error("Failed to load interview rounds:", err);
@@ -254,27 +275,29 @@ export default function ApplicantDetailPage() {
 
   const rescheduleInterview = async (interviewId: string) => {
     // TODO: Implement reschedule logic
-    alert('Reschedule functionality - coming soon!');
+    alert("Reschedule functionality - coming soon!");
   };
 
   const cancelInterview = async (interviewId: string) => {
-    if (!confirm('Are you sure you want to cancel this interview?')) return;
+    if (!confirm("Are you sure you want to cancel this interview?")) return;
 
     try {
       await api.patch(`/api/interviews/${interviewId}`, {
-        status: 'CANCELLED'
+        status: "CANCELLED",
       });
 
       // Refresh interviews
       loadInterviews();
     } catch (error) {
-      alert('Failed to cancel interview');
+      alert("Failed to cancel interview");
     }
   };
 
   const handleMarkCompleted = async (interviewId: string) => {
     try {
-      await api.patch(`/api/interviews/${interviewId}`, { status: "COMPLETED" });
+      await api.patch(`/api/interviews/${interviewId}`, {
+        status: "COMPLETED",
+      });
       loadInterviews();
       // Reload applicant data to show updated UI
       window.location.reload();
@@ -294,7 +317,9 @@ export default function ApplicantDetailPage() {
         : null;
 
       // Set expiration date to 7 days from now if not provided
-      const expirationDate = offerData.expiresAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      const expirationDate =
+        offerData.expiresAt ||
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
       await api.post("/api/offers", {
         applicationId: applicantId,
@@ -308,7 +333,9 @@ export default function ApplicantDetailPage() {
         customMessage: offerData.customMessage,
       });
 
-      alert("Offer sent successfully!");
+      // Success toast
+      showToast("success", "Offer sent successfully!");
+
       setShowOfferModal(false);
       // Reset form
       setOfferData({
@@ -388,7 +415,9 @@ export default function ApplicantDetailPage() {
       <div className="flex min-h-screen items-center justify-center bg-secondary-50">
         <div className="text-center">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary-600" />
-          <p className="mt-4 text-secondary-600">Loading applicant details...</p>
+          <p className="mt-4 text-secondary-600">
+            Loading applicant details...
+          </p>
         </div>
       </div>
     );
@@ -443,13 +472,20 @@ export default function ApplicantDetailPage() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        Applied {new Date(applicantData.appliedDate).toLocaleDateString()}
+                        Applied{" "}
+                        {new Date(
+                          applicantData.appliedDate
+                        ).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <div className={`flex items-center gap-1 rounded-lg px-3 py-2 font-bold ${getTierColor(applicantData.tier)}`}>
+                    <div
+                      className={`flex items-center gap-1 rounded-lg px-3 py-2 font-bold ${getTierColor(
+                        applicantData.tier
+                      )}`}
+                    >
                       <Star className="h-5 w-5" />
                       <span>{applicantData.skillsScore}</span>
                     </div>
@@ -460,20 +496,31 @@ export default function ApplicantDetailPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-secondary-600" />
-                    <a href={`mailto:${applicantData.email}`} className="text-primary-600 hover:underline">
+                    <a
+                      href={`mailto:${applicantData.email}`}
+                      className="text-primary-600 hover:underline"
+                    >
                       {applicantData.email}
                     </a>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-secondary-600" />
-                    <a href={`tel:${applicantData.phone}`} className="text-primary-600 hover:underline">
+                    <a
+                      href={`tel:${applicantData.phone}`}
+                      className="text-primary-600 hover:underline"
+                    >
                       {applicantData.phone}
                     </a>
                   </div>
                   {applicantData.linkedin && (
                     <div className="flex items-center gap-3">
                       <ExternalLink className="h-5 w-5 text-secondary-600" />
-                      <a href={applicantData.linkedin} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
+                      <a
+                        href={applicantData.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-600 hover:underline"
+                      >
                         LinkedIn Profile
                       </a>
                     </div>
@@ -493,11 +540,18 @@ export default function ApplicantDetailPage() {
                     onClick={() => {
                       // Calculate next round to schedule
                       const completedRounds = interviews
-                        .filter((i: any) => i.status === 'COMPLETED' && i.roundNumber)
+                        .filter(
+                          (i: any) => i.status === "COMPLETED" && i.roundNumber
+                        )
                         .map((i: any) => i.roundNumber);
 
                       const scheduledRounds = interviews
-                        .filter((i: any) => i.status !== 'CANCELLED' && i.status !== 'COMPLETED' && i.roundNumber)
+                        .filter(
+                          (i: any) =>
+                            i.status !== "CANCELLED" &&
+                            i.status !== "COMPLETED" &&
+                            i.roundNumber
+                        )
                         .map((i: any) => i.roundNumber);
 
                       // Next round is highest completed + 1, or first available
@@ -510,10 +564,18 @@ export default function ApplicantDetailPage() {
                       }
 
                       // Make sure we don't exceed total rounds
-                      if (interviewRounds && interviewRounds.length > 0 && nextRound <= interviewRounds.length) {
-                        router.push(`/employer/interviews/availability/${applicantId}?round=${nextRound}`);
+                      if (
+                        interviewRounds &&
+                        interviewRounds.length > 0 &&
+                        nextRound <= interviewRounds.length
+                      ) {
+                        router.push(
+                          `/employer/interviews/availability/${applicantId}?round=${nextRound}`
+                        );
                       } else {
-                        router.push(`/employer/interviews/availability/${applicantId}`);
+                        router.push(
+                          `/employer/interviews/availability/${applicantId}`
+                        );
                       }
                     }}
                   >
@@ -521,7 +583,9 @@ export default function ApplicantDetailPage() {
                     Schedule Interview
                   </Button>
                   {(applicantData.applicationStatus === "shortlisted" ||
-                    interviews.some((interview) => interview.status === "COMPLETED")) && (
+                    interviews.some(
+                      (interview) => interview.status === "COMPLETED"
+                    )) && (
                     <Button
                       variant="primary"
                       className="w-full bg-green-600 hover:bg-green-700"
@@ -541,7 +605,11 @@ export default function ApplicantDetailPage() {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => router.push(`/employer/messages?candidateId=${applicantData.candidateUserId}`)}
+                    onClick={() =>
+                      router.push(
+                        `/employer/messages?candidateId=${applicantData.candidateUserId}`
+                      )
+                    }
                   >
                     <MessageSquare className="mr-2 h-5 w-5" />
                     Send Message
@@ -554,10 +622,13 @@ export default function ApplicantDetailPage() {
                         const resumeUrl = getResumeUrl(applicantData.resume);
                         if (resumeUrl) {
                           // Create a temporary link element to trigger download
-                          const link = document.createElement('a');
+                          const link = document.createElement("a");
                           link.href = resumeUrl;
-                          link.download = `${applicantData.candidateName.replace(/\s+/g, '_')}_Resume.pdf`;
-                          link.target = '_blank';
+                          link.download = `${applicantData.candidateName.replace(
+                            /\s+/g,
+                            "_"
+                          )}_Resume.pdf`;
+                          link.target = "_blank";
                           document.body.appendChild(link);
                           link.click();
                           document.body.removeChild(link);
@@ -568,7 +639,10 @@ export default function ApplicantDetailPage() {
                       Download Resume
                     </Button>
                   )}
-                  <Button variant="outline" className="w-full border-red-300 text-red-600 hover:bg-red-50">
+                  <Button
+                    variant="outline"
+                    className="w-full border-red-300 text-red-600 hover:bg-red-50"
+                  >
                     <X className="mr-2 h-5 w-5" />
                     Reject
                   </Button>
@@ -598,32 +672,39 @@ export default function ApplicantDetailPage() {
                     Skills Assessment Results
                   </h2>
                   <p className="text-secondary-600">
-                    Completed on {new Date(applicantData.assessmentDate).toLocaleDateString()}
+                    Completed on{" "}
+                    {new Date(
+                      applicantData.assessmentDate
+                    ).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="text-right">
                   <div className="mb-1 text-4xl font-bold text-success-600">
                     {applicantData.skillsScore}
                   </div>
-                  <Badge variant="success">Top {applicantData.percentile}%</Badge>
+                  <Badge variant="success">
+                    Top {applicantData.percentile}%
+                  </Badge>
                 </div>
               </div>
 
               {/* Section Breakdown */}
               <div className="mb-6 space-y-4">
-                {applicantData.sectionScores.map((section: any, idx: number) => (
-                  <div key={idx}>
-                    <div className="mb-2 flex items-center justify-between text-sm">
-                      <span className="font-medium text-secondary-700">
-                        {section.name}
-                      </span>
-                      <span className="font-bold text-primary-600">
-                        {section.score}/{section.maxScore}
-                      </span>
+                {applicantData.sectionScores.map(
+                  (section: any, idx: number) => (
+                    <div key={idx}>
+                      <div className="mb-2 flex items-center justify-between text-sm">
+                        <span className="font-medium text-secondary-700">
+                          {section.name}
+                        </span>
+                        <span className="font-bold text-primary-600">
+                          {section.score}/{section.maxScore}
+                        </span>
+                      </div>
+                      <Progress value={section.score} className="h-3" />
                     </div>
-                    <Progress value={section.score} className="h-3" />
-                  </div>
-                ))}
+                  )
+                )}
               </div>
 
               {/* Skills Breakdown */}
@@ -637,7 +718,9 @@ export default function ApplicantDetailPage() {
                       <div className="mb-2 text-2xl font-bold text-primary-600">
                         {skill.level}
                       </div>
-                      <div className="text-sm text-secondary-700">{skill.name}</div>
+                      <div className="text-sm text-secondary-700">
+                        {skill.name}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -646,7 +729,10 @@ export default function ApplicantDetailPage() {
           </Card>
 
           {/* Professional Links */}
-          {(applicantData.linkedin || applicantData.github || applicantData.portfolio || applicantData.personalWebsite) && (
+          {(applicantData.linkedin ||
+            applicantData.github ||
+            applicantData.portfolio ||
+            applicantData.personalWebsite) && (
             <Card className="mb-6">
               <CardContent className="p-6">
                 <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-secondary-900">
@@ -655,22 +741,42 @@ export default function ApplicantDetailPage() {
                 </h2>
                 <div className="space-y-2">
                   {applicantData.linkedin && (
-                    <a href={applicantData.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:underline">
+                    <a
+                      href={applicantData.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-blue-600 hover:underline"
+                    >
                       💼 LinkedIn
                     </a>
                   )}
                   {applicantData.github && (
-                    <a href={applicantData.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:underline">
+                    <a
+                      href={applicantData.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-blue-600 hover:underline"
+                    >
                       💻 GitHub
                     </a>
                   )}
                   {applicantData.portfolio && (
-                    <a href={applicantData.portfolio} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:underline">
+                    <a
+                      href={applicantData.portfolio}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-blue-600 hover:underline"
+                    >
                       🌐 Portfolio
                     </a>
                   )}
                   {applicantData.personalWebsite && (
-                    <a href={applicantData.personalWebsite} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:underline">
+                    <a
+                      href={applicantData.personalWebsite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-blue-600 hover:underline"
+                    >
                       🌐 Website
                     </a>
                   )}
@@ -680,60 +786,91 @@ export default function ApplicantDetailPage() {
           )}
 
           {/* Work Experience - Full Details */}
-          {applicantData.workExperience && applicantData.workExperience.length > 0 && (
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold text-secondary-900">
-                  <Briefcase className="h-6 w-6" />
-                  Work Experience
-                </h2>
-                <div className="space-y-6">
-                  {applicantData.workExperience.map((exp: any, idx: number) => (
-                    <div key={idx} className="border-l-4 border-green-500 pl-4">
-                      <h3 className="text-lg font-semibold">{exp.title}</h3>
-                      <p className="text-secondary-700">{exp.company}</p>
-                      <p className="mb-2 text-sm text-secondary-500">
-                        {new Date(exp.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} -
-                        {exp.current ? ' Present' : ` ${new Date(exp.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`}
-                        {exp.location && ` • ${exp.location}`}
-                      </p>
-                      {exp.description && (
-                        <p className="whitespace-pre-line text-sm text-secondary-600">{exp.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {applicantData.workExperience &&
+            applicantData.workExperience.length > 0 && (
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold text-secondary-900">
+                    <Briefcase className="h-6 w-6" />
+                    Work Experience
+                  </h2>
+                  <div className="space-y-6">
+                    {applicantData.workExperience.map(
+                      (exp: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="border-l-4 border-green-500 pl-4"
+                        >
+                          <h3 className="text-lg font-semibold">{exp.title}</h3>
+                          <p className="text-secondary-700">{exp.company}</p>
+                          <p className="mb-2 text-sm text-secondary-500">
+                            {new Date(exp.startDate).toLocaleDateString(
+                              "en-US",
+                              { month: "short", year: "numeric" }
+                            )}{" "}
+                            -
+                            {exp.current
+                              ? " Present"
+                              : ` ${new Date(exp.endDate).toLocaleDateString(
+                                  "en-US",
+                                  { month: "short", year: "numeric" }
+                                )}`}
+                            {exp.location && ` • ${exp.location}`}
+                          </p>
+                          {exp.description && (
+                            <p className="whitespace-pre-line text-sm text-secondary-600">
+                              {exp.description}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
           {/* Education - Full Details */}
-          {applicantData.educationEntries && applicantData.educationEntries.length > 0 && (
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-secondary-900">
-                  🎓 Education
-                </h2>
-                <div className="space-y-4">
-                  {applicantData.educationEntries.map((edu: any, idx: number) => (
-                    <div key={idx} className="border-l-4 border-blue-500 pl-4">
-                      <h3 className="font-semibold">{edu.degree}</h3>
-                      <p className="text-secondary-600">{edu.institution}</p>
-                      <p className="text-sm text-secondary-500">
-                        {edu.graduationYear} {edu.fieldOfStudy && `• ${edu.fieldOfStudy}`}
-                      </p>
-                      {edu.description && (
-                        <p className="mt-2 text-sm text-secondary-600">{edu.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {applicantData.educationEntries &&
+            applicantData.educationEntries.length > 0 && (
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-secondary-900">
+                    🎓 Education
+                  </h2>
+                  <div className="space-y-4">
+                    {applicantData.educationEntries.map(
+                      (edu: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="border-l-4 border-blue-500 pl-4"
+                        >
+                          <h3 className="font-semibold">{edu.degree}</h3>
+                          <p className="text-secondary-600">
+                            {edu.institution}
+                          </p>
+                          <p className="text-sm text-secondary-500">
+                            {edu.graduationYear}{" "}
+                            {edu.fieldOfStudy && `• ${edu.fieldOfStudy}`}
+                          </p>
+                          {edu.description && (
+                            <p className="mt-2 text-sm text-secondary-600">
+                              {edu.description}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
           {/* Compensation & Availability */}
-          {(applicantData.expectedSalary || applicantData.availability !== null || applicantData.startDateAvailability || applicantData.remotePreference) && (
+          {(applicantData.expectedSalary ||
+            applicantData.availability !== null ||
+            applicantData.startDateAvailability ||
+            applicantData.remotePreference) && (
             <Card className="mb-6">
               <CardContent className="p-6">
                 <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-secondary-900">
@@ -743,40 +880,68 @@ export default function ApplicantDetailPage() {
                 <div className="space-y-3">
                   {applicantData.expectedSalary && (
                     <div className="flex items-start gap-2">
-                      <span className="text-secondary-600">Expected Salary:</span>
-                      <span className="font-medium">${(applicantData.expectedSalary / 100).toLocaleString()}</span>
+                      <span className="text-secondary-600">
+                        Expected Salary:
+                      </span>
+                      <span className="font-medium">
+                        ${(applicantData.expectedSalary / 100).toLocaleString()}
+                      </span>
                     </div>
                   )}
                   {applicantData.availability !== null && (
                     <div className="flex items-start gap-2">
                       <span className="text-secondary-600">Availability:</span>
-                      <span className="font-medium">{applicantData.availability ? 'Available' : 'Not Available'}</span>
+                      <span className="font-medium">
+                        {applicantData.availability
+                          ? "Available"
+                          : "Not Available"}
+                      </span>
                     </div>
                   )}
                   {applicantData.startDateAvailability && (
                     <div className="flex items-start gap-2">
                       <span className="text-secondary-600">Can Start:</span>
-                      <span className="font-medium">{new Date(applicantData.startDateAvailability).toLocaleDateString()}</span>
+                      <span className="font-medium">
+                        {new Date(
+                          applicantData.startDateAvailability
+                        ).toLocaleDateString()}
+                      </span>
                     </div>
                   )}
                   {applicantData.remotePreference && (
                     <div className="flex items-start gap-2">
-                      <span className="text-secondary-600">Remote Preference:</span>
-                      <span className="font-medium capitalize">{applicantData.remotePreference.toLowerCase().replace('_', ' ')}</span>
+                      <span className="text-secondary-600">
+                        Remote Preference:
+                      </span>
+                      <span className="font-medium capitalize">
+                        {applicantData.remotePreference
+                          .toLowerCase()
+                          .replace("_", " ")}
+                      </span>
                     </div>
                   )}
-                  {applicantData.openToContract !== null && applicantData.openToContract !== undefined && (
-                    <div className="flex items-start gap-2">
-                      <span className="text-secondary-600">Open to Contract:</span>
-                      <span className="font-medium">{applicantData.openToContract ? 'Yes' : 'No'}</span>
-                    </div>
-                  )}
-                  {applicantData.willingToRelocate !== null && applicantData.willingToRelocate !== undefined && (
-                    <div className="flex items-start gap-2">
-                      <span className="text-secondary-600">Willing to Relocate:</span>
-                      <span className="font-medium">{applicantData.willingToRelocate ? 'Yes' : 'No'}</span>
-                    </div>
-                  )}
+                  {applicantData.openToContract !== null &&
+                    applicantData.openToContract !== undefined && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-secondary-600">
+                          Open to Contract:
+                        </span>
+                        <span className="font-medium">
+                          {applicantData.openToContract ? "Yes" : "No"}
+                        </span>
+                      </div>
+                    )}
+                  {applicantData.willingToRelocate !== null &&
+                    applicantData.willingToRelocate !== undefined && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-secondary-600">
+                          Willing to Relocate:
+                        </span>
+                        <span className="font-medium">
+                          {applicantData.willingToRelocate ? "Yes" : "No"}
+                        </span>
+                      </div>
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -786,173 +951,218 @@ export default function ApplicantDetailPage() {
           {applicantData.bio && (
             <Card className="mb-6">
               <CardContent className="p-6">
-                <h2 className="mb-4 text-xl font-semibold text-secondary-900">About</h2>
-                <p className="whitespace-pre-line text-secondary-700">{applicantData.bio}</p>
+                <h2 className="mb-4 text-xl font-semibold text-secondary-900">
+                  About
+                </h2>
+                <p className="whitespace-pre-line text-secondary-700">
+                  {applicantData.bio}
+                </p>
               </CardContent>
             </Card>
           )}
 
           {/* Interview Process Section */}
-          {interviewRounds && interviewRounds.length > 0 && interviews.length > 0 && (
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <h2 className="mb-4 text-2xl font-bold text-secondary-900">
-                Interview Process
-              </h2>
+          {interviewRounds &&
+            interviewRounds.length > 0 &&
+            interviews.length > 0 && (
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <h2 className="mb-4 text-2xl font-bold text-secondary-900">
+                    Interview Process
+                  </h2>
 
-              {interviewRounds && interviewRounds.length > 0 ? (
-                <div className="space-y-3">
-                  {interviewRounds.map((round: any, idx: number) => {
-                    const roundInterview = interviews.find(
-                      (i) => i.roundNumber === round.order && i.status !== "CANCELLED"
-                    );
-
-                    // Check if previous round is completed
-                    const previousRound = idx === 0
-                      ? { status: 'COMPLETED' } // First round is always unlocked
-                      : interviews.find(
-                          (i) => i.roundNumber === round.order - 1 && i.status === "COMPLETED"
+                  {interviewRounds && interviewRounds.length > 0 ? (
+                    <div className="space-y-3">
+                      {interviewRounds.map((round: any, idx: number) => {
+                        const roundInterview = interviews.find(
+                          (i) =>
+                            i.roundNumber === round.order &&
+                            i.status !== "CANCELLED"
                         );
 
-                    const canSchedule = !roundInterview && (idx === 0 || previousRound?.status === 'COMPLETED');
+                        // Check if previous round is completed
+                        const previousRound =
+                          idx === 0
+                            ? { status: "COMPLETED" } // First round is always unlocked
+                            : interviews.find(
+                                (i) =>
+                                  i.roundNumber === round.order - 1 &&
+                                  i.status === "COMPLETED"
+                              );
 
-                    // Check if interview is happening soon (within 15 minutes)
-                    const isHappeningSoon = roundInterview &&
-                      new Date(roundInterview.scheduledAt).getTime() - Date.now() < 15 * 60 * 1000 &&
-                      new Date(roundInterview.scheduledAt).getTime() > Date.now();
+                        const canSchedule =
+                          !roundInterview &&
+                          (idx === 0 || previousRound?.status === "COMPLETED");
 
-                    return (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between rounded-lg border border-secondary-200 p-4"
-                      >
-                        <div className="flex items-center gap-4">
-                          <span className="text-2xl">
-                            {roundInterview?.status === "COMPLETED"
-                              ? "✅"
-                              : roundInterview
-                                ? "📅"
-                                : canSchedule
+                        // Check if interview is happening soon (within 15 minutes)
+                        const isHappeningSoon =
+                          roundInterview &&
+                          new Date(roundInterview.scheduledAt).getTime() -
+                            Date.now() <
+                            15 * 60 * 1000 &&
+                          new Date(roundInterview.scheduledAt).getTime() >
+                            Date.now();
+
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between rounded-lg border border-secondary-200 p-4"
+                          >
+                            <div className="flex items-center gap-4">
+                              <span className="text-2xl">
+                                {roundInterview?.status === "COMPLETED"
+                                  ? "✅"
+                                  : roundInterview
+                                  ? "📅"
+                                  : canSchedule
                                   ? "⏳"
                                   : "🔒"}
-                          </span>
-                          <div>
-                            <h3 className="font-medium text-secondary-900">
-                              Round {round.order}: {round.name}
-                            </h3>
-                            <p className="text-sm text-secondary-600">{round.duration} minutes</p>
-                            {roundInterview && (
-                              <>
-                                <p className="text-sm text-secondary-500">
-                                  {new Date(roundInterview.scheduledAt).toLocaleDateString()} at{" "}
-                                  {new Date(roundInterview.scheduledAt).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
+                              </span>
+                              <div>
+                                <h3 className="font-medium text-secondary-900">
+                                  Round {round.order}: {round.name}
+                                </h3>
+                                <p className="text-sm text-secondary-600">
+                                  {round.duration} minutes
                                 </p>
-                                {roundInterview.interviewer && (
-                                  <p className="text-xs text-secondary-500">
-                                    Interviewer: {roundInterview.interviewer.name}
-                                  </p>
+                                {roundInterview && (
+                                  <>
+                                    <p className="text-sm text-secondary-500">
+                                      {new Date(
+                                        roundInterview.scheduledAt
+                                      ).toLocaleDateString()}{" "}
+                                      at{" "}
+                                      {new Date(
+                                        roundInterview.scheduledAt
+                                      ).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </p>
+                                    {roundInterview.interviewer && (
+                                      <p className="text-xs text-secondary-500">
+                                        Interviewer:{" "}
+                                        {roundInterview.interviewer.name}
+                                      </p>
+                                    )}
+                                  </>
                                 )}
-                              </>
-                            )}
-                          </div>
-                        </div>
+                              </div>
+                            </div>
 
-                        <div className="flex gap-2">
-                          {/* Completed */}
-                          {roundInterview?.status === "COMPLETED" && (
-                            <>
-                              <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-800">
-                                ✓ Completed
-                              </span>
-                              <button className="rounded px-3 py-1 text-sm text-blue-600 hover:bg-blue-50">
-                                View Details
-                              </button>
-                            </>
-                          )}
-
-                          {/* Scheduled - Happening Soon */}
-                          {roundInterview?.status === "SCHEDULED" && isHappeningSoon && (
-                            <>
-                              {roundInterview.meetingLink && (
-                                <a
-                                  href={roundInterview.meetingLink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-                                >
-                                  🎥 Join Meeting
-                                </a>
+                            <div className="flex gap-2">
+                              {/* Completed */}
+                              {roundInterview?.status === "COMPLETED" && (
+                                <>
+                                  <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-800">
+                                    ✓ Completed
+                                  </span>
+                                  <button className="rounded px-3 py-1 text-sm text-blue-600 hover:bg-blue-50">
+                                    View Details
+                                  </button>
+                                </>
                               )}
-                              <button
-                                onClick={() => rescheduleInterview(roundInterview.id)}
-                                className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
-                              >
-                                Reschedule
-                              </button>
-                            </>
-                          )}
 
-                          {/* Scheduled - Future */}
-                          {roundInterview?.status === "SCHEDULED" && !isHappeningSoon && (
-                            <>
-                              <span className="flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
-                                📅 Scheduled
-                              </span>
-                              <button
-                                onClick={() => rescheduleInterview(roundInterview.id)}
-                                className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
-                              >
-                                Reschedule
-                              </button>
-                              <button
-                                onClick={() => cancelInterview(roundInterview.id)}
-                                className="rounded px-3 py-1 text-sm text-red-600 hover:bg-red-50"
-                              >
-                                Cancel
-                              </button>
-                            </>
-                          )}
+                              {/* Scheduled - Happening Soon */}
+                              {roundInterview?.status === "SCHEDULED" &&
+                                isHappeningSoon && (
+                                  <>
+                                    {roundInterview.meetingLink && (
+                                      <a
+                                        href={roundInterview.meetingLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                                      >
+                                        🎥 Join Meeting
+                                      </a>
+                                    )}
+                                    <button
+                                      onClick={() =>
+                                        rescheduleInterview(roundInterview.id)
+                                      }
+                                      className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
+                                    >
+                                      Reschedule
+                                    </button>
+                                  </>
+                                )}
 
-                          {/* Can Schedule */}
-                          {canSchedule && !roundInterview && (
-                            <button
-                              onClick={() => router.push(`/employer/interviews/availability/${applicantId}?round=${round.order}`)}
-                              className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                            >
-                              Schedule
-                            </button>
-                          )}
+                              {/* Scheduled - Future */}
+                              {roundInterview?.status === "SCHEDULED" &&
+                                !isHappeningSoon && (
+                                  <>
+                                    <span className="flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
+                                      📅 Scheduled
+                                    </span>
+                                    <button
+                                      onClick={() =>
+                                        rescheduleInterview(roundInterview.id)
+                                      }
+                                      className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
+                                    >
+                                      Reschedule
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        cancelInterview(roundInterview.id)
+                                      }
+                                      className="rounded px-3 py-1 text-sm text-red-600 hover:bg-red-50"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </>
+                                )}
 
-                          {/* Locked */}
-                          {!canSchedule && !roundInterview && (
-                            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
-                              🔒 Complete Round {round.order - 1} first
-                            </span>
-                          )}
-                        </div>
+                              {/* Can Schedule */}
+                              {canSchedule && !roundInterview && (
+                                <button
+                                  onClick={() =>
+                                    router.push(
+                                      `/employer/interviews/availability/${applicantId}?round=${round.order}`
+                                    )
+                                  }
+                                  className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                                >
+                                  Schedule
+                                </button>
+                              )}
+
+                              {/* Locked */}
+                              {!canSchedule && !roundInterview && (
+                                <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
+                                  🔒 Complete Round {round.order - 1} first
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      <div className="mt-4 text-sm text-secondary-600">
+                        Progress:{" "}
+                        {
+                          interviews.filter((i) => i.status === "COMPLETED")
+                            .length
+                        }
+                        /{interviewRounds.length} rounds completed
                       </div>
-                    );
-                  })}
-
-                  <div className="mt-4 text-sm text-secondary-600">
-                    Progress: {interviews.filter((i) => i.status === "COMPLETED").length}/
-                    {interviewRounds.length} rounds completed
-                  </div>
-                </div>
-              ) : (
-                <p className="text-secondary-500">No interview process defined for this job</p>
-              )}
-            </CardContent>
-          </Card>
-          )}
+                    </div>
+                  ) : (
+                    <p className="text-secondary-500">
+                      No interview process defined for this job
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
           {/* Interview History Section */}
           <Card className="mb-6">
             <CardContent className="p-6">
-              <h2 className="mb-4 text-2xl font-bold text-secondary-900">Interview History</h2>
+              <h2 className="mb-4 text-2xl font-bold text-secondary-900">
+                Interview History
+              </h2>
 
               {isLoadingInterviews ? (
                 <div className="flex items-center justify-center py-8">
@@ -982,21 +1192,32 @@ export default function ApplicantDetailPage() {
                     </thead>
                     <tbody>
                       {interviews
-                        .sort((a: any, b: any) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
+                        .sort(
+                          (a: any, b: any) =>
+                            new Date(b.scheduledAt).getTime() -
+                            new Date(a.scheduledAt).getTime()
+                        )
                         .map((interview: any) => (
                           <tr
                             key={interview.id}
                             className="border-b border-secondary-100 hover:bg-secondary-50 last:border-0"
                           >
                             <td className="px-4 py-3 text-sm text-secondary-900">
-                              {new Date(interview.scheduledAt).toLocaleDateString()} at{" "}
-                              {new Date(interview.scheduledAt).toLocaleTimeString([], {
+                              {new Date(
+                                interview.scheduledAt
+                              ).toLocaleDateString()}{" "}
+                              at{" "}
+                              {new Date(
+                                interview.scheduledAt
+                              ).toLocaleTimeString([], {
                                 hour: "2-digit",
                                 minute: "2-digit",
                               })}
                             </td>
                             <td className="px-4 py-3 text-sm text-secondary-900">
-                              {interview.roundName || interview.round || "Interview Round"}
+                              {interview.roundName ||
+                                interview.round ||
+                                "Interview Round"}
                             </td>
                             <td className="px-4 py-3">
                               {getInterviewStatusBadge(interview.status)}
@@ -1019,34 +1240,53 @@ export default function ApplicantDetailPage() {
                     No Interviews Scheduled
                   </h3>
                   <p className="mb-4 text-sm text-secondary-600">
-                    Schedule a video interview with this candidate to discuss the position
+                    Schedule a video interview with this candidate to discuss
+                    the position
                   </p>
-                  <Button variant="primary" onClick={() => {
-                    // Calculate next round to schedule
-                    const completedRounds = interviews
-                      .filter((i: any) => i.status === 'COMPLETED' && i.roundNumber)
-                      .map((i: any) => i.roundNumber);
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      // Calculate next round to schedule
+                      const completedRounds = interviews
+                        .filter(
+                          (i: any) => i.status === "COMPLETED" && i.roundNumber
+                        )
+                        .map((i: any) => i.roundNumber);
 
-                    const scheduledRounds = interviews
-                      .filter((i: any) => i.status !== 'CANCELLED' && i.status !== 'COMPLETED' && i.roundNumber)
-                      .map((i: any) => i.roundNumber);
+                      const scheduledRounds = interviews
+                        .filter(
+                          (i: any) =>
+                            i.status !== "CANCELLED" &&
+                            i.status !== "COMPLETED" &&
+                            i.roundNumber
+                        )
+                        .map((i: any) => i.roundNumber);
 
-                    // Next round is highest completed + 1, or first available
-                    let nextRound = 1;
-                    if (completedRounds.length > 0) {
-                      nextRound = Math.max(...completedRounds) + 1;
-                    } else if (scheduledRounds.length > 0) {
-                      // If there's already a scheduled interview, go to next after that
-                      nextRound = Math.max(...scheduledRounds) + 1;
-                    }
+                      // Next round is highest completed + 1, or first available
+                      let nextRound = 1;
+                      if (completedRounds.length > 0) {
+                        nextRound = Math.max(...completedRounds) + 1;
+                      } else if (scheduledRounds.length > 0) {
+                        // If there's already a scheduled interview, go to next after that
+                        nextRound = Math.max(...scheduledRounds) + 1;
+                      }
 
-                    // Make sure we don't exceed total rounds
-                    if (interviewRounds && interviewRounds.length > 0 && nextRound <= interviewRounds.length) {
-                      router.push(`/employer/interviews/availability/${applicantId}?round=${nextRound}`);
-                    } else {
-                      router.push(`/employer/interviews/availability/${applicantId}`);
-                    }
-                  }}>
+                      // Make sure we don't exceed total rounds
+                      if (
+                        interviewRounds &&
+                        interviewRounds.length > 0 &&
+                        nextRound <= interviewRounds.length
+                      ) {
+                        router.push(
+                          `/employer/interviews/availability/${applicantId}?round=${nextRound}`
+                        );
+                      } else {
+                        router.push(
+                          `/employer/interviews/availability/${applicantId}`
+                        );
+                      }
+                    }}
+                  >
                     <Video className="mr-2 h-4 w-4" />
                     Schedule Interview
                   </Button>
@@ -1075,7 +1315,9 @@ export default function ApplicantDetailPage() {
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-secondary-900">Make Job Offer</h2>
+                <h2 className="text-2xl font-bold text-secondary-900">
+                  Make Job Offer
+                </h2>
                 <button
                   onClick={() => setShowOfferModal(false)}
                   disabled={isCreatingOffer}
@@ -1094,7 +1336,9 @@ export default function ApplicantDetailPage() {
                   <input
                     type="text"
                     value={offerData.position}
-                    onChange={(e) => setOfferData({ ...offerData, position: e.target.value })}
+                    onChange={(e) =>
+                      setOfferData({ ...offerData, position: e.target.value })
+                    }
                     className="w-full rounded-lg border border-secondary-300 p-3 focus:border-primary-500 focus:outline-none"
                     placeholder="e.g., Senior Software Engineer"
                     disabled={isCreatingOffer}
@@ -1111,7 +1355,9 @@ export default function ApplicantDetailPage() {
                     <input
                       type="number"
                       value={offerData.salary}
-                      onChange={(e) => setOfferData({ ...offerData, salary: e.target.value })}
+                      onChange={(e) =>
+                        setOfferData({ ...offerData, salary: e.target.value })
+                      }
                       className="w-full rounded-lg border border-secondary-300 p-3 pl-10 focus:border-primary-500 focus:outline-none"
                       placeholder="100000"
                       disabled={isCreatingOffer}
@@ -1129,7 +1375,9 @@ export default function ApplicantDetailPage() {
                       type="number"
                       step="0.01"
                       value={offerData.equity}
-                      onChange={(e) => setOfferData({ ...offerData, equity: e.target.value })}
+                      onChange={(e) =>
+                        setOfferData({ ...offerData, equity: e.target.value })
+                      }
                       className="w-full rounded-lg border border-secondary-300 p-3 focus:border-primary-500 focus:outline-none"
                       placeholder="0.5"
                       disabled={isCreatingOffer}
@@ -1147,7 +1395,10 @@ export default function ApplicantDetailPage() {
                         type="number"
                         value={offerData.signingBonus}
                         onChange={(e) =>
-                          setOfferData({ ...offerData, signingBonus: e.target.value })
+                          setOfferData({
+                            ...offerData,
+                            signingBonus: e.target.value,
+                          })
                         }
                         className="w-full rounded-lg border border-secondary-300 p-3 pl-10 focus:border-primary-500 focus:outline-none"
                         placeholder="10000"
@@ -1185,7 +1436,9 @@ export default function ApplicantDetailPage() {
                           disabled={isCreatingOffer}
                           className="h-4 w-4"
                         />
-                        <span className="text-sm text-secondary-700">{benefit}</span>
+                        <span className="text-sm text-secondary-700">
+                          {benefit}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -1200,7 +1453,12 @@ export default function ApplicantDetailPage() {
                     <input
                       type="date"
                       value={offerData.startDate}
-                      onChange={(e) => setOfferData({ ...offerData, startDate: e.target.value })}
+                      onChange={(e) =>
+                        setOfferData({
+                          ...offerData,
+                          startDate: e.target.value,
+                        })
+                      }
                       className="w-full rounded-lg border border-secondary-300 p-3 focus:border-primary-500 focus:outline-none"
                       disabled={isCreatingOffer}
                     />
@@ -1214,7 +1472,12 @@ export default function ApplicantDetailPage() {
                     <input
                       type="date"
                       value={offerData.expiresAt}
-                      onChange={(e) => setOfferData({ ...offerData, expiresAt: e.target.value })}
+                      onChange={(e) =>
+                        setOfferData({
+                          ...offerData,
+                          expiresAt: e.target.value,
+                        })
+                      }
                       className="w-full rounded-lg border border-secondary-300 p-3 focus:border-primary-500 focus:outline-none"
                       placeholder="Defaults to 7 days"
                       disabled={isCreatingOffer}
@@ -1233,7 +1496,10 @@ export default function ApplicantDetailPage() {
                   <textarea
                     value={offerData.customMessage}
                     onChange={(e) =>
-                      setOfferData({ ...offerData, customMessage: e.target.value })
+                      setOfferData({
+                        ...offerData,
+                        customMessage: e.target.value,
+                      })
                     }
                     className="w-full rounded-lg border border-secondary-300 p-3 focus:border-primary-500 focus:outline-none"
                     rows={4}
@@ -1281,7 +1547,6 @@ export default function ApplicantDetailPage() {
           </Card>
         </div>
       )}
-
     </div>
   );
 }

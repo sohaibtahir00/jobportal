@@ -46,16 +46,15 @@ export default function LoginPage() {
       // No need to manually redirect here
     } catch (error: any) {
       // Extract error message
-      const errorMessage = error.message || authError || "An unexpected error occurred. Please try again.";
+      const errorMessage =
+        error.message ||
+        authError ||
+        "An unexpected error occurred. Please try again.";
 
       setApiError(errorMessage);
 
       // Show error toast
-      showToast(
-        "error",
-        "Login failed",
-        errorMessage
-      );
+      showToast("error", "Login failed", errorMessage);
 
       // Log error for debugging
       console.error("Login error:", error);
@@ -64,7 +63,11 @@ export default function LoginPage() {
 
   const handleSocialLogin = (provider: "google" | "linkedin") => {
     // TODO: Implement social login with OAuth
-    showToast("info", "Coming soon", `${provider} login will be available soon`);
+    showToast(
+      "info",
+      "Coming soon",
+      `${provider} login will be available soon`
+    );
   };
 
   return (
@@ -87,9 +90,7 @@ export default function LoginPage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Welcome back
             </h1>
-            <p className="text-gray-600">
-              Sign in to your account to continue
-            </p>
+            <p className="text-gray-600">Sign in to your account to continue</p>
           </div>
 
           {/* Social Login */}
@@ -125,12 +126,8 @@ export default function LoginPage() {
               onClick={() => handleSocialLogin("linkedin")}
               className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white border-2 border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
             >
-              <svg
-                className="w-5 h-5"
-                fill="#0A66C2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              <svg className="w-5 h-5" fill="#0A66C2" viewBox="0 0 24 24">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
               </svg>
               Continue with LinkedIn
             </button>
@@ -172,8 +169,18 @@ export default function LoginPage() {
                 }}
                 className="text-red-600 hover:text-red-800"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </motion.div>
