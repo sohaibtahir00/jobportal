@@ -36,6 +36,8 @@ export default function ConfirmInterviewPage() {
   const [isLoadingMembers, setIsLoadingMembers] = useState(true);
   const [selectedInterviewerId, setSelectedInterviewerId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [videoIntegration, setVideoIntegration] = useState<any>(null);
+  const [isLoadingIntegration, setIsLoadingIntegration] = useState(true);
 
   // Redirect if not employer
   useEffect(() => {
@@ -86,6 +88,31 @@ export default function ConfirmInterviewPage() {
     };
 
     loadTeamMembers();
+  }, [status]);
+
+  // Load video integration
+  useEffect(() => {
+    const loadVideoIntegration = async () => {
+      if (status !== "authenticated") return;
+
+      try {
+        setIsLoadingIntegration(true);
+        const response = await api.get("/api/employer/integrations/video");
+        setVideoIntegration(response.data.integration);
+
+        // Auto-select platform if connected
+        if (response.data.integration?.platform) {
+          setMeetingPlatform(response.data.integration.platform.toLowerCase());
+        }
+      } catch (err) {
+        console.error("Failed to load video integration:", err);
+        // Don't show error - just continue without integration
+      } finally {
+        setIsLoadingIntegration(false);
+      }
+    };
+
+    loadVideoIntegration();
   }, [status]);
 
   const handleConfirm = async () => {
@@ -399,9 +426,13 @@ export default function ConfirmInterviewPage() {
                   >
                     <Video className="h-6 w-6 text-white" />
                   </div>
-                  <div className="text-left">
+                  <div className="flex-1 text-left">
                     <p className="font-semibold text-secondary-900">Zoom</p>
-                    <p className="text-xs text-secondary-600">Professional video conferencing</p>
+                    {videoIntegration?.platform === "ZOOM" ? (
+                      <p className="text-xs text-green-600">✓ Auto-generate link • Connected as {videoIntegration.email}</p>
+                    ) : (
+                      <p className="text-xs text-secondary-600">Professional video conferencing</p>
+                    )}
                   </div>
                 </button>
 
@@ -421,15 +452,24 @@ export default function ConfirmInterviewPage() {
                   >
                     <Video className="h-6 w-6 text-white" />
                   </div>
-                  <div className="text-left">
+                  <div className="flex-1 text-left">
                     <p className="font-semibold text-secondary-900">Google Meet</p>
-                    <p className="text-xs text-secondary-600">Easy browser-based meetings</p>
+                    {videoIntegration?.platform === "GOOGLE_MEET" ? (
+                      <p className="text-xs text-green-600">✓ Auto-generate link • Connected as {videoIntegration.email}</p>
+                    ) : (
+                      <p className="text-xs text-secondary-600">Easy browser-based meetings</p>
+                    )}
                   </div>
                 </button>
               </div>
               <p className="mt-3 text-xs text-secondary-500">
-                Note: You'll be redirected to {meetingPlatform === "zoom" ? "Zoom" : "Google Meet"}{" "}
-                to create the meeting. The link will be shared with the candidate automatically.
+                {videoIntegration?.platform === "ZOOM" && meetingPlatform === "zoom" ? (
+                  <>✓ Meeting link will be auto-generated using your connected Zoom account</>
+                ) : videoIntegration?.platform === "GOOGLE_MEET" && meetingPlatform === "google_meet" ? (
+                  <>✓ Meeting link will be auto-generated using your connected Google Meet account</>
+                ) : (
+                  <>Mock meeting link will be generated (Connect Zoom or Google Meet in Settings for real links)</>
+                )}
               </p>
             </CardContent>
           </Card>

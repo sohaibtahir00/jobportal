@@ -490,7 +490,32 @@ export default function ApplicantDetailPage() {
                   <Button
                     variant="primary"
                     className="w-full"
-                    onClick={() => router.push(`/employer/interviews/availability/${applicantId}`)}
+                    onClick={() => {
+                      // Calculate next round to schedule
+                      const completedRounds = interviews
+                        .filter((i: any) => i.status === 'COMPLETED' && i.roundNumber)
+                        .map((i: any) => i.roundNumber);
+
+                      const scheduledRounds = interviews
+                        .filter((i: any) => i.status !== 'CANCELLED' && i.status !== 'COMPLETED' && i.roundNumber)
+                        .map((i: any) => i.roundNumber);
+
+                      // Next round is highest completed + 1, or first available
+                      let nextRound = 1;
+                      if (completedRounds.length > 0) {
+                        nextRound = Math.max(...completedRounds) + 1;
+                      } else if (scheduledRounds.length > 0) {
+                        // If there's already a scheduled interview, go to next after that
+                        nextRound = Math.max(...scheduledRounds) + 1;
+                      }
+
+                      // Make sure we don't exceed total rounds
+                      if (interviewRounds && interviewRounds.length > 0 && nextRound <= interviewRounds.length) {
+                        router.push(`/employer/interviews/availability/${applicantId}?round=${nextRound}`);
+                      } else {
+                        router.push(`/employer/interviews/availability/${applicantId}`);
+                      }
+                    }}
                   >
                     <Video className="mr-2 h-5 w-5" />
                     Schedule Interview
@@ -994,7 +1019,32 @@ export default function ApplicantDetailPage() {
                   <p className="mb-4 text-sm text-secondary-600">
                     Schedule a video interview with this candidate to discuss the position
                   </p>
-                  <Button variant="primary" onClick={() => router.push(`/employer/interviews/availability/${applicantId}`)}>
+                  <Button variant="primary" onClick={() => {
+                    // Calculate next round to schedule
+                    const completedRounds = interviews
+                      .filter((i: any) => i.status === 'COMPLETED' && i.roundNumber)
+                      .map((i: any) => i.roundNumber);
+
+                    const scheduledRounds = interviews
+                      .filter((i: any) => i.status !== 'CANCELLED' && i.status !== 'COMPLETED' && i.roundNumber)
+                      .map((i: any) => i.roundNumber);
+
+                    // Next round is highest completed + 1, or first available
+                    let nextRound = 1;
+                    if (completedRounds.length > 0) {
+                      nextRound = Math.max(...completedRounds) + 1;
+                    } else if (scheduledRounds.length > 0) {
+                      // If there's already a scheduled interview, go to next after that
+                      nextRound = Math.max(...scheduledRounds) + 1;
+                    }
+
+                    // Make sure we don't exceed total rounds
+                    if (interviewRounds && interviewRounds.length > 0 && nextRound <= interviewRounds.length) {
+                      router.push(`/employer/interviews/availability/${applicantId}?round=${nextRound}`);
+                    } else {
+                      router.push(`/employer/interviews/availability/${applicantId}`);
+                    }
+                  }}>
                     <Video className="mr-2 h-4 w-4" />
                     Schedule Interview
                   </Button>

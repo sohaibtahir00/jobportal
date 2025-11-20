@@ -85,16 +85,45 @@ export default function SetAvailabilityPage() {
         if (jobId) {
           try {
             const roundsResponse = await api.get(`/api/employer/jobs/${jobId}/interview-rounds`);
-            setJobRounds(roundsResponse.data.rounds || []);
+            const rounds = roundsResponse.data.rounds || [];
+            setJobRounds(rounds);
+
+            // If rounds exist, use them instead of showing template modal
+            if (rounds.length > 0) {
+              setShowTemplateModal(false);
+
+              // Create a "template" object from existing rounds for UI consistency
+              setSelectedTemplate({
+                id: 'existing',
+                name: 'Interview Process',
+                rounds: rounds.map((round: any) => ({
+                  name: round.name,
+                  duration: round.duration,
+                  description: round.description,
+                  order: round.order
+                }))
+              });
+            } else {
+              // No rounds exist, set default template if one exists
+              const defaultTemplate = templatesResponse.data.templates?.find((t: any) => t.isDefault);
+              if (defaultTemplate) {
+                setSelectedTemplate(defaultTemplate);
+              }
+            }
           } catch (err) {
             console.log("No job rounds found, will use template");
+            // Set default template if one exists
+            const defaultTemplate = templatesResponse.data.templates?.find((t: any) => t.isDefault);
+            if (defaultTemplate) {
+              setSelectedTemplate(defaultTemplate);
+            }
           }
-        }
-
-        // Set default template if one exists
-        const defaultTemplate = templatesResponse.data.templates?.find((t: any) => t.isDefault);
-        if (defaultTemplate) {
-          setSelectedTemplate(defaultTemplate);
+        } else {
+          // No jobId, set default template if one exists
+          const defaultTemplate = templatesResponse.data.templates?.find((t: any) => t.isDefault);
+          if (defaultTemplate) {
+            setSelectedTemplate(defaultTemplate);
+          }
         }
       } catch (err) {
         console.error("Failed to load application:", err);
