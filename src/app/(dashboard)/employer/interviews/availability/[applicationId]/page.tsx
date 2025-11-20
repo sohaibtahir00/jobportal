@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   Calendar as CalendarIcon,
@@ -28,7 +28,9 @@ interface TimeSlot {
 
 export default function SetAvailabilityPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const applicationId = params.applicationId as string;
+  const roundParam = searchParams.get("round"); // Get round from URL (e.g., ?round=1)
   const router = useRouter();
   const { data: session, status } = useSession();
 
@@ -45,6 +47,9 @@ export default function SetAvailabilityPage() {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [templates, setTemplates] = useState<any[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [selectedRound, setSelectedRound] = useState<any>(null); // The specific round being scheduled
+  const [existingInterviews, setExistingInterviews] = useState<any[]>([]); // For auto-select logic
+  const [jobRounds, setJobRounds] = useState<any[]>([]); // Job-level interview rounds
 
   // Redirect if not employer
   useEffect(() => {
@@ -66,9 +71,25 @@ export default function SetAvailabilityPage() {
         const response = await api.get(`/api/employer/applications/${applicationId}`);
         setApplicationData(response.data.application);
 
+        const jobId = response.data.application?.jobId;
+
         // Load templates
         const templatesResponse = await api.get("/api/employer/interview-templates");
         setTemplates(templatesResponse.data.templates || []);
+
+        // Load existing interviews for this application
+        const interviewsResponse = await api.get(`/api/interviews?applicationId=${applicationId}`);
+        setExistingInterviews(interviewsResponse.data.interviews || []);
+
+        // Load job-level interview rounds
+        if (jobId) {
+          try {
+            const roundsResponse = await api.get(`/api/employer/jobs/${jobId}/interview-rounds`);
+            setJobRounds(roundsResponse.data.rounds || []);
+          } catch (err) {
+            console.log("No job rounds found, will use template");
+          }
+        }
 
         // Set default template if one exists
         const defaultTemplate = templatesResponse.data.templates?.find((t: any) => t.isDefault);
@@ -86,6 +107,45 @@ export default function SetAvailabilityPage() {
     loadData();
   }, [applicationId, status]);
 
+  // Auto-select round based on URL parameter or next available round
+  useEffect(() => {
+    if (!selectedTemplate || !existingInterviews) return;
+
+    // Use jobRounds if available, otherwise use template rounds
+    const rounds = jobRounds.length > 0 ? jobRounds : selectedTemplate.rounds;
+    if (!rounds || rounds.length === 0) return;
+
+    let roundToSchedule = null;
+
+    if (roundParam) {
+      // If round specified in URL, use that
+      const roundNumber = parseInt(roundParam);
+      roundToSchedule = rounds.find((r: any) => r.order === roundNumber);
+    } else {
+      // Auto-select next round based on completed interviews
+      const completedRounds = existingInterviews
+        .filter((i: any) => i.status === "COMPLETED" && i.roundNumber)
+        .map((i: any) => i.roundNumber);
+
+      // Find the first round that hasn't been completed
+      for (const round of rounds) {
+        if (!completedRounds.includes(round.order)) {
+          roundToSchedule = round;
+          break;
+        }
+      }
+
+      // If all rounds completed, default to first round (reschedule scenario)
+      if (!roundToSchedule && rounds.length > 0) {
+        roundToSchedule = rounds[0];
+      }
+    }
+
+    if (roundToSchedule) {
+      setSelectedRound(roundToSchedule);
+    }
+  }, [selectedTemplate, existingInterviews, jobRounds, roundParam]);
+
   const addTimeSlot = () => {
     setTimeSlots([...timeSlots, { date: "", startTime: "", endTime: "" }]);
   };
@@ -99,6 +159,32 @@ export default function SetAvailabilityPage() {
     const updated = [...timeSlots];
     updated[index] = { ...updated[index], [field]: value };
     setTimeSlots(updated);
+  };
+
+  const handleTemplateSelect = async (template: any) => {
+    setSelectedTemplate(template);
+    setShowTemplateModal(false);
+
+    // Create InterviewRounds in database for this job
+    if (applicationData?.jobId && template.rounds) {
+      try {
+        await api.post(`/api/employer/jobs/${applicationData.jobId}/interview-rounds`, {
+          rounds: template.rounds.map((round: any, index: number) => ({
+            name: round.name,
+            description: round.description || null,
+            duration: round.duration,
+            order: round.order || index + 1,
+          })),
+        });
+
+        // Reload job rounds
+        const roundsResponse = await api.get(`/api/employer/jobs/${applicationData.jobId}/interview-rounds`);
+        setJobRounds(roundsResponse.data.rounds || []);
+      } catch (err) {
+        console.error("Failed to create interview rounds:", err);
+        // Don't fail the template selection if this fails
+      }
+    }
   };
 
   const validateSlots = (): boolean => {
@@ -154,6 +240,12 @@ export default function SetAvailabilityPage() {
 
     if (!validateSlots()) return;
 
+    // Check if we have a selected round
+    if (!selectedRound) {
+      setError("Please select an interview template first");
+      return;
+    }
+
     try {
       setIsSaving(true);
 
@@ -161,7 +253,10 @@ export default function SetAvailabilityPage() {
       const response = await api.post("/api/interviews/availability", {
         applicationId,
         type: "VIDEO",
-        duration: 60, // Default 1 hour
+        duration: selectedRound.duration, // Use template duration
+        roundNumber: selectedRound.order, // Send round number for unlocking logic
+        round: selectedRound.name, // Send round name
+        roundName: selectedRound.name, // Send round name for clarity
         availabilitySlots: timeSlots.map((slot) => ({
           startTime: new Date(`${slot.date}T${slot.startTime}`).toISOString(),
           endTime: new Date(`${slot.date}T${slot.endTime}`).toISOString(),
@@ -222,6 +317,17 @@ export default function SetAvailabilityPage() {
               <span className="font-medium">{candidate?.name}</span> for the{" "}
               <span className="font-medium">{job?.title}</span> position
             </p>
+            {selectedRound && (
+              <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary-100 px-4 py-2 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-primary-600" />
+                <span className="font-semibold text-primary-900">
+                  Scheduling: Round {selectedRound.order} - {selectedRound.name}
+                </span>
+                <span className="text-primary-700">
+                  ({selectedRound.duration} minutes)
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Candidate Info */}
@@ -351,10 +457,7 @@ export default function SetAvailabilityPage() {
                   {templates.map((template) => (
                     <div
                       key={template.id}
-                      onClick={() => {
-                        setSelectedTemplate(template);
-                        setShowTemplateModal(false);
-                      }}
+                      onClick={() => handleTemplateSelect(template)}
                       className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
                         selectedTemplate?.id === template.id
                           ? "border-primary-500 bg-primary-50"

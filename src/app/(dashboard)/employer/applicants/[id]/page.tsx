@@ -33,7 +33,6 @@ import {
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
 import { api } from "@/lib/api";
-import InterviewScheduleModal from "@/components/interviews/InterviewScheduleModal";
 
 // Backend URL for file downloads
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://job-portal-backend-production-cd05.up.railway.app';
@@ -78,10 +77,6 @@ export default function ApplicantDetailPage() {
     expiresAt: "",
     customMessage: "",
   });
-
-  // Interview schedule modal state
-  const [showInterviewModal, setShowInterviewModal] = useState(false);
-  const [suggestedNextRound, setSuggestedNextRound] = useState<string | null>(null);
 
   // Redirect if not logged in or not employer
   useEffect(() => {
@@ -209,43 +204,11 @@ export default function ApplicantDetailPage() {
       const response = await api.get(`/api/interviews?applicationId=${applicantId}`);
       const fetchedInterviews = response.data.interviews || [];
       setInterviews(fetchedInterviews);
-
-      // Calculate suggested next round based on completed interviews
-      calculateNextRound(fetchedInterviews);
     } catch (err) {
       console.error("Failed to load interviews:", err);
     } finally {
       setIsLoadingInterviews(false);
     }
-  };
-
-  // Calculate the next interview round based on completed interviews
-  const calculateNextRound = (interviewList: any[]) => {
-    // Get all completed interview rounds
-    const completedRounds = interviewList
-      .filter((i) => i.status === "COMPLETED")
-      .map((i) => i.round)
-      .filter(Boolean);
-
-    // Standard interview round progression
-    const standardRounds = [
-      "Phone Screen",
-      "Technical Interview",
-      "System Design",
-      "Behavioral Interview",
-      "Final Interview"
-    ];
-
-    // Find the next round that hasn't been completed
-    for (const round of standardRounds) {
-      if (!completedRounds.includes(round)) {
-        setSuggestedNextRound(round);
-        return;
-      }
-    }
-
-    // If all standard rounds are completed, suggest "Final Interview" or null
-    setSuggestedNextRound(null);
   };
 
   // Load interview rounds for this job
@@ -527,7 +490,7 @@ export default function ApplicantDetailPage() {
                   <Button
                     variant="primary"
                     className="w-full"
-                    onClick={() => setShowInterviewModal(true)}
+                    onClick={() => router.push(`/employer/interviews/availability/${applicantId}`)}
                   >
                     <Video className="mr-2 h-5 w-5" />
                     Schedule Interview
@@ -1031,7 +994,7 @@ export default function ApplicantDetailPage() {
                   <p className="mb-4 text-sm text-secondary-600">
                     Schedule a video interview with this candidate to discuss the position
                   </p>
-                  <Button variant="primary" onClick={() => setShowInterviewModal(true)}>
+                  <Button variant="primary" onClick={() => router.push(`/employer/interviews/availability/${applicantId}`)}>
                     <Video className="mr-2 h-4 w-4" />
                     Schedule Interview
                   </Button>
@@ -1267,23 +1230,6 @@ export default function ApplicantDetailPage() {
         </div>
       )}
 
-      {/* Interview Schedule Modal */}
-      {applicantData && (
-        <InterviewScheduleModal
-          isOpen={showInterviewModal}
-          onClose={() => setShowInterviewModal(false)}
-          applicationId={applicantId}
-          candidateName={applicantData.name}
-          jobTitle={applicantData.appliedFor}
-          jobId={applicantData.jobId}
-          suggestedRound={suggestedNextRound}
-          onSuccess={() => {
-            setShowInterviewModal(false);
-            // Reload interviews
-            loadInterviews();
-          }}
-        />
-      )}
     </div>
   );
 }
