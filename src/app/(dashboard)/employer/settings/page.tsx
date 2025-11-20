@@ -1300,13 +1300,17 @@ export default function EmployerSettingsPage() {
                       )}
                     </Button>
                   ) : (
-                    <a
-                      href="/api/employer/integrations/google-calendar/oauth"
-                      className="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        // Use frontend proxy route which adds auth headers
+                        window.location.href = '/api/employer/integrations/google-calendar/oauth';
+                      }}
+                      disabled={isSaving}
                     >
                       <ExternalLink className="mr-2 h-4 w-4" />
                       Connect Google Calendar
-                    </a>
+                    </Button>
                   )}
                 </div>
               </div>
