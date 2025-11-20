@@ -176,8 +176,13 @@ export default function SetAvailabilityPage() {
       if (!roundToSchedule && rounds.length > 0) {
         roundToSchedule = rounds[0];
       }
+    } else {
+      // If no interviews exist yet, default to first round
+      // This is the initial interview scheduling scenario
+      if (rounds.length > 0) {
+        roundToSchedule = rounds[0];
+      }
     }
-    // If no interviews exist, don't auto-select - wait for template selection
 
     if (roundToSchedule) {
       setSelectedRound(roundToSchedule);
