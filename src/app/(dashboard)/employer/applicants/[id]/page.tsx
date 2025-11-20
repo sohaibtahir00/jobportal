@@ -793,6 +793,7 @@ export default function ApplicantDetailPage() {
           )}
 
           {/* Interview Process Section */}
+          {interviewRounds && interviewRounds.length > 0 && interviews.length > 0 && (
           <Card className="mb-6">
             <CardContent className="p-6">
               <h2 className="mb-4 text-2xl font-bold text-secondary-900">
@@ -946,6 +947,7 @@ export default function ApplicantDetailPage() {
               )}
             </CardContent>
           </Card>
+          )}
 
           {/* Interview History Section */}
           <Card className="mb-6">

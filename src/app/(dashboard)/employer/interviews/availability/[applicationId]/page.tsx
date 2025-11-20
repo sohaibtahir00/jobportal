@@ -88,8 +88,8 @@ export default function SetAvailabilityPage() {
             const rounds = roundsResponse.data.rounds || [];
             setJobRounds(rounds);
 
-            // If rounds exist, use them instead of showing template modal
-            if (rounds.length > 0) {
+            // Only auto-load template if this applicant has existing interviews
+            if (rounds.length > 0 && interviewsResponse.data.interviews?.length > 0) {
               setShowTemplateModal(false);
 
               // Create a "template" object from existing rounds for UI consistency
@@ -104,7 +104,8 @@ export default function SetAvailabilityPage() {
                 }))
               });
             } else {
-              // No rounds exist, set default template if one exists
+              // No interviews yet - don't auto-load, let user select template
+              setShowTemplateModal(rounds.length === 0); // Only show modal if no rounds at all
               const defaultTemplate = templatesResponse.data.templates?.find((t: any) => t.isDefault);
               if (defaultTemplate) {
                 setSelectedTemplate(defaultTemplate);
@@ -150,8 +151,8 @@ export default function SetAvailabilityPage() {
       // If round specified in URL, use that
       const roundNumber = parseInt(roundParam);
       roundToSchedule = rounds.find((r: any) => r.order === roundNumber);
-    } else {
-      // Auto-select next round based on completed interviews
+    } else if (existingInterviews.length > 0) {
+      // Only auto-select if applicant has existing interviews
       const completedRounds = existingInterviews
         .filter((i: any) => i.status === "COMPLETED" && i.roundNumber)
         .map((i: any) => i.roundNumber);
@@ -169,6 +170,7 @@ export default function SetAvailabilityPage() {
         roundToSchedule = rounds[0];
       }
     }
+    // If no interviews exist, don't auto-select - wait for template selection
 
     if (roundToSchedule) {
       setSelectedRound(roundToSchedule);
