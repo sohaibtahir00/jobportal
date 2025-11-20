@@ -214,35 +214,114 @@
   /* React Big Calendar custom styles */
   .rbc-calendar {
     font-family: inherit;
+    background: #ffffff;
   }
 
   .rbc-header {
-    padding: 10px 0;
+    padding: 16px 8px;
     font-weight: 600;
     font-size: 14px;
+    background: linear-gradient(to bottom, #f9fafb, #ffffff);
+    border-bottom: 2px solid #e5e7eb !important;
+    color: #374151;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
 
   .rbc-time-slot {
     min-height: 40px;
+    transition: background-color 0.15s ease;
+  }
+
+  .rbc-day-slot .rbc-time-slot:hover {
+    background-color: #f0f9ff;
   }
 
   .rbc-timeslot-group {
     min-height: 80px;
+    border-left: 1px solid #f3f4f6;
+  }
+
+  .rbc-time-column {
+    background: #fafbfc;
   }
 
   .rbc-event {
     cursor: pointer;
+    font-weight: 500;
+    padding: 4px 6px;
+    transition: all 0.2s ease;
+  }
+
+  .rbc-event:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 12px -2px rgba(59, 130, 246, 0.3), 0 4px 6px -2px rgba(59, 130, 246, 0.2) !important;
+    opacity: 1 !important;
   }
 
   .rbc-event.rbc-selected {
-    background-color: #1e40af !important;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+    box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.4) !important;
   }
 
   .rbc-day-slot .rbc-time-slot {
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid #f3f4f6;
+  }
+
+  .rbc-day-slot .rbc-events-container {
+    margin-right: 2px;
   }
 
   .rbc-time-header-content {
     border-left: 1px solid #e5e7eb;
+  }
+
+  .rbc-time-content {
+    border-top: 2px solid #e5e7eb;
+  }
+
+  .rbc-current-time-indicator {
+    background-color: #ef4444;
+    height: 2px;
+  }
+
+  .rbc-today {
+    background-color: #f0f9ff;
+  }
+
+  .rbc-toolbar {
+    padding: 16px;
+    margin-bottom: 0;
+    background: linear-gradient(to right, #f9fafb, #ffffff);
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .rbc-toolbar button {
+    color: #374151;
+    border: 1px solid #d1d5db;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    background: white;
+  }
+
+  .rbc-toolbar button:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+  }
+
+  .rbc-toolbar button.rbc-active {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border-color: #2563eb;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  }
+
+  .rbc-time-gutter {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 500;
   }
 }
