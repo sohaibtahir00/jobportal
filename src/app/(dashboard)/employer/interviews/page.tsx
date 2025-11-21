@@ -385,8 +385,8 @@ export default function EmployerInterviewsPage() {
                               {/* Current role/company */}
                               {currentRole && (
                                 <p className="text-sm text-secondary-700 mb-1">
-                                  {currentRole.title} at {currentRole.company}
-                                  {currentRole.current && <span className="ml-1 text-xs text-green-600">(Current)</span>}
+                                  {currentRole.jobTitle} at {currentRole.companyName}
+                                  {currentRole.isCurrent && <span className="ml-1 text-xs text-green-600">(Current)</span>}
                                 </p>
                               )}
 
