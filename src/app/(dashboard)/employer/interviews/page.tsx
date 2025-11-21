@@ -21,6 +21,9 @@ import { Card, CardContent, Button, Badge, Input } from "@/components/ui";
 import { api } from "@/lib/api";
 import NotesModal from "@/components/interviews/NotesModal";
 import InterviewActionsDropdown from "@/components/interviews/InterviewActionsDropdown";
+import DecisionModal from "@/components/interviews/DecisionModal";
+import SendFeedbackModal from "@/components/interviews/SendFeedbackModal";
+import CompletedInterviewActionsDropdown from "@/components/interviews/CompletedInterviewActionsDropdown";
 
 export default function EmployerInterviewsPage() {
   const { data: session, status } = useSession();
@@ -31,6 +34,8 @@ export default function EmployerInterviewsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [notesModalOpen, setNotesModalOpen] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState<any>(null);
+  const [decisionModalOpen, setDecisionModalOpen] = useState(false);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
 
   // Redirect if not employer
   useEffect(() => {
@@ -103,6 +108,52 @@ export default function EmployerInterviewsPage() {
     } catch (err) {
       console.error("Failed to save notes:", err);
       throw new Error("Failed to save notes. Please try again.");
+    }
+  };
+
+  const handleOpenDecisionModal = (interview: any) => {
+    setSelectedInterview(interview);
+    setDecisionModalOpen(true);
+  };
+
+  const handleOpenFeedbackModal = (interview: any) => {
+    setSelectedInterview(interview);
+    setFeedbackModalOpen(true);
+  };
+
+  const handleSaveFeedback = async (feedback: string) => {
+    if (!selectedInterview) return;
+
+    try {
+      await api.patch(`/api/interviews/${selectedInterview.id}`, { feedback });
+      // Reload interviews
+      const response = await api.get("/api/interviews");
+      setInterviews(response.data.interviews || []);
+    } catch (err) {
+      console.error("Failed to save feedback:", err);
+      throw new Error("Failed to save feedback. Please try again.");
+    }
+  };
+
+  const handleScheduleNextRound = (interview: any) => {
+    router.push(`/employer/interviews/availability/${interview.applicationId}`);
+  };
+
+  const handleMoveToOffer = (interview: any) => {
+    router.push(`/employer/offers/new?applicationId=${interview.applicationId}`);
+  };
+
+  const handleRejectCandidate = async (interview: any) => {
+    if (!confirm("Are you sure you want to reject this candidate?")) return;
+
+    try {
+      await api.patch(`/api/applications/${interview.applicationId}`, { status: "REJECTED" });
+      // Reload interviews
+      const response = await api.get("/api/interviews");
+      setInterviews(response.data.interviews || []);
+    } catch (err) {
+      console.error("Failed to reject candidate:", err);
+      alert("Failed to reject candidate");
     }
   };
 
@@ -575,6 +626,24 @@ export default function EmployerInterviewsPage() {
                               />
                             </>
                           )}
+
+                          {interview.status === "COMPLETED" && (
+                            <>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => handleOpenDecisionModal(interview)}
+                              >
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Make Decision
+                              </Button>
+                              <CompletedInterviewActionsDropdown
+                                onScheduleNextRound={() => handleScheduleNextRound(interview)}
+                                onMoveToOffer={() => handleMoveToOffer(interview)}
+                                onSendFeedback={() => handleOpenFeedbackModal(interview)}
+                              />
+                            </>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -596,6 +665,43 @@ export default function EmployerInterviewsPage() {
         onSave={handleSaveNotes}
         initialNotes={selectedInterview?.notes}
         interviewId={selectedInterview?.id || ""}
+      />
+
+      {/* Decision Modal */}
+      <DecisionModal
+        isOpen={decisionModalOpen}
+        onClose={() => {
+          setDecisionModalOpen(false);
+          setSelectedInterview(null);
+        }}
+        onScheduleNextRound={() => {
+          if (selectedInterview) {
+            handleScheduleNextRound(selectedInterview);
+          }
+        }}
+        onSendOffer={() => {
+          if (selectedInterview) {
+            handleMoveToOffer(selectedInterview);
+          }
+        }}
+        onRejectCandidate={() => {
+          if (selectedInterview) {
+            handleRejectCandidate(selectedInterview);
+          }
+        }}
+        candidateName={selectedInterview?.application?.candidate?.user?.name || ""}
+      />
+
+      {/* Send Feedback Modal */}
+      <SendFeedbackModal
+        isOpen={feedbackModalOpen}
+        onClose={() => {
+          setFeedbackModalOpen(false);
+          setSelectedInterview(null);
+        }}
+        onSave={handleSaveFeedback}
+        initialFeedback={selectedInterview?.feedback}
+        candidateName={selectedInterview?.application?.candidate?.user?.name || ""}
       />
     </div>
   );
