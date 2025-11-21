@@ -17,6 +17,7 @@ import {
   XCircle,
   FileText,
   AlertCircle,
+  Target,
 } from "lucide-react";
 import { Card, CardContent, Button, Badge, Input } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -556,6 +557,18 @@ export default function EmployerInterviewsPage() {
                                   Video
                                 </Badge>
                                 {getStatusBadge(interview.status)}
+
+                                {/* Round Badge */}
+                                {(interview.round || interview.roundNumber) && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="gap-1 bg-purple-50 text-purple-700 border-purple-200"
+                                  >
+                                    <Target className="h-3 w-3" />
+                                    {interview.round || interview.roundName || `Round ${interview.roundNumber}`}
+                                  </Badge>
+                                )}
+
                                 {testTier ? (
                                   <Badge
                                     variant={
