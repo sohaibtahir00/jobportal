@@ -492,10 +492,12 @@ export default function EmployerInterviewsPage() {
           {/* Filters and Search */}
           <Card className="mb-6">
             <CardContent className="p-6">
-              <div className="flex flex-col gap-4">
+              <div className="space-y-4">
                 {/* Row 1: Status Filter */}
                 <div>
-                  <div className="mb-2 text-sm font-medium text-secondary-700">Status:</div>
+                  <label className="text-sm font-medium text-secondary-700 mb-2 block">
+                    Status:
+                  </label>
                   <div className="flex flex-wrap gap-2">
                     <Button
                       variant={statusFilter === "all" ? "primary" : "outline"}
@@ -530,134 +532,96 @@ export default function EmployerInterviewsPage() {
                   </div>
                 </div>
 
-                {/* Row 2: Skills, Round, and Job Filters */}
-                <div className="flex flex-col lg:flex-row gap-4 pt-2 border-t border-gray-200">
+                {/* Divider */}
+                <div className="border-t border-secondary-200"></div>
+
+                {/* Row 2: Secondary Filters (Dropdowns) */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Skills Filter */}
-                  <div className="flex items-center gap-3">
-                    <div className="text-sm font-medium text-secondary-700 whitespace-nowrap">Skills:</div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        variant={skillsFilter === "all" ? "primary" : "outline"}
-                        size="sm"
-                        onClick={() => setSkillsFilter("all")}
-                      >
-                        All
-                      </Button>
-                      <Button
-                        variant={skillsFilter === "verified" ? "primary" : "outline"}
-                        size="sm"
-                        onClick={() => setSkillsFilter("verified")}
-                        className={skillsFilter === "verified" ? "" : "border-green-300 text-green-600 hover:bg-green-50"}
-                      >
-                        <Star className="mr-1.5 h-3.5 w-3.5" />
-                        Skills Verified ({getSkillsCount("verified")})
-                      </Button>
-                      <Button
-                        variant={skillsFilter === "not-tested" ? "primary" : "outline"}
-                        size="sm"
-                        onClick={() => setSkillsFilter("not-tested")}
-                      >
-                        Not Tested ({getSkillsCount("not-tested")})
-                      </Button>
-                    </div>
+                  <div>
+                    <label className="text-sm font-medium text-secondary-700 mb-2 block">
+                      Skills:
+                    </label>
+                    <select
+                      value={skillsFilter}
+                      onChange={(e) => setSkillsFilter(e.target.value)}
+                      className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
+                    >
+                      <option value="all">All</option>
+                      <option value="verified">✓ Skills Verified ({getSkillsCount("verified")})</option>
+                      <option value="not-tested">Not Tested ({getSkillsCount("not-tested")})</option>
+                    </select>
                   </div>
 
-                  {/* Round Filter - Only show if interviews have round data */}
+                  {/* Round Filter */}
                   {hasRoundData && (
-                    <div className="flex items-center gap-3 lg:border-l lg:border-gray-200 lg:pl-4">
-                      <div className="text-sm font-medium text-secondary-700 whitespace-nowrap">Round:</div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          variant={roundFilter === "all" ? "primary" : "outline"}
-                          size="sm"
-                          onClick={() => setRoundFilter("all")}
-                        >
-                          All Rounds
-                        </Button>
-                        <Button
-                          variant={roundFilter === "1" ? "primary" : "outline"}
-                          size="sm"
-                          onClick={() => setRoundFilter("1")}
-                        >
-                          Round 1 ({getRoundCount("1")})
-                        </Button>
-                        <Button
-                          variant={roundFilter === "2" ? "primary" : "outline"}
-                          size="sm"
-                          onClick={() => setRoundFilter("2")}
-                        >
-                          Round 2 ({getRoundCount("2")})
-                        </Button>
-                        <Button
-                          variant={roundFilter === "3+" ? "primary" : "outline"}
-                          size="sm"
-                          onClick={() => setRoundFilter("3+")}
-                        >
-                          Round 3+ ({getRoundCount("3+")})
-                        </Button>
-                      </div>
+                    <div>
+                      <label className="text-sm font-medium text-secondary-700 mb-2 block">
+                        Round:
+                      </label>
+                      <select
+                        value={roundFilter}
+                        onChange={(e) => setRoundFilter(e.target.value)}
+                        className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
+                      >
+                        <option value="all">All Rounds</option>
+                        <option value="1">Round 1 ({getRoundCount("1")})</option>
+                        <option value="2">Round 2 ({getRoundCount("2")})</option>
+                        <option value="3+">Round 3+ ({getRoundCount("3+")})</option>
+                      </select>
                     </div>
                   )}
 
-                  {/* Job Position Filter */}
-                  {uniqueJobs.length > 0 && (
-                    <div className="flex items-center gap-3 lg:border-l lg:border-gray-200 lg:pl-4 lg:ml-auto">
-                      <div className="flex items-center gap-2 text-sm font-medium text-secondary-700 whitespace-nowrap">
-                        <Briefcase className="h-4 w-4 text-secondary-500" />
-                        <span>Position:</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={selectedJobId}
-                          onChange={(e) => setSelectedJobId(e.target.value)}
-                          className="rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
-                        >
-                          <option value="">
-                            All Positions ({interviews.length})
-                          </option>
-                          {uniqueJobs.map((job) => (
-                            <option key={job.id} value={job.id}>
-                              {job.title} ({getJobInterviewCount(job.id)})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  )}
+                  {/* Position Filter */}
+                  <div>
+                    <label className="text-sm font-medium text-secondary-700 mb-2 block">
+                      Position:
+                    </label>
+                    <select
+                      value={selectedJobId}
+                      onChange={(e) => setSelectedJobId(e.target.value)}
+                      className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
+                    >
+                      <option value="">All Positions ({interviews.length})</option>
+                      {uniqueJobs.map((job) => (
+                        <option key={job.id} value={job.id}>
+                          {job.title} ({getJobInterviewCount(job.id)})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
+                {/* Divider */}
+                <div className="border-t border-secondary-200"></div>
+
                 {/* Row 3: Search Bar */}
-                <div className="flex items-center gap-3 pt-2 border-t border-gray-200">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary-400" />
-                    <Input
-                      type="text"
-                      placeholder="Search by candidate or job..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-full"
-                    />
-                  </div>
-                  {hasActiveFilters && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={clearAllFilters}
-                      className="whitespace-nowrap"
-                    >
-                      <XCircle className="mr-1.5 h-4 w-4" />
-                      Clear All
-                    </Button>
-                  )}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search by candidate or job..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 w-full"
+                  />
                 </div>
 
                 {/* Active Filters Summary */}
                 {hasActiveFilters && (
-                  <div className="flex items-center gap-2 text-sm text-secondary-600 bg-blue-50 px-3 py-2 rounded-lg">
-                    <Filter className="h-4 w-4 text-blue-600" />
-                    <span className="font-medium text-blue-900">
-                      Showing {sortedInterviews.length} of {interviews.length} interviews
-                    </span>
+                  <div className="flex items-center justify-between text-sm text-secondary-600 bg-blue-50 px-3 py-2 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-blue-600" />
+                      <span className="font-medium text-blue-900">
+                        Showing {sortedInterviews.length} of {interviews.length} interviews
+                      </span>
+                    </div>
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                    >
+                      Clear all filters
+                    </button>
                   </div>
                 )}
               </div>
