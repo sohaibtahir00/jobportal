@@ -33,6 +33,7 @@ export default function EmployerInterviewsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all"); // all, upcoming, past
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedJobId, setSelectedJobId] = useState<string>("");
   const [notesModalOpen, setNotesModalOpen] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState<any>(null);
   const [decisionModalOpen, setDecisionModalOpen] = useState(false);
@@ -164,6 +165,21 @@ export default function EmployerInterviewsPage() {
     }
   };
 
+  // Extract unique jobs from interviews
+  const uniqueJobs = Array.from(
+    new Map(
+      interviews
+        .map((interview) => interview.application?.job)
+        .filter((job) => job) // Remove null/undefined
+        .map((job) => [job.id, job]) // Create [id, job] pairs for Map
+    ).values()
+  ).sort((a, b) => a.title.localeCompare(b.title));
+
+  // Get count of interviews per job
+  const getJobInterviewCount = (jobId: string) => {
+    return interviews.filter((i) => i.application?.job?.id === jobId).length;
+  };
+
   // Filter and search interviews
   const filteredInterviews = interviews.filter((interview) => {
     const now = new Date();
@@ -185,6 +201,11 @@ export default function EmployerInterviewsPage() {
     if (filter === "past") {
       // Past only includes completed or cancelled with dates in the past
       if (!interviewDate || interviewDate >= now) return false;
+    }
+
+    // Filter by job position
+    if (selectedJobId) {
+      if (interview.application?.job?.id !== selectedJobId) return false;
     }
 
     // Search by candidate name or job title
@@ -248,20 +269,25 @@ export default function EmployerInterviewsPage() {
     }
   };
 
+  // Calculate stats based on job filter
+  const statsInterviews = selectedJobId
+    ? interviews.filter((i) => i.application?.job?.id === selectedJobId)
+    : interviews;
+
   const stats = {
-    total: interviews.length,
-    awaitingResponse: interviews.filter(
+    total: statsInterviews.length,
+    awaitingResponse: statsInterviews.filter(
       (i) =>
         i.status === "AWAITING_CANDIDATE" ||
         i.status === "AWAITING_CONFIRMATION"
     ).length,
-    upcoming: interviews.filter(
+    upcoming: statsInterviews.filter(
       (i) =>
         i.scheduledAt &&
         new Date(i.scheduledAt) >= new Date() &&
         i.status === "SCHEDULED"
     ).length,
-    completed: interviews.filter((i) => i.status === "COMPLETED").length,
+    completed: statsInterviews.filter((i) => i.status === "COMPLETED").length,
   };
 
   if (status === "loading") {
@@ -374,41 +400,91 @@ export default function EmployerInterviewsPage() {
           {/* Filters and Search */}
           <Card className="mb-6">
             <CardContent className="p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex gap-2">
-                  <Button
-                    variant={filter === "all" ? "primary" : "outline"}
-                    size="sm"
-                    onClick={() => setFilter("all")}
-                  >
-                    All
-                  </Button>
-                  <Button
-                    variant={filter === "upcoming" ? "primary" : "outline"}
-                    size="sm"
-                    onClick={() => setFilter("upcoming")}
-                  >
-                    Upcoming
-                  </Button>
-                  <Button
-                    variant={filter === "past" ? "primary" : "outline"}
-                    size="sm"
-                    onClick={() => setFilter("past")}
-                  >
-                    Past
-                  </Button>
+              <div className="flex flex-col gap-4">
+                {/* Time Filters */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex gap-2">
+                    <Button
+                      variant={filter === "all" ? "primary" : "outline"}
+                      size="sm"
+                      onClick={() => setFilter("all")}
+                    >
+                      All
+                    </Button>
+                    <Button
+                      variant={filter === "upcoming" ? "primary" : "outline"}
+                      size="sm"
+                      onClick={() => setFilter("upcoming")}
+                    >
+                      Upcoming
+                    </Button>
+                    <Button
+                      variant={filter === "past" ? "primary" : "outline"}
+                      size="sm"
+                      onClick={() => setFilter("past")}
+                    >
+                      Past
+                    </Button>
+                  </div>
+
+                  <div className="relative w-full sm:w-auto">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary-400" />
+                    <Input
+                      type="text"
+                      placeholder="Search by candidate or job..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 w-full sm:w-64"
+                    />
+                  </div>
                 </div>
 
-                <div className="relative w-full sm:w-auto">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary-400" />
-                  <Input
-                    type="text"
-                    placeholder="Search by candidate or job..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 w-full sm:w-64"
-                  />
-                </div>
+                {/* Job Position Filter */}
+                {uniqueJobs.length > 0 && (
+                  <div className="flex items-center gap-3 pt-2 border-t border-gray-200">
+                    <div className="flex items-center gap-2 text-sm font-medium text-secondary-700">
+                      <Briefcase className="h-4 w-4 text-secondary-500" />
+                      <span>Position:</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-1">
+                      <select
+                        value={selectedJobId}
+                        onChange={(e) => setSelectedJobId(e.target.value)}
+                        className="flex-1 sm:flex-none rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
+                      >
+                        <option value="">
+                          All Positions ({interviews.length})
+                        </option>
+                        {uniqueJobs.map((job) => (
+                          <option key={job.id} value={job.id}>
+                            {job.title} ({getJobInterviewCount(job.id)})
+                          </option>
+                        ))}
+                      </select>
+                      {selectedJobId && (
+                        <button
+                          onClick={() => setSelectedJobId("")}
+                          className="px-3 py-2 text-sm text-secondary-600 hover:text-secondary-900 hover:bg-secondary-100 rounded-lg transition-colors flex items-center gap-1.5"
+                          title="Clear job filter"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Active Filters Summary */}
+                {(selectedJobId || searchQuery || filter !== "all") && (
+                  <div className="flex items-center gap-2 text-sm text-secondary-600">
+                    <Filter className="h-4 w-4" />
+                    <span>
+                      Showing {sortedInterviews.length} of {interviews.length}{" "}
+                      interviews
+                    </span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

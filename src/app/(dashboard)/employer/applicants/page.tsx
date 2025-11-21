@@ -35,18 +35,20 @@ import {
 import api from "@/lib/api";
 
 // Backend URL for file downloads
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://job-portal-backend-production-cd05.up.railway.app';
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://job-portal-backend-production-cd05.up.railway.app";
 
 // Helper function to get full resume URL
 const getResumeUrl = (resumePath: string | null): string | null => {
   if (!resumePath) return null;
   // If it's already a full URL, return as is
-  if (resumePath.startsWith('http://') || resumePath.startsWith('https://')) {
+  if (resumePath.startsWith("http://") || resumePath.startsWith("https://")) {
     return resumePath;
   }
   // Convert /uploads/... to /api/uploads/... for backend serving
-  const apiPath = resumePath.startsWith('/uploads/')
-    ? resumePath.replace('/uploads/', '/api/uploads/')
+  const apiPath = resumePath.startsWith("/uploads/")
+    ? resumePath.replace("/uploads/", "/api/uploads/")
     : resumePath;
   // Prepend backend URL
   return `${BACKEND_URL}${apiPath}`;
@@ -163,7 +165,8 @@ export default function EmployerApplicantsPage() {
   // Filters
   const [selectedJob, setSelectedJob] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [selectedSkillsFilter, setSelectedSkillsFilter] = useState<string>("all");
+  const [selectedSkillsFilter, setSelectedSkillsFilter] =
+    useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("recent");
   const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
 
@@ -181,16 +184,25 @@ export default function EmployerApplicantsPage() {
 
   // Fetch applications using the new simple endpoint
   const { data, isLoading } = useQuery({
-    queryKey: ["applications", selectedJob, selectedStatus, selectedSkillsFilter, sortBy],
+    queryKey: [
+      "applications",
+      selectedJob,
+      selectedStatus,
+      selectedSkillsFilter,
+      sortBy,
+    ],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedJob !== "all") params.append("jobId", selectedJob);
       if (selectedStatus !== "all") params.append("status", selectedStatus);
-      if (selectedSkillsFilter !== "all") params.append("skillsFilter", selectedSkillsFilter);
+      if (selectedSkillsFilter !== "all")
+        params.append("skillsFilter", selectedSkillsFilter);
       params.append("sortBy", sortBy);
 
       // Use the new endpoint that matches the pattern of /api/jobs/[id]/applications
-      const response = await api.get(`/api/employer/applications?${params.toString()}`);
+      const response = await api.get(
+        `/api/employer/applications?${params.toString()}`
+      );
       return response.data;
     },
     staleTime: 30 * 1000,
@@ -198,8 +210,17 @@ export default function EmployerApplicantsPage() {
 
   // Bulk update mutation
   const bulkUpdateMutation = useMutation({
-    mutationFn: async ({ applicationIds, newStatus }: { applicationIds: string[]; newStatus: string }) => {
-      console.log("🔄 [Frontend] Bulk update request:", { applicationIds, newStatus });
+    mutationFn: async ({
+      applicationIds,
+      newStatus,
+    }: {
+      applicationIds: string[];
+      newStatus: string;
+    }) => {
+      console.log("🔄 [Frontend] Bulk update request:", {
+        applicationIds,
+        newStatus,
+      });
       const response = await api.post("/api/applications/bulk", {
         applicationIds,
         newStatus,
@@ -215,7 +236,11 @@ export default function EmployerApplicantsPage() {
     onError: (error: any) => {
       console.error("❌ [Frontend] Bulk update error:", error);
       console.error("❌ [Frontend] Error response:", error.response?.data);
-      showToast("error", "Error", error.response?.data?.error || "Failed to update applications");
+      showToast(
+        "error",
+        "Error",
+        error.response?.data?.error || "Failed to update applications"
+      );
     },
   });
 
@@ -229,8 +254,10 @@ export default function EmployerApplicantsPage() {
     const candidateSkills = app.candidate.skills || [];
     if (jobSkills.length === 0) return 0;
 
-    const matchingSkills = jobSkills.filter(skill =>
-      candidateSkills.some(cSkill => cSkill.toLowerCase().includes(skill.toLowerCase()))
+    const matchingSkills = jobSkills.filter((skill) =>
+      candidateSkills.some((cSkill) =>
+        cSkill.toLowerCase().includes(skill.toLowerCase())
+      )
     );
 
     return Math.round((matchingSkills.length / jobSkills.length) * 100);
@@ -239,17 +266,22 @@ export default function EmployerApplicantsPage() {
   // Get tier badge color
   const getTierColor = (tier: string | null): string => {
     switch (tier) {
-      case "ELITE": return "bg-purple-100 text-purple-700 border-purple-300";
-      case "ADVANCED": return "bg-blue-100 text-blue-700 border-blue-300";
-      case "INTERMEDIATE": return "bg-green-100 text-green-700 border-green-300";
-      case "BEGINNER": return "bg-yellow-100 text-yellow-700 border-yellow-300";
-      default: return "bg-secondary-100 text-secondary-700 border-secondary-300";
+      case "ELITE":
+        return "bg-purple-100 text-purple-700 border-purple-300";
+      case "ADVANCED":
+        return "bg-blue-100 text-blue-700 border-blue-300";
+      case "INTERMEDIATE":
+        return "bg-green-100 text-green-700 border-green-300";
+      case "BEGINNER":
+        return "bg-yellow-100 text-yellow-700 border-yellow-300";
+      default:
+        return "bg-secondary-100 text-secondary-700 border-secondary-300";
     }
   };
 
   // Get status label with icon
   const getStatusLabel = (status: string): string => {
-    const option = STATUS_OPTIONS.find(opt => opt.value === status);
+    const option = STATUS_OPTIONS.find((opt) => opt.value === status);
     return option ? `${option.icon} ${option.label}` : status;
   };
 
@@ -279,7 +311,7 @@ export default function EmployerApplicantsPage() {
     if (selectedApplicants.length === applications.length) {
       setSelectedApplicants([]);
     } else {
-      setSelectedApplicants(applications.map(app => app.id));
+      setSelectedApplicants(applications.map((app) => app.id));
     }
   };
 
@@ -300,7 +332,9 @@ export default function EmployerApplicantsPage() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-secondary-900">All Applicants</h1>
+        <h1 className="text-3xl font-bold text-secondary-900">
+          All Applicants
+        </h1>
         <p className="text-secondary-600 mt-2">
           {stats ? `${stats.totalApplicants} total applicants` : "Loading..."}
         </p>
@@ -317,7 +351,9 @@ export default function EmployerApplicantsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-secondary-600">Total Applicants</p>
-                  <p className="text-2xl font-bold text-secondary-900">{stats.totalApplicants}</p>
+                  <p className="text-2xl font-bold text-secondary-900">
+                    {stats.totalApplicants}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -332,7 +368,8 @@ export default function EmployerApplicantsPage() {
                 <div>
                   <p className="text-sm text-secondary-600">Skills-Verified</p>
                   <p className="text-2xl font-bold text-secondary-900">
-                    {stats.skillsVerifiedCount} ({stats.skillsVerifiedPercentage}%)
+                    {stats.skillsVerifiedCount} (
+                    {stats.skillsVerifiedPercentage}%)
                   </p>
                 </div>
               </div>
@@ -347,7 +384,9 @@ export default function EmployerApplicantsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-secondary-600">Avg Skills Score</p>
-                  <p className="text-2xl font-bold text-secondary-900">{stats.averageSkillsScore}/100</p>
+                  <p className="text-2xl font-bold text-secondary-900">
+                    {stats.averageSkillsScore}/100
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -361,7 +400,9 @@ export default function EmployerApplicantsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-secondary-600">Shortlisted</p>
-                  <p className="text-2xl font-bold text-secondary-900">{stats.statusBreakdown.shortlisted}</p>
+                  <p className="text-2xl font-bold text-secondary-900">
+                    {stats.statusBreakdown.shortlisted}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -469,12 +510,10 @@ export default function EmployerApplicantsPage() {
               >
                 Reject Selected
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAll}
-              >
-                {selectedApplicants.length === applications.length ? "Deselect All" : "Select All"}
+              <Button variant="outline" size="sm" onClick={handleSelectAll}>
+                {selectedApplicants.length === applications.length
+                  ? "Deselect All"
+                  : "Select All"}
               </Button>
             </div>
           )}
@@ -510,7 +549,10 @@ export default function EmployerApplicantsPage() {
             const isSelected = selectedApplicants.includes(app.id);
 
             return (
-              <Card key={app.id} className={`${isSelected ? "ring-2 ring-primary-500" : ""}`}>
+              <Card
+                key={app.id}
+                className={`${isSelected ? "ring-2 ring-primary-500" : ""}`}
+              >
                 <CardContent className="p-6">
                   <div className="flex items-start gap-6">
                     {/* Checkbox */}
@@ -520,9 +562,14 @@ export default function EmployerApplicantsPage() {
                         checked={isSelected}
                         onChange={() => {
                           if (isSelected) {
-                            setSelectedApplicants(selectedApplicants.filter(id => id !== app.id));
+                            setSelectedApplicants(
+                              selectedApplicants.filter((id) => id !== app.id)
+                            );
                           } else {
-                            setSelectedApplicants([...selectedApplicants, app.id]);
+                            setSelectedApplicants([
+                              ...selectedApplicants,
+                              app.id,
+                            ]);
                           }
                         }}
                         className="w-5 h-5 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
@@ -558,17 +605,24 @@ export default function EmployerApplicantsPage() {
                         <h3 className="text-lg font-semibold text-secondary-900">
                           {app.candidate.user.name}
                         </h3>
-                        <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[app.status] || "bg-gray-100 text-gray-800 border-gray-300"}`}>
+                        <div
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${
+                            STATUS_COLORS[app.status] ||
+                            "bg-gray-100 text-gray-800 border-gray-300"
+                          }`}
+                        >
                           {getStatusLabel(app.status)}
                         </div>
                       </div>
 
                       {/* Current Title & Company */}
-                      {app.candidate.currentTitle && app.candidate.currentCompany && (
-                        <p className="text-sm text-secondary-600 mb-3">
-                          {app.candidate.currentTitle} at {app.candidate.currentCompany}
-                        </p>
-                      )}
+                      {app.candidate.currentTitle &&
+                        app.candidate.currentCompany && (
+                          <p className="text-sm text-secondary-600 mb-3">
+                            {app.candidate.currentTitle} at{" "}
+                            {app.candidate.currentCompany}
+                          </p>
+                        )}
 
                       {/* Info Row: Location, Experience, Salary, Days Ago */}
                       <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-secondary-600">
@@ -597,20 +651,30 @@ export default function EmployerApplicantsPage() {
                       </div>
 
                       {/* Skills Tags (Top 4 with +N more) */}
-                      {app.candidate.skills && app.candidate.skills.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {app.candidate.skills.slice(0, 4).map((skill, idx) => (
-                            <Badge key={idx} className="bg-primary-50 text-primary-700 border-primary-200" size="sm">
-                              {skill}
-                            </Badge>
-                          ))}
-                          {app.candidate.skills.length > 4 && (
-                            <Badge className="bg-secondary-100 text-secondary-700 border-secondary-300" size="sm">
-                              +{app.candidate.skills.length - 4} more
-                            </Badge>
-                          )}
-                        </div>
-                      )}
+                      {app.candidate.skills &&
+                        app.candidate.skills.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {app.candidate.skills
+                              .slice(0, 4)
+                              .map((skill, idx) => (
+                                <Badge
+                                  key={idx}
+                                  className="bg-primary-50 text-primary-700 border-primary-200"
+                                  size="sm"
+                                >
+                                  {skill}
+                                </Badge>
+                              ))}
+                            {app.candidate.skills.length > 4 && (
+                              <Badge
+                                className="bg-secondary-100 text-secondary-700 border-secondary-300"
+                                size="sm"
+                              >
+                                +{app.candidate.skills.length - 4} more
+                              </Badge>
+                            )}
+                          </div>
+                        )}
 
                       {/* Skills Assessment Results */}
                       {app.candidate.hasTakenTest ? (
@@ -618,7 +682,9 @@ export default function EmployerApplicantsPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="text-sm font-semibold text-green-900">Skills Verified</span>
+                              <span className="text-sm font-semibold text-green-900">
+                                Skills Verified
+                              </span>
                             </div>
                             <div className="flex items-center gap-4">
                               <div className="text-right">
@@ -628,15 +694,26 @@ export default function EmployerApplicantsPage() {
                                 </p>
                               </div>
                               {app.candidate.testTier && (
-                                <Badge className={getTierColor(app.candidate.testTier)} size="sm">
+                                <Badge
+                                  className={getTierColor(
+                                    app.candidate.testTier
+                                  )}
+                                  size="sm"
+                                >
                                   {app.candidate.testTier}
                                 </Badge>
                               )}
                               {app.candidate.testPercentile !== null && (
                                 <div className="text-right">
-                                  <p className="text-xs text-green-700">Percentile</p>
+                                  <p className="text-xs text-green-700">
+                                    Percentile
+                                  </p>
                                   <p className="text-sm font-semibold text-green-900">
-                                    Top {Math.round(100 - app.candidate.testPercentile)}%
+                                    Top{" "}
+                                    {Math.round(
+                                      100 - app.candidate.testPercentile
+                                    )}
+                                    %
                                   </p>
                                 </div>
                               )}
@@ -647,7 +724,9 @@ export default function EmployerApplicantsPage() {
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
                           <div className="flex items-center gap-2">
                             <AlertCircle className="h-4 w-4 text-yellow-600" />
-                            <span className="text-sm font-medium text-yellow-900">Skills Not Verified</span>
+                            <span className="text-sm font-medium text-yellow-900">
+                              Skills Not Verified
+                            </span>
                           </div>
                         </div>
                       )}
@@ -657,7 +736,9 @@ export default function EmployerApplicantsPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          onClick={() => router.push(`/employer/applicants/${app.id}`)}
+                          onClick={() =>
+                            router.push(`/employer/applicants/${app.id}`)
+                          }
                         >
                           <Eye className="h-4 w-4 mr-2" />
                           View Profile
@@ -667,13 +748,18 @@ export default function EmployerApplicantsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              const resumeUrl = getResumeUrl(app.candidate.resume);
+                              const resumeUrl = getResumeUrl(
+                                app.candidate.resume
+                              );
                               if (resumeUrl) {
                                 // Create a temporary link element to trigger download
-                                const link = document.createElement('a');
+                                const link = document.createElement("a");
                                 link.href = resumeUrl;
-                                link.download = `${app.candidate.user.name.replace(/\s+/g, '_')}_Resume.pdf`;
-                                link.target = '_blank';
+                                link.download = `${app.candidate.user.name.replace(
+                                  /\s+/g,
+                                  "_"
+                                )}_Resume.pdf`;
+                                link.target = "_blank";
                                 document.body.appendChild(link);
                                 link.click();
                                 document.body.removeChild(link);
@@ -687,7 +773,11 @@ export default function EmployerApplicantsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/employer/messages?candidateId=${app.candidate.user.id}`)}
+                          onClick={() =>
+                            router.push(
+                              `/employer/messages?candidateId=${app.candidate.user.id}`
+                            )
+                          }
                         >
                           <MessageSquare className="h-4 w-4 mr-2" />
                           Message
@@ -697,12 +787,15 @@ export default function EmployerApplicantsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              console.log("🟡 [Frontend] Shortlist button clicked for application:", {
-                                id: app.id,
-                                candidateName: app.candidate.user.name,
-                                jobTitle: app.job.title,
-                                currentStatus: app.status,
-                              });
+                              console.log(
+                                "🟡 [Frontend] Shortlist button clicked for application:",
+                                {
+                                  id: app.id,
+                                  candidateName: app.candidate.user.name,
+                                  jobTitle: app.job.title,
+                                  currentStatus: app.status,
+                                }
+                              );
                               bulkUpdateMutation.mutate({
                                 applicationIds: [app.id],
                                 newStatus: "SHORTLISTED",
@@ -718,12 +811,15 @@ export default function EmployerApplicantsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              console.log("🔴 [Frontend] Reject button clicked for application:", {
-                                id: app.id,
-                                candidateName: app.candidate.user.name,
-                                jobTitle: app.job.title,
-                                currentStatus: app.status,
-                              });
+                              console.log(
+                                "🔴 [Frontend] Reject button clicked for application:",
+                                {
+                                  id: app.id,
+                                  candidateName: app.candidate.user.name,
+                                  jobTitle: app.job.title,
+                                  currentStatus: app.status,
+                                }
+                              );
                               bulkUpdateMutation.mutate({
                                 applicationIds: [app.id],
                                 newStatus: "REJECTED",
