@@ -43,7 +43,9 @@ export default function CandidateInterviewsPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "upcoming" | "completed" | "cancelled">("all");
+  const [filter, setFilter] = useState<
+    "all" | "upcoming" | "completed" | "cancelled"
+  >("all");
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [pendingInterviews, setPendingInterviews] = useState<any[]>([]);
 
@@ -96,43 +98,49 @@ export default function CandidateInterviewsPage() {
 
         // Transform backend interviews to match mock format
         // Include SCHEDULED, COMPLETED, and CANCELLED interviews
-        const relevantInterviews = allBackendInterviews.filter((interview: any) =>
-          interview.status === "SCHEDULED" ||
-          interview.status === "COMPLETED" ||
-          interview.status === "CANCELLED"
+        const relevantInterviews = allBackendInterviews.filter(
+          (interview: any) =>
+            interview.status === "SCHEDULED" ||
+            interview.status === "COMPLETED" ||
+            interview.status === "CANCELLED"
         );
 
-        const transformedInterviews = relevantInterviews.map((interview: any) => {
-          const scheduledDate = new Date(interview.scheduledAt);
-          const now = new Date();
+        const transformedInterviews = relevantInterviews.map(
+          (interview: any) => {
+            const scheduledDate = new Date(interview.scheduledAt);
+            const now = new Date();
 
-          // Determine display status based on database status
-          let displayStatus: "upcoming" | "completed" | "cancelled" = "upcoming";
-          if (interview.status === "CANCELLED") {
-            displayStatus = "cancelled";
-          } else if (interview.status === "COMPLETED") {
-            displayStatus = "completed";
-          } else if (scheduledDate < now) {
-            // Past interviews that haven't been marked completed should show as completed
-            displayStatus = "completed";
+            // Determine display status based on database status
+            let displayStatus: "upcoming" | "completed" | "cancelled" =
+              "upcoming";
+            if (interview.status === "CANCELLED") {
+              displayStatus = "cancelled";
+            } else if (interview.status === "COMPLETED") {
+              displayStatus = "completed";
+            } else if (scheduledDate < now) {
+              // Past interviews that haven't been marked completed should show as completed
+              displayStatus = "completed";
+            }
+
+            return {
+              id: interview.id,
+              jobTitle: interview.application?.job?.title || "Unknown Position",
+              companyName:
+                interview.application?.job?.employer?.companyName ||
+                "Company Name",
+              type: interview.type?.toLowerCase() || "video",
+              status: displayStatus,
+              date: scheduledDate.toISOString().split("T")[0],
+              time: scheduledDate.toTimeString().slice(0, 5),
+              duration: `${interview.duration} minutes`,
+              meetingLink: interview.meetingLink,
+              interviewerName: interview.interviewer?.name || "Hiring Manager",
+              interviewerTitle: interview.interviewer?.title || "Employer",
+              round: interview.round || "Interview Round",
+              notes: interview.notes,
+            };
           }
-
-          return {
-            id: interview.id,
-            jobTitle: interview.application?.job?.title || "Unknown Position",
-            companyName: interview.application?.job?.employer?.companyName || "Company Name",
-            type: interview.type?.toLowerCase() || "video",
-            status: displayStatus,
-            date: scheduledDate.toISOString().split("T")[0],
-            time: scheduledDate.toTimeString().slice(0, 5),
-            duration: `${interview.duration} minutes`,
-            meetingLink: interview.meetingLink,
-            interviewerName: interview.interviewer?.name || "Hiring Manager",
-            interviewerTitle: interview.interviewer?.title || "Employer",
-            round: interview.round || "Interview Round",
-            notes: interview.notes,
-          };
-        });
+        );
 
         // Mock data
         const mockInterviews: Interview[] = [
@@ -149,7 +157,8 @@ export default function CandidateInterviewsPage() {
             interviewerName: "Jane Smith",
             interviewerTitle: "Engineering Manager",
             round: "Technical Round (Round 2 of 3)",
-            notes: "Please prepare to discuss your experience with PyTorch and model deployment.",
+            notes:
+              "Please prepare to discuss your experience with PyTorch and model deployment.",
           },
           {
             id: "2",
@@ -177,7 +186,8 @@ export default function CandidateInterviewsPage() {
             interviewerName: "Sarah Lee",
             interviewerTitle: "CTO",
             round: "Onsite Interview (Final Round)",
-            notes: "Full day interview including lunch with the team. Bring portfolio and be prepared for live coding.",
+            notes:
+              "Full day interview including lunch with the team. Bring portfolio and be prepared for live coding.",
           },
           {
             id: "4",
@@ -226,9 +236,15 @@ export default function CandidateInterviewsPage() {
     return interview.status === filter;
   });
 
-  const upcomingCount = interviews.filter((i) => i.status === "upcoming").length;
-  const completedCount = interviews.filter((i) => i.status === "completed").length;
-  const cancelledCount = interviews.filter((i) => i.status === "cancelled").length;
+  const upcomingCount = interviews.filter(
+    (i) => i.status === "upcoming"
+  ).length;
+  const completedCount = interviews.filter(
+    (i) => i.status === "completed"
+  ).length;
+  const cancelledCount = interviews.filter(
+    (i) => i.status === "cancelled"
+  ).length;
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -300,8 +316,12 @@ export default function CandidateInterviewsPage() {
           {/* Header */}
           <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="mb-2 text-3xl font-bold text-secondary-900">Interviews</h1>
-              <p className="text-secondary-600">Manage your upcoming and past interviews</p>
+              <h1 className="mb-2 text-3xl font-bold text-secondary-900">
+                Interviews
+              </h1>
+              <p className="text-secondary-600">
+                Manage your upcoming and past interviews
+              </p>
             </div>
             <Button variant="primary" asChild>
               <Link href="/candidate/dashboard">
@@ -319,7 +339,9 @@ export default function CandidateInterviewsPage() {
                 <div className="mb-1 text-3xl font-bold text-secondary-900">
                   {upcomingCount}
                 </div>
-                <div className="text-sm text-secondary-600">Upcoming Interviews</div>
+                <div className="text-sm text-secondary-600">
+                  Upcoming Interviews
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -337,7 +359,9 @@ export default function CandidateInterviewsPage() {
                 <div className="mb-1 text-3xl font-bold text-secondary-900">
                   {interviews.length}
                 </div>
-                <div className="text-sm text-secondary-600">Total Interviews</div>
+                <div className="text-sm text-secondary-600">
+                  Total Interviews
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -354,8 +378,10 @@ export default function CandidateInterviewsPage() {
               </div>
               <div className="space-y-4">
                 {pendingInterviews.map((interview) => {
-                  const isAwaitingCandidate = interview.status === "AWAITING_CANDIDATE";
-                  const isAwaitingConfirmation = interview.status === "AWAITING_CONFIRMATION";
+                  const isAwaitingCandidate =
+                    interview.status === "AWAITING_CANDIDATE";
+                  const isAwaitingConfirmation =
+                    interview.status === "AWAITING_CONFIRMATION";
 
                   return (
                     <Card
@@ -370,7 +396,8 @@ export default function CandidateInterviewsPage() {
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                           <div className="flex-1">
                             <h3 className="mb-1 text-xl font-bold text-secondary-900">
-                              {interview.application?.job?.title || "Unknown Position"}
+                              {interview.application?.job?.title ||
+                                "Unknown Position"}
                             </h3>
                             <p className="mb-3 text-secondary-600">
                               {isAwaitingCandidate
@@ -381,11 +408,15 @@ export default function CandidateInterviewsPage() {
                               {isAwaitingCandidate ? (
                                 <Badge variant="warning">Action Required</Badge>
                               ) : (
-                                <Badge variant="primary">Awaiting Employer Confirmation</Badge>
+                                <Badge variant="primary">
+                                  Awaiting Employer Confirmation
+                                </Badge>
                               )}
                               <Badge variant="secondary" size="sm">
                                 <Video className="mr-1 h-3 w-3" />
-                                {interview.type === "VIDEO" ? "Video Interview" : interview.type}
+                                {interview.type === "VIDEO"
+                                  ? "Video Interview"
+                                  : interview.type}
                               </Badge>
                               <Badge variant="secondary" size="sm">
                                 {interview.duration} minutes
@@ -398,7 +429,9 @@ export default function CandidateInterviewsPage() {
                                 variant="primary"
                                 size="sm"
                                 onClick={() =>
-                                  router.push(`/candidate/interviews/select/${interview.id}`)
+                                  router.push(
+                                    `/candidate/interviews/select/${interview.id}`
+                                  )
                                 }
                               >
                                 <Calendar className="mr-2 h-4 w-4" />
@@ -409,7 +442,9 @@ export default function CandidateInterviewsPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() =>
-                                  router.push(`/candidate/interviews/select/${interview.id}`)
+                                  router.push(
+                                    `/candidate/interviews/select/${interview.id}`
+                                  )
                                 }
                               >
                                 <Calendar className="mr-2 h-4 w-4" />
@@ -491,7 +526,10 @@ export default function CandidateInterviewsPage() {
               </Card>
             ) : (
               filteredInterviews.map((interview) => (
-                <Card key={interview.id} className="transition-shadow hover:shadow-md">
+                <Card
+                  key={interview.id}
+                  className="transition-shadow hover:shadow-md"
+                >
                   <CardContent className="p-6">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="flex-1">
@@ -500,12 +538,16 @@ export default function CandidateInterviewsPage() {
                             <h3 className="mb-1 text-xl font-bold text-secondary-900">
                               {interview.jobTitle}
                             </h3>
-                            <p className="mb-2 text-secondary-600">{interview.companyName}</p>
+                            <p className="mb-2 text-secondary-600">
+                              {interview.companyName}
+                            </p>
                             <div className="flex flex-wrap gap-2">
                               {getStatusBadge(interview.status)}
                               <Badge variant="secondary" size="sm">
                                 {getTypeIcon(interview.type)}
-                                <span className="ml-1 capitalize">{interview.type}</span>
+                                <span className="ml-1 capitalize">
+                                  {interview.type}
+                                </span>
                               </Badge>
                               <Badge variant="secondary" size="sm">
                                 {interview.round}
@@ -539,7 +581,8 @@ export default function CandidateInterviewsPage() {
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4 text-secondary-500" />
                             <span>
-                              {interview.interviewerName} - {interview.interviewerTitle}
+                              {interview.interviewerName} -{" "}
+                              {interview.interviewerTitle}
                             </span>
                           </div>
                         </div>
@@ -549,10 +592,12 @@ export default function CandidateInterviewsPage() {
                             <div className="mb-1 flex items-center gap-2">
                               <AlertCircle className="h-4 w-4 text-yellow-600" />
                               <span className="text-sm font-semibold text-yellow-900">
-                                Notes
+                                Notes from Employer:
                               </span>
                             </div>
-                            <p className="text-sm text-yellow-800">{interview.notes}</p>
+                            <p className="text-sm text-yellow-800">
+                              {interview.notes}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -561,25 +606,46 @@ export default function CandidateInterviewsPage() {
                         {interview.status === "upcoming" && (
                           <>
                             {interview.meetingLink && (
-                              <Button variant="primary" size="sm" className="w-full" asChild>
-                                <a href={interview.meetingLink} target="_blank" rel="noopener noreferrer">
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                className="w-full"
+                                asChild
+                              >
+                                <a
+                                  href={interview.meetingLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
                                   <Video className="mr-2 h-4 w-4" />
                                   Join Meeting
                                 </a>
                               </Button>
                             )}
-                            <Button variant="outline" size="sm" className="w-full">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                            >
                               <Download className="mr-2 h-4 w-4" />
                               Add to Calendar
                             </Button>
-                            <Button variant="outline" size="sm" className="w-full">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                            >
                               <MessageSquare className="mr-2 h-4 w-4" />
                               Message
                             </Button>
                           </>
                         )}
                         {interview.status === "completed" && (
-                          <Button variant="outline" size="sm" className="w-full">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                          >
                             <MessageSquare className="mr-2 h-4 w-4" />
                             Follow Up
                           </Button>
@@ -603,7 +669,9 @@ export default function CandidateInterviewsPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600" />
                     <div>
-                      <p className="font-semibold text-secondary-900">Research the Company</p>
+                      <p className="font-semibold text-secondary-900">
+                        Research the Company
+                      </p>
                       <p className="text-sm text-secondary-600">
                         Learn about their products, culture, and recent news
                       </p>
@@ -612,7 +680,9 @@ export default function CandidateInterviewsPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600" />
                     <div>
-                      <p className="font-semibold text-secondary-900">Review the Job Description</p>
+                      <p className="font-semibold text-secondary-900">
+                        Review the Job Description
+                      </p>
                       <p className="text-sm text-secondary-600">
                         Match your experience to key requirements
                       </p>
@@ -621,7 +691,9 @@ export default function CandidateInterviewsPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600" />
                     <div>
-                      <p className="font-semibold text-secondary-900">Prepare Questions</p>
+                      <p className="font-semibold text-secondary-900">
+                        Prepare Questions
+                      </p>
                       <p className="text-sm text-secondary-600">
                         Have thoughtful questions ready for the interviewer
                       </p>
@@ -630,7 +702,9 @@ export default function CandidateInterviewsPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600" />
                     <div>
-                      <p className="font-semibold text-secondary-900">Test Your Setup</p>
+                      <p className="font-semibold text-secondary-900">
+                        Test Your Setup
+                      </p>
                       <p className="text-sm text-secondary-600">
                         For video interviews, check camera, mic, and internet
                       </p>

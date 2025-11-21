@@ -16,6 +16,7 @@ import {
   CheckCircle,
   XCircle,
   FileText,
+  AlertCircle,
 } from "lucide-react";
 import { Card, CardContent, Button, Badge, Input } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -68,7 +69,9 @@ export default function EmployerInterviewsPage() {
 
   const handleMarkCompleted = async (interviewId: string) => {
     try {
-      await api.patch(`/api/interviews/${interviewId}`, { status: "COMPLETED" });
+      await api.patch(`/api/interviews/${interviewId}`, {
+        status: "COMPLETED",
+      });
       // Reload interviews
       const response = await api.get("/api/interviews");
       setInterviews(response.data.interviews || []);
@@ -140,14 +143,18 @@ export default function EmployerInterviewsPage() {
   };
 
   const handleMoveToOffer = (interview: any) => {
-    router.push(`/employer/offers/new?applicationId=${interview.applicationId}`);
+    router.push(
+      `/employer/offers/new?applicationId=${interview.applicationId}`
+    );
   };
 
   const handleRejectCandidate = async (interview: any) => {
     if (!confirm("Are you sure you want to reject this candidate?")) return;
 
     try {
-      await api.patch(`/api/applications/${interview.applicationId}`, { status: "REJECTED" });
+      await api.patch(`/api/applications/${interview.applicationId}`, {
+        status: "REJECTED",
+      });
       // Reload interviews
       const response = await api.get("/api/interviews");
       setInterviews(response.data.interviews || []);
@@ -160,12 +167,17 @@ export default function EmployerInterviewsPage() {
   // Filter and search interviews
   const filteredInterviews = interviews.filter((interview) => {
     const now = new Date();
-    const interviewDate = interview.scheduledAt ? new Date(interview.scheduledAt) : null;
+    const interviewDate = interview.scheduledAt
+      ? new Date(interview.scheduledAt)
+      : null;
 
     // Filter by time
     if (filter === "upcoming") {
       // Upcoming includes: awaiting responses, awaiting confirmation, and scheduled future interviews
-      if (interview.status === "AWAITING_CANDIDATE" || interview.status === "AWAITING_CONFIRMATION") {
+      if (
+        interview.status === "AWAITING_CANDIDATE" ||
+        interview.status === "AWAITING_CONFIRMATION"
+      ) {
         return true;
       }
       if (interviewDate && interviewDate < now) return false;
@@ -178,7 +190,8 @@ export default function EmployerInterviewsPage() {
     // Search by candidate name or job title
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const candidateName = interview.application?.candidate?.user?.name?.toLowerCase() || "";
+      const candidateName =
+        interview.application?.candidate?.user?.name?.toLowerCase() || "";
       const jobTitle = interview.application?.job?.title?.toLowerCase() || "";
       return candidateName.includes(query) || jobTitle.includes(query);
     }
@@ -205,8 +218,12 @@ export default function EmployerInterviewsPage() {
     }
 
     // If same priority, sort by date (or createdAt if no scheduledAt)
-    const aDate = a.scheduledAt ? new Date(a.scheduledAt) : new Date(a.createdAt);
-    const bDate = b.scheduledAt ? new Date(b.scheduledAt) : new Date(b.createdAt);
+    const aDate = a.scheduledAt
+      ? new Date(a.scheduledAt)
+      : new Date(a.createdAt);
+    const bDate = b.scheduledAt
+      ? new Date(b.scheduledAt)
+      : new Date(b.createdAt);
     return aDate.getTime() - bDate.getTime();
   });
 
@@ -233,8 +250,17 @@ export default function EmployerInterviewsPage() {
 
   const stats = {
     total: interviews.length,
-    awaitingResponse: interviews.filter((i) => i.status === "AWAITING_CANDIDATE" || i.status === "AWAITING_CONFIRMATION").length,
-    upcoming: interviews.filter((i) => i.scheduledAt && new Date(i.scheduledAt) >= new Date() && i.status === "SCHEDULED").length,
+    awaitingResponse: interviews.filter(
+      (i) =>
+        i.status === "AWAITING_CANDIDATE" ||
+        i.status === "AWAITING_CONFIRMATION"
+    ).length,
+    upcoming: interviews.filter(
+      (i) =>
+        i.scheduledAt &&
+        new Date(i.scheduledAt) >= new Date() &&
+        i.status === "SCHEDULED"
+    ).length,
     completed: interviews.filter((i) => i.status === "COMPLETED").length,
   };
 
@@ -316,7 +342,9 @@ export default function EmployerInterviewsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-secondary-600">Upcoming</p>
+                    <p className="text-sm font-medium text-secondary-600">
+                      Upcoming
+                    </p>
                     <p className="mt-2 text-3xl font-bold text-primary-600">
                       {stats.upcoming}
                     </p>
@@ -405,12 +433,16 @@ export default function EmployerInterviewsPage() {
           ) : (
             <div className="space-y-4">
               {sortedInterviews.map((interview) => {
-                const interviewDate = interview.scheduledAt ? new Date(interview.scheduledAt) : null;
+                const interviewDate = interview.scheduledAt
+                  ? new Date(interview.scheduledAt)
+                  : null;
                 const isUpcoming = interviewDate && interviewDate >= new Date();
                 const candidate = interview.application?.candidate;
-                const candidateName = candidate?.user?.name || "Unknown Candidate";
+                const candidateName =
+                  candidate?.user?.name || "Unknown Candidate";
                 const candidateImage = candidate?.user?.image;
-                const jobTitle = interview.application?.job?.title || "Unknown Position";
+                const jobTitle =
+                  interview.application?.job?.title || "Unknown Position";
                 const candidateLocation = candidate?.location;
                 const candidateSkills = candidate?.skills || [];
                 const yearsOfExperience = candidate?.experience;
@@ -428,9 +460,15 @@ export default function EmployerInterviewsPage() {
                             {/* Avatar */}
                             <div className="relative h-14 w-14 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-lg overflow-hidden">
                               {candidateImage ? (
-                                <img src={candidateImage} alt={candidateName} className="h-full w-full object-cover" />
+                                <img
+                                  src={candidateImage}
+                                  alt={candidateName}
+                                  className="h-full w-full object-cover"
+                                />
                               ) : (
-                                <span>{candidateName.charAt(0).toUpperCase()}</span>
+                                <span>
+                                  {candidateName.charAt(0).toUpperCase()}
+                                </span>
                               )}
                             </div>
 
@@ -444,16 +482,39 @@ export default function EmployerInterviewsPage() {
                                 {getStatusBadge(interview.status)}
                                 {testTier ? (
                                   <Badge
-                                    variant={testTier === 'ELITE' ? 'success' : testTier === 'ADVANCED' ? 'primary' : 'secondary'}
+                                    variant={
+                                      testTier === "ELITE"
+                                        ? "success"
+                                        : testTier === "ADVANCED"
+                                        ? "primary"
+                                        : "secondary"
+                                    }
                                     className="gap-1"
                                   >
                                     {testTier}
-                                    {testScore && <span className="ml-1">({Math.round(testScore)}%)</span>}
+                                    {testScore && (
+                                      <span className="ml-1">
+                                        ({Math.round(testScore)}%)
+                                      </span>
+                                    )}
                                   </Badge>
                                 ) : (
-                                  <Badge variant="secondary" className="gap-1 bg-gray-100 text-gray-600 border-gray-300">
-                                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  <Badge
+                                    variant="secondary"
+                                    className="gap-1 bg-gray-100 text-gray-600 border-gray-300"
+                                  >
+                                    <svg
+                                      className="h-3 w-3"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                      />
                                     </svg>
                                     No assessment taken
                                   </Badge>
@@ -467,8 +528,13 @@ export default function EmployerInterviewsPage() {
                               {/* Current role/company */}
                               {currentRole && (
                                 <p className="text-sm text-secondary-700 mb-1">
-                                  {currentRole.jobTitle} at {currentRole.companyName}
-                                  {currentRole.isCurrent && <span className="ml-1 text-xs text-green-600">(Current)</span>}
+                                  {currentRole.jobTitle} at{" "}
+                                  {currentRole.companyName}
+                                  {currentRole.isCurrent && (
+                                    <span className="ml-1 text-xs text-green-600">
+                                      (Current)
+                                    </span>
+                                  )}
                                 </p>
                               )}
 
@@ -482,34 +548,66 @@ export default function EmployerInterviewsPage() {
                               <div className="mt-2 flex items-center gap-4 text-sm text-secondary-600">
                                 {candidateLocation && (
                                   <span className="flex items-center gap-1">
-                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <svg
+                                      className="h-3.5 w-3.5"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                      />
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                      />
                                     </svg>
                                     {candidateLocation}
                                   </span>
                                 )}
-                                {yearsOfExperience !== null && yearsOfExperience !== undefined && (
-                                  <span className="flex items-center gap-1">
-                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                    {yearsOfExperience} {yearsOfExperience === 1 ? 'year' : 'years'} exp
-                                  </span>
-                                )}
+                                {yearsOfExperience !== null &&
+                                  yearsOfExperience !== undefined && (
+                                    <span className="flex items-center gap-1">
+                                      <svg
+                                        className="h-3.5 w-3.5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                        />
+                                      </svg>
+                                      {yearsOfExperience}{" "}
+                                      {yearsOfExperience === 1
+                                        ? "year"
+                                        : "years"}{" "}
+                                      exp
+                                    </span>
+                                  )}
                               </div>
 
                               {/* Skills */}
                               {candidateSkills.length > 0 && (
                                 <div className="mt-3 flex flex-wrap gap-1.5">
-                                  {candidateSkills.slice(0, 5).map((skill, idx) => (
-                                    <span
-                                      key={idx}
-                                      className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-200"
-                                    >
-                                      {skill}
-                                    </span>
-                                  ))}
+                                  {candidateSkills
+                                    .slice(0, 5)
+                                    .map((skill, idx) => (
+                                      <span
+                                        key={idx}
+                                        className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-200"
+                                      >
+                                        {skill}
+                                      </span>
+                                    ))}
                                   {candidateSkills.length > 5 && (
                                     <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
                                       +{candidateSkills.length - 5} more
@@ -522,13 +620,15 @@ export default function EmployerInterviewsPage() {
 
                           {interview.status === "AWAITING_CANDIDATE" && (
                             <p className="mb-3 text-sm text-secondary-600">
-                              Waiting for candidate to select from your available time slots
+                              Waiting for candidate to select from your
+                              available time slots
                             </p>
                           )}
 
                           {interview.status === "AWAITING_CONFIRMATION" && (
                             <p className="mb-3 text-sm font-medium text-warning-600">
-                              Candidate has selected time slots - please review and confirm
+                              Candidate has selected time slots - please review
+                              and confirm
                             </p>
                           )}
 
@@ -548,15 +648,24 @@ export default function EmployerInterviewsPage() {
                                 {interviewDate.toLocaleTimeString("en-US", {
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                })} ({interview.duration} min)
+                                })}{" "}
+                                ({interview.duration} min)
                               </span>
                             </div>
                           )}
 
                           {interview.notes && (
-                            <p className="mt-3 text-sm text-secondary-700">
-                              <span className="font-medium">Notes:</span> {interview.notes}
-                            </p>
+                            <div className="rounded-lg bg-yellow-50 p-3">
+                              <div className="mb-1 flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                <span className="text-sm font-semibold text-yellow-900">
+                                  Notes from Employer:
+                                </span>
+                              </div>
+                              <p className="text-sm text-yellow-800">
+                                {interview.notes}
+                              </p>
+                            </div>
                           )}
                         </div>
 
@@ -566,7 +675,9 @@ export default function EmployerInterviewsPage() {
                               variant="primary"
                               size="sm"
                               onClick={() =>
-                                router.push(`/employer/interviews/confirm/${interview.id}`)
+                                router.push(
+                                  `/employer/interviews/confirm/${interview.id}`
+                                )
                               }
                             >
                               <CheckCircle className="mr-2 h-4 w-4" />
@@ -604,7 +715,9 @@ export default function EmployerInterviewsPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleMarkCompleted(interview.id)}
+                                onClick={() =>
+                                  handleMarkCompleted(interview.id)
+                                }
                                 className="border-green-300 text-green-600 hover:bg-green-50"
                               >
                                 <CheckCircle className="mr-2 h-4 w-4" />
@@ -622,7 +735,9 @@ export default function EmployerInterviewsPage() {
                                 onReschedule={() => {
                                   // Coming soon
                                 }}
-                                onCancel={() => handleCancelInterview(interview.id)}
+                                onCancel={() =>
+                                  handleCancelInterview(interview.id)
+                                }
                               />
                             </>
                           )}
@@ -632,15 +747,23 @@ export default function EmployerInterviewsPage() {
                               <Button
                                 variant="primary"
                                 size="sm"
-                                onClick={() => handleOpenDecisionModal(interview)}
+                                onClick={() =>
+                                  handleOpenDecisionModal(interview)
+                                }
                               >
                                 <CheckCircle className="mr-2 h-4 w-4" />
                                 Make Decision
                               </Button>
                               <CompletedInterviewActionsDropdown
-                                onScheduleNextRound={() => handleScheduleNextRound(interview)}
-                                onMoveToOffer={() => handleMoveToOffer(interview)}
-                                onSendFeedback={() => handleOpenFeedbackModal(interview)}
+                                onScheduleNextRound={() =>
+                                  handleScheduleNextRound(interview)
+                                }
+                                onMoveToOffer={() =>
+                                  handleMoveToOffer(interview)
+                                }
+                                onSendFeedback={() =>
+                                  handleOpenFeedbackModal(interview)
+                                }
                               />
                             </>
                           )}
@@ -689,7 +812,9 @@ export default function EmployerInterviewsPage() {
             handleRejectCandidate(selectedInterview);
           }
         }}
-        candidateName={selectedInterview?.application?.candidate?.user?.name || ""}
+        candidateName={
+          selectedInterview?.application?.candidate?.user?.name || ""
+        }
       />
 
       {/* Send Feedback Modal */}
@@ -701,7 +826,9 @@ export default function EmployerInterviewsPage() {
         }}
         onSave={handleSaveFeedback}
         initialFeedback={selectedInterview?.feedback}
-        candidateName={selectedInterview?.application?.candidate?.user?.name || ""}
+        candidateName={
+          selectedInterview?.application?.candidate?.user?.name || ""
+        }
       />
     </div>
   );
