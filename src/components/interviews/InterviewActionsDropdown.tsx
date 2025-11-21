@@ -1,18 +1,14 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MoreVertical, FileText, Calendar, XCircle } from "lucide-react";
+import { MoreVertical, Calendar, XCircle } from "lucide-react";
 
 interface InterviewActionsDropdownProps {
-  hasNotes: boolean;
-  onAddEditNotes: () => void;
   onReschedule: () => void;
   onCancel: () => void;
 }
 
 export default function InterviewActionsDropdown({
-  hasNotes,
-  onAddEditNotes,
   onReschedule,
   onCancel,
 }: InterviewActionsDropdownProps) {
@@ -52,15 +48,6 @@ export default function InterviewActionsDropdown({
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
-          {/* Add/Edit Notes */}
-          <button
-            onClick={() => handleMenuItemClick(onAddEditNotes)}
-            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-secondary-700 hover:bg-gray-50 transition-colors"
-          >
-            <FileText className="h-4 w-4" />
-            {hasNotes ? "Edit Notes" : "Add Notes"}
-          </button>
-
           {/* Reschedule - Disabled */}
           <button
             disabled

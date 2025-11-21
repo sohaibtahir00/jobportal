@@ -568,8 +568,6 @@ export default function EmployerInterviewsPage() {
                                 {interview.notes ? "Edit Notes" : "Add Notes"}
                               </Button>
                               <InterviewActionsDropdown
-                                hasNotes={!!interview.notes}
-                                onAddEditNotes={() => handleOpenNotesModal(interview)}
                                 onReschedule={() => {
                                   // Coming soon
                                 }}
