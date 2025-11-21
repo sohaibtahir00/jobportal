@@ -655,7 +655,7 @@ export default function EmployerInterviewsPage() {
                           )}
 
                           {interview.notes && (
-                            <div className="rounded-lg bg-yellow-50 p-3">
+                            <div className="mt-4 rounded-lg bg-yellow-50 p-3">
                               <div className="mb-1 flex items-center gap-2">
                                 <AlertCircle className="h-4 w-4 text-yellow-600" />
                                 <span className="text-sm font-semibold text-yellow-900">
