@@ -15,9 +15,12 @@ import {
   ExternalLink,
   CheckCircle,
   XCircle,
+  FileText,
 } from "lucide-react";
 import { Card, CardContent, Button, Badge, Input } from "@/components/ui";
 import { api } from "@/lib/api";
+import NotesModal from "@/components/interviews/NotesModal";
+import InterviewActionsDropdown from "@/components/interviews/InterviewActionsDropdown";
 
 export default function EmployerInterviewsPage() {
   const { data: session, status } = useSession();
@@ -26,6 +29,8 @@ export default function EmployerInterviewsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all"); // all, upcoming, past
   const [searchQuery, setSearchQuery] = useState("");
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
+  const [selectedInterview, setSelectedInterview] = useState<any>(null);
 
   // Redirect if not employer
   useEffect(() => {
@@ -79,6 +84,25 @@ export default function EmployerInterviewsPage() {
     } catch (err) {
       console.error("Failed to cancel interview:", err);
       alert("Failed to cancel interview");
+    }
+  };
+
+  const handleOpenNotesModal = (interview: any) => {
+    setSelectedInterview(interview);
+    setNotesModalOpen(true);
+  };
+
+  const handleSaveNotes = async (notes: string) => {
+    if (!selectedInterview) return;
+
+    try {
+      await api.patch(`/api/interviews/${selectedInterview.id}`, { notes });
+      // Reload interviews
+      const response = await api.get("/api/interviews");
+      setInterviews(response.data.interviews || []);
+    } catch (err) {
+      console.error("Failed to save notes:", err);
+      throw new Error("Failed to save notes. Please try again.");
     }
   };
 
@@ -538,12 +562,19 @@ export default function EmployerInterviewsPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleCancelInterview(interview.id)}
-                                className="border-red-300 text-red-600 hover:bg-red-50"
+                                onClick={() => handleOpenNotesModal(interview)}
                               >
-                                <XCircle className="mr-2 h-4 w-4" />
-                                Cancel
+                                <FileText className="mr-2 h-4 w-4" />
+                                {interview.notes ? "Edit Notes" : "Add Notes"}
                               </Button>
+                              <InterviewActionsDropdown
+                                hasNotes={!!interview.notes}
+                                onAddEditNotes={() => handleOpenNotesModal(interview)}
+                                onReschedule={() => {
+                                  // Coming soon
+                                }}
+                                onCancel={() => handleCancelInterview(interview.id)}
+                              />
                             </>
                           )}
                         </div>
@@ -556,6 +587,18 @@ export default function EmployerInterviewsPage() {
           )}
         </div>
       </div>
+
+      {/* Notes Modal */}
+      <NotesModal
+        isOpen={notesModalOpen}
+        onClose={() => {
+          setNotesModalOpen(false);
+          setSelectedInterview(null);
+        }}
+        onSave={handleSaveNotes}
+        initialNotes={selectedInterview?.notes}
+        interviewId={selectedInterview?.id || ""}
+      />
     </div>
   );
 }
