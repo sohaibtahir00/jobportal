@@ -18,6 +18,7 @@ import {
   FileText,
   AlertCircle,
   Target,
+  Star,
 } from "lucide-react";
 import { Card, CardContent, Button, Badge, Input } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -33,6 +34,9 @@ export default function EmployerInterviewsPage() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all"); // all, upcoming, past
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [skillsFilter, setSkillsFilter] = useState<string>("all");
+  const [roundFilter, setRoundFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJobId, setSelectedJobId] = useState<string>("");
   const [notesModalOpen, setNotesModalOpen] = useState(false);
@@ -181,6 +185,63 @@ export default function EmployerInterviewsPage() {
     return interviews.filter((i) => i.application?.job?.id === jobId).length;
   };
 
+  // Get filter counts
+  const getStatusCount = (status: string) => {
+    if (status === "action-required") {
+      return interviews.filter((i) => i.status === "AWAITING_CONFIRMATION").length;
+    }
+    if (status === "scheduled") {
+      return interviews.filter((i) => i.status === "SCHEDULED").length;
+    }
+    if (status === "completed") {
+      return interviews.filter((i) => i.status === "COMPLETED").length;
+    }
+    return interviews.length;
+  };
+
+  const getSkillsCount = (filter: string) => {
+    if (filter === "verified") {
+      return interviews.filter((i) => i.application?.candidate?.testTier).length;
+    }
+    if (filter === "not-tested") {
+      return interviews.filter((i) => !i.application?.candidate?.testTier).length;
+    }
+    return interviews.length;
+  };
+
+  const getRoundCount = (round: string) => {
+    if (round === "1") {
+      return interviews.filter((i) => i.roundNumber === 1).length;
+    }
+    if (round === "2") {
+      return interviews.filter((i) => i.roundNumber === 2).length;
+    }
+    if (round === "3+") {
+      return interviews.filter((i) => i.roundNumber && i.roundNumber >= 3).length;
+    }
+    return interviews.length;
+  };
+
+  // Check if any interviews have round data
+  const hasRoundData = interviews.some((i) => i.roundNumber);
+
+  // Check if any filter is active
+  const hasActiveFilters =
+    statusFilter !== "all" ||
+    skillsFilter !== "all" ||
+    roundFilter !== "all" ||
+    selectedJobId !== "" ||
+    searchQuery !== "";
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setStatusFilter("all");
+    setSkillsFilter("all");
+    setRoundFilter("all");
+    setSelectedJobId("");
+    setSearchQuery("");
+  };
+
   // Filter and search interviews
   const filteredInterviews = interviews.filter((interview) => {
     const now = new Date();
@@ -188,7 +249,7 @@ export default function EmployerInterviewsPage() {
       ? new Date(interview.scheduledAt)
       : null;
 
-    // Filter by time
+    // Filter by time (legacy - keep for backward compatibility)
     if (filter === "upcoming") {
       // Upcoming includes: awaiting responses, awaiting confirmation, and scheduled future interviews
       if (
@@ -202,6 +263,36 @@ export default function EmployerInterviewsPage() {
     if (filter === "past") {
       // Past only includes completed or cancelled with dates in the past
       if (!interviewDate || interviewDate >= now) return false;
+    }
+
+    // Filter by status
+    if (statusFilter === "action-required") {
+      if (interview.status !== "AWAITING_CONFIRMATION") return false;
+    }
+    if (statusFilter === "scheduled") {
+      if (interview.status !== "SCHEDULED") return false;
+    }
+    if (statusFilter === "completed") {
+      if (interview.status !== "COMPLETED") return false;
+    }
+
+    // Filter by skills verification
+    if (skillsFilter === "verified") {
+      if (!interview.application?.candidate?.testTier) return false;
+    }
+    if (skillsFilter === "not-tested") {
+      if (interview.application?.candidate?.testTier) return false;
+    }
+
+    // Filter by round
+    if (roundFilter === "1") {
+      if (interview.roundNumber !== 1) return false;
+    }
+    if (roundFilter === "2") {
+      if (interview.roundNumber !== 2) return false;
+    }
+    if (roundFilter === "3+") {
+      if (!interview.roundNumber || interview.roundNumber < 3) return false;
     }
 
     // Filter by job position
@@ -402,87 +493,170 @@ export default function EmployerInterviewsPage() {
           <Card className="mb-6">
             <CardContent className="p-6">
               <div className="flex flex-col gap-4">
-                {/* Time Filters */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex gap-2">
+                {/* Row 1: Status Filter */}
+                <div>
+                  <div className="mb-2 text-sm font-medium text-secondary-700">Status:</div>
+                  <div className="flex flex-wrap gap-2">
                     <Button
-                      variant={filter === "all" ? "primary" : "outline"}
+                      variant={statusFilter === "all" ? "primary" : "outline"}
                       size="sm"
-                      onClick={() => setFilter("all")}
+                      onClick={() => setStatusFilter("all")}
                     >
-                      All
+                      All ({getStatusCount("all")})
                     </Button>
                     <Button
-                      variant={filter === "upcoming" ? "primary" : "outline"}
+                      variant={statusFilter === "action-required" ? "primary" : "outline"}
                       size="sm"
-                      onClick={() => setFilter("upcoming")}
+                      onClick={() => setStatusFilter("action-required")}
+                      className={statusFilter === "action-required" ? "" : "border-warning-300 text-warning-600 hover:bg-warning-50"}
                     >
-                      Upcoming
+                      <AlertCircle className="mr-1.5 h-4 w-4" />
+                      Action Required ({getStatusCount("action-required")})
                     </Button>
                     <Button
-                      variant={filter === "past" ? "primary" : "outline"}
+                      variant={statusFilter === "scheduled" ? "primary" : "outline"}
                       size="sm"
-                      onClick={() => setFilter("past")}
+                      onClick={() => setStatusFilter("scheduled")}
                     >
-                      Past
+                      Scheduled ({getStatusCount("scheduled")})
+                    </Button>
+                    <Button
+                      variant={statusFilter === "completed" ? "primary" : "outline"}
+                      size="sm"
+                      onClick={() => setStatusFilter("completed")}
+                    >
+                      Completed ({getStatusCount("completed")})
                     </Button>
                   </div>
+                </div>
 
-                  <div className="relative w-full sm:w-auto">
+                {/* Row 2: Skills, Round, and Job Filters */}
+                <div className="flex flex-col lg:flex-row gap-4 pt-2 border-t border-gray-200">
+                  {/* Skills Filter */}
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm font-medium text-secondary-700 whitespace-nowrap">Skills:</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={skillsFilter === "all" ? "primary" : "outline"}
+                        size="sm"
+                        onClick={() => setSkillsFilter("all")}
+                      >
+                        All
+                      </Button>
+                      <Button
+                        variant={skillsFilter === "verified" ? "primary" : "outline"}
+                        size="sm"
+                        onClick={() => setSkillsFilter("verified")}
+                        className={skillsFilter === "verified" ? "" : "border-green-300 text-green-600 hover:bg-green-50"}
+                      >
+                        <Star className="mr-1.5 h-3.5 w-3.5" />
+                        Skills Verified ({getSkillsCount("verified")})
+                      </Button>
+                      <Button
+                        variant={skillsFilter === "not-tested" ? "primary" : "outline"}
+                        size="sm"
+                        onClick={() => setSkillsFilter("not-tested")}
+                      >
+                        Not Tested ({getSkillsCount("not-tested")})
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Round Filter - Only show if interviews have round data */}
+                  {hasRoundData && (
+                    <div className="flex items-center gap-3 lg:border-l lg:border-gray-200 lg:pl-4">
+                      <div className="text-sm font-medium text-secondary-700 whitespace-nowrap">Round:</div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant={roundFilter === "all" ? "primary" : "outline"}
+                          size="sm"
+                          onClick={() => setRoundFilter("all")}
+                        >
+                          All Rounds
+                        </Button>
+                        <Button
+                          variant={roundFilter === "1" ? "primary" : "outline"}
+                          size="sm"
+                          onClick={() => setRoundFilter("1")}
+                        >
+                          Round 1 ({getRoundCount("1")})
+                        </Button>
+                        <Button
+                          variant={roundFilter === "2" ? "primary" : "outline"}
+                          size="sm"
+                          onClick={() => setRoundFilter("2")}
+                        >
+                          Round 2 ({getRoundCount("2")})
+                        </Button>
+                        <Button
+                          variant={roundFilter === "3+" ? "primary" : "outline"}
+                          size="sm"
+                          onClick={() => setRoundFilter("3+")}
+                        >
+                          Round 3+ ({getRoundCount("3+")})
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Job Position Filter */}
+                  {uniqueJobs.length > 0 && (
+                    <div className="flex items-center gap-3 lg:border-l lg:border-gray-200 lg:pl-4 lg:ml-auto">
+                      <div className="flex items-center gap-2 text-sm font-medium text-secondary-700 whitespace-nowrap">
+                        <Briefcase className="h-4 w-4 text-secondary-500" />
+                        <span>Position:</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={selectedJobId}
+                          onChange={(e) => setSelectedJobId(e.target.value)}
+                          className="rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
+                        >
+                          <option value="">
+                            All Positions ({interviews.length})
+                          </option>
+                          {uniqueJobs.map((job) => (
+                            <option key={job.id} value={job.id}>
+                              {job.title} ({getJobInterviewCount(job.id)})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Row 3: Search Bar */}
+                <div className="flex items-center gap-3 pt-2 border-t border-gray-200">
+                  <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary-400" />
                     <Input
                       type="text"
                       placeholder="Search by candidate or job..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-full sm:w-64"
+                      className="pl-10 w-full"
                     />
                   </div>
+                  {hasActiveFilters && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearAllFilters}
+                      className="whitespace-nowrap"
+                    >
+                      <XCircle className="mr-1.5 h-4 w-4" />
+                      Clear All
+                    </Button>
+                  )}
                 </div>
 
-                {/* Job Position Filter */}
-                {uniqueJobs.length > 0 && (
-                  <div className="flex items-center gap-3 pt-2 border-t border-gray-200">
-                    <div className="flex items-center gap-2 text-sm font-medium text-secondary-700">
-                      <Briefcase className="h-4 w-4 text-secondary-500" />
-                      <span>Position:</span>
-                    </div>
-                    <div className="flex items-center gap-2 flex-1">
-                      <select
-                        value={selectedJobId}
-                        onChange={(e) => setSelectedJobId(e.target.value)}
-                        className="flex-1 sm:flex-none rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
-                      >
-                        <option value="">
-                          All Positions ({interviews.length})
-                        </option>
-                        {uniqueJobs.map((job) => (
-                          <option key={job.id} value={job.id}>
-                            {job.title} ({getJobInterviewCount(job.id)})
-                          </option>
-                        ))}
-                      </select>
-                      {selectedJobId && (
-                        <button
-                          onClick={() => setSelectedJobId("")}
-                          className="px-3 py-2 text-sm text-secondary-600 hover:text-secondary-900 hover:bg-secondary-100 rounded-lg transition-colors flex items-center gap-1.5"
-                          title="Clear job filter"
-                        >
-                          <XCircle className="h-4 w-4" />
-                          Clear
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-
                 {/* Active Filters Summary */}
-                {(selectedJobId || searchQuery || filter !== "all") && (
-                  <div className="flex items-center gap-2 text-sm text-secondary-600">
-                    <Filter className="h-4 w-4" />
-                    <span>
-                      Showing {sortedInterviews.length} of {interviews.length}{" "}
-                      interviews
+                {hasActiveFilters && (
+                  <div className="flex items-center gap-2 text-sm text-secondary-600 bg-blue-50 px-3 py-2 rounded-lg">
+                    <Filter className="h-4 w-4 text-blue-600" />
+                    <span className="font-medium text-blue-900">
+                      Showing {sortedInterviews.length} of {interviews.length} interviews
                     </span>
                   </div>
                 )}
