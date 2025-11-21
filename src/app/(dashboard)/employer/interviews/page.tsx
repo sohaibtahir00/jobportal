@@ -332,26 +332,111 @@ export default function EmployerInterviewsPage() {
               {sortedInterviews.map((interview) => {
                 const interviewDate = interview.scheduledAt ? new Date(interview.scheduledAt) : null;
                 const isUpcoming = interviewDate && interviewDate >= new Date();
-                const candidateName = interview.application?.candidate?.user?.name || "Unknown Candidate";
+                const candidate = interview.application?.candidate;
+                const candidateName = candidate?.user?.name || "Unknown Candidate";
+                const candidateImage = candidate?.user?.image;
                 const jobTitle = interview.application?.job?.title || "Unknown Position";
+                const candidateLocation = candidate?.location;
+                const candidateSkills = candidate?.skills || [];
+                const yearsOfExperience = candidate?.experience;
+                const testTier = candidate?.testTier;
+                const testScore = candidate?.testScore;
+                const currentRole = candidate?.workExperiences?.[0];
 
                 return (
                   <Card key={interview.id}>
                     <CardContent className="p-6">
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div className="flex-1">
-                          <div className="mb-2 flex items-center gap-3">
-                            <Badge variant="primary" className="gap-1">
-                              <Video className="h-3 w-3" />
-                              Video
-                            </Badge>
-                            {getStatusBadge(interview.status)}
-                          </div>
+                          {/* Header with avatar and badges */}
+                          <div className="mb-3 flex items-start gap-4">
+                            {/* Avatar */}
+                            <div className="relative h-14 w-14 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-lg overflow-hidden">
+                              {candidateImage ? (
+                                <img src={candidateImage} alt={candidateName} className="h-full w-full object-cover" />
+                              ) : (
+                                <span>{candidateName.charAt(0).toUpperCase()}</span>
+                              )}
+                            </div>
 
-                          <h3 className="mb-1 text-lg font-bold text-secondary-900">
-                            {candidateName}
-                          </h3>
-                          <p className="mb-3 text-sm text-secondary-600">{jobTitle}</p>
+                            {/* Name, role, and badges */}
+                            <div className="flex-1">
+                              <div className="mb-2 flex items-center gap-2 flex-wrap">
+                                <Badge variant="primary" className="gap-1">
+                                  <Video className="h-3 w-3" />
+                                  Video
+                                </Badge>
+                                {getStatusBadge(interview.status)}
+                                {testTier && (
+                                  <Badge
+                                    variant={testTier === 'ELITE' ? 'success' : testTier === 'ADVANCED' ? 'primary' : 'secondary'}
+                                    className="gap-1"
+                                  >
+                                    {testTier}
+                                    {testScore && <span className="ml-1">({Math.round(testScore)}%)</span>}
+                                  </Badge>
+                                )}
+                              </div>
+
+                              <h3 className="mb-1 text-lg font-bold text-secondary-900">
+                                {candidateName}
+                              </h3>
+
+                              {/* Current role/company */}
+                              {currentRole && (
+                                <p className="text-sm text-secondary-700 mb-1">
+                                  {currentRole.title} at {currentRole.company}
+                                  {currentRole.current && <span className="ml-1 text-xs text-green-600">(Current)</span>}
+                                </p>
+                              )}
+
+                              {/* Job title */}
+                              <p className="text-sm text-secondary-600 flex items-center gap-1">
+                                <Briefcase className="h-3.5 w-3.5" />
+                                {jobTitle}
+                              </p>
+
+                              {/* Location and experience */}
+                              <div className="mt-2 flex items-center gap-4 text-sm text-secondary-600">
+                                {candidateLocation && (
+                                  <span className="flex items-center gap-1">
+                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    {candidateLocation}
+                                  </span>
+                                )}
+                                {yearsOfExperience !== null && yearsOfExperience !== undefined && (
+                                  <span className="flex items-center gap-1">
+                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    {yearsOfExperience} {yearsOfExperience === 1 ? 'year' : 'years'} exp
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Skills */}
+                              {candidateSkills.length > 0 && (
+                                <div className="mt-3 flex flex-wrap gap-1.5">
+                                  {candidateSkills.slice(0, 5).map((skill, idx) => (
+                                    <span
+                                      key={idx}
+                                      className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-200"
+                                    >
+                                      {skill}
+                                    </span>
+                                  ))}
+                                  {candidateSkills.length > 5 && (
+                                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                                      +{candidateSkills.length - 5} more
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
 
                           {interview.status === "AWAITING_CANDIDATE" && (
                             <p className="mb-3 text-sm text-secondary-600">
