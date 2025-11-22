@@ -1091,6 +1091,8 @@ export default function EmployerInterviewsPage() {
         candidateName={
           selectedInterview?.application?.candidate?.user?.name || ""
         }
+        applicationId={selectedInterview?.applicationId || selectedInterview?.application?.id}
+        jobTitle={selectedInterview?.application?.job?.title || ""}
       />
 
       {/* Send Feedback Modal */}
