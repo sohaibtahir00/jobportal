@@ -26,6 +26,7 @@ import NotesModal from "@/components/interviews/NotesModal";
 import InterviewActionsDropdown from "@/components/interviews/InterviewActionsDropdown";
 import DecisionModal from "@/components/interviews/DecisionModal";
 import SendFeedbackModal from "@/components/interviews/SendFeedbackModal";
+import ReviewCandidateModal from "@/components/interviews/ReviewCandidateModal";
 import CompletedInterviewActionsDropdown from "@/components/interviews/CompletedInterviewActionsDropdown";
 
 export default function EmployerInterviewsPage() {
@@ -43,6 +44,7 @@ export default function EmployerInterviewsPage() {
   const [selectedInterview, setSelectedInterview] = useState<any>(null);
   const [decisionModalOpen, setDecisionModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   // Redirect if not employer
   useEffect(() => {
@@ -141,6 +143,25 @@ export default function EmployerInterviewsPage() {
     } catch (err) {
       console.error("Failed to save feedback:", err);
       throw new Error("Failed to save feedback. Please try again.");
+    }
+  };
+
+  const handleOpenReviewModal = (interview: any) => {
+    setSelectedInterview(interview);
+    setReviewModalOpen(true);
+  };
+
+  const handleSaveReview = async (reviewData: any) => {
+    if (!selectedInterview) return;
+
+    try {
+      console.log("Review data for interview:", selectedInterview.id, reviewData);
+      // TODO: Implement API endpoint to save review data
+      // For now, just log to console
+      alert("Review saved successfully! (Currently logging to console)");
+    } catch (err) {
+      console.error("Failed to save review:", err);
+      throw new Error("Failed to save review. Please try again.");
     }
   };
 
@@ -1087,12 +1108,7 @@ export default function EmployerInterviewsPage() {
                                     );
                                   }
                                 }}
-                                onReview={() => {
-                                  // Coming soon - Review candidate modal
-                                  alert(
-                                    "Review candidate functionality coming soon!"
-                                  );
-                                }}
+                                onReview={() => handleOpenReviewModal(interview)}
                                 onSendFeedback={() =>
                                   handleOpenFeedbackModal(interview)
                                 }
@@ -1163,6 +1179,20 @@ export default function EmployerInterviewsPage() {
         candidateName={
           selectedInterview?.application?.candidate?.user?.name || ""
         }
+      />
+
+      {/* Review Candidate Modal */}
+      <ReviewCandidateModal
+        isOpen={reviewModalOpen}
+        onClose={() => {
+          setReviewModalOpen(false);
+          setSelectedInterview(null);
+        }}
+        onSave={handleSaveReview}
+        candidateName={
+          selectedInterview?.application?.candidate?.user?.name || ""
+        }
+        jobTitle={selectedInterview?.application?.job?.title || ""}
       />
     </div>
   );
