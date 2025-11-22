@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MoreVertical, Calendar, XCircle } from "lucide-react";
+import { MoreVertical, Calendar, XCircle, MessageCircle } from "lucide-react";
 
 interface InterviewActionsDropdownProps {
+  onMessage: () => void;
   onReschedule: () => void;
   onCancel: () => void;
 }
 
 export default function InterviewActionsDropdown({
+  onMessage,
   onReschedule,
   onCancel,
 }: InterviewActionsDropdownProps) {
@@ -48,6 +50,18 @@ export default function InterviewActionsDropdown({
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
+          {/* Message Candidate */}
+          <button
+            onClick={() => handleMenuItemClick(onMessage)}
+            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-secondary-700 hover:bg-gray-50 transition-colors"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Message Candidate
+          </button>
+
+          {/* Divider */}
+          <div className="my-2 border-t border-gray-200"></div>
+
           {/* Reschedule - Disabled */}
           <button
             disabled
@@ -58,9 +72,6 @@ export default function InterviewActionsDropdown({
             Reschedule
             <span className="ml-auto text-xs bg-gray-100 px-2 py-0.5 rounded">Soon</span>
           </button>
-
-          {/* Divider */}
-          <div className="my-2 border-t border-gray-200"></div>
 
           {/* Cancel Interview */}
           <button

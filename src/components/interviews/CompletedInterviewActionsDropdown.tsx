@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MoreVertical, Calendar, FileCheck, Send } from "lucide-react";
+import { MoreVertical, MessageCircle, Eye, Send } from "lucide-react";
 
 interface CompletedInterviewActionsDropdownProps {
-  onScheduleNextRound: () => void;
-  onMoveToOffer: () => void;
+  onMessage: () => void;
+  onReview: () => void;
   onSendFeedback: () => void;
 }
 
 export default function CompletedInterviewActionsDropdown({
-  onScheduleNextRound,
-  onMoveToOffer,
+  onMessage,
+  onReview,
   onSendFeedback,
 }: CompletedInterviewActionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,22 +50,22 @@ export default function CompletedInterviewActionsDropdown({
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
-          {/* Schedule Next Round */}
+          {/* Message Candidate */}
           <button
-            onClick={() => handleMenuItemClick(onScheduleNextRound)}
+            onClick={() => handleMenuItemClick(onMessage)}
             className="w-full flex items-center gap-3 px-4 py-2 text-sm text-secondary-700 hover:bg-gray-50 transition-colors"
           >
-            <Calendar className="h-4 w-4" />
-            Schedule Next Round
+            <MessageCircle className="h-4 w-4" />
+            Message Candidate
           </button>
 
-          {/* Move to Offer */}
+          {/* Review Candidate */}
           <button
-            onClick={() => handleMenuItemClick(onMoveToOffer)}
+            onClick={() => handleMenuItemClick(onReview)}
             className="w-full flex items-center gap-3 px-4 py-2 text-sm text-secondary-700 hover:bg-gray-50 transition-colors"
           >
-            <FileCheck className="h-4 w-4" />
-            Move to Offer
+            <Eye className="h-4 w-4" />
+            Review Candidate
           </button>
 
           {/* Divider */}
