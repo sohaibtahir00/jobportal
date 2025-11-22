@@ -30,49 +30,64 @@ export default function ReviewCandidateModal({
   jobTitle,
   initialData,
 }: ReviewCandidateModalProps) {
-  const [reviewData, setReviewData] = useState<ReviewData>({
-    overallRating: 0,
-    technicalSkills: null,
-    communication: null,
-    cultureFit: null,
-    problemSolving: null,
-    notes: "",
-  });
+  const [technicalSkills, setTechnicalSkills] = useState<"strong" | "weak" | null>(null);
+  const [communication, setCommunication] = useState<"strong" | "weak" | null>(null);
+  const [cultureFit, setCultureFit] = useState<"strong" | "weak" | null>(null);
+  const [problemSolving, setProblemSolving] = useState<"strong" | "weak" | null>(null);
+  const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-calculate overall rating based on skills
+  const calculateOverallRating = (): number => {
+    const scores = [technicalSkills, communication, cultureFit, problemSolving];
+    const total = scores.reduce((sum, skill) => {
+      if (skill === "strong") return sum + 1.25;
+      if (skill === "weak") return sum + 0;
+      return sum + 0.625; // null = neutral
+    }, 0);
+    return Math.round(total); // Returns 1-5
+  };
+
+  const overallRating = calculateOverallRating();
 
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
         // Load existing review data
-        setReviewData({
-          overallRating: initialData.overallRating || 0,
-          technicalSkills: (initialData.technicalSkills as "strong" | "weak" | null) || null,
-          communication: (initialData.communication as "strong" | "weak" | null) || null,
-          cultureFit: (initialData.cultureFit as "strong" | "weak" | null) || null,
-          problemSolving: (initialData.problemSolving as "strong" | "weak" | null) || null,
-          notes: initialData.notes || "",
-        });
+        setTechnicalSkills((initialData.technicalSkills as "strong" | "weak" | null) || null);
+        setCommunication((initialData.communication as "strong" | "weak" | null) || null);
+        setCultureFit((initialData.cultureFit as "strong" | "weak" | null) || null);
+        setProblemSolving((initialData.problemSolving as "strong" | "weak" | null) || null);
+        setNotes(initialData.notes || "");
       } else {
         // Reset form for new review
-        setReviewData({
-          overallRating: 0,
-          technicalSkills: null,
-          communication: null,
-          cultureFit: null,
-          problemSolving: null,
-          notes: "",
-        });
+        setTechnicalSkills(null);
+        setCommunication(null);
+        setCultureFit(null);
+        setProblemSolving(null);
+        setNotes("");
       }
       setError(null);
     }
   }, [isOpen, initialData]);
 
   const handleSave = async () => {
+    if (isSaving) return;
+
     try {
       setIsSaving(true);
       setError(null);
-      await onSave(reviewData);
+
+      await onSave({
+        overallRating: overallRating, // Use calculated value
+        technicalSkills,
+        communication,
+        cultureFit,
+        problemSolving,
+        notes,
+      });
+
       onClose();
     } catch (err: any) {
       console.error("Failed to save review:", err);
@@ -89,13 +104,24 @@ export default function ReviewCandidateModal({
   };
 
   const toggleSkillAssessment = (
-    skill: keyof Omit<ReviewData, "overallRating" | "notes">,
+    skill: "technicalSkills" | "communication" | "cultureFit" | "problemSolving",
     value: "strong" | "weak"
   ) => {
-    setReviewData((prev) => ({
-      ...prev,
-      [skill]: prev[skill] === value ? null : value,
-    }));
+    const setter = {
+      technicalSkills: setTechnicalSkills,
+      communication: setCommunication,
+      cultureFit: setCultureFit,
+      problemSolving: setProblemSolving,
+    }[skill];
+
+    const currentValue = {
+      technicalSkills,
+      communication,
+      cultureFit,
+      problemSolving,
+    }[skill];
+
+    setter(currentValue === value ? null : value);
   };
 
   if (!isOpen) return null;
@@ -124,37 +150,31 @@ export default function ReviewCandidateModal({
 
         {/* Body */}
         <div className="px-6 py-4 space-y-6">
-          {/* Overall Rating */}
+          {/* Overall Rating - Auto Calculated */}
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-3">
-              Overall Rating
+            <label className="text-sm font-medium text-secondary-900 mb-2 block">
+              Overall Rating (Auto-calculated)
             </label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() =>
-                    setReviewData({ ...reviewData, overallRating: star })
-                  }
-                  disabled={isSaving}
-                  className="transition-transform hover:scale-110 disabled:opacity-50"
-                >
+            <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
                   <Star
-                    className={`h-8 w-8 ${
-                      star <= reviewData.overallRating
+                    key={star}
+                    className={`h-6 w-6 ${
+                      star <= overallRating
                         ? "fill-yellow-400 text-yellow-400"
                         : "text-gray-300"
                     }`}
                   />
-                </button>
-              ))}
-              {reviewData.overallRating > 0 && (
-                <span className="ml-2 text-sm text-secondary-600 self-center">
-                  {reviewData.overallRating} / 5
-                </span>
-              )}
+                ))}
+              </div>
+              <span className="text-lg font-bold text-blue-900">
+                {overallRating}/5
+              </span>
             </div>
+            <p className="text-xs text-secondary-600 mt-2">
+              Rating is calculated based on your skill assessments below
+            </p>
           </div>
 
           {/* Skills Assessment */}
@@ -176,7 +196,7 @@ export default function ReviewCandidateModal({
                   }
                   disabled={isSaving}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    reviewData.technicalSkills === "strong"
+                    technicalSkills === "strong"
                       ? "border-green-500 bg-green-50 text-green-700"
                       : "border-gray-300 text-gray-700 hover:border-green-300"
                   } disabled:opacity-50`}
@@ -191,7 +211,7 @@ export default function ReviewCandidateModal({
                   }
                   disabled={isSaving}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    reviewData.technicalSkills === "weak"
+                    technicalSkills === "weak"
                       ? "border-red-500 bg-red-50 text-red-700"
                       : "border-gray-300 text-gray-700 hover:border-red-300"
                   } disabled:opacity-50`}
@@ -215,7 +235,7 @@ export default function ReviewCandidateModal({
                   }
                   disabled={isSaving}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    reviewData.communication === "strong"
+                    communication === "strong"
                       ? "border-green-500 bg-green-50 text-green-700"
                       : "border-gray-300 text-gray-700 hover:border-green-300"
                   } disabled:opacity-50`}
@@ -230,7 +250,7 @@ export default function ReviewCandidateModal({
                   }
                   disabled={isSaving}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    reviewData.communication === "weak"
+                    communication === "weak"
                       ? "border-red-500 bg-red-50 text-red-700"
                       : "border-gray-300 text-gray-700 hover:border-red-300"
                   } disabled:opacity-50`}
@@ -252,7 +272,7 @@ export default function ReviewCandidateModal({
                   onClick={() => toggleSkillAssessment("cultureFit", "strong")}
                   disabled={isSaving}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    reviewData.cultureFit === "strong"
+                    cultureFit === "strong"
                       ? "border-green-500 bg-green-50 text-green-700"
                       : "border-gray-300 text-gray-700 hover:border-green-300"
                   } disabled:opacity-50`}
@@ -265,7 +285,7 @@ export default function ReviewCandidateModal({
                   onClick={() => toggleSkillAssessment("cultureFit", "weak")}
                   disabled={isSaving}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    reviewData.cultureFit === "weak"
+                    cultureFit === "weak"
                       ? "border-red-500 bg-red-50 text-red-700"
                       : "border-gray-300 text-gray-700 hover:border-red-300"
                   } disabled:opacity-50`}
@@ -289,7 +309,7 @@ export default function ReviewCandidateModal({
                   }
                   disabled={isSaving}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    reviewData.problemSolving === "strong"
+                    problemSolving === "strong"
                       ? "border-green-500 bg-green-50 text-green-700"
                       : "border-gray-300 text-gray-700 hover:border-green-300"
                   } disabled:opacity-50`}
@@ -304,7 +324,7 @@ export default function ReviewCandidateModal({
                   }
                   disabled={isSaving}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    reviewData.problemSolving === "weak"
+                    problemSolving === "weak"
                       ? "border-red-500 bg-red-50 text-red-700"
                       : "border-gray-300 text-gray-700 hover:border-red-300"
                   } disabled:opacity-50`}
@@ -326,10 +346,8 @@ export default function ReviewCandidateModal({
             </label>
             <textarea
               id="review-notes"
-              value={reviewData.notes}
-              onChange={(e) =>
-                setReviewData({ ...reviewData, notes: e.target.value })
-              }
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               disabled={isSaving}
               rows={4}
               placeholder="Add your interview notes here..."
