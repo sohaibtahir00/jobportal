@@ -992,7 +992,7 @@ export default function EmployerInterviewsPage() {
                               <InterviewActionsDropdown
                                 onMessage={() => {
                                   const candidateId =
-                                    interview.application?.candidate?.id;
+                                    interview.application?.candidate?.user?.id;
                                   if (candidateId) {
                                     router.push(
                                       `/employer/messages?candidateId=${candidateId}`
@@ -1024,7 +1024,7 @@ export default function EmployerInterviewsPage() {
                               <CompletedInterviewActionsDropdown
                                 onMessage={() => {
                                   const candidateId =
-                                    interview.application?.candidate?.id;
+                                    interview.application?.candidate?.user?.id;
                                   if (candidateId) {
                                     router.push(
                                       `/employer/messages?candidateId=${candidateId}`
