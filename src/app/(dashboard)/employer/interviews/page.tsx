@@ -38,6 +38,7 @@ export default function EmployerInterviewsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [skillsFilter, setSkillsFilter] = useState<string>("all");
   const [roundFilter, setRoundFilter] = useState<string>("all");
+  const [ratingFilter, setRatingFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJobId, setSelectedJobId] = useState<string>("");
   const [notesModalOpen, setNotesModalOpen] = useState(false);
@@ -307,6 +308,37 @@ export default function EmployerInterviewsPage() {
     return interviews.length;
   };
 
+  const getRatingCount = (rating: string) => {
+    const completedWithReview = interviews.filter(
+      (i) => i.status === "COMPLETED" && i.review
+    );
+
+    if (rating === "not-reviewed") {
+      return interviews.filter(
+        (i) => i.status === "COMPLETED" && !i.review
+      ).length;
+    }
+    if (rating === "5") {
+      return completedWithReview.filter((i) => i.review.overallRating === 5).length;
+    }
+    if (rating === "4") {
+      return completedWithReview.filter((i) => i.review.overallRating === 4).length;
+    }
+    if (rating === "3") {
+      return completedWithReview.filter((i) => i.review.overallRating === 3).length;
+    }
+    if (rating === "2") {
+      return completedWithReview.filter((i) => i.review.overallRating === 2).length;
+    }
+    if (rating === "1") {
+      return completedWithReview.filter((i) => i.review.overallRating === 1).length;
+    }
+    if (rating === "0") {
+      return completedWithReview.filter((i) => i.review.overallRating === 0).length;
+    }
+    return interviews.filter((i) => i.status === "COMPLETED").length;
+  };
+
   // Check if any interviews have round data
   const hasRoundData = interviews.some((i) => i.roundNumber);
 
@@ -315,6 +347,7 @@ export default function EmployerInterviewsPage() {
     statusFilter !== "all" ||
     skillsFilter !== "all" ||
     roundFilter !== "all" ||
+    ratingFilter !== "all" ||
     selectedJobId !== "" ||
     searchQuery !== "";
 
@@ -323,6 +356,7 @@ export default function EmployerInterviewsPage() {
     setStatusFilter("all");
     setSkillsFilter("all");
     setRoundFilter("all");
+    setRatingFilter("all");
     setSelectedJobId("");
     setSearchQuery("");
   };
@@ -378,6 +412,20 @@ export default function EmployerInterviewsPage() {
     }
     if (roundFilter === "3+") {
       if (!interview.roundNumber || interview.roundNumber < 3) return false;
+    }
+
+    // Filter by review rating (only for completed interviews)
+    if (ratingFilter !== "all") {
+      if (interview.status !== "COMPLETED") return false;
+
+      if (ratingFilter === "not-reviewed") {
+        if (interview.review) return false;
+      } else {
+        const targetRating = parseInt(ratingFilter);
+        if (!interview.review || interview.review.overallRating !== targetRating) {
+          return false;
+        }
+      }
     }
 
     // Filter by job position
@@ -633,7 +681,11 @@ export default function EmployerInterviewsPage() {
                 <div className="border-t border-secondary-200"></div>
 
                 {/* Row 2: Secondary Filters (Dropdowns) */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className={`grid gap-4 ${
+                  statusFilter === "completed" || statusFilter === "all"
+                    ? "grid-cols-1 md:grid-cols-4"
+                    : "grid-cols-1 md:grid-cols-3"
+                }`}>
                   {/* Skills Filter */}
                   <div>
                     <label className="text-sm font-medium text-secondary-700 mb-2 block">
@@ -699,6 +751,29 @@ export default function EmployerInterviewsPage() {
                       ))}
                     </select>
                   </div>
+
+                  {/* Rating Filter - Only show when viewing all or completed */}
+                  {(statusFilter === "completed" || statusFilter === "all") && (
+                    <div>
+                      <label className="text-sm font-medium text-secondary-700 mb-2 block">
+                        Rating:
+                      </label>
+                      <select
+                        value={ratingFilter}
+                        onChange={(e) => setRatingFilter(e.target.value)}
+                        className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
+                      >
+                        <option value="all">All ({getRatingCount("all")})</option>
+                        <option value="5">⭐⭐⭐⭐⭐ 5 Stars ({getRatingCount("5")})</option>
+                        <option value="4">⭐⭐⭐⭐ 4 Stars ({getRatingCount("4")})</option>
+                        <option value="3">⭐⭐⭐ 3 Stars ({getRatingCount("3")})</option>
+                        <option value="2">⭐⭐ 2 Stars ({getRatingCount("2")})</option>
+                        <option value="1">⭐ 1 Star ({getRatingCount("1")})</option>
+                        <option value="0">0 Stars ({getRatingCount("0")})</option>
+                        <option value="not-reviewed">Not Reviewed ({getRatingCount("not-reviewed")})</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 {/* Divider */}
