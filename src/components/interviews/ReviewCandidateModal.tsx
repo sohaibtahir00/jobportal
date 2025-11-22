@@ -44,9 +44,9 @@ export default function ReviewCandidateModal({
     const total = scores.reduce((sum, skill) => {
       if (skill === "strong") return sum + 1.25;
       if (skill === "weak") return sum + 0;
-      return sum + 0.625; // null = neutral
+      return sum; // null = 0 (no contribution)
     }, 0);
-    return Math.round(total); // Returns 1-5
+    return Math.round(total); // Returns 0-5
   };
 
   const overallRating = calculateOverallRating();
