@@ -125,14 +125,14 @@ export default function SendFeedbackModal({
           {success && (
             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm text-green-600 font-medium">
-                ✓ Feedback saved successfully!
+                ✓ Feedback sent successfully! An email has been sent to the candidate.
               </p>
             </div>
           )}
 
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-700">
-              <strong>Note:</strong> This feedback will be saved to the interview record. Email functionality will be available soon.
+              <strong>Note:</strong> This feedback will be saved to the interview record and emailed to the candidate.
             </p>
           </div>
         </div>
