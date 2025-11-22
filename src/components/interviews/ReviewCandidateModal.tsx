@@ -19,6 +19,7 @@ interface ReviewCandidateModalProps {
   onSave: (reviewData: ReviewData) => Promise<void>;
   candidateName: string;
   jobTitle: string;
+  initialData?: ReviewData | null;
 }
 
 export default function ReviewCandidateModal({
@@ -27,6 +28,7 @@ export default function ReviewCandidateModal({
   onSave,
   candidateName,
   jobTitle,
+  initialData,
 }: ReviewCandidateModalProps) {
   const [reviewData, setReviewData] = useState<ReviewData>({
     overallRating: 0,
@@ -41,18 +43,30 @@ export default function ReviewCandidateModal({
 
   useEffect(() => {
     if (isOpen) {
-      // Reset form when modal opens
-      setReviewData({
-        overallRating: 0,
-        technicalSkills: null,
-        communication: null,
-        cultureFit: null,
-        problemSolving: null,
-        notes: "",
-      });
+      if (initialData) {
+        // Load existing review data
+        setReviewData({
+          overallRating: initialData.overallRating || 0,
+          technicalSkills: (initialData.technicalSkills as "strong" | "weak" | null) || null,
+          communication: (initialData.communication as "strong" | "weak" | null) || null,
+          cultureFit: (initialData.cultureFit as "strong" | "weak" | null) || null,
+          problemSolving: (initialData.problemSolving as "strong" | "weak" | null) || null,
+          notes: initialData.notes || "",
+        });
+      } else {
+        // Reset form for new review
+        setReviewData({
+          overallRating: 0,
+          technicalSkills: null,
+          communication: null,
+          cultureFit: null,
+          problemSolving: null,
+          notes: "",
+        });
+      }
       setError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   const handleSave = async () => {
     try {
@@ -93,7 +107,7 @@ export default function ReviewCandidateModal({
         <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <div>
             <h2 className="text-xl font-bold text-secondary-900">
-              Review Candidate
+              {initialData ? "Edit Review" : "Review Candidate"}
             </h2>
             <p className="text-sm text-secondary-600 mt-1">
               {candidateName} • {jobTitle}
