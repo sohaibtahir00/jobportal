@@ -67,6 +67,7 @@ interface SendFeedbackModalProps {
   initialFeedback?: string | null;
   candidateName: string;
   jobTitle?: string;
+  companyName?: string;
 }
 
 export default function SendFeedbackModal({
@@ -76,6 +77,7 @@ export default function SendFeedbackModal({
   initialFeedback,
   candidateName,
   jobTitle,
+  companyName,
 }: SendFeedbackModalProps) {
   const [feedback, setFeedback] = useState(initialFeedback || "");
   const [isSaving, setIsSaving] = useState(false);
@@ -94,7 +96,7 @@ export default function SendFeedbackModal({
       let filledTemplate = template.template
         .replace(/{candidateName}/g, candidateName)
         .replace(/{jobTitle}/g, jobTitle || "this position")
-        .replace(/{companyName}/g, "Our");
+        .replace(/{companyName}/g, companyName || "Our");
 
       setFeedback(filledTemplate);
     }
@@ -112,7 +114,7 @@ export default function SendFeedbackModal({
       setError(null);
       setSuccess(false);
     }
-  }, [isOpen, initialFeedback, candidateName, jobTitle]);
+  }, [isOpen, initialFeedback, candidateName, jobTitle, companyName]);
 
   const handleSave = async () => {
     if (!feedback.trim()) {
