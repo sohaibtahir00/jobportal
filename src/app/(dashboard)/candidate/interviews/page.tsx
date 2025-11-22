@@ -142,84 +142,8 @@ export default function CandidateInterviewsPage() {
           }
         );
 
-        // Mock data
-        const mockInterviews: Interview[] = [
-          {
-            id: "1",
-            jobTitle: "Senior ML Engineer",
-            companyName: "TechCorp AI",
-            type: "video",
-            status: "upcoming",
-            date: "2025-01-15",
-            time: "14:00",
-            duration: "60 minutes",
-            meetingLink: "https://zoom.us/j/123456789",
-            interviewerName: "Jane Smith",
-            interviewerTitle: "Engineering Manager",
-            round: "Technical Round (Round 2 of 3)",
-            notes:
-              "Please prepare to discuss your experience with PyTorch and model deployment.",
-          },
-          {
-            id: "2",
-            jobTitle: "Backend Engineer",
-            companyName: "DataStart Inc",
-            type: "phone",
-            status: "upcoming",
-            date: "2025-01-12",
-            time: "10:30",
-            duration: "30 minutes",
-            interviewerName: "Mike Johnson",
-            interviewerTitle: "Tech Lead",
-            round: "Screening Call (Round 1 of 3)",
-          },
-          {
-            id: "3",
-            jobTitle: "Full Stack Developer",
-            companyName: "FinTech Solutions",
-            type: "onsite",
-            status: "upcoming",
-            date: "2025-01-18",
-            time: "09:00",
-            duration: "4 hours",
-            location: "123 Market St, San Francisco, CA 94103",
-            interviewerName: "Sarah Lee",
-            interviewerTitle: "CTO",
-            round: "Onsite Interview (Final Round)",
-            notes:
-              "Full day interview including lunch with the team. Bring portfolio and be prepared for live coding.",
-          },
-          {
-            id: "4",
-            jobTitle: "DevOps Engineer",
-            companyName: "CloudTech Inc",
-            type: "video",
-            status: "completed",
-            date: "2025-01-08",
-            time: "15:00",
-            duration: "45 minutes",
-            meetingLink: "https://meet.google.com/abc-defg-hij",
-            interviewerName: "Robert Brown",
-            interviewerTitle: "DevOps Lead",
-            round: "Technical Round (Round 2 of 2)",
-          },
-          {
-            id: "5",
-            jobTitle: "Frontend Developer",
-            companyName: "StartupXYZ",
-            type: "phone",
-            status: "cancelled",
-            date: "2025-01-10",
-            time: "11:00",
-            duration: "30 minutes",
-            interviewerName: "Emily Davis",
-            interviewerTitle: "Hiring Manager",
-            round: "Initial Screening",
-          },
-        ];
-
         // Combine backend interviews with mock data
-        const allInterviews = [...transformedInterviews, ...mockInterviews];
+        const allInterviews = [...transformedInterviews];
         setInterviews(allInterviews);
         setIsLoading(false);
       } catch (error) {
