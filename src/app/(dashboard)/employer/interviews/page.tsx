@@ -1343,6 +1343,7 @@ export default function EmployerInterviewsPage() {
         candidateName={
           selectedInterview?.application?.candidate?.user?.name || ""
         }
+        jobTitle={selectedInterview?.application?.job?.title}
       />
 
       {/* Review Candidate Modal */}
