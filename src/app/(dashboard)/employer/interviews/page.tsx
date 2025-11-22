@@ -144,8 +144,64 @@ export default function EmployerInterviewsPage() {
     }
   };
 
-  const handleScheduleNextRound = (interview: any) => {
-    router.push(`/employer/interviews/availability/${interview.applicationId}`);
+  const handleScheduleNextRound = async (interview: any) => {
+    try {
+      // Get all interviews for this application
+      const response = await api.get(
+        `/api/interviews?applicationId=${interview.applicationId}`
+      );
+      const applicationInterviews = response.data.interviews || [];
+
+      // Get interview rounds for this job
+      const roundsResponse = await api.get(
+        `/api/employer/jobs/${interview.application.job.id}/interview-rounds`
+      );
+      const interviewRounds = roundsResponse.data.rounds || [];
+
+      // Calculate next round to schedule
+      const completedRounds = applicationInterviews
+        .filter((i: any) => i.status === "COMPLETED" && i.roundNumber)
+        .map((i: any) => i.roundNumber);
+
+      const scheduledRounds = applicationInterviews
+        .filter(
+          (i: any) =>
+            i.status !== "CANCELLED" &&
+            i.status !== "COMPLETED" &&
+            i.roundNumber
+        )
+        .map((i: any) => i.roundNumber);
+
+      // Next round is highest completed + 1, or first available
+      let nextRound = 1;
+      if (completedRounds.length > 0) {
+        nextRound = Math.max(...completedRounds) + 1;
+      } else if (scheduledRounds.length > 0) {
+        // If there's already a scheduled interview, go to next after that
+        nextRound = Math.max(...scheduledRounds) + 1;
+      }
+
+      // Make sure we don't exceed total rounds
+      if (
+        interviewRounds &&
+        interviewRounds.length > 0 &&
+        nextRound <= interviewRounds.length
+      ) {
+        router.push(
+          `/employer/interviews/availability/${interview.applicationId}?round=${nextRound}`
+        );
+      } else {
+        router.push(
+          `/employer/interviews/availability/${interview.applicationId}`
+        );
+      }
+    } catch (err) {
+      console.error("Failed to calculate next round:", err);
+      // Fallback to basic navigation
+      router.push(
+        `/employer/interviews/availability/${interview.applicationId}`
+      );
+    }
   };
 
   const handleMoveToOffer = (interview: any) => {
