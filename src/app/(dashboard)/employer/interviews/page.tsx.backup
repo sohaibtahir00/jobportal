@@ -188,8 +188,7 @@ export default function EmployerInterviewsPage() {
   // Get filter counts
   const getStatusCount = (status: string) => {
     if (status === "action-required") {
-      return interviews.filter((i) => i.status === "AWAITING_CONFIRMATION")
-        .length;
+      return interviews.filter((i) => i.status === "AWAITING_CONFIRMATION").length;
     }
     if (status === "scheduled") {
       return interviews.filter((i) => i.status === "SCHEDULED").length;
@@ -202,12 +201,10 @@ export default function EmployerInterviewsPage() {
 
   const getSkillsCount = (filter: string) => {
     if (filter === "verified") {
-      return interviews.filter((i) => i.application?.candidate?.testTier)
-        .length;
+      return interviews.filter((i) => i.application?.candidate?.testTier).length;
     }
     if (filter === "not-tested") {
-      return interviews.filter((i) => !i.application?.candidate?.testTier)
-        .length;
+      return interviews.filter((i) => !i.application?.candidate?.testTier).length;
     }
     return interviews.length;
   };
@@ -220,8 +217,7 @@ export default function EmployerInterviewsPage() {
       return interviews.filter((i) => i.roundNumber === 2).length;
     }
     if (round === "3+") {
-      return interviews.filter((i) => i.roundNumber && i.roundNumber >= 3)
-        .length;
+      return interviews.filter((i) => i.roundNumber && i.roundNumber >= 3).length;
     }
     return interviews.length;
   };
@@ -511,35 +507,23 @@ export default function EmployerInterviewsPage() {
                       All ({getStatusCount("all")})
                     </Button>
                     <Button
-                      variant={
-                        statusFilter === "action-required"
-                          ? "primary"
-                          : "outline"
-                      }
+                      variant={statusFilter === "action-required" ? "primary" : "outline"}
                       size="sm"
                       onClick={() => setStatusFilter("action-required")}
-                      className={
-                        statusFilter === "action-required"
-                          ? ""
-                          : "border-warning-300 text-warning-600 hover:bg-warning-50"
-                      }
+                      className={statusFilter === "action-required" ? "" : "border-warning-300 text-warning-600 hover:bg-warning-50"}
                     >
                       <AlertCircle className="mr-1.5 h-4 w-4" />
                       Action Required ({getStatusCount("action-required")})
                     </Button>
                     <Button
-                      variant={
-                        statusFilter === "scheduled" ? "primary" : "outline"
-                      }
+                      variant={statusFilter === "scheduled" ? "primary" : "outline"}
                       size="sm"
                       onClick={() => setStatusFilter("scheduled")}
                     >
                       Scheduled ({getStatusCount("scheduled")})
                     </Button>
                     <Button
-                      variant={
-                        statusFilter === "completed" ? "primary" : "outline"
-                      }
+                      variant={statusFilter === "completed" ? "primary" : "outline"}
                       size="sm"
                       onClick={() => setStatusFilter("completed")}
                     >
@@ -564,12 +548,8 @@ export default function EmployerInterviewsPage() {
                       className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
                     >
                       <option value="all">All</option>
-                      <option value="verified">
-                        ✓ Skills Verified ({getSkillsCount("verified")})
-                      </option>
-                      <option value="not-tested">
-                        Not Tested ({getSkillsCount("not-tested")})
-                      </option>
+                      <option value="verified">✓ Skills Verified ({getSkillsCount("verified")})</option>
+                      <option value="not-tested">Not Tested ({getSkillsCount("not-tested")})</option>
                     </select>
                   </div>
 
@@ -585,15 +565,9 @@ export default function EmployerInterviewsPage() {
                         className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
                       >
                         <option value="all">All Rounds</option>
-                        <option value="1">
-                          Round 1 ({getRoundCount("1")})
-                        </option>
-                        <option value="2">
-                          Round 2 ({getRoundCount("2")})
-                        </option>
-                        <option value="3+">
-                          Round 3+ ({getRoundCount("3+")})
-                        </option>
+                        <option value="1">Round 1 ({getRoundCount("1")})</option>
+                        <option value="2">Round 2 ({getRoundCount("2")})</option>
+                        <option value="3+">Round 3+ ({getRoundCount("3+")})</option>
                       </select>
                     </div>
                   )}
@@ -608,9 +582,7 @@ export default function EmployerInterviewsPage() {
                       onChange={(e) => setSelectedJobId(e.target.value)}
                       className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
                     >
-                      <option value="">
-                        All Positions ({interviews.length})
-                      </option>
+                      <option value="">All Positions ({interviews.length})</option>
                       {uniqueJobs.map((job) => (
                         <option key={job.id} value={job.id}>
                           {job.title} ({getJobInterviewCount(job.id)})
@@ -641,8 +613,7 @@ export default function EmployerInterviewsPage() {
                     <div className="flex items-center gap-2">
                       <Filter className="h-4 w-4 text-blue-600" />
                       <span className="font-medium text-blue-900">
-                        Showing {sortedInterviews.length} of {interviews.length}{" "}
-                        interviews
+                        Showing {sortedInterviews.length} of {interviews.length} interviews
                       </span>
                     </div>
                     <button
@@ -732,9 +703,7 @@ export default function EmployerInterviewsPage() {
                                     className="gap-1 bg-purple-50 text-purple-700 border-purple-200"
                                   >
                                     <Target className="h-3 w-3" />
-                                    {interview.round ||
-                                      interview.roundName ||
-                                      `Round ${interview.roundNumber}`}
+                                    {interview.round || interview.roundName || `Round ${interview.roundNumber}`}
                                   </Badge>
                                 )}
 
@@ -990,15 +959,6 @@ export default function EmployerInterviewsPage() {
                                 {interview.notes ? "Edit Notes" : "Add Notes"}
                               </Button>
                               <InterviewActionsDropdown
-                                onMessage={() => {
-                                  const candidateId =
-                                    interview.application?.candidate?.id;
-                                  if (candidateId) {
-                                    router.push(
-                                      `/employer/messages?candidateId=${candidateId}`
-                                    );
-                                  }
-                                }}
                                 onReschedule={() => {
                                   // Coming soon
                                 }}
@@ -1022,21 +982,12 @@ export default function EmployerInterviewsPage() {
                                 Make Decision
                               </Button>
                               <CompletedInterviewActionsDropdown
-                                onMessage={() => {
-                                  const candidateId =
-                                    interview.application?.candidate?.id;
-                                  if (candidateId) {
-                                    router.push(
-                                      `/employer/messages?candidateId=${candidateId}`
-                                    );
-                                  }
-                                }}
-                                onReview={() => {
-                                  // Coming soon - Review candidate modal
-                                  alert(
-                                    "Review candidate functionality coming soon!"
-                                  );
-                                }}
+                                onScheduleNextRound={() =>
+                                  handleScheduleNextRound(interview)
+                                }
+                                onMoveToOffer={() =>
+                                  handleMoveToOffer(interview)
+                                }
                                 onSendFeedback={() =>
                                   handleOpenFeedbackModal(interview)
                                 }

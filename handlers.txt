@@ -1,0 +1,68 @@
+
+  const handleMessageCandidate = (interview: any) => {
+    const candidateUserId = interview.application?.candidate?.userId || interview.application?.candidate?.user?.id;
+    router.push(`/employer/messages?candidateId=${candidateUserId}`);
+  };
+
+  const handleOpenReviewModal = (interview: any) => {
+    setSelectedInterview(interview);
+    setReviewModalOpen(true);
+  };
+
+  const handleSendOffer = (interview: any) => {
+    setSelectedInterview(interview);
+    const jobTitle = interview.application?.job?.title || "";
+    setOfferData(prev => ({ ...prev, position: jobTitle }));
+    setShowOfferModal(true);
+  };
+
+  const handleMakeOffer = async () => {
+    if (!selectedInterview) return;
+    setIsCreatingOffer(true);
+    try {
+      const salaryInCents = Math.round(parseFloat(offerData.salary) * 100);
+      const signingBonusInCents = offerData.signingBonus ? Math.round(parseFloat(offerData.signingBonus) * 100) : null;
+      const expirationDate = offerData.expiresAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      await api.post("/api/offers", {
+        applicationId: selectedInterview.applicationId,
+        position: offerData.position,
+        salary: salaryInCents,
+        equity: offerData.equity ? parseFloat(offerData.equity) : null,
+        signingBonus: signingBonusInCents,
+        benefits: offerData.benefits,
+        startDate: offerData.startDate,
+        expiresAt: expirationDate,
+        customMessage: offerData.customMessage,
+      });
+      showToast("success", "Offer sent successfully!");
+      setShowOfferModal(false);
+      setOfferData({ position: "", salary: "", equity: "", signingBonus: "", benefits: [], startDate: "", expiresAt: "", customMessage: "" });
+      const response = await api.get("/api/interviews");
+      setInterviews(response.data.interviews || []);
+    } catch (err: any) {
+      console.error("Failed to create offer:", err);
+      showToast("error", err.response?.data?.error || "Failed to create offer");
+    } finally {
+      setIsCreatingOffer(false);
+    }
+  };
+
+  const handleBenefitToggle = (benefit: string) => {
+    setOfferData((prev) => ({
+      ...prev,
+      benefits: prev.benefits.includes(benefit) ? prev.benefits.filter((b) => b !== benefit) : [...prev.benefits, benefit],
+    }));
+  };
+
+  const handleRejectFromDropdown = async (interview: any) => {
+    if (!confirm("Are you sure you want to reject this candidate?")) return;
+    try {
+      await api.patch(`/api/applications/${interview.applicationId}`, { status: "REJECTED" });
+      showToast("success", "Candidate rejected");
+      const response = await api.get("/api/interviews");
+      setInterviews(response.data.interviews || []);
+    } catch (err) {
+      console.error("Failed to reject candidate:", err);
+      showToast("error", "Failed to reject candidate");
+    }
+  };
