@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Calendar, FileCheck, XCircle, Gift, DollarSign, Loader2 } from "lucide-react";
+import { X, Calendar, FileCheck, XCircle, Gift, DollarSign, Loader2, ArrowRight, Star } from "lucide-react";
 import { Button, Card, CardContent } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui";
@@ -15,6 +15,7 @@ interface DecisionModalProps {
   candidateName: string;
   applicationId?: string;
   jobTitle?: string;
+  reviewRating?: number; // Optional: pass interview.review.overallRating
 }
 
 export default function DecisionModal({
@@ -26,6 +27,7 @@ export default function DecisionModal({
   candidateName,
   applicationId,
   jobTitle,
+  reviewRating,
 }: DecisionModalProps) {
   const { showToast } = useToast();
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -124,92 +126,153 @@ export default function DecisionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="relative w-full max-w-2xl bg-white rounded-lg shadow-xl mx-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <div>
-            <h2 className="text-xl font-bold text-secondary-900">
-              Make Decision
-            </h2>
-            <p className="text-sm text-secondary-600 mt-1">
-              Choose the next step for {candidateName}
-            </p>
+        <div className="border-b border-gray-200 px-6 py-5 bg-gradient-to-r from-blue-50 to-purple-50">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Make Decision
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Choose the next step for <span className="font-semibold">{candidateName}</span>
+              </p>
+
+              {/* Show review rating if exists */}
+              {reviewRating !== undefined && reviewRating !== null && (
+                <div className="mt-3 flex items-center gap-2">
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`h-4 w-4 ${
+                          star <= reviewRating
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700">
+                    {reviewRating}/5 Rating
+                  </span>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
 
-        {/* Body */}
-        <div className="px-6 py-6 space-y-3">
-          {/* Schedule Next Round */}
+        {/* Body - Action Cards */}
+        <div className="px-6 py-6 space-y-4 overflow-y-auto max-h-[calc(90vh-200px)]">
+          {/* Schedule Next Round Card */}
           <button
             onClick={() => handleAction(onScheduleNextRound)}
-            className="w-full flex items-start gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all group"
+            className="w-full text-left p-6 rounded-xl border-2 border-blue-200 bg-white hover:bg-gradient-to-br hover:from-blue-50 hover:to-blue-100 hover:border-blue-400 hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 group"
           >
-            <div className="flex-shrink-0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-              <Calendar className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="flex-1 text-left">
-              <h3 className="font-semibold text-secondary-900 mb-1">
-                Schedule Next Round
-              </h3>
-              <p className="text-sm text-secondary-600">
-                Move the candidate to the next interview round in the hiring process
-              </p>
+            <div className="flex items-start justify-between">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                  <Calendar className="h-7 w-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1.5">
+                    Schedule Next Round
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Move the candidate to the next interview round in the hiring process
+                  </p>
+                  <div className="mt-2 flex items-center gap-2 text-xs text-blue-600 font-medium">
+                    <span>Continue interviews</span>
+                    <span>•</span>
+                    <span>Round 2: Technical</span>
+                  </div>
+                </div>
+              </div>
+              <ArrowRight className="h-6 w-6 text-blue-500 flex-shrink-0 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
             </div>
           </button>
 
-          {/* Send Offer */}
+          {/* Send Offer Card */}
           <button
             onClick={handleSendOfferClick}
-            className="w-full flex items-start gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-all group"
+            className="w-full text-left p-6 rounded-xl border-2 border-green-200 bg-white hover:bg-gradient-to-br hover:from-green-50 hover:to-green-100 hover:border-green-400 hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 group"
           >
-            <div className="flex-shrink-0 h-12 w-12 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
-              <FileCheck className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="flex-1 text-left">
-              <h3 className="font-semibold text-secondary-900 mb-1">
-                Send Offer
-              </h3>
-              <p className="text-sm text-secondary-600">
-                Create and send a job offer to the candidate
-              </p>
+            <div className="flex items-start justify-between">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                  <FileCheck className="h-7 w-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1.5">
+                    Send Offer
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Create and send a job offer to the candidate
+                  </p>
+                  <div className="mt-2 flex items-center gap-2 text-xs text-green-600 font-medium">
+                    <span>Salary</span>
+                    <span>•</span>
+                    <span>Equity</span>
+                    <span>•</span>
+                    <span>Start Date</span>
+                  </div>
+                </div>
+              </div>
+              <ArrowRight className="h-6 w-6 text-green-500 flex-shrink-0 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
             </div>
           </button>
 
-          {/* Reject Candidate */}
+          {/* Reject Candidate Card */}
           <button
             onClick={() => handleAction(onRejectCandidate)}
-            className="w-full flex items-start gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-all group"
+            className="w-full text-left p-6 rounded-xl border-2 border-red-200 bg-white hover:bg-gradient-to-br hover:from-red-50 hover:to-red-100 hover:border-red-400 hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 group"
           >
-            <div className="flex-shrink-0 h-12 w-12 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors">
-              <XCircle className="h-6 w-6 text-red-600" />
-            </div>
-            <div className="flex-1 text-left">
-              <h3 className="font-semibold text-secondary-900 mb-1">
-                Reject Candidate
-              </h3>
-              <p className="text-sm text-secondary-600">
-                Update application status to rejected and notify the candidate
-              </p>
+            <div className="flex items-start justify-between">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
+                  <XCircle className="h-7 w-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1.5">
+                    Reject Candidate
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Update application status to rejected and notify the candidate
+                  </p>
+                  <div className="mt-2 flex items-center gap-2 text-xs text-red-600 font-medium">
+                    <span>Close application</span>
+                    <span>•</span>
+                    <span>Send notification</span>
+                  </div>
+                </div>
+              </div>
+              <ArrowRight className="h-6 w-6 text-red-500 flex-shrink-0 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
             </div>
           </button>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
-          <Button
-            variant="outline"
-            size="sm"
+        <div className="border-t border-gray-200 px-6 py-4 bg-gray-50">
+          <button
             onClick={onClose}
+            className="px-6 py-2.5 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
           >
             Cancel
-          </Button>
+          </button>
         </div>
       </div>
 

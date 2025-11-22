@@ -1274,6 +1274,7 @@ export default function EmployerInterviewsPage() {
         }
         applicationId={selectedInterview?.applicationId || selectedInterview?.application?.id}
         jobTitle={selectedInterview?.application?.job?.title || ""}
+        reviewRating={selectedInterview?.review?.overallRating}
       />
 
       {/* Send Feedback Modal */}
