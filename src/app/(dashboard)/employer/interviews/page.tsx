@@ -46,6 +46,7 @@ export default function EmployerInterviewsPage() {
   const [decisionModalOpen, setDecisionModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [nextRoundInfo, setNextRoundInfo] = useState<string>("");
 
   // Redirect if not employer
   useEffect(() => {
@@ -123,9 +124,61 @@ export default function EmployerInterviewsPage() {
     }
   };
 
-  const handleOpenDecisionModal = (interview: any) => {
+  const handleOpenDecisionModal = async (interview: any) => {
     setSelectedInterview(interview);
     setDecisionModalOpen(true);
+
+    // Calculate next round info
+    try {
+      // Get all interviews for this application
+      const response = await api.get(
+        `/api/interviews?applicationId=${interview.applicationId}`
+      );
+      const applicationInterviews = response.data.interviews || [];
+
+      // Get interview rounds for this job
+      const roundsResponse = await api.get(
+        `/api/employer/jobs/${interview.application.job.id}/interview-rounds`
+      );
+      const interviewRounds = roundsResponse.data.rounds || [];
+
+      // Calculate next round to schedule
+      const completedRounds = applicationInterviews
+        .filter((i: any) => i.status === "COMPLETED" && i.roundNumber)
+        .map((i: any) => i.roundNumber);
+
+      const scheduledRounds = applicationInterviews
+        .filter(
+          (i: any) =>
+            i.status !== "CANCELLED" &&
+            i.status !== "COMPLETED" &&
+            i.roundNumber
+        )
+        .map((i: any) => i.roundNumber);
+
+      // Next round is highest completed + 1, or first available
+      let nextRound = 1;
+      if (completedRounds.length > 0) {
+        nextRound = Math.max(...completedRounds) + 1;
+      } else if (scheduledRounds.length > 0) {
+        nextRound = Math.max(...scheduledRounds) + 1;
+      }
+
+      // Get the round name from interview rounds
+      if (interviewRounds && interviewRounds.length > 0 && nextRound <= interviewRounds.length) {
+        const round = interviewRounds.find((r: any) => r.roundNumber === nextRound);
+        if (round) {
+          setNextRoundInfo(`Round ${nextRound}: ${round.name}`);
+        } else {
+          setNextRoundInfo(`Round ${nextRound}`);
+        }
+      } else {
+        setNextRoundInfo("Next Round");
+      }
+    } catch (err) {
+      console.error("Failed to get next round info:", err);
+      setNextRoundInfo("Next Round");
+    }
   };
 
   const handleOpenFeedbackModal = (interview: any) => {
@@ -1275,6 +1328,7 @@ export default function EmployerInterviewsPage() {
         applicationId={selectedInterview?.applicationId || selectedInterview?.application?.id}
         jobTitle={selectedInterview?.application?.job?.title || ""}
         reviewRating={selectedInterview?.review?.overallRating}
+        nextRoundInfo={nextRoundInfo}
       />
 
       {/* Send Feedback Modal */}

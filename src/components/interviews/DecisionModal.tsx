@@ -16,6 +16,7 @@ interface DecisionModalProps {
   applicationId?: string;
   jobTitle?: string;
   reviewRating?: number; // Optional: pass interview.review.overallRating
+  nextRoundInfo?: string; // Optional: display the actual next round name
 }
 
 export default function DecisionModal({
@@ -28,6 +29,7 @@ export default function DecisionModal({
   applicationId,
   jobTitle,
   reviewRating,
+  nextRoundInfo,
 }: DecisionModalProps) {
   const { showToast } = useToast();
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -198,7 +200,7 @@ export default function DecisionModal({
                   <div className="mt-2 flex items-center gap-2 text-xs text-blue-600 font-medium">
                     <span>Continue interviews</span>
                     <span>•</span>
-                    <span>Round 2: Technical</span>
+                    <span>{nextRoundInfo || "Next Round"}</span>
                   </div>
                 </div>
               </div>
