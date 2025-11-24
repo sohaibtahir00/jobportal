@@ -293,7 +293,7 @@ export default function EmployerInterviewsPage() {
     if (!confirm("Are you sure you want to reject this candidate?")) return;
 
     try {
-      await api.patch(`/api/applications/${interview.applicationId}`, {
+      await api.patch(`/api/applications/${interview.applicationId}/status`, {
         status: "REJECTED",
       });
       // Reload interviews
