@@ -28,6 +28,7 @@ import DecisionModal from "@/components/interviews/DecisionModal";
 import SendFeedbackModal from "@/components/interviews/SendFeedbackModal";
 import ReviewCandidateModal from "@/components/interviews/ReviewCandidateModal";
 import RejectCandidateModal from "@/components/interviews/RejectCandidateModal";
+import RescheduleInterviewModal from "@/components/interviews/RescheduleInterviewModal";
 import CompletedInterviewActionsDropdown from "@/components/interviews/CompletedInterviewActionsDropdown";
 
 export default function EmployerInterviewsPage() {
@@ -48,6 +49,7 @@ export default function EmployerInterviewsPage() {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
   const [nextRoundInfo, setNextRoundInfo] = useState<string>("");
 
   // Redirect if not employer
@@ -337,6 +339,51 @@ export default function EmployerInterviewsPage() {
       } else {
         alert("Failed to reject candidate");
       }
+      throw err; // Re-throw to let modal handle loading state
+    }
+  };
+
+  const handleOpenRescheduleModal = (interview: any) => {
+    setSelectedInterview(interview);
+    setRescheduleModalOpen(true);
+  };
+
+  const handleConfirmReschedule = async (reason?: string) => {
+    console.log("handleConfirmReschedule called with:", {
+      interviewId: selectedInterview?.id,
+      reason,
+    });
+
+    if (!selectedInterview) {
+      console.error("No selected interview");
+      return;
+    }
+
+    try {
+      console.log("Sending POST request to reschedule interview...");
+      const response = await api.post(
+        `/api/interviews/${selectedInterview.id}/reschedule`,
+        { reason }
+      );
+      console.log("Reschedule successful:", response.data);
+
+      // Reload interviews
+      const interviewsResponse = await api.get("/api/interviews");
+      setInterviews(interviewsResponse.data.interviews || []);
+      console.log("Interviews reloaded successfully");
+
+      // Redirect to availability page for the new interview
+      const newInterviewId = response.data.newInterviewId;
+      if (newInterviewId) {
+        router.push(
+          `/employer/interviews/availability/${selectedInterview.applicationId}`
+        );
+      }
+    } catch (err: any) {
+      console.error("Failed to reschedule interview:", err);
+      alert(
+        err?.response?.data?.error || "Failed to reschedule interview"
+      );
       throw err; // Re-throw to let modal handle loading state
     }
   };
@@ -1262,6 +1309,15 @@ export default function EmployerInterviewsPage() {
                                 <FileText className="mr-2 h-4 w-4" />
                                 {interview.notes ? "Edit Notes" : "Add Notes"}
                               </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleOpenRescheduleModal(interview)}
+                                className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                Reschedule
+                              </Button>
                               <InterviewActionsDropdown
                                 onMessage={() => {
                                   const candidateId =
@@ -1273,7 +1329,7 @@ export default function EmployerInterviewsPage() {
                                   }
                                 }}
                                 onReschedule={() => {
-                                  // Coming soon
+                                  handleOpenRescheduleModal(interview);
                                 }}
                                 onCancel={() =>
                                   handleCancelInterview(interview.id)
@@ -1443,6 +1499,21 @@ export default function EmployerInterviewsPage() {
           selectedInterview?.application?.candidate?.user?.name || ""
         }
         jobTitle={selectedInterview?.application?.job?.title || ""}
+      />
+
+      {/* Reschedule Interview Modal */}
+      <RescheduleInterviewModal
+        isOpen={rescheduleModalOpen}
+        onClose={() => {
+          setRescheduleModalOpen(false);
+          setSelectedInterview(null);
+        }}
+        onConfirm={handleConfirmReschedule}
+        candidateName={
+          selectedInterview?.application?.candidate?.user?.name || ""
+        }
+        jobTitle={selectedInterview?.application?.job?.title || ""}
+        scheduledDate={selectedInterview?.scheduledAt}
       />
     </div>
   );
