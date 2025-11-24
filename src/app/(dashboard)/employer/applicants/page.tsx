@@ -33,6 +33,7 @@ import {
   useToast,
 } from "@/components/ui";
 import api from "@/lib/api";
+import RejectCandidateModal from "@/components/interviews/RejectCandidateModal";
 
 // Backend URL for file downloads
 const BACKEND_URL =
@@ -169,6 +170,10 @@ export default function EmployerApplicantsPage() {
     useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("recent");
   const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
+
+  // Reject modal state
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectingApplication, setRejectingApplication] = useState<Application | null>(null);
 
   // Read URL parameters on mount
   useEffect(() => {
@@ -326,6 +331,61 @@ export default function EmployerApplicantsPage() {
       applicationIds: selectedApplicants,
       newStatus,
     });
+  };
+
+  // Handle individual reject with modal
+  const handleOpenRejectModal = (application: Application) => {
+    setRejectingApplication(application);
+    setRejectModalOpen(true);
+  };
+
+  // Handle confirm reject from modal
+  const handleConfirmReject = async (rejectionReason?: string) => {
+    if (!rejectingApplication) {
+      console.error("No application selected for rejection");
+      return;
+    }
+
+    console.log("handleConfirmReject called with:", {
+      applicationId: rejectingApplication.id,
+      rejectionReason,
+    });
+
+    try {
+      console.log("Sending PATCH request to reject candidate...");
+      await api.patch(`/api/applications/${rejectingApplication.id}/status`, {
+        status: "REJECTED",
+        rejectionReason,
+      });
+      console.log("Rejection successful, refetching applications...");
+
+      // Show success toast
+      showToast("success", "Candidate rejected successfully");
+
+      // Refetch applications
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
+
+      // Close modal and clear state
+      setRejectModalOpen(false);
+      setRejectingApplication(null);
+    } catch (err: any) {
+      console.error("Failed to reject candidate:", err);
+      const debugInfo = err?.response?.data?.debug;
+      if (debugInfo) {
+        showToast(
+          "error",
+          "Failed to reject candidate",
+          `Your User ID: ${debugInfo.yourUserId}\nRequired User ID: ${debugInfo.requiredUserId}\nError: ${err?.response?.data?.error}`
+        );
+      } else {
+        showToast(
+          "error",
+          "Failed to reject candidate",
+          err?.response?.data?.error || "An error occurred"
+        );
+      }
+      throw err;
+    }
   };
 
   return (
@@ -820,12 +880,8 @@ export default function EmployerApplicantsPage() {
                                   currentStatus: app.status,
                                 }
                               );
-                              bulkUpdateMutation.mutate({
-                                applicationIds: [app.id],
-                                newStatus: "REJECTED",
-                              });
+                              handleOpenRejectModal(app);
                             }}
-                            disabled={bulkUpdateMutation.isPending}
                           >
                             Reject
                           </Button>
@@ -839,6 +895,18 @@ export default function EmployerApplicantsPage() {
           })}
         </div>
       )}
+
+      {/* Reject Candidate Modal */}
+      <RejectCandidateModal
+        isOpen={rejectModalOpen}
+        onClose={() => {
+          setRejectModalOpen(false);
+          setRejectingApplication(null);
+        }}
+        onConfirm={handleConfirmReject}
+        candidateName={rejectingApplication?.candidate.user.name || ""}
+        jobTitle={rejectingApplication?.job.title || ""}
+      />
     </div>
   );
 }
