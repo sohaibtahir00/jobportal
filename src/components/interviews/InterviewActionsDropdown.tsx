@@ -19,7 +19,10 @@ export default function InterviewActionsDropdown({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -65,7 +68,7 @@ export default function InterviewActionsDropdown({
           {/* Reschedule */}
           <button
             onClick={() => handleMenuItemClick(onReschedule)}
-            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-secondary-700 hover:bg-orange-50 transition-colors"
           >
             <Calendar className="h-4 w-4" />
             Reschedule
