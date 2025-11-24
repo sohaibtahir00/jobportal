@@ -50,18 +50,23 @@ export default function RejectCandidateModal({
   const [customMessage, setCustomMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [includeMessage, setIncludeMessage] = useState(false);
+  const [error, setError] = useState<string>("");
 
   const handleClose = () => {
     if (!isSubmitting) {
       setSelectedTemplate("");
       setCustomMessage("");
       setIncludeMessage(false);
+      setError("");
       onClose();
     }
   };
 
   const handleConfirm = async () => {
+    console.log("RejectCandidateModal: handleConfirm called");
     setIsSubmitting(true);
+    setError("");
+
     try {
       let message: string | undefined = undefined;
 
@@ -74,11 +79,13 @@ export default function RejectCandidateModal({
         }
       }
 
+      console.log("RejectCandidateModal: Calling onConfirm with message:", message);
       await onConfirm(message);
+      console.log("RejectCandidateModal: onConfirm succeeded, closing modal");
       handleClose();
-    } catch (error) {
-      // Error handling is done in parent component
-    } finally {
+    } catch (error: any) {
+      console.error("RejectCandidateModal: Error during confirmation:", error);
+      setError(error?.message || "Failed to reject candidate. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -217,6 +224,19 @@ export default function RejectCandidateModal({
                 </div>
               )}
             </>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="h-4 w-4 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-red-900">Error</p>
+                <p className="text-xs text-red-700 mt-0.5">{error}</p>
+              </div>
+            </div>
           )}
 
           {/* Quick Rejection Info */}

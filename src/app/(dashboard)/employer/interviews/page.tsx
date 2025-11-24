@@ -297,9 +297,19 @@ export default function EmployerInterviewsPage() {
   };
 
   const handleConfirmReject = async (rejectionReason?: string) => {
-    if (!selectedInterview) return;
+    console.log("handleConfirmReject called with:", {
+      selectedInterview: selectedInterview?.id,
+      applicationId: selectedInterview?.applicationId,
+      rejectionReason,
+    });
+
+    if (!selectedInterview) {
+      console.error("No selected interview");
+      return;
+    }
 
     try {
+      console.log("Sending PATCH request to reject candidate...");
       await api.patch(
         `/api/applications/${selectedInterview.applicationId}/status`,
         {
@@ -307,9 +317,12 @@ export default function EmployerInterviewsPage() {
           rejectionReason,
         }
       );
+      console.log("Rejection successful, reloading interviews...");
+
       // Reload interviews
       const response = await api.get("/api/interviews");
       setInterviews(response.data.interviews || []);
+      console.log("Interviews reloaded successfully");
     } catch (err: any) {
       console.error("Failed to reject candidate:", err);
       const debugInfo = err?.response?.data?.debug;
