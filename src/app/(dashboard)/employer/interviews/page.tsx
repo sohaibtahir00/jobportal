@@ -299,9 +299,20 @@ export default function EmployerInterviewsPage() {
       // Reload interviews
       const response = await api.get("/api/interviews");
       setInterviews(response.data.interviews || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to reject candidate:", err);
-      alert("Failed to reject candidate");
+      const debugInfo = err?.response?.data?.debug;
+      if (debugInfo) {
+        alert(
+          `Failed to reject candidate\n\n` +
+          `Debug Info:\n` +
+          `Your User ID: ${debugInfo.yourUserId}\n` +
+          `Required User ID: ${debugInfo.requiredUserId}\n\n` +
+          `Error: ${err?.response?.data?.error}`
+        );
+      } else {
+        alert("Failed to reject candidate");
+      }
     }
   };
 
