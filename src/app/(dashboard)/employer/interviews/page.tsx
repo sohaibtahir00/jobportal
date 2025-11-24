@@ -27,6 +27,7 @@ import InterviewActionsDropdown from "@/components/interviews/InterviewActionsDr
 import DecisionModal from "@/components/interviews/DecisionModal";
 import SendFeedbackModal from "@/components/interviews/SendFeedbackModal";
 import ReviewCandidateModal from "@/components/interviews/ReviewCandidateModal";
+import RejectCandidateModal from "@/components/interviews/RejectCandidateModal";
 import CompletedInterviewActionsDropdown from "@/components/interviews/CompletedInterviewActionsDropdown";
 
 export default function EmployerInterviewsPage() {
@@ -46,6 +47,7 @@ export default function EmployerInterviewsPage() {
   const [decisionModalOpen, setDecisionModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [nextRoundInfo, setNextRoundInfo] = useState<string>("");
 
   // Redirect if not employer
@@ -289,13 +291,22 @@ export default function EmployerInterviewsPage() {
     );
   };
 
-  const handleRejectCandidate = async (interview: any) => {
-    if (!confirm("Are you sure you want to reject this candidate?")) return;
+  const handleOpenRejectModal = (interview: any) => {
+    setSelectedInterview(interview);
+    setRejectModalOpen(true);
+  };
+
+  const handleConfirmReject = async (rejectionReason?: string) => {
+    if (!selectedInterview) return;
 
     try {
-      await api.patch(`/api/applications/${interview.applicationId}/status`, {
-        status: "REJECTED",
-      });
+      await api.patch(
+        `/api/applications/${selectedInterview.applicationId}/status`,
+        {
+          status: "REJECTED",
+          rejectionReason,
+        }
+      );
       // Reload interviews
       const response = await api.get("/api/interviews");
       setInterviews(response.data.interviews || []);
@@ -305,14 +316,15 @@ export default function EmployerInterviewsPage() {
       if (debugInfo) {
         alert(
           `Failed to reject candidate\n\n` +
-          `Debug Info:\n` +
-          `Your User ID: ${debugInfo.yourUserId}\n` +
-          `Required User ID: ${debugInfo.requiredUserId}\n\n` +
-          `Error: ${err?.response?.data?.error}`
+            `Debug Info:\n` +
+            `Your User ID: ${debugInfo.yourUserId}\n` +
+            `Required User ID: ${debugInfo.requiredUserId}\n\n` +
+            `Error: ${err?.response?.data?.error}`
         );
       } else {
         alert("Failed to reject candidate");
       }
+      throw err; // Re-throw to let modal handle loading state
     }
   };
 
@@ -1330,7 +1342,7 @@ export default function EmployerInterviewsPage() {
         }}
         onRejectCandidate={() => {
           if (selectedInterview) {
-            handleRejectCandidate(selectedInterview);
+            handleOpenRejectModal(selectedInterview);
           }
         }}
         candidateName={
@@ -1371,6 +1383,20 @@ export default function EmployerInterviewsPage() {
         }
         jobTitle={selectedInterview?.application?.job?.title || ""}
         initialData={selectedInterview?.review || null}
+      />
+
+      {/* Reject Candidate Modal */}
+      <RejectCandidateModal
+        isOpen={rejectModalOpen}
+        onClose={() => {
+          setRejectModalOpen(false);
+          setSelectedInterview(null);
+        }}
+        onConfirm={handleConfirmReject}
+        candidateName={
+          selectedInterview?.application?.candidate?.user?.name || ""
+        }
+        jobTitle={selectedInterview?.application?.job?.title || ""}
       />
     </div>
   );
