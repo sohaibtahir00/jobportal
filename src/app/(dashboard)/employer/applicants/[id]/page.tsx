@@ -34,6 +34,7 @@ import {
 import { useToast } from "@/components/ui";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
 import { api } from "@/lib/api";
+import RejectCandidateModal from "@/components/interviews/RejectCandidateModal";
 
 // Backend URL for file downloads
 const BACKEND_URL =
@@ -81,6 +82,9 @@ export default function ApplicantDetailPage() {
     expiresAt: "",
     customMessage: "",
   });
+
+  // Reject modal state
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
 
   // Redirect if not logged in or not employer
   useEffect(() => {
@@ -367,6 +371,48 @@ export default function ApplicantDetailPage() {
     }));
   };
 
+  const handleConfirmReject = async (rejectionReason?: string) => {
+    console.log("handleConfirmReject called with:", {
+      applicantId,
+      rejectionReason,
+    });
+
+    if (!applicantId) {
+      console.error("No applicant ID");
+      return;
+    }
+
+    try {
+      console.log("Sending PATCH request to reject candidate...");
+      await api.patch(`/api/applications/${applicantId}/status`, {
+        status: "REJECTED",
+        rejectionReason,
+      });
+      console.log("Rejection successful, reloading page...");
+
+      // Show success toast
+      showToast("success", "Candidate rejected successfully");
+
+      // Reload the page to show updated status
+      window.location.reload();
+    } catch (err: any) {
+      console.error("Failed to reject candidate:", err);
+      const debugInfo = err?.response?.data?.debug;
+      if (debugInfo) {
+        alert(
+          `Failed to reject candidate\n\n` +
+            `Debug Info:\n` +
+            `Your User ID: ${debugInfo.yourUserId}\n` +
+            `Required User ID: ${debugInfo.requiredUserId}\n\n` +
+            `Error: ${err?.response?.data?.error}`
+        );
+      } else {
+        alert(err?.response?.data?.error || "Failed to reject candidate");
+      }
+      throw err;
+    }
+  };
+
   const getInterviewStatusBadge = (status: string) => {
     switch (status) {
       case "SCHEDULED":
@@ -642,6 +688,7 @@ export default function ApplicantDetailPage() {
                   <Button
                     variant="outline"
                     className="w-full border-red-300 text-red-600 hover:bg-red-50"
+                    onClick={() => setRejectModalOpen(true)}
                   >
                     <X className="mr-2 h-5 w-5" />
                     Reject
@@ -1547,6 +1594,15 @@ export default function ApplicantDetailPage() {
           </Card>
         </div>
       )}
+
+      {/* Reject Candidate Modal */}
+      <RejectCandidateModal
+        isOpen={rejectModalOpen}
+        onClose={() => setRejectModalOpen(false)}
+        onConfirm={handleConfirmReject}
+        candidateName={applicantData?.name || ""}
+        jobTitle={applicantData?.appliedFor || ""}
+      />
     </div>
   );
 }
