@@ -1309,15 +1309,6 @@ export default function EmployerInterviewsPage() {
                                 <FileText className="mr-2 h-4 w-4" />
                                 {interview.notes ? "Edit Notes" : "Add Notes"}
                               </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleOpenRescheduleModal(interview)}
-                                className="border-orange-300 text-orange-600 hover:bg-orange-50"
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                Reschedule
-                              </Button>
                               <InterviewActionsDropdown
                                 onMessage={() => {
                                   const candidateId =

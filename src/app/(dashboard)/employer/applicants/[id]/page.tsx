@@ -35,6 +35,7 @@ import { useToast } from "@/components/ui";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
 import { api } from "@/lib/api";
 import RejectCandidateModal from "@/components/interviews/RejectCandidateModal";
+import RescheduleInterviewModal from "@/components/interviews/RescheduleInterviewModal";
 
 // Backend URL for file downloads
 const BACKEND_URL =
@@ -85,6 +86,10 @@ export default function ApplicantDetailPage() {
 
   // Reject modal state
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
+
+  // Reschedule modal state
+  const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
+  const [selectedInterview, setSelectedInterview] = useState<any>(null);
 
   // Redirect if not logged in or not employer
   useEffect(() => {
@@ -277,9 +282,56 @@ export default function ApplicantDetailPage() {
     }
   };
 
-  const rescheduleInterview = async (interviewId: string) => {
-    // TODO: Implement reschedule logic
-    alert("Reschedule functionality - coming soon!");
+  const rescheduleInterview = (interviewId: string) => {
+    // Find the interview from the interviews list
+    const interview = interviews.find((i) => i.id === interviewId);
+    if (interview) {
+      setSelectedInterview(interview);
+      setRescheduleModalOpen(true);
+    }
+  };
+
+  const handleConfirmReschedule = async (reason?: string) => {
+    console.log("handleConfirmReschedule called with:", {
+      interviewId: selectedInterview?.id,
+      reason,
+    });
+
+    if (!selectedInterview) {
+      console.error("No selected interview");
+      return;
+    }
+
+    try {
+      console.log("Sending POST request to reschedule interview...");
+      const response = await api.post(
+        `/api/interviews/${selectedInterview.id}/reschedule`,
+        { reason }
+      );
+      console.log("Reschedule successful:", response.data);
+
+      // Reload interviews
+      await loadInterviews();
+      console.log("Interviews reloaded successfully");
+
+      // Close modal
+      setRescheduleModalOpen(false);
+      setSelectedInterview(null);
+
+      // Redirect to availability page for the new interview
+      const newInterviewId = response.data.newInterviewId;
+      if (newInterviewId) {
+        router.push(
+          `/employer/interviews/availability/${applicantId}`
+        );
+      }
+    } catch (err: any) {
+      console.error("Failed to reschedule interview:", err);
+      alert(
+        err?.response?.data?.error || "Failed to reschedule interview"
+      );
+      throw err; // Re-throw to let modal handle loading state
+    }
   };
 
   const cancelInterview = async (interviewId: string) => {
@@ -1602,6 +1654,19 @@ export default function ApplicantDetailPage() {
         onConfirm={handleConfirmReject}
         candidateName={applicantData?.name || ""}
         jobTitle={applicantData?.appliedFor || ""}
+      />
+
+      {/* Reschedule Interview Modal */}
+      <RescheduleInterviewModal
+        isOpen={rescheduleModalOpen}
+        onClose={() => {
+          setRescheduleModalOpen(false);
+          setSelectedInterview(null);
+        }}
+        onConfirm={handleConfirmReschedule}
+        candidateName={applicantData?.name || ""}
+        jobTitle={applicantData?.appliedFor || ""}
+        scheduledDate={selectedInterview?.scheduledAt}
       />
     </div>
   );
