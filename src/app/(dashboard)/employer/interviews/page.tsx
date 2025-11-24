@@ -1355,7 +1355,12 @@ export default function EmployerInterviewsPage() {
         }}
         onRejectCandidate={() => {
           if (selectedInterview) {
-            handleOpenRejectModal(selectedInterview);
+            // Close decision modal first, but keep selectedInterview for reject modal
+            setDecisionModalOpen(false);
+            // Open reject modal with a slight delay to ensure decision modal is closed
+            setTimeout(() => {
+              handleOpenRejectModal(selectedInterview);
+            }, 100);
           }
         }}
         candidateName={
