@@ -1,8 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Star, ThumbsUp, ThumbsDown } from "lucide-react";
-import { Button } from "@/components/ui";
+import {
+  X,
+  Star,
+  ThumbsUp,
+  ThumbsDown,
+  Code,
+  MessageCircle,
+  Users,
+  Lightbulb,
+  FileText,
+  Lock,
+  Save,
+  Loader2,
+  ClipboardCheck,
+} from "lucide-react";
 
 interface ReviewData {
   overallRating: number;
@@ -127,265 +140,308 @@ export default function ReviewCandidateModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="relative w-full max-w-2xl bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <div>
-            <h2 className="text-xl font-bold text-secondary-900">
-              {initialData ? "Edit Review" : "Review Candidate"}
-            </h2>
-            <p className="text-sm text-secondary-600 mt-1">
-              {candidateName} • {jobTitle}
-            </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+        {/* Candidate Info Header */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200 px-6 py-4">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                {candidateName.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {initialData ? "Edit Review" : "Interview Review"}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {candidateName} • {jobTitle}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleClose}
+              disabled={isSaving}
+              className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+            >
+              <X className="h-6 w-6" />
+            </button>
           </div>
-          <button
-            onClick={handleClose}
-            disabled={isSaving}
-            className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
 
         {/* Body */}
-        <div className="px-6 py-4 space-y-6">
-          {/* Overall Rating - Auto Calculated */}
-          <div>
-            <label className="text-sm font-medium text-secondary-900 mb-2 block">
-              Overall Rating (Auto-calculated)
+        <div className="px-6 py-6 space-y-6">
+          {/* Overall Rating with Visual Progress */}
+          <div className="mb-8">
+            <label className="text-sm font-semibold text-gray-700 mb-3 block flex items-center gap-2">
+              <Star className="h-4 w-4 text-yellow-500" />
+              Overall Rating
             </label>
-            <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`h-6 w-6 ${
-                      star <= overallRating
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-300"
-                    }`}
-                  />
-                ))}
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`h-8 w-8 transition-all duration-200 ${
+                        star <= overallRating
+                          ? "fill-yellow-400 text-yellow-400 drop-shadow-sm"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="text-right">
+                  <span className="text-2xl font-bold text-gray-900">{overallRating}/5</span>
+                  <span className="text-sm text-gray-600 ml-2">
+                    {overallRating >= 5 ? "Excellent" : overallRating >= 4 ? "Good" : overallRating >= 3 ? "Average" : overallRating >= 2 ? "Below Average" : overallRating >= 1 ? "Poor" : "Not Rated"}
+                  </span>
+                </div>
               </div>
-              <span className="text-lg font-bold text-blue-900">
-                {overallRating}/5
-              </span>
+              {/* Progress Bar */}
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full transition-all duration-300"
+                  style={{ width: `${(overallRating / 5) * 100}%` }}
+                />
+              </div>
             </div>
-            <p className="text-xs text-secondary-600 mt-2">
-              Rating is calculated based on your skill assessments below
+            <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Auto-calculated based on your skill assessments below
             </p>
           </div>
 
-          {/* Skills Assessment */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-secondary-700">
+          {/* Skills Assessment Grid */}
+          <div className="mb-8">
+            <label className="text-sm font-semibold text-gray-700 mb-4 block flex items-center gap-2">
+              <ClipboardCheck className="h-4 w-4 text-blue-500" />
               Skills Assessment
-            </h3>
-
-            {/* Technical Skills */}
-            <div>
-              <label className="block text-sm text-secondary-600 mb-2">
-                Technical Skills
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    toggleSkillAssessment("technicalSkills", "strong")
-                  }
-                  disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    technicalSkills === "strong"
-                      ? "border-green-500 bg-green-50 text-green-700"
-                      : "border-gray-300 text-gray-700 hover:border-green-300"
-                  } disabled:opacity-50`}
-                >
-                  <ThumbsUp className="h-4 w-4" />
-                  Strong
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    toggleSkillAssessment("technicalSkills", "weak")
-                  }
-                  disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    technicalSkills === "weak"
-                      ? "border-red-500 bg-red-50 text-red-700"
-                      : "border-gray-300 text-gray-700 hover:border-red-300"
-                  } disabled:opacity-50`}
-                >
-                  <ThumbsDown className="h-4 w-4" />
-                  Weak
-                </button>
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Technical Skills */}
+              <div className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <Code className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <span className="font-medium text-gray-900">Technical Skills</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleSkillAssessment("technicalSkills", "strong")}
+                    disabled={isSaving}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      technicalSkills === "strong"
+                        ? "bg-green-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    } disabled:opacity-50`}
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                    Strong
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSkillAssessment("technicalSkills", "weak")}
+                    disabled={isSaving}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      technicalSkills === "weak"
+                        ? "bg-red-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    } disabled:opacity-50`}
+                  >
+                    <ThumbsDown className="h-4 w-4" />
+                    Weak
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Communication */}
-            <div>
-              <label className="block text-sm text-secondary-600 mb-2">
-                Communication
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    toggleSkillAssessment("communication", "strong")
-                  }
-                  disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    communication === "strong"
-                      ? "border-green-500 bg-green-50 text-green-700"
-                      : "border-gray-300 text-gray-700 hover:border-green-300"
-                  } disabled:opacity-50`}
-                >
-                  <ThumbsUp className="h-4 w-4" />
-                  Strong
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    toggleSkillAssessment("communication", "weak")
-                  }
-                  disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    communication === "weak"
-                      ? "border-red-500 bg-red-50 text-red-700"
-                      : "border-gray-300 text-gray-700 hover:border-red-300"
-                  } disabled:opacity-50`}
-                >
-                  <ThumbsDown className="h-4 w-4" />
-                  Weak
-                </button>
+              {/* Communication */}
+              <div className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                    <MessageCircle className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <span className="font-medium text-gray-900">Communication</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleSkillAssessment("communication", "strong")}
+                    disabled={isSaving}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      communication === "strong"
+                        ? "bg-green-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    } disabled:opacity-50`}
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                    Strong
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSkillAssessment("communication", "weak")}
+                    disabled={isSaving}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      communication === "weak"
+                        ? "bg-red-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    } disabled:opacity-50`}
+                  >
+                    <ThumbsDown className="h-4 w-4" />
+                    Weak
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Culture Fit */}
-            <div>
-              <label className="block text-sm text-secondary-600 mb-2">
-                Culture Fit
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => toggleSkillAssessment("cultureFit", "strong")}
-                  disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    cultureFit === "strong"
-                      ? "border-green-500 bg-green-50 text-green-700"
-                      : "border-gray-300 text-gray-700 hover:border-green-300"
-                  } disabled:opacity-50`}
-                >
-                  <ThumbsUp className="h-4 w-4" />
-                  Strong
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleSkillAssessment("cultureFit", "weak")}
-                  disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    cultureFit === "weak"
-                      ? "border-red-500 bg-red-50 text-red-700"
-                      : "border-gray-300 text-gray-700 hover:border-red-300"
-                  } disabled:opacity-50`}
-                >
-                  <ThumbsDown className="h-4 w-4" />
-                  Weak
-                </button>
+              {/* Culture Fit */}
+              <div className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-pink-100 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-pink-600" />
+                  </div>
+                  <span className="font-medium text-gray-900">Culture Fit</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleSkillAssessment("cultureFit", "strong")}
+                    disabled={isSaving}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      cultureFit === "strong"
+                        ? "bg-green-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    } disabled:opacity-50`}
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                    Strong
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSkillAssessment("cultureFit", "weak")}
+                    disabled={isSaving}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      cultureFit === "weak"
+                        ? "bg-red-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    } disabled:opacity-50`}
+                  >
+                    <ThumbsDown className="h-4 w-4" />
+                    Weak
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Problem Solving */}
-            <div>
-              <label className="block text-sm text-secondary-600 mb-2">
-                Problem Solving
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    toggleSkillAssessment("problemSolving", "strong")
-                  }
-                  disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    problemSolving === "strong"
-                      ? "border-green-500 bg-green-50 text-green-700"
-                      : "border-gray-300 text-gray-700 hover:border-green-300"
-                  } disabled:opacity-50`}
-                >
-                  <ThumbsUp className="h-4 w-4" />
-                  Strong
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    toggleSkillAssessment("problemSolving", "weak")
-                  }
-                  disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${
-                    problemSolving === "weak"
-                      ? "border-red-500 bg-red-50 text-red-700"
-                      : "border-gray-300 text-gray-700 hover:border-red-300"
-                  } disabled:opacity-50`}
-                >
-                  <ThumbsDown className="h-4 w-4" />
-                  Weak
-                </button>
+              {/* Problem Solving */}
+              <div className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <Lightbulb className="h-4 w-4 text-orange-600" />
+                  </div>
+                  <span className="font-medium text-gray-900">Problem Solving</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleSkillAssessment("problemSolving", "strong")}
+                    disabled={isSaving}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      problemSolving === "strong"
+                        ? "bg-green-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    } disabled:opacity-50`}
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                    Strong
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSkillAssessment("problemSolving", "weak")}
+                    disabled={isSaving}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      problemSolving === "weak"
+                        ? "bg-red-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    } disabled:opacity-50`}
+                  >
+                    <ThumbsDown className="h-4 w-4" />
+                    Weak
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Notes */}
-          <div>
-            <label
-              htmlFor="review-notes"
-              className="block text-sm font-medium text-secondary-700 mb-2"
-            >
+          {/* Additional Notes */}
+          <div className="mb-6">
+            <label className="text-sm font-semibold text-gray-700 mb-2 block flex items-center gap-2">
+              <FileText className="h-4 w-4 text-gray-500" />
               Additional Notes
             </label>
             <textarea
-              id="review-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               disabled={isSaving}
+              placeholder="Add your interview observations, key takeaways, concerns, or anything notable..."
+              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none resize-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
               rows={4}
-              placeholder="Add your interview notes here..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
             />
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="p-4 mb-6 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <svg className="h-4 w-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-red-900">Error</p>
+                <p className="text-xs text-red-700 mt-0.5">{error}</p>
+              </div>
             </div>
           )}
 
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-700">
-              <strong>Note:</strong> This review is for internal use only and will not be shared with the candidate.
-            </p>
+          {/* Info Note */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <Lock className="h-4 w-4 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-blue-900">Internal Use Only</p>
+              <p className="text-xs text-blue-700 mt-0.5">This review will not be shared with the candidate.</p>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-gray-50 flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 rounded-b-lg">
-          <Button
-            variant="outline"
-            size="sm"
+        <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex items-center justify-end gap-3 rounded-b-2xl">
+          <button
             onClick={handleClose}
             disabled={isSaving}
+            className="px-5 py-2.5 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
           >
             Cancel
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
+          </button>
+          <button
             onClick={handleSave}
             disabled={isSaving}
+            className="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
           >
-            {isSaving ? "Saving..." : "Save Review"}
-          </Button>
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Save Review
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
