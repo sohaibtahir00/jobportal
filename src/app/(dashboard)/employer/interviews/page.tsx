@@ -1136,25 +1136,53 @@ export default function EmployerInterviewsPage() {
                           )}
 
                           {interviewDate && (
-                            <div className="flex flex-wrap gap-4 text-sm text-secondary-600">
-                              <span className="flex items-center gap-1.5">
-                                <CalendarIcon className="h-4 w-4" />
-                                {interviewDate.toLocaleDateString("en-US", {
-                                  weekday: "long",
-                                  month: "long",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                              </span>
-                              <span className="flex items-center gap-1.5">
-                                <Clock className="h-4 w-4" />
-                                {interviewDate.toLocaleTimeString("en-US", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}{" "}
-                                ({interview.duration} min)
-                              </span>
-                            </div>
+                            <>
+                              <div className="flex flex-wrap gap-4 text-sm text-secondary-600">
+                                <span className="flex items-center gap-1.5">
+                                  <CalendarIcon className="h-4 w-4" />
+                                  {interviewDate.toLocaleDateString("en-US", {
+                                    weekday: "long",
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                  <Clock className="h-4 w-4" />
+                                  {interviewDate.toLocaleTimeString("en-US", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}{" "}
+                                  ({interview.duration} min)
+                                </span>
+                              </div>
+
+                              {/* Application Status Badge */}
+                              <div className="mt-3">
+                                {interview.application?.status === "REJECTED" ? (
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700 border border-red-200">
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Rejected
+                                  </span>
+                                ) : interview.application?.status === "ACCEPTED" ? (
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 border border-green-200">
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Hired
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 border border-blue-200">
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    In process
+                                  </span>
+                                )}
+                              </div>
+                            </>
                           )}
 
                           {interview.notes && (
