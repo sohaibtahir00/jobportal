@@ -376,7 +376,7 @@ export default function EmployerInterviewsPage() {
       const applicationId = response.data.applicationId;
       if (applicationId) {
         router.push(
-          `/employer/interviews/availability/${applicationId}`
+          `/employer/interviews/availability/${applicationId}?interviewId=${selectedInterview.id}`
         );
       }
     } catch (err: any) {

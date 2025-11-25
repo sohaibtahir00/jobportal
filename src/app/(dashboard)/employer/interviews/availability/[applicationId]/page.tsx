@@ -32,6 +32,7 @@ export default function SetAvailabilityPage() {
   const searchParams = useSearchParams();
   const applicationId = params.applicationId as string;
   const roundParam = searchParams.get("round"); // Get round from URL (e.g., ?round=1)
+  const interviewIdParam = searchParams.get("interviewId"); // Get interviewId for reschedule flow
   const router = useRouter();
   const { data: session, status } = useSession();
 
@@ -39,6 +40,8 @@ export default function SetAvailabilityPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [applicationData, setApplicationData] = useState<any>(null);
   const [interviewId, setInterviewId] = useState<string | null>(null);
+  const [oldInterview, setOldInterview] = useState<any>(null); // For reschedule flow
+  const [isReschedule, setIsReschedule] = useState(false);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([
     { date: "", startTime: "", endTime: "" },
   ]);
@@ -67,6 +70,24 @@ export default function SetAvailabilityPage() {
       router.push("/");
     }
   }, [status, session, router]);
+
+  // Fetch old interview if this is a reschedule flow
+  useEffect(() => {
+    const fetchOldInterview = async () => {
+      if (!interviewIdParam || status !== "authenticated") return;
+
+      try {
+        setIsReschedule(true);
+        const response = await api.get(`/api/interviews/${interviewIdParam}`);
+        setOldInterview(response.data.interview);
+        console.log("Old interview loaded for reschedule:", response.data.interview);
+      } catch (err) {
+        console.error("Failed to load old interview:", err);
+      }
+    };
+
+    fetchOldInterview();
+  }, [interviewIdParam, status]);
 
   // Load application data and templates
   useEffect(() => {
@@ -233,6 +254,29 @@ export default function SetAvailabilityPage() {
 
     fetchBusyTimes();
   }, [calendarConnected]);
+
+  // Add old interview time to busy times if rescheduling
+  useEffect(() => {
+    if (isReschedule && oldInterview?.scheduledAt) {
+      const oldStartTime = oldInterview.scheduledAt;
+      const oldEndTime = new Date(new Date(oldStartTime).getTime() + (oldInterview.duration || 60) * 60 * 1000);
+
+      // Add old time slot to busy times so it appears blocked
+      setBusyTimes((prev) => [
+        ...prev,
+        {
+          start: oldStartTime,
+          end: oldEndTime.toISOString(),
+          title: "Previously Scheduled (Blocked)",
+        },
+      ]);
+
+      console.log("Blocked old interview time:", {
+        start: oldStartTime,
+        end: oldEndTime.toISOString(),
+      });
+    }
+  }, [isReschedule, oldInterview]);
 
   const addTimeSlot = () => {
     setTimeSlots([...timeSlots, { date: "", startTime: "", endTime: "" }]);
@@ -421,6 +465,58 @@ export default function SetAvailabilityPage() {
               </div>
             )}
           </div>
+
+          {/* Reschedule Banner */}
+          {isReschedule && oldInterview && (
+            <Card className="mb-6 border-2 border-orange-300 bg-orange-50">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-200 text-orange-700">
+                    <CalendarIcon className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="mb-2 text-lg font-bold text-orange-900">
+                      🔄 Rescheduling Interview
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="rounded-lg bg-white p-3 border border-orange-200">
+                        <p className="font-semibold text-orange-900 mb-1">Previous Schedule:</p>
+                        <p className="text-orange-800">
+                          {oldInterview.scheduledAt && (
+                            <>
+                              {new Date(oldInterview.scheduledAt).toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })} at {new Date(oldInterview.scheduledAt).toLocaleTimeString('en-US', {
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true,
+                              })}
+                            </>
+                          )}
+                        </p>
+                      </div>
+                      {oldInterview.notes?.includes('[PENDING_RESCHEDULE]') && (
+                        <div className="rounded-lg bg-white p-3 border border-orange-200">
+                          <p className="font-semibold text-orange-900 mb-1">Reschedule Reason:</p>
+                          <p className="text-orange-800">
+                            {oldInterview.notes.split('[PENDING_RESCHEDULE]')[1]?.trim() || 'Employer requested reschedule'}
+                          </p>
+                        </div>
+                      )}
+                      <div className="mt-3 rounded-lg bg-orange-100 p-3 border border-orange-300">
+                        <p className="font-semibold text-orange-900">
+                          ⚠️ Please select NEW time slots below (the previous time is blocked)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Candidate Info */}
           <Card className="mb-6">
