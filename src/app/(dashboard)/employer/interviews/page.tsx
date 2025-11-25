@@ -1040,16 +1040,6 @@ export default function EmployerInterviewsPage() {
                                 </Badge>
                                 {getStatusBadge(interview.status)}
 
-                                {/* Rescheduled Badge */}
-                                {interview.notes?.includes("[Rescheduled from previous interview]") && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="gap-1 bg-orange-50 text-orange-700 border-orange-200"
-                                  >
-                                    🔄 Rescheduled
-                                  </Badge>
-                                )}
-
                                 {/* Round Badge */}
                                 {(interview.round || interview.roundNumber) && (
                                   <Badge
@@ -1238,30 +1228,32 @@ export default function EmployerInterviewsPage() {
                               </div>
 
                               {/* Application Status Badge */}
-                              <div className="mt-3">
-                                {interview.application?.status === "REJECTED" ? (
-                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700 border border-red-200">
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                    Rejected
-                                  </span>
-                                ) : interview.application?.status === "ACCEPTED" ? (
-                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 border border-green-200">
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Hired
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 border border-blue-200">
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    In process
-                                  </span>
-                                )}
-                              </div>
+                              {interview.status !== "RESCHEDULED" && (
+                                <div className="mt-3">
+                                  {interview.application?.status === "REJECTED" ? (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700 border border-red-200">
+                                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                      Rejected
+                                    </span>
+                                  ) : interview.application?.status === "ACCEPTED" ? (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 border border-green-200">
+                                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                      Hired
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 border border-blue-200">
+                                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      </svg>
+                                      In process
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                             </>
                           )}
 
@@ -1270,7 +1262,7 @@ export default function EmployerInterviewsPage() {
 
                             return (
                               <>
-                                {displayNotes && (
+                                {displayNotes && interview.status !== "RESCHEDULED" && (
                                   <div className="mt-4 rounded-lg bg-yellow-50 p-3">
                                     <div className="mb-1 flex items-center gap-2">
                                       <AlertCircle className="h-4 w-4 text-yellow-600" />
@@ -1317,7 +1309,7 @@ export default function EmployerInterviewsPage() {
                             </Button>
                           )}
 
-                          {interview.meetingLink && isUpcoming && (
+                          {interview.meetingLink && isUpcoming && interview.status !== "RESCHEDULED" && (
                             <a
                               href={interview.meetingLink}
                               target="_blank"
