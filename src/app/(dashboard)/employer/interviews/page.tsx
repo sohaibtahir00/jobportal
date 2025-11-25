@@ -1321,6 +1321,37 @@ export default function EmployerInterviewsPage() {
                             </a>
                           )}
 
+                          {interview.status === "COMPLETED" && (
+                            <button
+                              onClick={() => handleOpenReviewModal(interview)}
+                              className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                interview.review
+                                  ? "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
+                                  : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
+                              }`}
+                            >
+                              {interview.review ? (
+                                <div className="flex items-center justify-between">
+                                  <span className="flex items-center gap-1.5">
+                                    <CheckCircle className="h-4 w-4" />
+                                    Reviewed
+                                  </span>
+                                  <div className="flex items-center gap-1">
+                                    <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                                    <span className="font-semibold">
+                                      {interview.review.overallRating}/5
+                                    </span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1.5">
+                                  <AlertCircle className="h-4 w-4" />
+                                  Not Reviewed
+                                </div>
+                              )}
+                            </button>
+                          )}
+
                           <Button
                             variant="outline"
                             size="sm"
@@ -1377,36 +1408,6 @@ export default function EmployerInterviewsPage() {
 
                           {interview.status === "COMPLETED" && (
                             <>
-                              {/* Review Status Indicator */}
-                              <button
-                                onClick={() => handleOpenReviewModal(interview)}
-                                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                  interview.review
-                                    ? "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
-                                    : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
-                                }`}
-                              >
-                                {interview.review ? (
-                                  <div className="flex items-center justify-between">
-                                    <span className="flex items-center gap-1.5">
-                                      <CheckCircle className="h-4 w-4" />
-                                      Reviewed
-                                    </span>
-                                    <div className="flex items-center gap-1">
-                                      <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                                      <span className="font-semibold">
-                                        {interview.review.overallRating}/5
-                                      </span>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center gap-1.5">
-                                    <AlertCircle className="h-4 w-4" />
-                                    Not Reviewed
-                                  </div>
-                                )}
-                              </button>
-
                               <Button
                                 variant="primary"
                                 size="sm"
