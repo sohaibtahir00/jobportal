@@ -225,61 +225,64 @@ export default function SetAvailabilityPage() {
     }
   }, [status]);
 
-  // Fetch busy times if calendar connected
+  // Fetch busy times if calendar connected AND combine with blocked slot
   useEffect(() => {
-    if (!calendarConnected) return;
+    async function fetchAndCombineBusyTimes() {
+      let fetchedBusyTimes: { start: string; end: string; title?: string }[] = [];
 
-    async function fetchBusyTimes() {
-      setLoadingBusyTimes(true);
-      try {
-        const start = new Date();
-        const end = new Date();
-        end.setDate(end.getDate() + 14); // 2 weeks ahead
+      // Fetch from Google Calendar if connected
+      if (calendarConnected) {
+        setLoadingBusyTimes(true);
+        try {
+          const start = new Date();
+          const end = new Date();
+          end.setDate(end.getDate() + 14); // 2 weeks ahead
 
-        const params = new URLSearchParams({
-          start: start.toISOString(),
-          end: end.toISOString(),
-        });
+          const params = new URLSearchParams({
+            start: start.toISOString(),
+            end: end.toISOString(),
+          });
 
-        const res = await api.get(`/api/employer/integrations/google-calendar/busy-times?${params}`);
-        if (res.data.busyTimes) {
-          setBusyTimes(res.data.busyTimes);
+          const res = await api.get(`/api/employer/integrations/google-calendar/busy-times?${params}`);
+          if (res.data.busyTimes) {
+            fetchedBusyTimes = res.data.busyTimes;
+          }
+        } catch (error) {
+          console.error("Failed to fetch busy times:", error);
+        } finally {
+          setLoadingBusyTimes(false);
         }
-      } catch (error) {
-        console.error("Failed to fetch busy times:", error);
-      } finally {
-        setLoadingBusyTimes(false);
       }
+
+      // Add blocked slot for reschedule
+      if (isReschedule && oldInterview?.scheduledAt) {
+        const oldStartTime = new Date(oldInterview.scheduledAt);
+        const oldEndTime = new Date(oldStartTime.getTime() + (oldInterview.duration || 60) * 60000);
+
+        const blockedSlot = {
+          start: oldStartTime.toISOString(),
+          end: oldEndTime.toISOString(),
+          title: "Previously Scheduled (Blocked)",
+        };
+
+        fetchedBusyTimes = [...fetchedBusyTimes, blockedSlot];
+
+        console.log("✅ Blocked old interview time:", {
+          start: blockedSlot.start,
+          end: blockedSlot.end,
+          oldInterview: {
+            scheduledAt: oldInterview.scheduledAt,
+            duration: oldInterview.duration,
+          },
+        });
+      }
+
+      console.log("📅 Final busyTimes to set:", fetchedBusyTimes);
+      setBusyTimes(fetchedBusyTimes);
     }
 
-    fetchBusyTimes();
-  }, [calendarConnected]);
-
-  // Add old interview time to busy times if rescheduling
-  useEffect(() => {
-    if (isReschedule && oldInterview?.scheduledAt) {
-      const oldStartTime = new Date(oldInterview.scheduledAt);
-      const oldEndTime = new Date(oldStartTime.getTime() + (oldInterview.duration || 60) * 60000);
-
-      // Add old time slot to busy times so it appears blocked
-      const blockedSlot = {
-        start: oldStartTime.toISOString(),
-        end: oldEndTime.toISOString(),
-        title: "Previously Scheduled (Blocked)",
-      };
-
-      setBusyTimes((prev) => [...prev, blockedSlot]);
-
-      console.log("Blocked old interview time:", {
-        start: blockedSlot.start,
-        end: blockedSlot.end,
-        oldInterview: {
-          scheduledAt: oldInterview.scheduledAt,
-          duration: oldInterview.duration,
-        },
-      });
-    }
-  }, [isReschedule, oldInterview]);
+    fetchAndCombineBusyTimes();
+  }, [calendarConnected, isReschedule, oldInterview]);
 
   const addTimeSlot = () => {
     setTimeSlots([...timeSlots, { date: "", startTime: "", endTime: "" }]);
