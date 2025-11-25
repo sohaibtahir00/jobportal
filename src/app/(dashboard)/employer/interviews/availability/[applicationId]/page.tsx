@@ -258,22 +258,25 @@ export default function SetAvailabilityPage() {
   // Add old interview time to busy times if rescheduling
   useEffect(() => {
     if (isReschedule && oldInterview?.scheduledAt) {
-      const oldStartTime = oldInterview.scheduledAt;
-      const oldEndTime = new Date(new Date(oldStartTime).getTime() + (oldInterview.duration || 60) * 60 * 1000);
+      const oldStartTime = new Date(oldInterview.scheduledAt);
+      const oldEndTime = new Date(oldStartTime.getTime() + (oldInterview.duration || 60) * 60000);
 
       // Add old time slot to busy times so it appears blocked
-      setBusyTimes((prev) => [
-        ...prev,
-        {
-          start: oldStartTime,
-          end: oldEndTime.toISOString(),
-          title: "Previously Scheduled (Blocked)",
-        },
-      ]);
+      const blockedSlot = {
+        start: oldStartTime.toISOString(),
+        end: oldEndTime.toISOString(),
+        title: "Previously Scheduled (Blocked)",
+      };
+
+      setBusyTimes((prev) => [...prev, blockedSlot]);
 
       console.log("Blocked old interview time:", {
-        start: oldStartTime,
-        end: oldEndTime.toISOString(),
+        start: blockedSlot.start,
+        end: blockedSlot.end,
+        oldInterview: {
+          scheduledAt: oldInterview.scheduledAt,
+          duration: oldInterview.duration,
+        },
       });
     }
   }, [isReschedule, oldInterview]);

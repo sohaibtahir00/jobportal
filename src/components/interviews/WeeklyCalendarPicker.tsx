@@ -88,7 +88,7 @@ export default function WeeklyCalendarPicker({
       }
 
       // Check if slot overlaps with busy time
-      const overlaps = busyEvents.some((busy) => {
+      const overlappingBusy = busyEvents.find((busy) => {
         return (
           (start >= busy.start && start < busy.end) ||
           (end > busy.start && end <= busy.end) ||
@@ -96,8 +96,13 @@ export default function WeeklyCalendarPicker({
         );
       });
 
-      if (overlaps) {
-        alert("This time conflicts with your Google Calendar events.");
+      if (overlappingBusy) {
+        // Show appropriate message based on the busy event title
+        if (overlappingBusy.title?.includes("Previously Scheduled")) {
+          alert("⚠️ Cannot select the previously scheduled time slot.\n\nYou are rescheduling this interview, so please choose a different time.");
+        } else {
+          alert("This time conflicts with your Google Calendar events.");
+        }
         return;
       }
 
