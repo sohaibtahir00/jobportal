@@ -497,6 +497,29 @@ export default function EmployerInterviewsPage() {
     setSearchQuery("");
   };
 
+  // Helper function to parse interview notes and extract reschedule info
+  const parseInterviewNotes = (notes: string | null) => {
+    if (!notes) return { displayNotes: null, rescheduleReason: null, isPendingReschedule: false };
+
+    // Check if this is a pending reschedule (not yet sent to candidate)
+    if (notes.includes("[PENDING_RESCHEDULE]")) {
+      const parts = notes.split("[PENDING_RESCHEDULE]");
+      const displayNotes = parts[0].trim() || null;
+      const rescheduleReason = parts[1]?.trim() || null;
+      return { displayNotes, rescheduleReason, isPendingReschedule: true };
+    }
+
+    // Check if this is a rescheduled interview (already sent to candidate)
+    if (notes.includes("[Rescheduled from previous interview]")) {
+      const parts = notes.split("[Rescheduled from previous interview]");
+      const displayNotes = parts[0].trim() || null;
+      const rescheduleReason = parts[1]?.trim() || null;
+      return { displayNotes, rescheduleReason, isPendingReschedule: false };
+    }
+
+    return { displayNotes: notes, rescheduleReason: null, isPendingReschedule: false };
+  };
+
   // Filter and search interviews
   const filteredInterviews = interviews.filter((interview) => {
     const now = new Date();
@@ -1242,19 +1265,40 @@ export default function EmployerInterviewsPage() {
                             </>
                           )}
 
-                          {interview.notes && (
-                            <div className="mt-4 rounded-lg bg-yellow-50 p-3">
-                              <div className="mb-1 flex items-center gap-2">
-                                <AlertCircle className="h-4 w-4 text-yellow-600" />
-                                <span className="text-sm font-semibold text-yellow-900">
-                                  Notes from Employer:
-                                </span>
-                              </div>
-                              <p className="text-sm text-yellow-800">
-                                {interview.notes}
-                              </p>
-                            </div>
-                          )}
+                          {(() => {
+                            const { displayNotes, rescheduleReason, isPendingReschedule } = parseInterviewNotes(interview.notes);
+
+                            return (
+                              <>
+                                {displayNotes && (
+                                  <div className="mt-4 rounded-lg bg-yellow-50 p-3">
+                                    <div className="mb-1 flex items-center gap-2">
+                                      <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                      <span className="text-sm font-semibold text-yellow-900">
+                                        Notes from Employer:
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-yellow-800">
+                                      {displayNotes}
+                                    </p>
+                                  </div>
+                                )}
+                                {rescheduleReason && (
+                                  <div className={`mt-4 rounded-lg p-3 ${isPendingReschedule ? 'bg-orange-50' : 'bg-blue-50'}`}>
+                                    <div className="mb-1 flex items-center gap-2">
+                                      <AlertCircle className={`h-4 w-4 ${isPendingReschedule ? 'text-orange-600' : 'text-blue-600'}`} />
+                                      <span className={`text-sm font-semibold ${isPendingReschedule ? 'text-orange-900' : 'text-blue-900'}`}>
+                                        {isPendingReschedule ? '⏳ Pending Reschedule Reason:' : 'Reschedule Reason:'}
+                                      </span>
+                                    </div>
+                                    <p className={`text-sm ${isPendingReschedule ? 'text-orange-800' : 'text-blue-800'}`}>
+                                      {rescheduleReason}
+                                    </p>
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
 
                         <div className="flex flex-wrap gap-2 lg:flex-col">
