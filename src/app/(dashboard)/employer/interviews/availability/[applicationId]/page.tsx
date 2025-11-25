@@ -432,6 +432,14 @@ export default function SetAvailabilityPage() {
   const candidate = applicationData.candidate?.user;
   const job = applicationData.job;
 
+  // Debug logging before render
+  console.log("[Availability Page] Render state:", {
+    isReschedule,
+    hasOldInterview: !!oldInterview,
+    busyTimesCount: busyTimes.length,
+    busyTimes,
+  });
+
   return (
     <div className="min-h-screen bg-secondary-50 py-8">
       <div className="container">

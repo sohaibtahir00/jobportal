@@ -60,18 +60,23 @@ export default function WeeklyCalendarPicker({
 
   // Convert busy times to events
   const busyEvents: TimeSlot[] = useMemo(() => {
-    return busyTimes.map((busy, idx) => ({
+    console.log("[WeeklyCalendarPicker] Converting busyTimes to events:", busyTimes);
+    const events = busyTimes.map((busy, idx) => ({
       id: `busy-${idx}`,
       start: new Date(busy.start),
       end: new Date(busy.end),
       title: busy.title || "Busy",
       type: "busy" as const,
     }));
+    console.log("[WeeklyCalendarPicker] Generated busyEvents:", events);
+    return events;
   }, [busyTimes]);
 
   // Combine all events
   const allEvents: TimeSlot[] = useMemo(() => {
-    return [...selectedSlots, ...busyEvents];
+    const combined = [...selectedSlots, ...busyEvents];
+    console.log("[WeeklyCalendarPicker] All events for calendar:", combined);
+    return combined;
   }, [selectedSlots, busyEvents]);
 
   // Handle slot selection
