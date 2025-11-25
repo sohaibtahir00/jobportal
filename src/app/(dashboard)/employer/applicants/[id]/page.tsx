@@ -1152,14 +1152,17 @@ export default function ApplicantDetailPage() {
                             <div className="flex gap-2">
                               {/* Completed */}
                               {roundInterview?.status === "COMPLETED" && (
-                                <>
-                                  <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-800">
-                                    ✓ Completed
-                                  </span>
-                                  <button className="rounded px-3 py-1 text-sm text-blue-600 hover:bg-blue-50">
-                                    View Details
-                                  </button>
-                                </>
+                                <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-800">
+                                  ✓ Completed
+                                </span>
+                              )}
+
+                              {/* Schedule in Progress - Awaiting Response */}
+                              {(roundInterview?.status === "AWAITING_CANDIDATE" ||
+                                roundInterview?.status === "AWAITING_CONFIRMATION") && (
+                                <span className="flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-sm text-yellow-800">
+                                  ⏳ Schedule in progress
+                                </span>
                               )}
 
                               {/* Scheduled - Happening Soon */}
@@ -1256,7 +1259,6 @@ export default function ApplicantDetailPage() {
               </Card>
             )}
 
-          {/* Interview History Section */}
           <Card className="mb-6">
             <CardContent className="p-6">
               <h2 className="mb-4 text-2xl font-bold text-secondary-900">
@@ -1319,17 +1321,7 @@ export default function ApplicantDetailPage() {
                                 "Interview Round"}
                             </td>
                             <td className="px-4 py-3">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                {getInterviewStatusBadge(interview.status)}
-                                {interview.notes?.includes("[Rescheduled from previous interview]") && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="bg-orange-50 text-orange-700 border-orange-200"
-                                  >
-                                    🔄 Rescheduled
-                                  </Badge>
-                                )}
-                              </div>
+                              {getInterviewStatusBadge(interview.status)}
                             </td>
                             <td className="px-4 py-3 text-sm text-secondary-700">
                               {interview.duration || 30} min
