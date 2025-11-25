@@ -372,11 +372,11 @@ export default function EmployerInterviewsPage() {
       setInterviews(interviewsResponse.data.interviews || []);
       console.log("Interviews reloaded successfully");
 
-      // Redirect to availability page for the new interview
-      const newInterviewId = response.data.newInterviewId;
-      if (newInterviewId) {
+      // Redirect to availability page to set new availability
+      const applicationId = response.data.applicationId;
+      if (applicationId) {
         router.push(
-          `/employer/interviews/availability/${selectedInterview.applicationId}`
+          `/employer/interviews/availability/${applicationId}`
         );
       }
     } catch (err: any) {
@@ -1016,6 +1016,16 @@ export default function EmployerInterviewsPage() {
                                   Video
                                 </Badge>
                                 {getStatusBadge(interview.status)}
+
+                                {/* Rescheduled Badge */}
+                                {interview.notes?.includes("[Rescheduled from previous interview]") && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="gap-1 bg-orange-50 text-orange-700 border-orange-200"
+                                  >
+                                    🔄 Rescheduled
+                                  </Badge>
+                                )}
 
                                 {/* Round Badge */}
                                 {(interview.round || interview.roundNumber) && (

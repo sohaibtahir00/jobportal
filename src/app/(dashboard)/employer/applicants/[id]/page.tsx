@@ -318,11 +318,11 @@ export default function ApplicantDetailPage() {
       setRescheduleModalOpen(false);
       setSelectedInterview(null);
 
-      // Redirect to availability page for the new interview
-      const newInterviewId = response.data.newInterviewId;
-      if (newInterviewId) {
+      // Redirect to availability page to set new availability
+      const applicationId = response.data.applicationId;
+      if (applicationId) {
         router.push(
-          `/employer/interviews/availability/${applicantId}`
+          `/employer/interviews/availability/${applicationId}`
         );
       }
     } catch (err: any) {
@@ -1319,7 +1319,17 @@ export default function ApplicantDetailPage() {
                                 "Interview Round"}
                             </td>
                             <td className="px-4 py-3">
-                              {getInterviewStatusBadge(interview.status)}
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {getInterviewStatusBadge(interview.status)}
+                                {interview.notes?.includes("[Rescheduled from previous interview]") && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-orange-50 text-orange-700 border-orange-200"
+                                  >
+                                    🔄 Rescheduled
+                                  </Badge>
+                                )}
+                              </div>
                             </td>
                             <td className="px-4 py-3 text-sm text-secondary-700">
                               {interview.duration || 30} min
