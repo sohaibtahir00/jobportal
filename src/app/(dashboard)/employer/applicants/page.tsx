@@ -15,12 +15,12 @@ import {
   Briefcase,
   Trophy,
   AlertCircle,
-  Download,
   Loader2,
   Star,
   TrendingUp,
   MessageSquare,
   DollarSign,
+  FileText,
 } from "lucide-react";
 import {
   Button,
@@ -819,31 +819,10 @@ export default function EmployerApplicantsPage() {
                           View Profile
                         </Button>
                         {app.candidate.resume && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const resumeUrl = getResumeUrl(
-                                app.candidate.resume
-                              );
-                              if (resumeUrl) {
-                                // Create a temporary link element to trigger download
-                                const link = document.createElement("a");
-                                link.href = resumeUrl;
-                                link.download = `${app.candidate.user.name.replace(
-                                  /\s+/g,
-                                  "_"
-                                )}_Resume.pdf`;
-                                link.target = "_blank";
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                              }
-                            }}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Resume
-                          </Button>
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary-50 text-secondary-600 text-sm rounded-md border border-secondary-200">
+                            <FileText className="h-4 w-4" />
+                            Resume Available
+                          </span>
                         )}
                         <Button
                           variant="outline"

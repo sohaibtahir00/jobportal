@@ -11,14 +11,14 @@ import {
   MapPin,
   Briefcase,
   Award,
-  Mail,
   Eye,
-  Download,
   ChevronDown,
   Loader2,
   Users,
   TrendingUp,
   Code,
+  Lock,
+  FileText,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -439,14 +439,14 @@ export default function EmployerSearchPage() {
                             View Profile
                           </Link>
                         </Button>
-                        <Button variant="outline" size="sm" className="w-full">
-                          <Mail className="mr-2 h-4 w-4" />
-                          Contact
-                        </Button>
-                        <Button variant="outline" size="sm" className="w-full">
-                          <Download className="mr-2 h-4 w-4" />
-                          Resume
-                        </Button>
+                        <span className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 text-sm rounded-md border border-amber-200">
+                          <Lock className="h-3.5 w-3.5" />
+                          Contact Protected
+                        </span>
+                        <span className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-secondary-50 text-secondary-600 text-sm rounded-md border border-secondary-200">
+                          <FileText className="h-3.5 w-3.5" />
+                          Resume Available
+                        </span>
                       </div>
                     </div>
                   </CardContent>

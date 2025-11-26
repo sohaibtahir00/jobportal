@@ -7,19 +7,15 @@ import Link from "next/link";
 import {
   ChevronLeft,
   Star,
-  Mail,
-  Phone,
   MapPin,
   Calendar,
   Award,
   Briefcase,
-  Download,
   MessageSquare,
   Check,
   X,
   Loader2,
   FileText,
-  ExternalLink,
   TrendingUp,
   Code,
   Database,
@@ -30,6 +26,7 @@ import {
   CheckCircle,
   Gift,
   DollarSign,
+  Lock,
 } from "lucide-react";
 import { useToast } from "@/components/ui";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
@@ -98,6 +95,14 @@ export default function ApplicantDetailPage() {
   // Reschedule modal state
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState<any>(null);
+
+  // Handle introduction request
+  const handleRequestIntroduction = () => {
+    showToast(
+      "success",
+      "Introduction Requested - We'll connect you with this candidate within 24 hours."
+    );
+  };
 
   // Redirect if not logged in or not employer
   useEffect(() => {
@@ -632,38 +637,22 @@ export default function ApplicantDetailPage() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-secondary-600" />
-                    <a
-                      href={`mailto:${applicantData.email}`}
-                      className="text-primary-600 hover:underline"
-                    >
-                      {applicantData.email}
-                    </a>
+                {/* Contact Info - Gated */}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-amber-600" />
+                    <span className="font-medium text-amber-800">Contact Information Protected</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-5 w-5 text-secondary-600" />
-                    <a
-                      href={`tel:${applicantData.phone}`}
-                      className="text-primary-600 hover:underline"
-                    >
-                      {applicantData.phone}
-                    </a>
-                  </div>
-                  {applicantData.linkedin && (
-                    <div className="flex items-center gap-3">
-                      <ExternalLink className="h-5 w-5 text-secondary-600" />
-                      <a
-                        href={applicantData.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary-600 hover:underline"
-                      >
-                        LinkedIn Profile
-                      </a>
-                    </div>
-                  )}
+                  <p className="text-sm text-amber-700 mt-2">
+                    To protect candidate privacy and ensure quality introductions, contact details are shared after you request an introduction.
+                  </p>
+                  <Button
+                    className="mt-3"
+                    size="sm"
+                    onClick={handleRequestIntroduction}
+                  >
+                    Request Introduction
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -753,30 +742,17 @@ export default function ApplicantDetailPage() {
                     <MessageSquare className="mr-2 h-5 w-5" />
                     Send Message
                   </Button>
+                  {/* Resume - Gated */}
                   {applicantData.resume && (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        const resumeUrl = getResumeUrl(applicantData.resume);
-                        if (resumeUrl) {
-                          // Create a temporary link element to trigger download
-                          const link = document.createElement("a");
-                          link.href = resumeUrl;
-                          link.download = `${applicantData.candidateName.replace(
-                            /\s+/g,
-                            "_"
-                          )}_Resume.pdf`;
-                          link.target = "_blank";
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }
-                      }}
-                    >
-                      <Download className="mr-2 h-5 w-5" />
-                      Download Resume
-                    </Button>
+                    <div className="w-full bg-secondary-50 border border-secondary-200 rounded-lg p-3">
+                      <div className="flex items-center gap-2 text-secondary-600">
+                        <FileText className="h-4 w-4" />
+                        <span className="text-sm font-medium">Resume Available</span>
+                      </div>
+                      <p className="text-xs text-secondary-500 mt-1">
+                        Available after introduction request
+                      </p>
+                    </div>
                   )}
                   <Button
                     variant="outline"
@@ -868,58 +844,24 @@ export default function ApplicantDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Professional Links */}
+          {/* Professional Links - Gated */}
           {(applicantData.linkedin ||
             applicantData.github ||
             applicantData.portfolio ||
             applicantData.personalWebsite) && (
             <Card className="mb-6">
               <CardContent className="p-6">
-                <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-secondary-900">
-                  <ExternalLink className="h-5 w-5" />
-                  Professional Links
-                </h2>
-                <div className="space-y-2">
-                  {applicantData.linkedin && (
-                    <a
-                      href={applicantData.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-blue-600 hover:underline"
-                    >
-                      💼 LinkedIn
-                    </a>
-                  )}
-                  {applicantData.github && (
-                    <a
-                      href={applicantData.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-blue-600 hover:underline"
-                    >
-                      💻 GitHub
-                    </a>
-                  )}
-                  {applicantData.portfolio && (
-                    <a
-                      href={applicantData.portfolio}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-blue-600 hover:underline"
-                    >
-                      🌐 Portfolio
-                    </a>
-                  )}
-                  {applicantData.personalWebsite && (
-                    <a
-                      href={applicantData.personalWebsite}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-blue-600 hover:underline"
-                    >
-                      🌐 Website
-                    </a>
-                  )}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-amber-600" />
+                    <span className="font-medium text-amber-800">Professional Links Protected</span>
+                  </div>
+                  <p className="text-sm text-amber-700 mt-2">
+                    LinkedIn, GitHub, Portfolio, and Website links are available after you request an introduction.
+                  </p>
+                  <Button className="mt-3" size="sm" onClick={handleRequestIntroduction}>
+                    Request Introduction
+                  </Button>
                 </div>
               </CardContent>
             </Card>

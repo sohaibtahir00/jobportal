@@ -7,23 +7,19 @@ import Link from "next/link";
 import {
   ChevronLeft,
   Star,
-  Mail,
-  Phone,
   MapPin,
-  Calendar,
   Briefcase,
-  Download,
   MessageSquare,
   Loader2,
-  ExternalLink,
   Video,
   Award,
-  FileText,
   Building,
   GraduationCap,
   Clock,
+  Lock,
+  FileText,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent } from "@/components/ui";
+import { Button, Badge, Card, CardContent, useToast } from "@/components/ui";
 import { api } from "@/lib/api";
 
 // Backend URL for file downloads
@@ -56,9 +52,19 @@ export default function CandidateProfilePage() {
   const candidateId = params.id as string;
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [candidateData, setCandidateData] = useState<any>(null);
+
+  // Handle introduction request
+  const handleRequestIntroduction = () => {
+    showToast(
+      "success",
+      "Introduction Requested",
+      "We'll connect you with this candidate within 24 hours."
+    );
+  };
 
   // Redirect if not logged in or not employer
   useEffect(() => {
@@ -285,67 +291,24 @@ export default function CandidateProfilePage() {
                   )}
                 </div>
 
-                {/* Contact Info */}
-                <div className="space-y-3 border-t border-secondary-200 pt-4">
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-secondary-600" />
-                    <a
-                      href={`mailto:${candidateData.user?.email}`}
-                      className="text-primary-600 hover:underline"
+                {/* Contact Info - Gated */}
+                <div className="border-t border-secondary-200 pt-4">
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-5 w-5 text-amber-600" />
+                      <span className="font-medium text-amber-800">Contact Information Protected</span>
+                    </div>
+                    <p className="text-sm text-amber-700 mt-2">
+                      To protect candidate privacy and ensure quality introductions, contact details are shared after you request an introduction.
+                    </p>
+                    <Button
+                      className="mt-3"
+                      size="sm"
+                      onClick={handleRequestIntroduction}
                     >
-                      {candidateData.user?.email}
-                    </a>
+                      Request Introduction
+                    </Button>
                   </div>
-                  {candidateData.phone && (
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 text-secondary-600" />
-                      <a
-                        href={`tel:${candidateData.phone}`}
-                        className="text-primary-600 hover:underline"
-                      >
-                        {candidateData.phone}
-                      </a>
-                    </div>
-                  )}
-                  {candidateData.linkedIn && (
-                    <div className="flex items-center gap-3">
-                      <ExternalLink className="h-5 w-5 text-secondary-600" />
-                      <a
-                        href={candidateData.linkedIn}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary-600 hover:underline"
-                      >
-                        LinkedIn Profile
-                      </a>
-                    </div>
-                  )}
-                  {candidateData.github && (
-                    <div className="flex items-center gap-3">
-                      <ExternalLink className="h-5 w-5 text-secondary-600" />
-                      <a
-                        href={candidateData.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary-600 hover:underline"
-                      >
-                        GitHub Profile
-                      </a>
-                    </div>
-                  )}
-                  {candidateData.portfolio && (
-                    <div className="flex items-center gap-3">
-                      <ExternalLink className="h-5 w-5 text-secondary-600" />
-                      <a
-                        href={candidateData.portfolio}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary-600 hover:underline"
-                      >
-                        Portfolio
-                      </a>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -356,40 +319,25 @@ export default function CandidateProfilePage() {
                 <h3 className="mb-4 font-bold text-secondary-900">Actions</h3>
                 <div className="space-y-3">
                   <Button
-                    variant="outline"
+                    variant="primary"
                     className="w-full"
-                    onClick={() =>
-                      router.push(
-                        `/employer/messages?candidateId=${candidateData.user?.id}`
-                      )
-                    }
+                    onClick={handleRequestIntroduction}
                   >
                     <MessageSquare className="mr-2 h-5 w-5" />
-                    Send Message
+                    Request Introduction
                   </Button>
+
+                  {/* Resume - Gated */}
                   {candidateData.resume && (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        const resumeUrl = getResumeUrl(candidateData.resume);
-                        if (resumeUrl) {
-                          const link = document.createElement("a");
-                          link.href = resumeUrl;
-                          link.download = `${(candidateData.user?.name || "Candidate").replace(
-                            /\s+/g,
-                            "_"
-                          )}_Resume.pdf`;
-                          link.target = "_blank";
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }
-                      }}
-                    >
-                      <Download className="mr-2 h-5 w-5" />
-                      Download Resume
-                    </Button>
+                    <div className="bg-secondary-50 border border-secondary-200 rounded-lg p-3">
+                      <div className="flex items-center gap-2 text-secondary-600">
+                        <FileText className="h-4 w-4" />
+                        <span className="text-sm font-medium">Resume Available</span>
+                      </div>
+                      <p className="text-xs text-secondary-500 mt-1">
+                        Available after introduction request
+                      </p>
+                    </div>
                   )}
                 </div>
 
