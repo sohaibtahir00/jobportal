@@ -81,6 +81,21 @@ const jobStatusColors: Record<string, string> = {
   EXPIRED: "bg-red-100 text-red-800 border-red-300",
 };
 
+// Helper to get formatted application status label
+const getApplicationStatusLabel = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    PENDING: "New",
+    SHORTLISTED: "Shortlisted",
+    INTERVIEW_SCHEDULED: "In Interview Process",
+    INTERVIEWED: "In Interview Process",
+    OFFERED: "Offer",
+    ACCEPTED: "Hired",
+    REJECTED: "Rejected",
+    WITHDRAWN: "Withdrawn",
+  };
+  return statusMap[status] || status.replace(/_/g, " ");
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -588,7 +603,7 @@ export default function EmployerDashboardPage() {
                           </p>
                           <div className="flex items-center gap-2 mt-2 flex-wrap">
                             <Badge className={statusColors[app.status]}>
-                              {app.status.replace(/_/g, " ")}
+                              {getApplicationStatusLabel(app.status)}
                             </Badge>
                             {app.candidateTestTier && (
                               <Badge
