@@ -434,7 +434,7 @@ export default function EmployerSearchPage() {
 
                       <div className="flex flex-col gap-2 md:w-48">
                         <Button variant="primary" size="sm" className="w-full" asChild>
-                          <Link href={`/employer/applicants/${candidate.id}`}>
+                          <Link href={`/employer/candidates/${candidate.id}`}>
                             <Eye className="mr-2 h-4 w-4" />
                             View Profile
                           </Link>
