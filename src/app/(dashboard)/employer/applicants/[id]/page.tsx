@@ -475,6 +475,24 @@ export default function ApplicantDetailPage() {
         return <Badge variant="danger">Cancelled</Badge>;
       case "RESCHEDULED":
         return <Badge variant="warning">Rescheduled</Badge>;
+      case "AWAITING_CANDIDATE":
+        return (
+          <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-200">
+            Awaiting Candidate
+          </span>
+        );
+      case "AWAITING_CONFIRMATION":
+        return (
+          <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-200">
+            Action Required
+          </span>
+        );
+      case "PENDING_AVAILABILITY":
+        return (
+          <span className="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-700 border border-gray-200">
+            Pending Availability
+          </span>
+        );
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
