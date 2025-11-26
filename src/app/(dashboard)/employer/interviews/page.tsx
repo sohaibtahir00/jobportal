@@ -19,6 +19,7 @@ import {
   AlertCircle,
   Target,
   Star,
+  X,
 } from "lucide-react";
 import { Card, CardContent, Button, Badge, Input } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -500,7 +501,7 @@ export default function EmployerInterviewsPage() {
     selectedJobId !== "" ||
     searchQuery !== "";
 
-  // Clear all filters
+  // Clear all filters and collapse past interviews
   const clearAllFilters = () => {
     setStatusFilter("all");
     setSkillsFilter("all");
@@ -508,6 +509,7 @@ export default function EmployerInterviewsPage() {
     setRatingFilter("all");
     setSelectedJobId("");
     setSearchQuery("");
+    setPastSectionExpanded(false);
   };
 
   // Helper function to parse interview notes and extract reschedule info
@@ -842,9 +844,22 @@ export default function EmployerInterviewsPage() {
               <div className="space-y-4">
                 {/* Row 1: Status Filter */}
                 <div>
-                  <label className="text-sm font-medium text-secondary-700 mb-2 block">
-                    Status:
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-secondary-700">
+                      Status:
+                    </label>
+                    {hasActiveFilters && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearAllFilters}
+                        className="text-secondary-500 hover:text-secondary-700 hover:bg-secondary-100 h-7 px-2"
+                      >
+                        <X className="h-3.5 w-3.5 mr-1" />
+                        Reset
+                      </Button>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
                       variant={statusFilter === "all" ? "primary" : "outline"}
