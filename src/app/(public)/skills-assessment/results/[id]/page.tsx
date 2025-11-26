@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
@@ -10,17 +10,13 @@ import {
   Share2,
   Download,
   CheckCircle2,
-  Target,
   Zap,
   Briefcase,
   ArrowRight,
   Trophy,
-  Star,
-  Shield,
-  Loader2,
   AlertCircle,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent } from "@/components/ui";
+import { Button, Card, CardContent } from "@/components/ui";
 import { SkillsScoreCard, SkillsScoreData } from "@/components/skills";
 import { api } from "@/lib/api";
 
@@ -31,7 +27,6 @@ interface ResultsPageProps {
 export default function SkillsAssessmentResultsPage({ params }: ResultsPageProps) {
   const resolvedParams = use(params);
   const searchParams = useSearchParams();
-  const router = useRouter();
   const { data: session, status } = useSession();
   
   const [scoreData, setScoreData] = useState<SkillsScoreData | null>(null);

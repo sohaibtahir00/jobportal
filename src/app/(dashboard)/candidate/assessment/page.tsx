@@ -8,7 +8,6 @@ import {
   Award,
   TrendingUp,
   Clock,
-  CheckCircle,
   AlertCircle,
   ArrowRight,
   BookOpen,

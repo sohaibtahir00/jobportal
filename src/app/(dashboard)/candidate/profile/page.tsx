@@ -13,9 +13,7 @@ import {
   Briefcase,
   DollarSign,
   MapPin,
-  Calendar,
   Link as LinkIcon,
-  GraduationCap,
   Code,
   Mail,
   Phone,
@@ -25,18 +23,14 @@ import {
   FileText,
   Upload,
   Camera,
-  Plus,
   Edit,
-  Trash2,
-  X,
   Award,
   CheckCircle,
-  Star,
   TrendingUp,
   Target,
 } from "lucide-react";
 import Link from "next/link";
-import { SkillsScoreCard, SkillsScoreData } from "@/components/skills";
+import { SkillsScoreCard } from "@/components/skills";
 import {
   getWorkExperiences,
   createWorkExperience,
