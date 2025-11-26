@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
+import { SkillsScoreCard } from "@/components/skills";
 import { api } from "@/lib/api";
 import RejectCandidateModal from "@/components/interviews/RejectCandidateModal";
 import RescheduleInterviewModal from "@/components/interviews/RescheduleInterviewModal";
@@ -775,6 +776,26 @@ export default function ApplicantDetailPage() {
                     Applied for: {applicantData.appliedFor}
                   </p>
                 </div>
+
+                {/* Skills Score Card Preview */}
+                {applicantData.skillsScore && (
+                  <div className="mt-6 border-t border-secondary-200 pt-6">
+                    <h4 className="mb-3 text-sm font-semibold text-secondary-700">
+                      Skills Assessment
+                    </h4>
+                    <SkillsScoreCard
+                      data={{
+                        overallScore: applicantData.skillsScore || 0,
+                        percentile: applicantData.percentile || 0,
+                        tier: applicantData.tier || "INTERMEDIATE",
+                        completedAt: applicantData.assessmentDate || new Date().toISOString(),
+                        proctored: true,
+                      }}
+                      variant="compact"
+                      showActions={false}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

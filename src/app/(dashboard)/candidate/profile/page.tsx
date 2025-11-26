@@ -36,6 +36,7 @@ import {
   Target,
 } from "lucide-react";
 import Link from "next/link";
+import { SkillsScoreCard, SkillsScoreData } from "@/components/skills";
 import {
   getWorkExperiences,
   createWorkExperience,
@@ -421,7 +422,7 @@ export default function CandidateProfilePage() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-gray-900 mb-2">
-                      🎯 Take Skills Assessment to Unlock Benefits
+                      Take Skills Assessment to Unlock Benefits
                     </h3>
                     <p className="text-sm text-gray-600 mb-4">
                       Complete our skills assessment to unlock exclusive jobs and boost your profile visibility.
@@ -447,57 +448,31 @@ export default function CandidateProfilePage() {
               </CardContent>
             </Card>
           ) : (
-            <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-600 shrink-0">
-                    <Award className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">
-                      ✅ Skills Assessment Completed
-                    </h3>
-                    <div className="grid sm:grid-cols-3 gap-3 mb-4">
-                      <div className="bg-white/80 rounded-lg p-3 border border-green-100">
-                        <p className="text-xs text-gray-600">Overall Score</p>
-                        <p className="text-2xl font-bold text-green-700">{testInfo?.score || 0}/100</p>
-                        <p className="text-xs text-gray-500">Top {testInfo?.percentile || 0}%</p>
-                      </div>
-                      <div className="bg-white/80 rounded-lg p-3 border border-green-100">
-                        <p className="text-xs text-gray-600">Tier</p>
-                        <p className="text-lg font-bold" style={{ color: testInfo?.tier?.color || "#000" }}>
-                          {testInfo?.tier?.emoji} {testInfo?.tier?.name || "N/A"}
-                        </p>
-                        <div className="flex gap-0.5 mt-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} className={`h-3 w-3 ${i < 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
-                          ))}
-                        </div>
-                      </div>
-                      <div className="bg-white/80 rounded-lg p-3 border border-green-100">
-                        <p className="text-xs text-gray-600">Test Date</p>
-                        <p className="text-sm font-semibold">
-                          {testInfo?.lastTestDate ? new Date(testInfo.lastTestDate).toLocaleDateString() : "N/A"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button asChild size="sm" className="bg-green-600 hover:bg-green-700">
-                        <Link href="/candidate/skills-report">
-                          <TrendingUp className="mr-2 h-4 w-4" />
-                          View Full Report
-                        </Link>
-                      </Button>
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.origin)}`} target="_blank">
-                          Share on LinkedIn
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-4">
+              <SkillsScoreCard
+                data={{
+                  overallScore: testInfo?.score || 0,
+                  percentile: testInfo?.percentile || 0,
+                  tier: testInfo?.tier?.name?.toUpperCase() || "INTERMEDIATE",
+                  completedAt: testInfo?.lastTestDate || new Date().toISOString(),
+                  proctored: true,
+                }}
+                variant="compact"
+              />
+              <div className="flex gap-2">
+                <Button asChild size="sm" className="bg-primary-600 hover:bg-primary-700">
+                  <Link href="/candidate/assessment">
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    View Full Report
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/skills-assessment">
+                    Retake Assessment
+                  </Link>
+                </Button>
+              </div>
+            </div>
           )}
 
           {/* Basic Information */}

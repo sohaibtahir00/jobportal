@@ -20,6 +20,7 @@ import {
   FileText,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, useToast } from "@/components/ui";
+import { SkillsScoreCard } from "@/components/skills";
 import { api } from "@/lib/api";
 
 // Backend URL for file downloads
@@ -340,6 +341,26 @@ export default function CandidateProfilePage() {
                     </div>
                   )}
                 </div>
+
+                {/* Skills Score Card */}
+                {candidateData.hasTakenTest && candidateData.testScore && (
+                  <div className="mt-6 border-t border-secondary-200 pt-6">
+                    <h4 className="mb-3 text-sm font-semibold text-secondary-700">
+                      Skills Assessment
+                    </h4>
+                    <SkillsScoreCard
+                      data={{
+                        overallScore: candidateData.testScore || 0,
+                        percentile: candidateData.testPercentile || 0,
+                        tier: candidateData.testTier || "INTERMEDIATE",
+                        completedAt: candidateData.lastTestDate || new Date().toISOString(),
+                        proctored: true,
+                      }}
+                      variant="compact"
+                      showActions={false}
+                    />
+                  </div>
+                )}
 
                 {/* Applications to Your Jobs */}
                 {candidateData.applications && candidateData.applications.length > 0 && (
