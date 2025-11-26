@@ -37,9 +37,17 @@ const getResumeUrl = (resumePath: string | null): string | null => {
   if (resumePath.startsWith("http://") || resumePath.startsWith("https://")) {
     return resumePath;
   }
-  const apiPath = resumePath.startsWith("/uploads/")
-    ? resumePath.replace("/uploads/", "/api/uploads/")
-    : resumePath;
+
+  // Normalize path: handle both /uploads/resume/ and /uploads/resumes/
+  let normalizedPath = resumePath;
+  // Convert /uploads/resume/ (without s) to /uploads/resumes/ (with s)
+  if (normalizedPath.includes("/uploads/resume/") && !normalizedPath.includes("/uploads/resumes/")) {
+    normalizedPath = normalizedPath.replace("/uploads/resume/", "/uploads/resumes/");
+  }
+
+  const apiPath = normalizedPath.startsWith("/uploads/")
+    ? normalizedPath.replace("/uploads/", "/api/uploads/")
+    : normalizedPath;
   return `${BACKEND_URL}${apiPath}`;
 };
 

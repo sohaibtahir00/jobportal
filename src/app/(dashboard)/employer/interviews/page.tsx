@@ -680,6 +680,13 @@ export default function EmployerInterviewsPage() {
   const { active: activeInterviews, past: pastInterviews } =
     categorizeInterviews(sortedInterviews);
 
+  // Auto-expand Past Interviews section when filters are active and there are matching past interviews
+  useEffect(() => {
+    if (hasActiveFilters && pastInterviews.length > 0) {
+      setPastSectionExpanded(true);
+    }
+  }, [hasActiveFilters, pastInterviews.length]);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING_AVAILABILITY":
@@ -1315,8 +1322,9 @@ export default function EmployerInterviewsPage() {
                                       </span>
                                     </div>
 
-                                    {/* Application Status Badge */}
-                                    {interview.status !== "RESCHEDULED" && (
+                                    {/* Application Status Badge - Only show for non-cancelled, non-rescheduled interviews */}
+                                    {interview.status !== "RESCHEDULED" &&
+                                      interview.status !== "CANCELLED" && (
                                       <div className="mt-3">
                                         {interview.application?.status ===
                                         "REJECTED" ? (
@@ -1908,8 +1916,9 @@ export default function EmployerInterviewsPage() {
                                         </span>
                                       </div>
 
-                                      {/* Application Status Badge */}
-                                      {interview.status !== "RESCHEDULED" && (
+                                      {/* Application Status Badge - Only show for non-cancelled, non-rescheduled interviews */}
+                                      {interview.status !== "RESCHEDULED" &&
+                                        interview.status !== "CANCELLED" && (
                                         <div className="mt-3">
                                           {interview.application?.status ===
                                           "REJECTED" ? (
