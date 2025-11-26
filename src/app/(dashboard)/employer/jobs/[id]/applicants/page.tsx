@@ -68,7 +68,7 @@ export default function ApplicantsPipelinePage() {
     { id: "SHORTLISTED", label: "Shortlisted", color: "bg-yellow-100", statuses: ["SHORTLISTED"] },
     {
       id: "INTERVIEW",
-      label: "Interview",
+      label: "In Interview Process",
       color: "bg-purple-100",
       statuses: ["INTERVIEW_SCHEDULED", "INTERVIEWED"],
     },
@@ -86,7 +86,7 @@ export default function ApplicantsPipelinePage() {
   const STATUS_ICONS: Record<string, string> = {
     PENDING: "🆕",
     SHORTLISTED: "⭐",
-    INTERVIEW_SCHEDULED: "📅",
+    INTERVIEW_SCHEDULED: "💬",
     INTERVIEWED: "💬",
     OFFERED: "📧",
     ACCEPTED: "🎉",

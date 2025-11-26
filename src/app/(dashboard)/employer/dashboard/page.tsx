@@ -136,8 +136,7 @@ export default function EmployerDashboardPage() {
     total: 0,
     pending: 0,
     shortlisted: 0,
-    interviewScheduled: 0,
-    interviewed: 0,
+    inInterview: 0,
     offered: 0,
     accepted: 0,
     rejected: 0,
@@ -191,10 +190,10 @@ export default function EmployerDashboardPage() {
     },
     {
       icon: Users,
-      label: "Candidates Interviewed",
-      value: applicationStats.interviewed || 0,
+      label: "In Interview Process",
+      value: applicationStats.inInterview || 0,
       gradient: "from-green-500 to-emerald-600",
-      link: "/employer/applicants?status=INTERVIEWED",
+      link: "/employer/applicants?status=INTERVIEW",
     },
     {
       icon: CheckCircle2,
@@ -746,8 +745,8 @@ export default function EmployerDashboardPage() {
                     color: "bg-purple-500",
                   },
                   {
-                    label: "Interview Scheduled",
-                    count: applicationStats.interviewScheduled || 0,
+                    label: "In Interview Process",
+                    count: applicationStats.inInterview || 0,
                     color: "bg-indigo-500",
                   },
                   {
@@ -765,7 +764,7 @@ export default function EmployerDashboardPage() {
                     ...[
                       applicationStats.pending || 0,
                       applicationStats.shortlisted || 0,
-                      applicationStats.interviewScheduled || 0,
+                      applicationStats.inInterview || 0,
                       applicationStats.offered || 0,
                       applicationStats.accepted || 0,
                     ]

@@ -102,10 +102,8 @@ export interface EmployerDashboardData {
   applicationStats: {
     total: number;
     pending: number;
-    reviewed: number;
     shortlisted: number;
-    interviewScheduled: number;
-    interviewed: number;
+    inInterview: number;
     offered: number;
     accepted: number;
     rejected: number;

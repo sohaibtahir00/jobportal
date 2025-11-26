@@ -108,8 +108,7 @@ interface Stats {
     total: number;
     pending: number;
     shortlisted: number;
-    interviewScheduled: number;
-    interviewed: number;
+    inInterview: number;
     offered: number;
     accepted: number;
     rejected: number;
@@ -120,8 +119,7 @@ const STATUS_OPTIONS = [
   { value: "all", label: "All", icon: "📋" },
   { value: "PENDING", label: "New", icon: "🆕" },
   { value: "SHORTLISTED", label: "Shortlisted", icon: "⭐" },
-  { value: "INTERVIEW_SCHEDULED", label: "Interview Scheduled", icon: "📅" },
-  { value: "INTERVIEWED", label: "Interviewed", icon: "💬" },
+  { value: "INTERVIEW", label: "In Interview Process", icon: "💬" },
   { value: "OFFERED", label: "Offer", icon: "📧" },
   { value: "ACCEPTED", label: "Hired", icon: "🎉" },
   { value: "REJECTED", label: "Rejected", icon: "❌" },
@@ -134,6 +132,7 @@ const STATUS_COLORS: Record<string, string> = {
   SHORTLISTED: "bg-yellow-100 text-yellow-800 border-yellow-300",
   INTERVIEW_SCHEDULED: "bg-purple-100 text-purple-800 border-purple-300",
   INTERVIEWED: "bg-purple-100 text-purple-800 border-purple-300",
+  INTERVIEW: "bg-purple-100 text-purple-800 border-purple-300",
   OFFERED: "bg-indigo-100 text-indigo-800 border-indigo-300",
   ACCEPTED: "bg-green-100 text-green-800 border-green-300",
   REJECTED: "bg-red-100 text-red-800 border-red-300",
@@ -283,8 +282,19 @@ export default function EmployerApplicantsPage() {
 
   // Get status label with icon
   const getStatusLabel = (status: string): string => {
-    const option = STATUS_OPTIONS.find((opt) => opt.value === status);
-    return option ? `${option.icon} ${option.label}` : status;
+    // Map raw database statuses to display labels
+    const statusMap: Record<string, { icon: string; label: string }> = {
+      PENDING: { icon: "🆕", label: "New" },
+      SHORTLISTED: { icon: "⭐", label: "Shortlisted" },
+      INTERVIEW_SCHEDULED: { icon: "💬", label: "In Interview Process" },
+      INTERVIEWED: { icon: "💬", label: "In Interview Process" },
+      OFFERED: { icon: "📧", label: "Offer" },
+      ACCEPTED: { icon: "🎉", label: "Hired" },
+      REJECTED: { icon: "❌", label: "Rejected" },
+      WITHDRAWN: { icon: "🚪", label: "Withdrawn" },
+    };
+    const mapped = statusMap[status];
+    return mapped ? `${mapped.icon} ${mapped.label}` : status;
   };
 
   // Calculate days ago
