@@ -64,7 +64,6 @@ function formatCurrency(amountInCents: number): string {
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  REVIEWED: "bg-blue-100 text-blue-800 border-blue-300",
   SHORTLISTED: "bg-purple-100 text-purple-800 border-purple-300",
   INTERVIEW_SCHEDULED: "bg-indigo-100 text-indigo-800 border-indigo-300",
   INTERVIEWED: "bg-cyan-100 text-cyan-800 border-cyan-300",
@@ -136,7 +135,6 @@ export default function EmployerDashboardPage() {
   const applicationStats = data?.applicationStats || {
     total: 0,
     pending: 0,
-    reviewed: 0,
     shortlisted: 0,
     interviewScheduled: 0,
     interviewed: 0,
@@ -743,11 +741,6 @@ export default function EmployerDashboardPage() {
                     color: "bg-yellow-500",
                   },
                   {
-                    label: "Under Review",
-                    count: applicationStats.reviewed || 0,
-                    color: "bg-blue-500",
-                  },
-                  {
                     label: "Shortlisted",
                     count: applicationStats.shortlisted || 0,
                     color: "bg-purple-500",
@@ -771,7 +764,6 @@ export default function EmployerDashboardPage() {
                   const maxCount = Math.max(
                     ...[
                       applicationStats.pending || 0,
-                      applicationStats.reviewed || 0,
                       applicationStats.shortlisted || 0,
                       applicationStats.interviewScheduled || 0,
                       applicationStats.offered || 0,

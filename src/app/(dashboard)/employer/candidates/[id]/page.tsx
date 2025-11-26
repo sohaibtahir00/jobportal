@@ -117,16 +117,20 @@ export default function CandidateProfilePage() {
     switch (status) {
       case "PENDING":
         return <Badge variant="secondary">Pending Review</Badge>;
-      case "REVIEWED":
-        return <Badge variant="primary">Reviewed</Badge>;
       case "SHORTLISTED":
         return <Badge variant="success">Shortlisted</Badge>;
-      case "INTERVIEWING":
-        return <Badge variant="primary">Interviewing</Badge>;
+      case "INTERVIEW_SCHEDULED":
+        return <Badge variant="primary">Interview Scheduled</Badge>;
+      case "INTERVIEWED":
+        return <Badge variant="primary">Interviewed</Badge>;
+      case "OFFERED":
+        return <Badge variant="primary">Offer Extended</Badge>;
       case "REJECTED":
         return <Badge variant="danger">Rejected</Badge>;
       case "ACCEPTED":
-        return <Badge variant="success">Accepted</Badge>;
+        return <Badge variant="success">Hired</Badge>;
+      case "WITHDRAWN":
+        return <Badge variant="secondary">Withdrawn</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }

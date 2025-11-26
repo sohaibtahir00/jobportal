@@ -65,7 +65,6 @@ export default function ApplicantsPipelinePage() {
   // Pipeline stages mapped to application statuses
   const stages = [
     { id: "PENDING", label: "New", color: "bg-gray-100", statuses: ["PENDING"] },
-    { id: "REVIEWED", label: "Reviewing", color: "bg-blue-100", statuses: ["REVIEWED"] },
     { id: "SHORTLISTED", label: "Shortlisted", color: "bg-yellow-100", statuses: ["SHORTLISTED"] },
     {
       id: "INTERVIEW",
@@ -86,7 +85,6 @@ export default function ApplicantsPipelinePage() {
   // Status icons and colors for badges
   const STATUS_ICONS: Record<string, string> = {
     PENDING: "🆕",
-    REVIEWED: "👀",
     SHORTLISTED: "⭐",
     INTERVIEW_SCHEDULED: "📅",
     INTERVIEWED: "💬",
@@ -98,7 +96,6 @@ export default function ApplicantsPipelinePage() {
 
   const STATUS_COLORS: Record<string, string> = {
     PENDING: "bg-gray-100 text-gray-800",
-    REVIEWED: "bg-blue-100 text-blue-800",
     SHORTLISTED: "bg-yellow-100 text-yellow-800",
     INTERVIEW_SCHEDULED: "bg-purple-100 text-purple-800",
     INTERVIEWED: "bg-purple-100 text-purple-800",

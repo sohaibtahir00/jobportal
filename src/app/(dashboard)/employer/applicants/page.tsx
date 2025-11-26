@@ -107,7 +107,6 @@ interface Stats {
   statusBreakdown: {
     total: number;
     pending: number;
-    reviewed: number;
     shortlisted: number;
     interviewScheduled: number;
     interviewed: number;
@@ -120,7 +119,6 @@ interface Stats {
 const STATUS_OPTIONS = [
   { value: "all", label: "All", icon: "📋" },
   { value: "PENDING", label: "New", icon: "🆕" },
-  { value: "REVIEWED", label: "Reviewing", icon: "👀" },
   { value: "SHORTLISTED", label: "Shortlisted", icon: "⭐" },
   { value: "INTERVIEW_SCHEDULED", label: "Interview Scheduled", icon: "📅" },
   { value: "INTERVIEWED", label: "Interviewed", icon: "💬" },
@@ -133,7 +131,6 @@ const STATUS_OPTIONS = [
 // Status colors for badges
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-gray-100 text-gray-800 border-gray-300",
-  REVIEWED: "bg-blue-100 text-blue-800 border-blue-300",
   SHORTLISTED: "bg-yellow-100 text-yellow-800 border-yellow-300",
   INTERVIEW_SCHEDULED: "bg-purple-100 text-purple-800 border-purple-300",
   INTERVIEWED: "bg-purple-100 text-purple-800 border-purple-300",
