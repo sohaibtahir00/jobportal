@@ -511,6 +511,21 @@ export default function ApplicantDetailPage() {
     }
   };
 
+  // Helper to get formatted application status label
+  const getApplicationStatusLabel = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      pending: "New",
+      shortlisted: "Shortlisted",
+      interview_scheduled: "In Interview Process",
+      interviewed: "In Interview Process",
+      offered: "Offer",
+      accepted: "Hired",
+      rejected: "Rejected",
+      withdrawn: "Withdrawn",
+    };
+    return statusMap[status] || status;
+  };
+
   if (status === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary-50">
@@ -769,8 +784,8 @@ export default function ApplicantDetailPage() {
                   <h4 className="mb-3 text-sm font-semibold text-secondary-700">
                     Application Status
                   </h4>
-                  <Badge variant="primary" className="capitalize">
-                    {applicantData.applicationStatus}
+                  <Badge variant="primary">
+                    {getApplicationStatusLabel(applicantData.applicationStatus)}
                   </Badge>
                   <p className="mt-2 text-sm text-secondary-600">
                     Applied for: {applicantData.appliedFor}
