@@ -51,6 +51,7 @@ export default function EmployerInterviewsPage() {
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
   const [nextRoundInfo, setNextRoundInfo] = useState<string>("");
+  const [pastSectionExpanded, setPastSectionExpanded] = useState(false);
 
   // Redirect if not employer
   useEffect(() => {
@@ -169,8 +170,14 @@ export default function EmployerInterviewsPage() {
       }
 
       // Get the round name from interview rounds
-      if (interviewRounds && interviewRounds.length > 0 && nextRound <= interviewRounds.length) {
-        const round = interviewRounds.find((r: any) => r.roundNumber === nextRound);
+      if (
+        interviewRounds &&
+        interviewRounds.length > 0 &&
+        nextRound <= interviewRounds.length
+      ) {
+        const round = interviewRounds.find(
+          (r: any) => r.roundNumber === nextRound
+        );
         if (round) {
           setNextRoundInfo(`Round ${nextRound}: ${round.name}`);
         } else {
@@ -213,7 +220,10 @@ export default function EmployerInterviewsPage() {
     if (!selectedInterview) return;
 
     try {
-      await api.post(`/api/interviews/${selectedInterview.id}/review`, reviewData);
+      await api.post(
+        `/api/interviews/${selectedInterview.id}/review`,
+        reviewData
+      );
 
       // Reload interviews to show new review
       const response = await api.get("/api/interviews");
@@ -381,9 +391,7 @@ export default function EmployerInterviewsPage() {
       }
     } catch (err: any) {
       console.error("Failed to reschedule interview:", err);
-      alert(
-        err?.response?.data?.error || "Failed to reschedule interview"
-      );
+      alert(err?.response?.data?.error || "Failed to reschedule interview");
       throw err; // Re-throw to let modal handle loading state
     }
   };
@@ -450,27 +458,32 @@ export default function EmployerInterviewsPage() {
     );
 
     if (rating === "not-reviewed") {
-      return interviews.filter(
-        (i) => i.status === "COMPLETED" && !i.review
-      ).length;
+      return interviews.filter((i) => i.status === "COMPLETED" && !i.review)
+        .length;
     }
     if (rating === "5") {
-      return completedWithReview.filter((i) => i.review.overallRating === 5).length;
+      return completedWithReview.filter((i) => i.review.overallRating === 5)
+        .length;
     }
     if (rating === "4") {
-      return completedWithReview.filter((i) => i.review.overallRating === 4).length;
+      return completedWithReview.filter((i) => i.review.overallRating === 4)
+        .length;
     }
     if (rating === "3") {
-      return completedWithReview.filter((i) => i.review.overallRating === 3).length;
+      return completedWithReview.filter((i) => i.review.overallRating === 3)
+        .length;
     }
     if (rating === "2") {
-      return completedWithReview.filter((i) => i.review.overallRating === 2).length;
+      return completedWithReview.filter((i) => i.review.overallRating === 2)
+        .length;
     }
     if (rating === "1") {
-      return completedWithReview.filter((i) => i.review.overallRating === 1).length;
+      return completedWithReview.filter((i) => i.review.overallRating === 1)
+        .length;
     }
     if (rating === "0") {
-      return completedWithReview.filter((i) => i.review.overallRating === 0).length;
+      return completedWithReview.filter((i) => i.review.overallRating === 0)
+        .length;
     }
     return interviews.filter((i) => i.status === "COMPLETED").length;
   };
@@ -499,7 +512,12 @@ export default function EmployerInterviewsPage() {
 
   // Helper function to parse interview notes and extract reschedule info
   const parseInterviewNotes = (notes: string | null) => {
-    if (!notes) return { displayNotes: null, rescheduleReason: null, isPendingReschedule: false };
+    if (!notes)
+      return {
+        displayNotes: null,
+        rescheduleReason: null,
+        isPendingReschedule: false,
+      };
 
     // Check if this is a pending reschedule (not yet sent to candidate)
     if (notes.includes("[PENDING_RESCHEDULE]")) {
@@ -517,7 +535,11 @@ export default function EmployerInterviewsPage() {
       return { displayNotes, rescheduleReason, isPendingReschedule: false };
     }
 
-    return { displayNotes: notes, rescheduleReason: null, isPendingReschedule: false };
+    return {
+      displayNotes: notes,
+      rescheduleReason: null,
+      isPendingReschedule: false,
+    };
   };
 
   // Filter and search interviews
@@ -581,7 +603,10 @@ export default function EmployerInterviewsPage() {
         if (interview.review) return false;
       } else {
         const targetRating = parseInt(ratingFilter);
-        if (!interview.review || interview.review.overallRating !== targetRating) {
+        if (
+          !interview.review ||
+          interview.review.overallRating !== targetRating
+        ) {
           return false;
         }
       }
@@ -631,6 +656,29 @@ export default function EmployerInterviewsPage() {
       : new Date(b.createdAt);
     return aDate.getTime() - bDate.getTime();
   });
+
+  // Categorize interviews into active and past
+  const categorizeInterviews = (interviews: any[]) => {
+    const active = interviews.filter(
+      (i) =>
+        i.status === "SCHEDULED" ||
+        i.status === "AWAITING_CANDIDATE" ||
+        i.status === "AWAITING_CONFIRMATION" ||
+        i.status === "PENDING_AVAILABILITY"
+    );
+
+    const past = interviews.filter(
+      (i) =>
+        i.status === "COMPLETED" ||
+        i.status === "CANCELLED" ||
+        i.status === "RESCHEDULED"
+    );
+
+    return { active, past };
+  };
+
+  const { active: activeInterviews, past: pastInterviews } =
+    categorizeInterviews(sortedInterviews);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -840,11 +888,13 @@ export default function EmployerInterviewsPage() {
                 <div className="border-t border-secondary-200"></div>
 
                 {/* Row 2: Secondary Filters (Dropdowns) */}
-                <div className={`grid gap-4 ${
-                  statusFilter === "completed" || statusFilter === "all"
-                    ? "grid-cols-1 md:grid-cols-4"
-                    : "grid-cols-1 md:grid-cols-3"
-                }`}>
+                <div
+                  className={`grid gap-4 ${
+                    statusFilter === "completed" || statusFilter === "all"
+                      ? "grid-cols-1 md:grid-cols-4"
+                      : "grid-cols-1 md:grid-cols-3"
+                  }`}
+                >
                   {/* Skills Filter */}
                   <div>
                     <label className="text-sm font-medium text-secondary-700 mb-2 block">
@@ -922,14 +972,30 @@ export default function EmployerInterviewsPage() {
                         onChange={(e) => setRatingFilter(e.target.value)}
                         className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
                       >
-                        <option value="all">All ({getRatingCount("all")})</option>
-                        <option value="5">⭐⭐⭐⭐⭐ 5 Stars ({getRatingCount("5")})</option>
-                        <option value="4">⭐⭐⭐⭐ 4 Stars ({getRatingCount("4")})</option>
-                        <option value="3">⭐⭐⭐ 3 Stars ({getRatingCount("3")})</option>
-                        <option value="2">⭐⭐ 2 Stars ({getRatingCount("2")})</option>
-                        <option value="1">⭐ 1 Star ({getRatingCount("1")})</option>
-                        <option value="0">0 Stars ({getRatingCount("0")})</option>
-                        <option value="not-reviewed">Not Reviewed ({getRatingCount("not-reviewed")})</option>
+                        <option value="all">
+                          All ({getRatingCount("all")})
+                        </option>
+                        <option value="5">
+                          ⭐⭐⭐⭐⭐ 5 Stars ({getRatingCount("5")})
+                        </option>
+                        <option value="4">
+                          ⭐⭐⭐⭐ 4 Stars ({getRatingCount("4")})
+                        </option>
+                        <option value="3">
+                          ⭐⭐⭐ 3 Stars ({getRatingCount("3")})
+                        </option>
+                        <option value="2">
+                          ⭐⭐ 2 Stars ({getRatingCount("2")})
+                        </option>
+                        <option value="1">
+                          ⭐ 1 Star ({getRatingCount("1")})
+                        </option>
+                        <option value="0">
+                          0 Stars ({getRatingCount("0")})
+                        </option>
+                        <option value="not-reviewed">
+                          Not Reviewed ({getRatingCount("not-reviewed")})
+                        </option>
                       </select>
                     </div>
                   )}
@@ -973,7 +1039,7 @@ export default function EmployerInterviewsPage() {
           </Card>
 
           {/* Interviews List */}
-          {sortedInterviews.length === 0 ? (
+          {filteredInterviews.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
                 <Video className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
@@ -990,457 +1056,1172 @@ export default function EmployerInterviewsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
-              {sortedInterviews.map((interview) => {
-                const interviewDate = interview.scheduledAt
-                  ? new Date(interview.scheduledAt)
-                  : null;
-                const isUpcoming = interviewDate && interviewDate >= new Date();
-                const candidate = interview.application?.candidate;
-                const candidateName =
-                  candidate?.user?.name || "Unknown Candidate";
-                const candidateImage = candidate?.user?.image;
-                const jobTitle =
-                  interview.application?.job?.title || "Unknown Position";
-                const candidateLocation = candidate?.location;
-                const candidateSkills = candidate?.skills || [];
-                const yearsOfExperience = candidate?.experience;
-                const testTier = candidate?.testTier;
-                const testScore = candidate?.testScore;
-                const currentRole = candidate?.workExperiences?.[0];
+            <div className="space-y-6">
+              {/* Active Interviews Section - Always Visible */}
+              {activeInterviews.length > 0 && (
+                <div>
+                  <div className="mb-4 flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-secondary-900">
+                      Active Interviews
+                    </h2>
+                    <Badge variant="primary">{activeInterviews.length}</Badge>
+                  </div>
+                  <div className="space-y-4">
+                    {activeInterviews.map((interview) => {
+                      const interviewDate = interview.scheduledAt
+                        ? new Date(interview.scheduledAt)
+                        : null;
+                      const isUpcoming =
+                        interviewDate && interviewDate >= new Date();
+                      const candidate = interview.application?.candidate;
+                      const candidateName =
+                        candidate?.user?.name || "Unknown Candidate";
+                      const candidateImage = candidate?.user?.image;
+                      const jobTitle =
+                        interview.application?.job?.title || "Unknown Position";
+                      const candidateLocation = candidate?.location;
+                      const candidateSkills = candidate?.skills || [];
+                      const yearsOfExperience = candidate?.experience;
+                      const testTier = candidate?.testTier;
+                      const testScore = candidate?.testScore;
+                      const currentRole = candidate?.workExperiences?.[0];
 
-                return (
-                  <Card key={interview.id}>
-                    <CardContent className="p-6">
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="flex-1">
-                          {/* Header with avatar and badges */}
-                          <div className="mb-3 flex items-start gap-4">
-                            {/* Avatar */}
-                            <div className="relative h-14 w-14 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-lg overflow-hidden">
-                              {candidateImage ? (
-                                <img
-                                  src={candidateImage}
-                                  alt={candidateName}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <span>
-                                  {candidateName.charAt(0).toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Name, role, and badges */}
-                            <div className="flex-1">
-                              <div className="mb-2 flex items-center gap-2 flex-wrap">
-                                <Badge variant="primary" className="gap-1">
-                                  <Video className="h-3 w-3" />
-                                  Video
-                                </Badge>
-                                {getStatusBadge(interview.status)}
-
-                                {/* Round Badge */}
-                                {(interview.round || interview.roundNumber) && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="gap-1 bg-purple-50 text-purple-700 border-purple-200"
-                                  >
-                                    <Target className="h-3 w-3" />
-                                    {interview.round ||
-                                      interview.roundName ||
-                                      `Round ${interview.roundNumber}`}
-                                  </Badge>
-                                )}
-
-                                {testTier ? (
-                                  <Badge
-                                    variant={
-                                      testTier === "ELITE"
-                                        ? "success"
-                                        : testTier === "ADVANCED"
-                                        ? "primary"
-                                        : "secondary"
-                                    }
-                                    className="gap-1"
-                                  >
-                                    {testTier}
-                                    {testScore && (
-                                      <span className="ml-1">
-                                        ({Math.round(testScore)}%)
+                      return (
+                        <Card key={interview.id}>
+                          <CardContent className="p-6">
+                            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                              <div className="flex-1">
+                                {/* Header with avatar and badges */}
+                                <div className="mb-3 flex items-start gap-4">
+                                  {/* Avatar */}
+                                  <div className="relative h-14 w-14 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-lg overflow-hidden">
+                                    {candidateImage ? (
+                                      <img
+                                        src={candidateImage}
+                                        alt={candidateName}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      <span>
+                                        {candidateName.charAt(0).toUpperCase()}
                                       </span>
                                     )}
-                                  </Badge>
-                                ) : (
-                                  <Badge
-                                    variant="secondary"
-                                    className="gap-1 bg-gray-100 text-gray-600 border-gray-300"
+                                  </div>
+
+                                  {/* Name, role, and badges */}
+                                  <div className="flex-1">
+                                    <div className="mb-2 flex items-center gap-2 flex-wrap">
+                                      <Badge
+                                        variant="primary"
+                                        className="gap-1"
+                                      >
+                                        <Video className="h-3 w-3" />
+                                        Video
+                                      </Badge>
+                                      {getStatusBadge(interview.status)}
+
+                                      {/* Round Badge */}
+                                      {(interview.round ||
+                                        interview.roundNumber) && (
+                                        <Badge
+                                          variant="secondary"
+                                          className="gap-1 bg-purple-50 text-purple-700 border-purple-200"
+                                        >
+                                          <Target className="h-3 w-3" />
+                                          {interview.round ||
+                                            interview.roundName ||
+                                            `Round ${interview.roundNumber}`}
+                                        </Badge>
+                                      )}
+
+                                      {testTier ? (
+                                        <Badge
+                                          variant={
+                                            testTier === "ELITE"
+                                              ? "success"
+                                              : testTier === "ADVANCED"
+                                              ? "primary"
+                                              : "secondary"
+                                          }
+                                          className="gap-1"
+                                        >
+                                          {testTier}
+                                          {testScore && (
+                                            <span className="ml-1">
+                                              ({Math.round(testScore)}%)
+                                            </span>
+                                          )}
+                                        </Badge>
+                                      ) : (
+                                        <Badge
+                                          variant="secondary"
+                                          className="gap-1 bg-gray-100 text-gray-600 border-gray-300"
+                                        >
+                                          <svg
+                                            className="h-3 w-3"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth={2}
+                                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                            />
+                                          </svg>
+                                          No assessment taken
+                                        </Badge>
+                                      )}
+                                    </div>
+
+                                    <h3 className="mb-1 text-lg font-bold text-secondary-900">
+                                      {candidateName}
+                                    </h3>
+
+                                    {/* Current role/company */}
+                                    {currentRole && (
+                                      <p className="text-sm text-secondary-700 mb-1">
+                                        {currentRole.jobTitle} at{" "}
+                                        {currentRole.companyName}
+                                        {currentRole.isCurrent && (
+                                          <span className="ml-1 text-xs text-green-600">
+                                            (Current)
+                                          </span>
+                                        )}
+                                      </p>
+                                    )}
+
+                                    {/* Job title */}
+                                    <p className="text-sm text-secondary-600 flex items-center gap-1">
+                                      <Briefcase className="h-3.5 w-3.5" />
+                                      {jobTitle}
+                                    </p>
+
+                                    {/* Location and experience */}
+                                    <div className="mt-2 flex items-center gap-4 text-sm text-secondary-600">
+                                      {candidateLocation && (
+                                        <span className="flex items-center gap-1">
+                                          <svg
+                                            className="h-3.5 w-3.5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth={2}
+                                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                            />
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth={2}
+                                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                            />
+                                          </svg>
+                                          {candidateLocation}
+                                        </span>
+                                      )}
+                                      {yearsOfExperience !== null &&
+                                        yearsOfExperience !== undefined && (
+                                          <span className="flex items-center gap-1">
+                                            <svg
+                                              className="h-3.5 w-3.5"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                              />
+                                            </svg>
+                                            {yearsOfExperience}{" "}
+                                            {yearsOfExperience === 1
+                                              ? "year"
+                                              : "years"}{" "}
+                                            exp
+                                          </span>
+                                        )}
+                                    </div>
+
+                                    {/* Skills */}
+                                    {candidateSkills.length > 0 && (
+                                      <div className="mt-3 flex flex-wrap gap-1.5">
+                                        {candidateSkills
+                                          .slice(0, 5)
+                                          .map((skill, idx) => (
+                                            <span
+                                              key={idx}
+                                              className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-200"
+                                            >
+                                              {skill}
+                                            </span>
+                                          ))}
+                                        {candidateSkills.length > 5 && (
+                                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                                            +{candidateSkills.length - 5} more
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {interview.status === "AWAITING_CANDIDATE" && (
+                                  <p className="mb-3 text-sm text-secondary-600">
+                                    Waiting for candidate to select from your
+                                    available time slots
+                                  </p>
+                                )}
+
+                                {interview.status ===
+                                  "AWAITING_CONFIRMATION" && (
+                                  <p className="mb-3 text-sm font-medium text-warning-600">
+                                    Candidate has selected time slots - please
+                                    review and confirm
+                                  </p>
+                                )}
+
+                                {interviewDate && (
+                                  <>
+                                    <div className="flex flex-wrap gap-4 text-sm text-secondary-600">
+                                      <span className="flex items-center gap-1.5">
+                                        <CalendarIcon className="h-4 w-4" />
+                                        {interviewDate.toLocaleDateString(
+                                          "en-US",
+                                          {
+                                            weekday: "long",
+                                            month: "long",
+                                            day: "numeric",
+                                            year: "numeric",
+                                          }
+                                        )}
+                                      </span>
+                                      <span className="flex items-center gap-1.5">
+                                        <Clock className="h-4 w-4" />
+                                        {interviewDate.toLocaleTimeString(
+                                          "en-US",
+                                          {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          }
+                                        )}{" "}
+                                        ({interview.duration} min)
+                                      </span>
+                                    </div>
+
+                                    {/* Application Status Badge */}
+                                    {interview.status !== "RESCHEDULED" && (
+                                      <div className="mt-3">
+                                        {interview.application?.status ===
+                                        "REJECTED" ? (
+                                          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700 border border-red-200">
+                                            <svg
+                                              className="h-4 w-4"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M6 18L18 6M6 6l12 12"
+                                              />
+                                            </svg>
+                                            Rejected
+                                          </span>
+                                        ) : interview.application?.status ===
+                                          "ACCEPTED" ? (
+                                          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 border border-green-200">
+                                            <svg
+                                              className="h-4 w-4"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M5 13l4 4L19 7"
+                                              />
+                                            </svg>
+                                            Hired
+                                          </span>
+                                        ) : (
+                                          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 border border-blue-200">
+                                            <svg
+                                              className="h-4 w-4"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                              />
+                                            </svg>
+                                            In process
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+
+                                {(() => {
+                                  const {
+                                    displayNotes,
+                                    rescheduleReason,
+                                    isPendingReschedule,
+                                  } = parseInterviewNotes(interview.notes);
+
+                                  return (
+                                    <>
+                                      {displayNotes &&
+                                        interview.status !== "RESCHEDULED" && (
+                                          <div className="mt-4 rounded-lg bg-yellow-50 p-3">
+                                            <div className="mb-1 flex items-center gap-2">
+                                              <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                              <span className="text-sm font-semibold text-yellow-900">
+                                                Notes from Employer:
+                                              </span>
+                                            </div>
+                                            <p className="text-sm text-yellow-800">
+                                              {displayNotes}
+                                            </p>
+                                          </div>
+                                        )}
+                                      {rescheduleReason && (
+                                        <div
+                                          className={`mt-4 rounded-lg p-3 ${
+                                            isPendingReschedule
+                                              ? "bg-orange-50"
+                                              : "bg-blue-50"
+                                          }`}
+                                        >
+                                          <div className="mb-1 flex items-center gap-2">
+                                            <AlertCircle
+                                              className={`h-4 w-4 ${
+                                                isPendingReschedule
+                                                  ? "text-orange-600"
+                                                  : "text-blue-600"
+                                              }`}
+                                            />
+                                            <span
+                                              className={`text-sm font-semibold ${
+                                                isPendingReschedule
+                                                  ? "text-orange-900"
+                                                  : "text-blue-900"
+                                              }`}
+                                            >
+                                              {isPendingReschedule
+                                                ? "⏳ Pending Reschedule Reason:"
+                                                : "Reschedule Reason:"}
+                                            </span>
+                                          </div>
+                                          <p
+                                            className={`text-sm ${
+                                              isPendingReschedule
+                                                ? "text-orange-800"
+                                                : "text-blue-800"
+                                            }`}
+                                          >
+                                            {rescheduleReason}
+                                          </p>
+                                        </div>
+                                      )}
+                                    </>
+                                  );
+                                })()}
+                              </div>
+
+                              <div className="flex flex-wrap gap-2 lg:flex-col">
+                                {interview.status ===
+                                  "AWAITING_CONFIRMATION" && (
+                                  <Button
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={() =>
+                                      router.push(
+                                        `/employer/interviews/confirm/${interview.id}`
+                                      )
+                                    }
                                   >
-                                    <svg
-                                      className="h-3 w-3"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
+                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                    Review & Confirm
+                                  </Button>
+                                )}
+
+                                {interview.meetingLink &&
+                                  isUpcoming &&
+                                  interview.status !== "RESCHEDULED" && (
+                                    <a
+                                      href={interview.meetingLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 rounded-lg border border-primary-600 bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
                                     >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                      <ExternalLink className="h-4 w-4" />
+                                      Join Meeting
+                                    </a>
+                                  )}
+
+                                {interview.status === "COMPLETED" && (
+                                  <button
+                                    onClick={() =>
+                                      handleOpenReviewModal(interview)
+                                    }
+                                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                      interview.review
+                                        ? "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
+                                        : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
+                                    }`}
+                                  >
+                                    {interview.review ? (
+                                      <div className="flex items-center justify-between">
+                                        <span className="flex items-center gap-1.5">
+                                          <CheckCircle className="h-4 w-4" />
+                                          Reviewed
+                                        </span>
+                                        <div className="flex items-center gap-1">
+                                          <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                                          <span className="font-semibold">
+                                            {interview.review.overallRating}/5
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1.5">
+                                        <AlertCircle className="h-4 w-4" />
+                                        Not Reviewed
+                                      </div>
+                                    )}
+                                  </button>
+                                )}
+
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    router.push(
+                                      `/employer/applicants/${interview.applicationId}`
+                                    )
+                                  }
+                                >
+                                  <User className="mr-2 h-4 w-4" />
+                                  View Candidate
+                                </Button>
+
+                                {interview.status === "SCHEDULED" &&
+                                  isUpcoming && (
+                                    <>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleMarkCompleted(interview.id)
+                                        }
+                                        className="border-green-300 text-green-600 hover:bg-green-50"
+                                      >
+                                        <CheckCircle className="mr-2 h-4 w-4" />
+                                        Mark Completed
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleOpenNotesModal(interview)
+                                        }
+                                      >
+                                        <FileText className="mr-2 h-4 w-4" />
+                                        {interview.notes
+                                          ? "Edit Notes"
+                                          : "Add Notes"}
+                                      </Button>
+                                      <InterviewActionsDropdown
+                                        onMessage={() => {
+                                          const candidateId =
+                                            interview.application?.candidate
+                                              ?.user?.id;
+                                          if (candidateId) {
+                                            router.push(
+                                              `/employer/messages?candidateId=${candidateId}`
+                                            );
+                                          }
+                                        }}
+                                        onReschedule={() => {
+                                          handleOpenRescheduleModal(interview);
+                                        }}
+                                        onCancel={() =>
+                                          handleCancelInterview(interview.id)
+                                        }
                                       />
-                                    </svg>
-                                    No assessment taken
-                                  </Badge>
+                                    </>
+                                  )}
+
+                                {interview.status === "COMPLETED" && (
+                                  <>
+                                    <Button
+                                      variant="primary"
+                                      size="sm"
+                                      onClick={() =>
+                                        handleOpenDecisionModal(interview)
+                                      }
+                                    >
+                                      <CheckCircle className="mr-2 h-4 w-4" />
+                                      Make Decision
+                                    </Button>
+                                    <CompletedInterviewActionsDropdown
+                                      onMessage={() => {
+                                        const candidateId =
+                                          interview.application?.candidate?.user
+                                            ?.id;
+                                        if (candidateId) {
+                                          router.push(
+                                            `/employer/messages?candidateId=${candidateId}`
+                                          );
+                                        }
+                                      }}
+                                      onReview={() =>
+                                        handleOpenReviewModal(interview)
+                                      }
+                                      onSendFeedback={() =>
+                                        handleOpenFeedbackModal(interview)
+                                      }
+                                    />
+                                  </>
                                 )}
                               </div>
-
-                              <h3 className="mb-1 text-lg font-bold text-secondary-900">
-                                {candidateName}
-                              </h3>
-
-                              {/* Current role/company */}
-                              {currentRole && (
-                                <p className="text-sm text-secondary-700 mb-1">
-                                  {currentRole.jobTitle} at{" "}
-                                  {currentRole.companyName}
-                                  {currentRole.isCurrent && (
-                                    <span className="ml-1 text-xs text-green-600">
-                                      (Current)
-                                    </span>
-                                  )}
-                                </p>
-                              )}
-
-                              {/* Job title */}
-                              <p className="text-sm text-secondary-600 flex items-center gap-1">
-                                <Briefcase className="h-3.5 w-3.5" />
-                                {jobTitle}
-                              </p>
-
-                              {/* Location and experience */}
-                              <div className="mt-2 flex items-center gap-4 text-sm text-secondary-600">
-                                {candidateLocation && (
-                                  <span className="flex items-center gap-1">
-                                    <svg
-                                      className="h-3.5 w-3.5"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                      />
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                      />
-                                    </svg>
-                                    {candidateLocation}
-                                  </span>
-                                )}
-                                {yearsOfExperience !== null &&
-                                  yearsOfExperience !== undefined && (
-                                    <span className="flex items-center gap-1">
-                                      <svg
-                                        className="h-3.5 w-3.5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                        />
-                                      </svg>
-                                      {yearsOfExperience}{" "}
-                                      {yearsOfExperience === 1
-                                        ? "year"
-                                        : "years"}{" "}
-                                      exp
-                                    </span>
-                                  )}
-                              </div>
-
-                              {/* Skills */}
-                              {candidateSkills.length > 0 && (
-                                <div className="mt-3 flex flex-wrap gap-1.5">
-                                  {candidateSkills
-                                    .slice(0, 5)
-                                    .map((skill, idx) => (
-                                      <span
-                                        key={idx}
-                                        className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-200"
-                                      >
-                                        {skill}
-                                      </span>
-                                    ))}
-                                  {candidateSkills.length > 5 && (
-                                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                                      +{candidateSkills.length - 5} more
-                                    </span>
-                                  )}
-                                </div>
-                              )}
                             </div>
-                          </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
-                          {interview.status === "AWAITING_CANDIDATE" && (
-                            <p className="mb-3 text-sm text-secondary-600">
-                              Waiting for candidate to select from your
-                              available time slots
-                            </p>
-                          )}
+              {/* Past Interviews Section - Always visible when there are past interviews, collapsed by default */}
+              {pastInterviews.length > 0 && (
+                <div>
+                  <button
+                    onClick={() => setPastSectionExpanded(!pastSectionExpanded)}
+                    className="mb-4 flex w-full items-center justify-between rounded-xl bg-white p-4 shadow-sm border border-secondary-200 hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-semibold text-secondary-700">
+                        Past Interviews
+                      </h2>
+                      <Badge variant="secondary">{pastInterviews.length}</Badge>
+                    </div>
+                    {pastSectionExpanded ? (
+                      <svg
+                        className="h-5 w-5 text-secondary-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 15l7-7 7 7"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="h-5 w-5 text-secondary-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    )}
+                  </button>
 
-                          {interview.status === "AWAITING_CONFIRMATION" && (
-                            <p className="mb-3 text-sm font-medium text-warning-600">
-                              Candidate has selected time slots - please review
-                              and confirm
-                            </p>
-                          )}
+                  {pastSectionExpanded && (
+                    <div className="space-y-4">
+                      {pastInterviews.map((interview) => {
+                        const interviewDate = interview.scheduledAt
+                          ? new Date(interview.scheduledAt)
+                          : null;
+                        const isUpcoming =
+                          interviewDate && interviewDate >= new Date();
+                        const candidate = interview.application?.candidate;
+                        const candidateName =
+                          candidate?.user?.name || "Unknown Candidate";
+                        const candidateImage = candidate?.user?.image;
+                        const jobTitle =
+                          interview.application?.job?.title ||
+                          "Unknown Position";
+                        const candidateLocation = candidate?.location;
+                        const candidateSkills = candidate?.skills || [];
+                        const yearsOfExperience = candidate?.experience;
+                        const testTier = candidate?.testTier;
+                        const testScore = candidate?.testScore;
+                        const currentRole = candidate?.workExperiences?.[0];
 
-                          {interviewDate && (
-                            <>
-                              <div className="flex flex-wrap gap-4 text-sm text-secondary-600">
-                                <span className="flex items-center gap-1.5">
-                                  <CalendarIcon className="h-4 w-4" />
-                                  {interviewDate.toLocaleDateString("en-US", {
-                                    weekday: "long",
-                                    month: "long",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  })}
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                  <Clock className="h-4 w-4" />
-                                  {interviewDate.toLocaleTimeString("en-US", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}{" "}
-                                  ({interview.duration} min)
-                                </span>
-                              </div>
+                        return (
+                          <Card key={interview.id}>
+                            <CardContent className="p-6">
+                              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                <div className="flex-1">
+                                  {/* Header with avatar and badges */}
+                                  <div className="mb-3 flex items-start gap-4">
+                                    {/* Avatar */}
+                                    <div className="relative h-14 w-14 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-lg overflow-hidden">
+                                      {candidateImage ? (
+                                        <img
+                                          src={candidateImage}
+                                          alt={candidateName}
+                                          className="h-full w-full object-cover"
+                                        />
+                                      ) : (
+                                        <span>
+                                          {candidateName
+                                            .charAt(0)
+                                            .toUpperCase()}
+                                        </span>
+                                      )}
+                                    </div>
 
-                              {/* Application Status Badge */}
-                              {interview.status !== "RESCHEDULED" && (
-                                <div className="mt-3">
-                                  {interview.application?.status === "REJECTED" ? (
-                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700 border border-red-200">
-                                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                      </svg>
-                                      Rejected
-                                    </span>
-                                  ) : interview.application?.status === "ACCEPTED" ? (
-                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 border border-green-200">
-                                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                      </svg>
-                                      Hired
-                                    </span>
-                                  ) : (
-                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 border border-blue-200">
-                                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                      </svg>
-                                      In process
-                                    </span>
+                                    {/* Name, role, and badges */}
+                                    <div className="flex-1">
+                                      <div className="mb-2 flex items-center gap-2 flex-wrap">
+                                        <Badge
+                                          variant="primary"
+                                          className="gap-1"
+                                        >
+                                          <Video className="h-3 w-3" />
+                                          Video
+                                        </Badge>
+                                        {getStatusBadge(interview.status)}
+
+                                        {/* Round Badge */}
+                                        {(interview.round ||
+                                          interview.roundNumber) && (
+                                          <Badge
+                                            variant="secondary"
+                                            className="gap-1 bg-purple-50 text-purple-700 border-purple-200"
+                                          >
+                                            <Target className="h-3 w-3" />
+                                            {interview.round ||
+                                              interview.roundName ||
+                                              `Round ${interview.roundNumber}`}
+                                          </Badge>
+                                        )}
+
+                                        {testTier ? (
+                                          <Badge
+                                            variant={
+                                              testTier === "ELITE"
+                                                ? "success"
+                                                : testTier === "ADVANCED"
+                                                ? "primary"
+                                                : "secondary"
+                                            }
+                                            className="gap-1"
+                                          >
+                                            {testTier}
+                                            {testScore && (
+                                              <span className="ml-1">
+                                                ({Math.round(testScore)}%)
+                                              </span>
+                                            )}
+                                          </Badge>
+                                        ) : (
+                                          <Badge
+                                            variant="secondary"
+                                            className="gap-1 bg-gray-100 text-gray-600 border-gray-300"
+                                          >
+                                            <svg
+                                              className="h-3 w-3"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                              />
+                                            </svg>
+                                            No assessment taken
+                                          </Badge>
+                                        )}
+                                      </div>
+
+                                      <h3 className="mb-1 text-lg font-bold text-secondary-900">
+                                        {candidateName}
+                                      </h3>
+
+                                      {/* Current role/company */}
+                                      {currentRole && (
+                                        <p className="text-sm text-secondary-700 mb-1">
+                                          {currentRole.jobTitle} at{" "}
+                                          {currentRole.companyName}
+                                          {currentRole.isCurrent && (
+                                            <span className="ml-1 text-xs text-green-600">
+                                              (Current)
+                                            </span>
+                                          )}
+                                        </p>
+                                      )}
+
+                                      {/* Job title */}
+                                      <p className="text-sm text-secondary-600 flex items-center gap-1">
+                                        <Briefcase className="h-3.5 w-3.5" />
+                                        {jobTitle}
+                                      </p>
+
+                                      {/* Location and experience */}
+                                      <div className="mt-2 flex items-center gap-4 text-sm text-secondary-600">
+                                        {candidateLocation && (
+                                          <span className="flex items-center gap-1">
+                                            <svg
+                                              className="h-3.5 w-3.5"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                              />
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                              />
+                                            </svg>
+                                            {candidateLocation}
+                                          </span>
+                                        )}
+                                        {yearsOfExperience !== null &&
+                                          yearsOfExperience !== undefined && (
+                                            <span className="flex items-center gap-1">
+                                              <svg
+                                                className="h-3.5 w-3.5"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                              >
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth={2}
+                                                  d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                                />
+                                              </svg>
+                                              {yearsOfExperience}{" "}
+                                              {yearsOfExperience === 1
+                                                ? "year"
+                                                : "years"}{" "}
+                                              exp
+                                            </span>
+                                          )}
+                                      </div>
+
+                                      {/* Skills */}
+                                      {candidateSkills.length > 0 && (
+                                        <div className="mt-3 flex flex-wrap gap-1.5">
+                                          {candidateSkills
+                                            .slice(0, 5)
+                                            .map((skill, idx) => (
+                                              <span
+                                                key={idx}
+                                                className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-200"
+                                              >
+                                                {skill}
+                                              </span>
+                                            ))}
+                                          {candidateSkills.length > 5 && (
+                                            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                                              +{candidateSkills.length - 5} more
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {interview.status ===
+                                    "AWAITING_CANDIDATE" && (
+                                    <p className="mb-3 text-sm text-secondary-600">
+                                      Waiting for candidate to select from your
+                                      available time slots
+                                    </p>
+                                  )}
+
+                                  {interview.status ===
+                                    "AWAITING_CONFIRMATION" && (
+                                    <p className="mb-3 text-sm font-medium text-warning-600">
+                                      Candidate has selected time slots - please
+                                      review and confirm
+                                    </p>
+                                  )}
+
+                                  {interviewDate && (
+                                    <>
+                                      <div className="flex flex-wrap gap-4 text-sm text-secondary-600">
+                                        <span className="flex items-center gap-1.5">
+                                          <CalendarIcon className="h-4 w-4" />
+                                          {interviewDate.toLocaleDateString(
+                                            "en-US",
+                                            {
+                                              weekday: "long",
+                                              month: "long",
+                                              day: "numeric",
+                                              year: "numeric",
+                                            }
+                                          )}
+                                        </span>
+                                        <span className="flex items-center gap-1.5">
+                                          <Clock className="h-4 w-4" />
+                                          {interviewDate.toLocaleTimeString(
+                                            "en-US",
+                                            {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                            }
+                                          )}{" "}
+                                          ({interview.duration} min)
+                                        </span>
+                                      </div>
+
+                                      {/* Application Status Badge */}
+                                      {interview.status !== "RESCHEDULED" && (
+                                        <div className="mt-3">
+                                          {interview.application?.status ===
+                                          "REJECTED" ? (
+                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700 border border-red-200">
+                                              <svg
+                                                className="h-4 w-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                              >
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth={2}
+                                                  d="M6 18L18 6M6 6l12 12"
+                                                />
+                                              </svg>
+                                              Rejected
+                                            </span>
+                                          ) : interview.application?.status ===
+                                            "ACCEPTED" ? (
+                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 border border-green-200">
+                                              <svg
+                                                className="h-4 w-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                              >
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth={2}
+                                                  d="M5 13l4 4L19 7"
+                                                />
+                                              </svg>
+                                              Hired
+                                            </span>
+                                          ) : (
+                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 border border-blue-200">
+                                              <svg
+                                                className="h-4 w-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                              >
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth={2}
+                                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                              </svg>
+                                              In process
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+
+                                  {(() => {
+                                    const {
+                                      displayNotes,
+                                      rescheduleReason,
+                                      isPendingReschedule,
+                                    } = parseInterviewNotes(interview.notes);
+
+                                    return (
+                                      <>
+                                        {displayNotes &&
+                                          interview.status !==
+                                            "RESCHEDULED" && (
+                                            <div className="mt-4 rounded-lg bg-yellow-50 p-3">
+                                              <div className="mb-1 flex items-center gap-2">
+                                                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                                <span className="text-sm font-semibold text-yellow-900">
+                                                  Notes from Employer:
+                                                </span>
+                                              </div>
+                                              <p className="text-sm text-yellow-800">
+                                                {displayNotes}
+                                              </p>
+                                            </div>
+                                          )}
+                                        {rescheduleReason && (
+                                          <div
+                                            className={`mt-4 rounded-lg p-3 ${
+                                              isPendingReschedule
+                                                ? "bg-orange-50"
+                                                : "bg-blue-50"
+                                            }`}
+                                          >
+                                            <div className="mb-1 flex items-center gap-2">
+                                              <AlertCircle
+                                                className={`h-4 w-4 ${
+                                                  isPendingReschedule
+                                                    ? "text-orange-600"
+                                                    : "text-blue-600"
+                                                }`}
+                                              />
+                                              <span
+                                                className={`text-sm font-semibold ${
+                                                  isPendingReschedule
+                                                    ? "text-orange-900"
+                                                    : "text-blue-900"
+                                                }`}
+                                              >
+                                                {isPendingReschedule
+                                                  ? "⏳ Pending Reschedule Reason:"
+                                                  : "Reschedule Reason:"}
+                                              </span>
+                                            </div>
+                                            <p
+                                              className={`text-sm ${
+                                                isPendingReschedule
+                                                  ? "text-orange-800"
+                                                  : "text-blue-800"
+                                              }`}
+                                            >
+                                              {rescheduleReason}
+                                            </p>
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+
+                                <div className="flex flex-wrap gap-2 lg:flex-col">
+                                  {interview.status ===
+                                    "AWAITING_CONFIRMATION" && (
+                                    <Button
+                                      variant="primary"
+                                      size="sm"
+                                      onClick={() =>
+                                        router.push(
+                                          `/employer/interviews/confirm/${interview.id}`
+                                        )
+                                      }
+                                    >
+                                      <CheckCircle className="mr-2 h-4 w-4" />
+                                      Review & Confirm
+                                    </Button>
+                                  )}
+
+                                  {interview.meetingLink &&
+                                    isUpcoming &&
+                                    interview.status !== "RESCHEDULED" && (
+                                      <a
+                                        href={interview.meetingLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 rounded-lg border border-primary-600 bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+                                      >
+                                        <ExternalLink className="h-4 w-4" />
+                                        Join Meeting
+                                      </a>
+                                    )}
+
+                                  {interview.status === "COMPLETED" && (
+                                    <button
+                                      onClick={() =>
+                                        handleOpenReviewModal(interview)
+                                      }
+                                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                        interview.review
+                                          ? "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
+                                          : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
+                                      }`}
+                                    >
+                                      {interview.review ? (
+                                        <div className="flex items-center justify-between">
+                                          <span className="flex items-center gap-1.5">
+                                            <CheckCircle className="h-4 w-4" />
+                                            Reviewed
+                                          </span>
+                                          <div className="flex items-center gap-1">
+                                            <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                                            <span className="font-semibold">
+                                              {interview.review.overallRating}/5
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center gap-1.5">
+                                          <AlertCircle className="h-4 w-4" />
+                                          Not Reviewed
+                                        </div>
+                                      )}
+                                    </button>
+                                  )}
+
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      router.push(
+                                        `/employer/applicants/${interview.applicationId}`
+                                      )
+                                    }
+                                  >
+                                    <User className="mr-2 h-4 w-4" />
+                                    View Candidate
+                                  </Button>
+
+                                  {interview.status === "SCHEDULED" &&
+                                    isUpcoming && (
+                                      <>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() =>
+                                            handleMarkCompleted(interview.id)
+                                          }
+                                          className="border-green-300 text-green-600 hover:bg-green-50"
+                                        >
+                                          <CheckCircle className="mr-2 h-4 w-4" />
+                                          Mark Completed
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() =>
+                                            handleOpenNotesModal(interview)
+                                          }
+                                        >
+                                          <FileText className="mr-2 h-4 w-4" />
+                                          {interview.notes
+                                            ? "Edit Notes"
+                                            : "Add Notes"}
+                                        </Button>
+                                        <InterviewActionsDropdown
+                                          onMessage={() => {
+                                            const candidateId =
+                                              interview.application?.candidate
+                                                ?.user?.id;
+                                            if (candidateId) {
+                                              router.push(
+                                                `/employer/messages?candidateId=${candidateId}`
+                                              );
+                                            }
+                                          }}
+                                          onReschedule={() => {
+                                            handleOpenRescheduleModal(
+                                              interview
+                                            );
+                                          }}
+                                          onCancel={() =>
+                                            handleCancelInterview(interview.id)
+                                          }
+                                        />
+                                      </>
+                                    )}
+
+                                  {interview.status === "COMPLETED" && (
+                                    <>
+                                      <Button
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleOpenDecisionModal(interview)
+                                        }
+                                      >
+                                        <CheckCircle className="mr-2 h-4 w-4" />
+                                        Make Decision
+                                      </Button>
+                                      <CompletedInterviewActionsDropdown
+                                        onMessage={() => {
+                                          const candidateId =
+                                            interview.application?.candidate
+                                              ?.user?.id;
+                                          if (candidateId) {
+                                            router.push(
+                                              `/employer/messages?candidateId=${candidateId}`
+                                            );
+                                          }
+                                        }}
+                                        onReview={() =>
+                                          handleOpenReviewModal(interview)
+                                        }
+                                        onSendFeedback={() =>
+                                          handleOpenFeedbackModal(interview)
+                                        }
+                                      />
+                                    </>
                                   )}
                                 </div>
-                              )}
-                            </>
-                          )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
 
-                          {(() => {
-                            const { displayNotes, rescheduleReason, isPendingReschedule } = parseInterviewNotes(interview.notes);
-
-                            return (
-                              <>
-                                {displayNotes && interview.status !== "RESCHEDULED" && (
-                                  <div className="mt-4 rounded-lg bg-yellow-50 p-3">
-                                    <div className="mb-1 flex items-center gap-2">
-                                      <AlertCircle className="h-4 w-4 text-yellow-600" />
-                                      <span className="text-sm font-semibold text-yellow-900">
-                                        Notes from Employer:
-                                      </span>
-                                    </div>
-                                    <p className="text-sm text-yellow-800">
-                                      {displayNotes}
-                                    </p>
-                                  </div>
-                                )}
-                                {rescheduleReason && (
-                                  <div className={`mt-4 rounded-lg p-3 ${isPendingReschedule ? 'bg-orange-50' : 'bg-blue-50'}`}>
-                                    <div className="mb-1 flex items-center gap-2">
-                                      <AlertCircle className={`h-4 w-4 ${isPendingReschedule ? 'text-orange-600' : 'text-blue-600'}`} />
-                                      <span className={`text-sm font-semibold ${isPendingReschedule ? 'text-orange-900' : 'text-blue-900'}`}>
-                                        {isPendingReschedule ? '⏳ Pending Reschedule Reason:' : 'Reschedule Reason:'}
-                                      </span>
-                                    </div>
-                                    <p className={`text-sm ${isPendingReschedule ? 'text-orange-800' : 'text-blue-800'}`}>
-                                      {rescheduleReason}
-                                    </p>
-                                  </div>
-                                )}
-                              </>
-                            );
-                          })()}
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 lg:flex-col">
-                          {interview.status === "AWAITING_CONFIRMATION" && (
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() =>
-                                router.push(
-                                  `/employer/interviews/confirm/${interview.id}`
-                                )
-                              }
-                            >
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Review & Confirm
-                            </Button>
-                          )}
-
-                          {interview.meetingLink && isUpcoming && interview.status !== "RESCHEDULED" && (
-                            <a
-                              href={interview.meetingLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 rounded-lg border border-primary-600 bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                              Join Meeting
-                            </a>
-                          )}
-
-                          {interview.status === "COMPLETED" && (
-                            <button
-                              onClick={() => handleOpenReviewModal(interview)}
-                              className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                interview.review
-                                  ? "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
-                                  : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
-                              }`}
-                            >
-                              {interview.review ? (
-                                <div className="flex items-center justify-between">
-                                  <span className="flex items-center gap-1.5">
-                                    <CheckCircle className="h-4 w-4" />
-                                    Reviewed
-                                  </span>
-                                  <div className="flex items-center gap-1">
-                                    <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                                    <span className="font-semibold">
-                                      {interview.review.overallRating}/5
-                                    </span>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-1.5">
-                                  <AlertCircle className="h-4 w-4" />
-                                  Not Reviewed
-                                </div>
-                              )}
-                            </button>
-                          )}
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              router.push(
-                                `/employer/applicants/${interview.applicationId}`
-                              )
-                            }
-                          >
-                            <User className="mr-2 h-4 w-4" />
-                            View Candidate
-                          </Button>
-
-                          {interview.status === "SCHEDULED" && isUpcoming && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  handleMarkCompleted(interview.id)
-                                }
-                                className="border-green-300 text-green-600 hover:bg-green-50"
-                              >
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Mark Completed
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleOpenNotesModal(interview)}
-                              >
-                                <FileText className="mr-2 h-4 w-4" />
-                                {interview.notes ? "Edit Notes" : "Add Notes"}
-                              </Button>
-                              <InterviewActionsDropdown
-                                onMessage={() => {
-                                  const candidateId =
-                                    interview.application?.candidate?.user?.id;
-                                  if (candidateId) {
-                                    router.push(
-                                      `/employer/messages?candidateId=${candidateId}`
-                                    );
-                                  }
-                                }}
-                                onReschedule={() => {
-                                  handleOpenRescheduleModal(interview);
-                                }}
-                                onCancel={() =>
-                                  handleCancelInterview(interview.id)
-                                }
-                              />
-                            </>
-                          )}
-
-                          {interview.status === "COMPLETED" && (
-                            <>
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                onClick={() =>
-                                  handleOpenDecisionModal(interview)
-                                }
-                              >
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Make Decision
-                              </Button>
-                              <CompletedInterviewActionsDropdown
-                                onMessage={() => {
-                                  const candidateId =
-                                    interview.application?.candidate?.user?.id;
-                                  if (candidateId) {
-                                    router.push(
-                                      `/employer/messages?candidateId=${candidateId}`
-                                    );
-                                  }
-                                }}
-                                onReview={() => handleOpenReviewModal(interview)}
-                                onSendFeedback={() =>
-                                  handleOpenFeedbackModal(interview)
-                                }
-                              />
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              {/* Empty state when no active interviews */}
+              {activeInterviews.length === 0 && (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <Video className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
+                    <h3 className="mb-2 text-xl font-bold text-secondary-900">
+                      No Active Interviews
+                    </h3>
+                    <p className="text-secondary-600">
+                      You don't have any active interviews scheduled at the
+                      moment.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
         </div>
@@ -1488,7 +2269,9 @@ export default function EmployerInterviewsPage() {
         candidateName={
           selectedInterview?.application?.candidate?.user?.name || ""
         }
-        applicationId={selectedInterview?.applicationId || selectedInterview?.application?.id}
+        applicationId={
+          selectedInterview?.applicationId || selectedInterview?.application?.id
+        }
         jobTitle={selectedInterview?.application?.job?.title || ""}
         reviewRating={selectedInterview?.review?.overallRating}
         nextRoundInfo={nextRoundInfo}
