@@ -111,6 +111,16 @@ function RescheduleRequestModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // Reset all state when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setReason("");
+      setMessage("");
+      setIsSubmitting(false);
+      setIsSuccess(false);
+    }
+  }, [isOpen]);
+
   const reasonOptions = [
     "Schedule conflict",
     "Medical emergency",
