@@ -49,7 +49,17 @@ export function JobCard({ job }: JobCardProps) {
             <h3 className="mb-1 font-semibold text-secondary-900 line-clamp-2 text-base">
               {job.title}
             </h3>
-            <p className="text-sm text-secondary-600 truncate">{job.employer?.companyName || 'Company'}</p>
+            {job.employer ? (
+              <Link
+                href={`/companies/${(job.employer as any).slug || job.employer.id}`}
+                className="text-sm text-secondary-600 truncate hover:text-primary-600 hover:underline block"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {job.employer.companyName || 'Company'}
+              </Link>
+            ) : (
+              <p className="text-sm text-secondary-600 truncate">Company</p>
+            )}
           </div>
         </div>
 

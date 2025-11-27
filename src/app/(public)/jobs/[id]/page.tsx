@@ -522,13 +522,18 @@ export default function JobDetailPage() {
                     <CardTitle>About {job.employer.companyName}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center justify-center rounded-lg bg-primary-50 p-8">
-                      {job.employer.companyLogo ? (
-                        <img src={job.employer.companyLogo} alt={job.employer.companyName} className="h-20 w-20 object-contain" />
-                      ) : (
-                        <div className="text-6xl">{job.employer.companyName.charAt(0)}</div>
-                      )}
-                    </div>
+                    <Link
+                      href={`/companies/${(job.employer as any).slug || job.employer.id}`}
+                      className="block"
+                    >
+                      <div className="flex items-center justify-center rounded-lg bg-primary-50 p-8 hover:bg-primary-100 transition-colors">
+                        {job.employer.companyLogo ? (
+                          <img src={job.employer.companyLogo} alt={job.employer.companyName} className="h-20 w-20 object-contain" />
+                        ) : (
+                          <div className="text-6xl">{job.employer.companyName.charAt(0)}</div>
+                        )}
+                      </div>
+                    </Link>
 
                     {job.employer.description && (
                       <p className="text-sm text-secondary-700">
@@ -574,22 +579,35 @@ export default function JobDetailPage() {
                       )}
                     </div>
 
-                    {job.employer.companyWebsite && (
+                    <div className="space-y-2">
                       <Button
                         variant="outline"
                         className="w-full gap-2"
                         asChild
                       >
-                        <a
-                          href={job.employer.companyWebsite}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Visit Website
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
+                        <Link href={`/companies/${(job.employer as any).slug || job.employer.id}`}>
+                          View Company Profile
+                          <ArrowLeft className="h-4 w-4 rotate-180" />
+                        </Link>
                       </Button>
-                    )}
+
+                      {job.employer.companyWebsite && (
+                        <Button
+                          variant="ghost"
+                          className="w-full gap-2 text-secondary-600"
+                          asChild
+                        >
+                          <a
+                            href={job.employer.companyWebsite}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Visit Website
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               )}
