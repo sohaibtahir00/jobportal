@@ -1002,6 +1002,14 @@ export default function CandidateInterviewsPage() {
                                   </div>
                                 )}
 
+                                {/* Interview Location (venue) */}
+                                {interview.location && (
+                                  <div className="mt-2 flex items-center gap-2 text-sm text-secondary-600">
+                                    <MapPin className="h-4 w-4 text-secondary-500" />
+                                    <span>{interview.location}</span>
+                                  </div>
+                                )}
+
                                 {/* Interviewer info */}
                                 <div className="mt-2 flex items-center gap-2 text-sm text-secondary-600">
                                   <User className="h-4 w-4 text-secondary-500" />
@@ -1236,16 +1244,45 @@ export default function CandidateInterviewsPage() {
                                     {interview.time && (
                                       <span className="flex items-center gap-1.5">
                                         <Clock className="h-4 w-4" />
-                                        {interview.time}
+                                        {interview.time} ({interview.duration})
                                       </span>
                                     )}
                                   </div>
                                 )}
 
+                                {/* Interview Location */}
+                                {interview.location && (
+                                  <div className="mt-2 flex items-center gap-2 text-sm text-secondary-600">
+                                    <MapPin className="h-4 w-4 text-secondary-500" />
+                                    <span>{interview.location}</span>
+                                  </div>
+                                )}
+
+                                {/* Interviewer info */}
+                                <div className="mt-2 flex items-center gap-2 text-sm text-secondary-600">
+                                  <User className="h-4 w-4 text-secondary-500" />
+                                  <span>
+                                    {interview.interviewerName} - {interview.interviewerTitle}
+                                  </span>
+                                </div>
+
                                 {/* Application Status */}
                                 <div className="mt-3">
                                   {getApplicationStatusBadge(interview.applicationStatus)}
                                 </div>
+
+                                {/* Notes */}
+                                {interview.notes && !interview.notes.includes("[Rescheduled") && (
+                                  <div className="mt-4 rounded-lg bg-yellow-50 p-3">
+                                    <div className="mb-1 flex items-center gap-2">
+                                      <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                      <span className="text-sm font-semibold text-yellow-900">
+                                        Notes from Employer:
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-yellow-800">{interview.notes}</p>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Action Buttons */}
