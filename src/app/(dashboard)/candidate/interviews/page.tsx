@@ -72,6 +72,26 @@ const getRescheduleRequestReason = (notes: string | null | undefined): string | 
   return match ? match[1].trim() : null;
 };
 
+// Helper function to get clean employer notes (without system markers)
+const getCleanEmployerNotes = (notes: string | null | undefined): string | null => {
+  if (!notes) return null;
+
+  let cleanNotes = notes;
+
+  // Remove [RESCHEDULE_REQUESTED] markers and their content
+  cleanNotes = cleanNotes.replace(/\[RESCHEDULE_REQUESTED\]: [^\n]+(\n\n)?/g, '');
+
+  // Remove [PENDING_RESCHEDULE] markers and their content
+  cleanNotes = cleanNotes.replace(/\[PENDING_RESCHEDULE\][^\n]*(\n\n)?/g, '');
+
+  // Remove [Rescheduled from previous interview] markers
+  cleanNotes = cleanNotes.replace(/\[Rescheduled from previous interview\][^\n]*(\n\n)?/g, '');
+
+  // Trim and return null if empty
+  cleanNotes = cleanNotes.trim();
+  return cleanNotes || null;
+};
+
 // Reschedule Request Modal Component
 function RescheduleRequestModal({
   isOpen,
@@ -89,6 +109,7 @@ function RescheduleRequestModal({
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const reasonOptions = [
     "Schedule conflict",
@@ -100,25 +121,42 @@ function RescheduleRequestModal({
   ];
 
   const handleSubmit = async () => {
-    if (!reason) return;
+    if (!reason || isSubmitting || isSuccess) return;
     setIsSubmitting(true);
     try {
       await onSubmit(reason, message);
-      onClose();
-      setReason("");
-      setMessage("");
+      setIsSuccess(true);
+      // Don't close modal - show success state, page will reload
     } catch (error) {
       console.error("Failed to submit reschedule request:", error);
-    } finally {
       setIsSubmitting(false);
     }
   };
 
   if (!isOpen) return null;
 
+  // Show success state
+  if (isSuccess) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50" />
+        <div className="relative z-50 w-full max-w-md rounded-xl bg-white p-6 shadow-xl text-center">
+          <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
+            <CheckCircle2 className="h-8 w-8 text-green-600" />
+          </div>
+          <h3 className="mb-2 text-lg font-bold text-secondary-900">Request Sent!</h3>
+          <p className="text-sm text-secondary-600">
+            Your reschedule request has been sent to the employer. They will be notified and can respond with new available times.
+          </p>
+          <p className="mt-4 text-xs text-secondary-500">Refreshing page...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50" onClick={isSubmitting ? undefined : onClose} />
       <div className="relative z-50 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-bold text-secondary-900">Request Reschedule</h3>
@@ -142,7 +180,8 @@ function RescheduleRequestModal({
           <select
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none"
+            disabled={isSubmitting}
+            className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none disabled:bg-gray-100"
           >
             <option value="">Select a reason...</option>
             {reasonOptions.map((opt) => (
@@ -162,7 +201,8 @@ function RescheduleRequestModal({
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Provide any additional details..."
             rows={3}
-            className="w-full rounded-lg border border-secondary-300 px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none resize-none"
+            disabled={isSubmitting}
+            className="w-full rounded-lg border border-secondary-300 px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none resize-none disabled:bg-gray-100"
           />
         </div>
 
@@ -1047,18 +1087,21 @@ export default function CandidateInterviewsPage() {
                                   {getApplicationStatusBadge(interview.applicationStatus)}
                                 </div>
 
-                                {/* Notes */}
-                                {interview.notes && !interview.notes.includes("[Rescheduled") && (
-                                  <div className="mt-4 rounded-lg bg-yellow-50 p-3">
-                                    <div className="mb-1 flex items-center gap-2">
-                                      <AlertCircle className="h-4 w-4 text-yellow-600" />
-                                      <span className="text-sm font-semibold text-yellow-900">
-                                        Notes from Employer:
-                                      </span>
+                                {/* Notes (cleaned of system markers) */}
+                                {(() => {
+                                  const cleanNotes = getCleanEmployerNotes(interview.notes);
+                                  return cleanNotes ? (
+                                    <div className="mt-4 rounded-lg bg-yellow-50 p-3">
+                                      <div className="mb-1 flex items-center gap-2">
+                                        <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                        <span className="text-sm font-semibold text-yellow-900">
+                                          Notes from Employer:
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-yellow-800">{cleanNotes}</p>
                                     </div>
-                                    <p className="text-sm text-yellow-800">{interview.notes}</p>
-                                  </div>
-                                )}
+                                  ) : null;
+                                })()}
 
                                 {/* Reschedule reason */}
                                 {interview.rescheduleReason && (
@@ -1294,18 +1337,21 @@ export default function CandidateInterviewsPage() {
                                   {getApplicationStatusBadge(interview.applicationStatus)}
                                 </div>
 
-                                {/* Notes */}
-                                {interview.notes && !interview.notes.includes("[Rescheduled") && (
-                                  <div className="mt-4 rounded-lg bg-yellow-50 p-3">
-                                    <div className="mb-1 flex items-center gap-2">
-                                      <AlertCircle className="h-4 w-4 text-yellow-600" />
-                                      <span className="text-sm font-semibold text-yellow-900">
-                                        Notes from Employer:
-                                      </span>
+                                {/* Notes (cleaned of system markers) */}
+                                {(() => {
+                                  const cleanNotes = getCleanEmployerNotes(interview.notes);
+                                  return cleanNotes ? (
+                                    <div className="mt-4 rounded-lg bg-yellow-50 p-3">
+                                      <div className="mb-1 flex items-center gap-2">
+                                        <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                        <span className="text-sm font-semibold text-yellow-900">
+                                          Notes from Employer:
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-yellow-800">{cleanNotes}</p>
                                     </div>
-                                    <p className="text-sm text-yellow-800">{interview.notes}</p>
-                                  </div>
-                                )}
+                                  ) : null;
+                                })()}
                               </div>
 
                               {/* Action Buttons */}

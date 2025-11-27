@@ -520,28 +520,43 @@ export default function EmployerInterviewsPage() {
         displayNotes: null,
         rescheduleReason: null,
         isPendingReschedule: false,
+        candidateRescheduleRequest: null,
       };
 
+    let workingNotes = notes;
+    let candidateRescheduleRequest: string | null = null;
+    let rescheduleReason: string | null = null;
+    let isPendingReschedule = false;
+
+    // Check for candidate reschedule request [RESCHEDULE_REQUESTED]: reason - Requested by candidate on date
+    const rescheduleRequestMatch = workingNotes.match(/\[RESCHEDULE_REQUESTED\]: ([^-]+)(?:- Requested by candidate on ([^\n]+))?/);
+    if (rescheduleRequestMatch) {
+      candidateRescheduleRequest = rescheduleRequestMatch[1].trim();
+      // Remove the entire reschedule request from notes
+      workingNotes = workingNotes.replace(/\[RESCHEDULE_REQUESTED\]: [^\n]+(\n\n)?/g, '').trim();
+    }
+
     // Check if this is a pending reschedule (not yet sent to candidate)
-    if (notes.includes("[PENDING_RESCHEDULE]")) {
-      const parts = notes.split("[PENDING_RESCHEDULE]");
-      const displayNotes = parts[0].trim() || null;
-      const rescheduleReason = parts[1]?.trim() || null;
-      return { displayNotes, rescheduleReason, isPendingReschedule: true };
+    if (workingNotes.includes("[PENDING_RESCHEDULE]")) {
+      const parts = workingNotes.split("[PENDING_RESCHEDULE]");
+      workingNotes = parts[0].trim();
+      rescheduleReason = parts[1]?.trim() || null;
+      isPendingReschedule = true;
     }
 
     // Check if this is a rescheduled interview (already sent to candidate)
-    if (notes.includes("[Rescheduled from previous interview]")) {
-      const parts = notes.split("[Rescheduled from previous interview]");
-      const displayNotes = parts[0].trim() || null;
-      const rescheduleReason = parts[1]?.trim() || null;
-      return { displayNotes, rescheduleReason, isPendingReschedule: false };
+    if (workingNotes.includes("[Rescheduled from previous interview]")) {
+      const parts = workingNotes.split("[Rescheduled from previous interview]");
+      workingNotes = parts[0].trim();
+      rescheduleReason = parts[1]?.trim() || null;
+      isPendingReschedule = false;
     }
 
     return {
-      displayNotes: notes,
-      rescheduleReason: null,
-      isPendingReschedule: false,
+      displayNotes: workingNotes || null,
+      rescheduleReason,
+      isPendingReschedule,
+      candidateRescheduleRequest,
     };
   };
 
@@ -1429,10 +1444,26 @@ export default function EmployerInterviewsPage() {
                                     displayNotes,
                                     rescheduleReason,
                                     isPendingReschedule,
+                                    candidateRescheduleRequest,
                                   } = parseInterviewNotes(interview.notes);
 
                                   return (
                                     <>
+                                      {/* Candidate Reschedule Request */}
+                                      {candidateRescheduleRequest && (
+                                        <div className="mt-4 rounded-lg bg-orange-50 p-3 border border-orange-200">
+                                          <div className="mb-1 flex items-center gap-2">
+                                            <RefreshCw className="h-4 w-4 text-orange-600" />
+                                            <span className="text-sm font-semibold text-orange-900">
+                                              Candidate Reschedule Request:
+                                            </span>
+                                          </div>
+                                          <p className="text-sm text-orange-800">
+                                            {candidateRescheduleRequest}
+                                          </p>
+                                        </div>
+                                      )}
+                                      {/* Employer Notes */}
                                       {displayNotes &&
                                         interview.status !== "RESCHEDULED" && (
                                           <div className="mt-4 rounded-lg bg-yellow-50 p-3">
@@ -1447,6 +1478,7 @@ export default function EmployerInterviewsPage() {
                                             </p>
                                           </div>
                                         )}
+                                      {/* Reschedule Reason (from employer) */}
                                       {rescheduleReason && (
                                         <div
                                           className={`mt-4 rounded-lg p-3 ${
@@ -2034,10 +2066,26 @@ export default function EmployerInterviewsPage() {
                                       displayNotes,
                                       rescheduleReason,
                                       isPendingReschedule,
+                                      candidateRescheduleRequest,
                                     } = parseInterviewNotes(interview.notes);
 
                                     return (
                                       <>
+                                        {/* Candidate Reschedule Request */}
+                                        {candidateRescheduleRequest && (
+                                          <div className="mt-4 rounded-lg bg-orange-50 p-3 border border-orange-200">
+                                            <div className="mb-1 flex items-center gap-2">
+                                              <RefreshCw className="h-4 w-4 text-orange-600" />
+                                              <span className="text-sm font-semibold text-orange-900">
+                                                Candidate Reschedule Request:
+                                              </span>
+                                            </div>
+                                            <p className="text-sm text-orange-800">
+                                              {candidateRescheduleRequest}
+                                            </p>
+                                          </div>
+                                        )}
+                                        {/* Employer Notes */}
                                         {displayNotes &&
                                           interview.status !==
                                             "RESCHEDULED" && (
@@ -2053,6 +2101,7 @@ export default function EmployerInterviewsPage() {
                                               </p>
                                             </div>
                                           )}
+                                        {/* Reschedule Reason (from employer) */}
                                         {rescheduleReason && (
                                           <div
                                             className={`mt-4 rounded-lg p-3 ${
