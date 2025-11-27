@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, SlidersHorizontal, Briefcase, Award, Lock, CheckCircle } from "lucide-react";
+import { Search, SlidersHorizontal, Briefcase, Award, Lock, CheckCircle, ArrowUpDown, Sparkles } from "lucide-react";
 import { Button, Badge } from "@/components/ui";
 import { CandidateJobCard } from "@/components/jobs/CandidateJobCard";
 import { FiltersSidebar, Filters } from "@/components/jobs/FiltersSidebar";
@@ -20,6 +20,7 @@ function CandidateJobsContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [exclusiveOnly, setExclusiveOnly] = useState(false);
+  const [sortBy, setSortBy] = useState<"newest" | "salary" | "match">("newest");
   const [filters, setFilters] = useState<Filters>({
     niches: [],
     locations: [],
@@ -71,7 +72,22 @@ function CandidateJobsContent() {
   // Fetch jobs from API (with candidate-specific enhancements)
   const { data, isLoading, error, refetch } = useJobs(queryParams);
 
-  const jobs = data?.jobs || [];
+  // Sort jobs based on selected sort option
+  // The API returns enhanced jobs with matchScore for authenticated candidates
+  const rawJobs = data?.jobs || [];
+  const jobs = [...rawJobs].sort((a, b) => {
+    // Cast to access the enhanced properties added by the API
+    const aEnhanced = a as typeof a & { matchScore?: number };
+    const bEnhanced = b as typeof b & { matchScore?: number };
+    if (sortBy === "match") {
+      return (bEnhanced.matchScore || 0) - (aEnhanced.matchScore || 0);
+    } else if (sortBy === "salary") {
+      return (b.salaryMax || 0) - (a.salaryMax || 0);
+    }
+    // Default: newest (already sorted by API)
+    return 0;
+  });
+
   const totalPages = data?.pagination?.totalPages || 1;
   const totalCount = data?.pagination?.totalCount || 0;
   const startIndex = ((data?.pagination?.page || 1) - 1) * ITEMS_PER_PAGE;
@@ -154,9 +170,27 @@ function CandidateJobsContent() {
             </div>
           </div>
 
-          {/* Exclusive Jobs Toggle */}
-          {hasCompletedAssessment && (
-            <div className="flex items-center gap-3">
+          {/* Quick Filter Buttons */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Best Matches Button */}
+            <button
+              onClick={() => {
+                setSortBy("match");
+                setCurrentPage(1);
+              }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                sortBy === "match"
+                  ? 'bg-white text-primary-600 shadow-md'
+                  : 'bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20'
+              }`}
+            >
+              <Sparkles className="h-4 w-4" />
+              Best Matches
+              {sortBy === "match" && <CheckCircle className="h-4 w-4" />}
+            </button>
+
+            {/* Exclusive Jobs Toggle */}
+            {hasCompletedAssessment && (
               <button
                 onClick={() => {
                   setExclusiveOnly(!exclusiveOnly);
@@ -172,8 +206,8 @@ function CandidateJobsContent() {
                 Exclusive Jobs Only
                 {exclusiveOnly && <CheckCircle className="h-4 w-4" />}
               </button>
-            </div>
-          )}
+            )}
+          </div>
 
           {!hasCompletedAssessment && (
             <div className="flex items-center gap-3 bg-yellow-500/20 backdrop-blur-sm border border-yellow-400/50 rounded-lg px-4 py-3">
@@ -247,6 +281,20 @@ function CandidateJobsContent() {
                   "No jobs found"
                 )}
               </p>
+
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="h-4 w-4 text-secondary-500" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as "newest" | "salary" | "match")}
+                  className="rounded-lg border border-secondary-300 bg-white px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="match">Best Match</option>
+                  <option value="salary">Highest Salary</option>
+                </select>
+              </div>
             </div>
 
             {/* Loading State */}

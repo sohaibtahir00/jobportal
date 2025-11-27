@@ -21,17 +21,19 @@ import {
   CheckCircle,
   AlertCircle,
   Heart,
+  Sparkles,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
 import { JobCard } from "@/components/jobs/JobCard";
+import { MatchScoreCard } from "@/components/jobs/MatchScoreCard";
 import ApplicationForm from "@/components/jobs/ApplicationForm";
 import { ApplicationSuccessModal } from "@/components/jobs/ApplicationSuccessModal";
 import { generateJobPostingJsonLd } from "@/lib/seo";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useJob, useJobs } from "@/hooks/useJobs";
 import { useSession } from "next-auth/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 
 export default function JobDetailPage() {
@@ -53,6 +55,17 @@ export default function JobDetailPage() {
   const { data: similarJobsData } = useJobs({
     niche: job?.niche,
     limit: 3,
+  });
+
+  // Fetch match score for logged-in candidates
+  const { data: matchData, isLoading: isMatchLoading } = useQuery({
+    queryKey: ['job-match', jobId],
+    queryFn: async () => {
+      const response = await api.get(`/api/jobs/${jobId}/match`);
+      return response.data;
+    },
+    enabled: !!session && !!jobId,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   // Save/Unsave job handler
@@ -334,6 +347,56 @@ export default function JobDetailPage() {
               </Card>
             )}
 
+            {/* Why This Job Matches You - For logged in candidates with match data */}
+            {session && matchData?.matchScore !== undefined && matchData.matchScore >= 50 && (
+              <Card className="mb-6 border-2 border-primary-200 bg-gradient-to-br from-primary-50 to-accent-50">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary-100">
+                      <Sparkles className="h-6 w-6 text-primary-600" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold text-primary-900">
+                          Why This Job Matches You
+                        </h3>
+                        <Badge variant="primary" className="text-sm">
+                          {matchData.matchScore}% Match
+                        </Badge>
+                      </div>
+                      {matchData.reasons && matchData.reasons.length > 0 && (
+                        <ul className="space-y-1 text-sm text-primary-700">
+                          {matchData.reasons.slice(0, 3).map((reason: string, idx: number) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary-500" />
+                              <span>{reason}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {matchData.matchingSkills && matchData.matchingSkills.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-primary-200">
+                          <p className="text-xs font-medium text-primary-800 mb-2">Matching Skills:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {matchData.matchingSkills.slice(0, 6).map((skill: string, idx: number) => (
+                              <Badge key={idx} variant="secondary" size="sm" className="bg-primary-100 text-primary-700">
+                                {skill}
+                              </Badge>
+                            ))}
+                            {matchData.matchingSkills.length > 6 && (
+                              <Badge variant="secondary" size="sm" className="bg-primary-100 text-primary-700">
+                                +{matchData.matchingSkills.length - 6} more
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Verified Employer Badge */}
             {job.employer?.verified && (
               <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-success-200 bg-success-50 px-4 py-2">
@@ -515,6 +578,38 @@ export default function JobDetailPage() {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
+              {/* Match Score Card - Only show for logged-in candidates */}
+              {session && matchData?.matchScore !== undefined && matchData.matchScore !== null && (
+                <MatchScoreCard
+                  score={matchData.matchScore}
+                  breakdown={matchData.breakdown}
+                  reasons={matchData.reasons}
+                  matchingSkills={matchData.matchingSkills}
+                  missingSkills={matchData.missingSkills}
+                  variant="full"
+                />
+              )}
+
+              {/* Sign in prompt for match score */}
+              {!session && (
+                <Card className="border-2 border-dashed border-primary-200 bg-gradient-to-br from-primary-50 to-accent-50">
+                  <CardContent className="p-6 text-center">
+                    <Sparkles className="mx-auto mb-3 h-10 w-10 text-primary-500" />
+                    <h3 className="mb-2 font-semibold text-secondary-900">
+                      See How You Match
+                    </h3>
+                    <p className="mb-4 text-sm text-secondary-600">
+                      Sign in to see your personalized match score for this job
+                    </p>
+                    <Button variant="primary" size="sm" asChild>
+                      <Link href={`/login?redirect=/jobs/${jobId}`}>
+                        Sign In
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Company Info */}
               {job.employer && (
                 <Card>

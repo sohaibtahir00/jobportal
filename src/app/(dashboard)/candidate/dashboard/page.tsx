@@ -29,7 +29,9 @@ import {
   Target,
   TrendingUp,
   Clock,
+  Sparkles,
 } from "lucide-react";
+import { RecommendedJobs } from "@/components/jobs";
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -699,7 +701,7 @@ export default function CandidateDashboardPage() {
             </Card>
           </motion.div>
 
-          {/* RECOMMENDED JOBS */}
+          {/* RECOMMENDED JOBS - Using RecommendedJobs component */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -707,71 +709,151 @@ export default function CandidateDashboardPage() {
           >
             <Card className="shadow-lg h-full">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-secondary-900">Recommended Jobs</h3>
-                  <Link
-                    href="/candidate/jobs"
-                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-                  >
-                    View All →
-                  </Link>
-                </div>
-
-                {recommendedJobs.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Briefcase className="h-12 w-12 text-secondary-300 mx-auto mb-3" />
-                    <p className="text-secondary-600 mb-2">No recommendations yet</p>
-                    <p className="text-xs text-secondary-500 mb-4">
-                      Complete your profile and add skills to get personalized job recommendations
-                    </p>
-                    <Button asChild size="sm">
-                      <Link href="/candidate/profile">Complete Profile</Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {recommendedJobs.slice(0, 4).map((job: any) => (
-                      <Link
-                        key={job.id}
-                        href={`/jobs/${job.id}`}
-                        className="block p-4 rounded-lg border-2 border-gray-200 hover:border-primary-300 hover:shadow-md transition-all"
-                      >
-                        <h4 className="font-semibold text-secondary-900 truncate mb-1">
-                          {job.title}
-                        </h4>
-                        <p className="text-sm text-secondary-600 truncate mb-2">
-                          {job.companyName}
-                        </p>
-                        <div className="flex items-center gap-3 flex-wrap text-xs text-secondary-500">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {job.location}
-                          </span>
-                          {job.salaryMin && job.salaryMax && (
-                            <span className="flex items-center gap-1">
-                              <DollarSign className="h-3 w-3" />
-                              ${Math.floor(job.salaryMin / 1000)}k-$
-                              {Math.floor(job.salaryMax / 1000)}k
-                            </span>
-                          )}
-                          {job.matchingSkills && job.matchingSkills.length > 0 && (
-                            <Badge
-                              variant="outline"
-                              className="bg-green-50 text-green-700 border-green-300 text-xs"
-                            >
-                              {job.matchingSkills.length} skills match
-                            </Badge>
-                          )}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                <RecommendedJobsCompact />
               </CardContent>
             </Card>
           </motion.div>
         </div>
       </div>
     </div>
+  );
+}
+
+// Compact recommendations for dashboard sidebar
+function RecommendedJobsCompact() {
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      try {
+        const response = await api.get('/api/candidates/recommendations?limit=4');
+        setData(response.data);
+      } catch (err: any) {
+        console.error('Failed to fetch recommendations:', err);
+        setError(err.response?.data?.error || 'Failed to load recommendations');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRecommendations();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="h-5 w-5 text-primary-600" />
+          <h3 className="text-xl font-bold text-secondary-900">Recommended Jobs</h3>
+        </div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="animate-pulse p-4 rounded-lg bg-secondary-100 h-24" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error || !data?.recommendations?.length) {
+    return (
+      <>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary-600" />
+            <h3 className="text-xl font-bold text-secondary-900">Recommended Jobs</h3>
+          </div>
+          <Link
+            href="/candidate/recommendations"
+            className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+          >
+            View All →
+          </Link>
+        </div>
+        <div className="text-center py-12">
+          <Briefcase className="h-12 w-12 text-secondary-300 mx-auto mb-3" />
+          <p className="text-secondary-600 mb-2">No recommendations yet</p>
+          <p className="text-xs text-secondary-500 mb-4">
+            Complete your profile and add skills to get personalized job recommendations
+          </p>
+          <Button asChild size="sm">
+            <Link href="/candidate/profile">Complete Profile</Link>
+          </Button>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary-600" />
+          <h3 className="text-xl font-bold text-secondary-900">Recommended Jobs</h3>
+          {data.highMatchCount > 0 && (
+            <Badge variant="success" size="sm">
+              {data.highMatchCount} great matches
+            </Badge>
+          )}
+        </div>
+        <Link
+          href="/candidate/recommendations"
+          className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+        >
+          View All →
+        </Link>
+      </div>
+      <div className="space-y-3">
+        {data.recommendations.map((rec: any) => (
+          <Link
+            key={rec.job.id}
+            href={`/jobs/${rec.job.id}`}
+            className="block p-4 rounded-lg border-2 border-gray-200 hover:border-primary-300 hover:shadow-md transition-all"
+          >
+            <div className="flex items-start justify-between mb-1">
+              <h4 className="font-semibold text-secondary-900 truncate flex-1">
+                {rec.job.title}
+              </h4>
+              <Badge
+                variant={rec.matchScore >= 80 ? "success" : rec.matchScore >= 60 ? "warning" : "secondary"}
+                size="sm"
+                className="ml-2 flex-shrink-0"
+              >
+                {rec.matchScore}%
+              </Badge>
+            </div>
+            <p className="text-sm text-secondary-600 truncate mb-2">
+              {rec.job.employer?.companyName || 'Company'}
+            </p>
+            <div className="flex items-center gap-3 flex-wrap text-xs text-secondary-500">
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {rec.job.remote ? 'Remote' : rec.job.location}
+              </span>
+              {rec.job.salaryMin && rec.job.salaryMax && (
+                <span className="flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" />
+                  ${Math.floor(rec.job.salaryMin / 1000)}k-$
+                  {Math.floor(rec.job.salaryMax / 1000)}k
+                </span>
+              )}
+              {rec.matchingSkills && rec.matchingSkills.length > 0 && (
+                <Badge
+                  variant="outline"
+                  className="bg-green-50 text-green-700 border-green-300 text-xs"
+                >
+                  {rec.matchingSkills.length} skills match
+                </Badge>
+              )}
+            </div>
+            {rec.reasons && rec.reasons[0] && (
+              <p className="text-xs text-secondary-500 mt-2 line-clamp-1">
+                {rec.reasons[0]}
+              </p>
+            )}
+          </Link>
+        ))}
+      </div>
+    </>
   );
 }

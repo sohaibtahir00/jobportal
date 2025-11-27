@@ -24,6 +24,7 @@ import {
   Bookmark,
   Video,
   Gift,
+  Sparkles,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -47,6 +48,7 @@ const MOCK_EMPLOYER_USER = {
 const candidateNavItems = [
   { href: "/candidate/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/candidate/profile", label: "My Profile", icon: FileText },
+  { href: "/candidate/recommendations", label: "Recommended Jobs", icon: Sparkles },
   { href: "/candidate/jobs", label: "Browse Jobs", icon: Briefcase },
   { href: "/candidate/exclusive-jobs", label: "Exclusive Jobs", icon: Star },
   { href: "/candidate/applications", label: "My Applications", icon: FileText },
