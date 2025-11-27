@@ -109,15 +109,15 @@ function RescheduleRequestModal({
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Reset all state when modal opens/closes
+  // Reset all state when modal opens
   useEffect(() => {
     if (isOpen) {
       setReason("");
       setMessage("");
       setIsSubmitting(false);
-      setIsSuccess(false);
+      setError(null);
     }
   }, [isOpen]);
 
@@ -131,41 +131,20 @@ function RescheduleRequestModal({
   ];
 
   const handleSubmit = async () => {
-    if (!reason || isSubmitting || isSuccess) return;
+    if (!reason || isSubmitting) return;
     setIsSubmitting(true);
+    setError(null);
     try {
       await onSubmit(reason, message);
-      setIsSuccess(true);
-      // Show success state for 1.5 seconds, then reload page
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    } catch (error) {
-      console.error("Failed to submit reschedule request:", error);
+      onClose(); // Close modal on success - parent handles data refresh
+    } catch (err: any) {
+      console.error("Failed to submit reschedule request:", err);
+      setError(err.message || "Failed to submit request. Please try again.");
       setIsSubmitting(false);
     }
   };
 
   if (!isOpen) return null;
-
-  // Show success state
-  if (isSuccess) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="fixed inset-0 bg-black/50" />
-        <div className="relative z-50 w-full max-w-md rounded-xl bg-white p-6 shadow-xl text-center">
-          <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
-            <CheckCircle2 className="h-8 w-8 text-green-600" />
-          </div>
-          <h3 className="mb-2 text-lg font-bold text-secondary-900">Request Sent!</h3>
-          <p className="text-sm text-secondary-600">
-            Your reschedule request has been sent to the employer. They will be notified and can respond with new available times.
-          </p>
-          <p className="mt-4 text-xs text-secondary-500">Refreshing page...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -205,7 +184,7 @@ function RescheduleRequestModal({
           </select>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="mb-2 block text-sm font-medium text-secondary-700">
             Additional message (optional)
           </label>
@@ -218,6 +197,12 @@ function RescheduleRequestModal({
             className="w-full rounded-lg border border-secondary-300 px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none resize-none disabled:bg-gray-100"
           />
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
 
         <div className="flex gap-3">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="flex-1">
@@ -383,89 +368,90 @@ export default function CandidateInterviewsPage() {
     }
   }, [status, session, router]);
 
-  // Load all interviews
+  // Reusable function to load/refresh interviews
+  const loadInterviews = async () => {
+    if (status !== "authenticated") return;
+
+    try {
+      const { api } = await import("@/lib/api");
+      const response = await api.get("/api/interviews");
+      const backendInterviews = response.data.interviews || [];
+
+      // Separate pending (action required) from scheduled interviews
+      const pending = backendInterviews.filter(
+        (i: any) =>
+          i.status === "AWAITING_CANDIDATE" ||
+          i.status === "AWAITING_CONFIRMATION" ||
+          i.status === "PENDING_AVAILABILITY"
+      );
+      setPendingInterviews(pending);
+
+      // Transform all interviews
+      const transformed = backendInterviews.map((interview: any) => {
+        const scheduledDate = interview.scheduledAt ? new Date(interview.scheduledAt) : null;
+        const now = new Date();
+
+        // Determine display status
+        let displayStatus: Interview["displayStatus"] = "confirmed";
+        if (interview.status === "AWAITING_CANDIDATE") {
+          displayStatus = "action-required";
+        } else if (interview.status === "AWAITING_CONFIRMATION" || interview.status === "PENDING_AVAILABILITY") {
+          displayStatus = "pending";
+        } else if (interview.status === "CANCELLED") {
+          displayStatus = "cancelled";
+        } else if (interview.status === "RESCHEDULED") {
+          displayStatus = "rescheduled";
+        } else if (interview.status === "COMPLETED") {
+          displayStatus = "completed";
+        } else if (scheduledDate && scheduledDate < now && interview.status === "SCHEDULED") {
+          displayStatus = "completed";
+        }
+
+        // Parse notes for reschedule reason
+        let rescheduleReason = null;
+        if (interview.notes?.includes("[Rescheduled from previous interview]")) {
+          const parts = interview.notes.split("[Rescheduled from previous interview]");
+          rescheduleReason = parts[1]?.trim() || null;
+        }
+
+        return {
+          id: interview.id,
+          jobId: interview.application?.job?.id,
+          jobTitle: interview.application?.job?.title || "Unknown Position",
+          companyName: interview.application?.job?.employer?.companyName || "Company",
+          companyLogo: interview.application?.job?.employer?.logo,
+          type: (interview.type?.toLowerCase() || "video") as "phone" | "video" | "onsite",
+          status: interview.status,
+          displayStatus,
+          date: scheduledDate?.toISOString().split("T")[0] || "",
+          time: scheduledDate?.toTimeString().slice(0, 5) || "",
+          duration: `${interview.duration} minutes`,
+          location: interview.location,
+          jobLocation: interview.application?.job?.location,
+          meetingLink: interview.meetingLink,
+          interviewerName: interview.interviewer?.name || "Hiring Manager",
+          interviewerTitle: interview.interviewer?.title || "Employer",
+          round: interview.round || interview.roundName || `Round ${interview.roundNumber || 1}`,
+          roundNumber: interview.roundNumber || 1,
+          notes: interview.notes,
+          rescheduleReason,
+          rescheduleRequested: hasRescheduleRequest(interview.notes),
+          rescheduleRequestReason: getRescheduleRequestReason(interview.notes),
+          applicationStatus: interview.application?.status,
+          scheduledAt: interview.scheduledAt,
+        };
+      });
+
+      setAllInterviews(transformed);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Failed to load interviews:", error);
+      setIsLoading(false);
+    }
+  };
+
+  // Load interviews on mount
   useEffect(() => {
-    const loadInterviews = async () => {
-      if (status !== "authenticated") return;
-
-      try {
-        const { api } = await import("@/lib/api");
-        const response = await api.get("/api/interviews");
-        const backendInterviews = response.data.interviews || [];
-
-        // Separate pending (action required) from scheduled interviews
-        const pending = backendInterviews.filter(
-          (i: any) =>
-            i.status === "AWAITING_CANDIDATE" ||
-            i.status === "AWAITING_CONFIRMATION" ||
-            i.status === "PENDING_AVAILABILITY"
-        );
-        setPendingInterviews(pending);
-
-        // Transform all interviews
-        const transformed = backendInterviews.map((interview: any) => {
-          const scheduledDate = interview.scheduledAt ? new Date(interview.scheduledAt) : null;
-          const now = new Date();
-
-          // Determine display status
-          let displayStatus: Interview["displayStatus"] = "confirmed";
-          if (interview.status === "AWAITING_CANDIDATE") {
-            displayStatus = "action-required";
-          } else if (interview.status === "AWAITING_CONFIRMATION" || interview.status === "PENDING_AVAILABILITY") {
-            displayStatus = "pending";
-          } else if (interview.status === "CANCELLED") {
-            displayStatus = "cancelled";
-          } else if (interview.status === "RESCHEDULED") {
-            displayStatus = "rescheduled";
-          } else if (interview.status === "COMPLETED") {
-            displayStatus = "completed";
-          } else if (scheduledDate && scheduledDate < now && interview.status === "SCHEDULED") {
-            displayStatus = "completed";
-          }
-
-          // Parse notes for reschedule reason
-          let rescheduleReason = null;
-          if (interview.notes?.includes("[Rescheduled from previous interview]")) {
-            const parts = interview.notes.split("[Rescheduled from previous interview]");
-            rescheduleReason = parts[1]?.trim() || null;
-          }
-
-          return {
-            id: interview.id,
-            jobId: interview.application?.job?.id,
-            jobTitle: interview.application?.job?.title || "Unknown Position",
-            companyName: interview.application?.job?.employer?.companyName || "Company",
-            companyLogo: interview.application?.job?.employer?.logo,
-            type: (interview.type?.toLowerCase() || "video") as "phone" | "video" | "onsite",
-            status: interview.status,
-            displayStatus,
-            date: scheduledDate?.toISOString().split("T")[0] || "",
-            time: scheduledDate?.toTimeString().slice(0, 5) || "",
-            duration: `${interview.duration} minutes`,
-            location: interview.location,
-            jobLocation: interview.application?.job?.location,
-            meetingLink: interview.meetingLink,
-            interviewerName: interview.interviewer?.name || "Hiring Manager",
-            interviewerTitle: interview.interviewer?.title || "Employer",
-            round: interview.round || interview.roundName || `Round ${interview.roundNumber || 1}`,
-            roundNumber: interview.roundNumber || 1,
-            notes: interview.notes,
-            rescheduleReason,
-            rescheduleRequested: hasRescheduleRequest(interview.notes),
-            rescheduleRequestReason: getRescheduleRequestReason(interview.notes),
-            applicationStatus: interview.application?.status,
-            scheduledAt: interview.scheduledAt,
-          };
-        });
-
-        setAllInterviews(transformed);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Failed to load interviews:", error);
-        setIsLoading(false);
-      }
-    };
-
     loadInterviews();
   }, [status]);
 
@@ -664,7 +650,8 @@ export default function CandidateInterviewsPage() {
         reason: `${reason}${message ? `: ${message}` : ""}`,
       });
 
-      // Don't reload here - modal handles showing success state and reloading after delay
+      // Refresh interviews data after success
+      await loadInterviews();
     } catch (error) {
       console.error("Failed to request reschedule:", error);
       throw error;
