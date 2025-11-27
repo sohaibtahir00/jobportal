@@ -562,6 +562,12 @@ export default function EmployerInterviewsPage() {
     };
   };
 
+  // Helper to check if reschedule is in progress (either candidate requested or employer initiated)
+  const hasRescheduleInProgress = (notes: string | null | undefined): boolean => {
+    if (!notes) return false;
+    return notes.includes("[RESCHEDULE_REQUESTED]") || notes.includes("[PENDING_RESCHEDULE]");
+  };
+
   // Filter and search interviews
   const filteredInterviews = interviews.filter((interview) => {
     const now = new Date();
@@ -736,10 +742,10 @@ export default function EmployerInterviewsPage() {
   };
 
   // Helper function to extract reschedule request reason from notes
-  const getRescheduleRequestReason = (notes: string | null | undefined): string | null => {
-    if (!notes) return null;
+  const getRescheduleRequestReason = (notes: string | null | undefined): string | undefined => {
+    if (!notes) return undefined;
     const match = notes.match(/\[RESCHEDULE_REQUESTED\]: ([^-]+)/);
-    return match ? match[1].trim() : null;
+    return match ? match[1].trim() : undefined;
   };
 
   // Calculate stats based on job filter
@@ -1624,6 +1630,8 @@ export default function EmployerInterviewsPage() {
                                         onClick={() =>
                                           handleOpenNotesModal(interview)
                                         }
+                                        disabled={hasRescheduleInProgress(interview.notes)}
+                                        title={hasRescheduleInProgress(interview.notes) ? "Notes editing disabled during reschedule" : ""}
                                       >
                                         <FileText className="mr-2 h-4 w-4" />
                                         {interview.notes
@@ -2247,6 +2255,8 @@ export default function EmployerInterviewsPage() {
                                           onClick={() =>
                                             handleOpenNotesModal(interview)
                                           }
+                                          disabled={hasRescheduleInProgress(interview.notes)}
+                                          title={hasRescheduleInProgress(interview.notes) ? "Notes editing disabled during reschedule" : ""}
                                         >
                                           <FileText className="mr-2 h-4 w-4" />
                                           {interview.notes
@@ -2447,6 +2457,7 @@ export default function EmployerInterviewsPage() {
         }
         jobTitle={selectedInterview?.application?.job?.title || ""}
         scheduledDate={selectedInterview?.scheduledAt}
+        initialReason={getRescheduleRequestReason(selectedInterview?.notes)}
       />
     </div>
   );

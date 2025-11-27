@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Calendar, AlertTriangle, Loader2 } from "lucide-react";
 
 interface RescheduleInterviewModalProps {
@@ -10,6 +10,7 @@ interface RescheduleInterviewModalProps {
   candidateName: string;
   jobTitle: string;
   scheduledDate?: string;
+  initialReason?: string;
 }
 
 export default function RescheduleInterviewModal({
@@ -19,14 +20,23 @@ export default function RescheduleInterviewModal({
   candidateName,
   jobTitle,
   scheduledDate,
+  initialReason,
 }: RescheduleInterviewModalProps) {
-  const [reason, setReason] = useState<string>("");
+  const [reason, setReason] = useState<string>(initialReason || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
 
+  // Update reason when initialReason changes (e.g., when modal opens with new interview)
+  useEffect(() => {
+    if (isOpen) {
+      setReason(initialReason || "");
+      setError("");
+    }
+  }, [isOpen, initialReason]);
+
   const handleClose = () => {
     if (!isSubmitting) {
-      setReason("");
+      setReason(initialReason || "");
       setError("");
       onClose();
     }
