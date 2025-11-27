@@ -54,9 +54,23 @@ interface Interview {
   roundNumber?: number;
   notes?: string;
   rescheduleReason?: string;
+  rescheduleRequested?: boolean;
+  rescheduleRequestReason?: string;
   applicationStatus?: string;
   scheduledAt?: string;
 }
+
+// Helper function to check if candidate requested reschedule
+const hasRescheduleRequest = (notes: string | null | undefined): boolean => {
+  return notes?.includes("[RESCHEDULE_REQUESTED]") || false;
+};
+
+// Helper function to extract reschedule request reason from notes
+const getRescheduleRequestReason = (notes: string | null | undefined): string | null => {
+  if (!notes) return null;
+  const match = notes.match(/\[RESCHEDULE_REQUESTED\]: ([^-]+)/);
+  return match ? match[1].trim() : null;
+};
 
 // Reschedule Request Modal Component
 function RescheduleRequestModal({
@@ -384,6 +398,8 @@ export default function CandidateInterviewsPage() {
             roundNumber: interview.roundNumber || 1,
             notes: interview.notes,
             rescheduleReason,
+            rescheduleRequested: hasRescheduleRequest(interview.notes),
+            rescheduleRequestReason: getRescheduleRequestReason(interview.notes),
             applicationStatus: interview.application?.status,
             scheduledAt: interview.scheduledAt,
           };
@@ -590,15 +606,12 @@ export default function CandidateInterviewsPage() {
 
     try {
       const { api } = await import("@/lib/api");
-      await api.post(`/api/interviews/${selectedInterview.id}/reschedule`, {
+      // Call the new candidate-specific request-reschedule endpoint
+      await api.post(`/api/interviews/${selectedInterview.id}/request-reschedule`, {
         reason: `${reason}${message ? `: ${message}` : ""}`,
-        requestedBy: "candidate",
       });
 
-      // Reload interviews
-      const response = await api.get("/api/interviews");
-      const backendInterviews = response.data.interviews || [];
-      // Re-transform (simplified - in real app, extract to function)
+      // Reload page to show updated status
       window.location.reload();
     } catch (error) {
       console.error("Failed to request reschedule:", error);
@@ -935,6 +948,12 @@ export default function CandidateInterviewsPage() {
                                   <div className="flex-1">
                                     <div className="mb-2 flex items-center gap-2 flex-wrap">
                                       {getStatusBadge(interview.displayStatus, interview.status)}
+                                      {interview.rescheduleRequested && (
+                                        <Badge variant="warning" className="gap-1">
+                                          <RefreshCw className="h-3 w-3" />
+                                          Reschedule Requested
+                                        </Badge>
+                                      )}
                                       <Badge variant="secondary" className="gap-1">
                                         {getTypeIcon(interview.type)}
                                         <span className="capitalize">{interview.type}</span>
@@ -975,6 +994,11 @@ export default function CandidateInterviewsPage() {
                                 {interview.displayStatus === "pending" && (
                                   <p className="mb-3 text-sm text-secondary-600">
                                     You've selected your preferred times - waiting for employer to confirm
+                                  </p>
+                                )}
+                                {interview.rescheduleRequested && interview.displayStatus === "confirmed" && (
+                                  <p className="mb-3 text-sm text-warning-700">
+                                    You've requested to reschedule this interview - waiting for employer to respond
                                   </p>
                                 )}
 
@@ -1092,10 +1116,6 @@ export default function CandidateInterviewsPage() {
                                         </a>
                                       </Button>
                                     )}
-                                    <Button variant="outline" size="sm" className="w-full">
-                                      <Download className="mr-2 h-4 w-4" />
-                                      Add to Calendar
-                                    </Button>
                                   </>
                                 )}
 
@@ -1133,18 +1153,21 @@ export default function CandidateInterviewsPage() {
                                 {/* Reschedule & Cancel for confirmed interviews */}
                                 {interview.displayStatus === "confirmed" && (
                                   <>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="w-full"
-                                      onClick={() => {
-                                        setSelectedInterview(interview);
-                                        setRescheduleModalOpen(true);
-                                      }}
-                                    >
-                                      <RefreshCw className="mr-2 h-4 w-4" />
-                                      Request Reschedule
-                                    </Button>
+                                    {/* Only show Request Reschedule if not already requested */}
+                                    {!interview.rescheduleRequested && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full"
+                                        onClick={() => {
+                                          setSelectedInterview(interview);
+                                          setRescheduleModalOpen(true);
+                                        }}
+                                      >
+                                        <RefreshCw className="mr-2 h-4 w-4" />
+                                        Request Reschedule
+                                      </Button>
+                                    )}
                                     <Button
                                       variant="outline"
                                       size="sm"

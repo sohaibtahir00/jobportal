@@ -20,6 +20,7 @@ import {
   Target,
   Star,
   X,
+  RefreshCw,
 } from "lucide-react";
 import { Card, CardContent, Button, Badge, Input } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -710,6 +711,18 @@ export default function EmployerInterviewsPage() {
     }
   };
 
+  // Helper function to check if candidate requested reschedule
+  const hasRescheduleRequest = (notes: string | null | undefined): boolean => {
+    return notes?.includes("[RESCHEDULE_REQUESTED]") || false;
+  };
+
+  // Helper function to extract reschedule request reason from notes
+  const getRescheduleRequestReason = (notes: string | null | undefined): string | null => {
+    if (!notes) return null;
+    const match = notes.match(/\[RESCHEDULE_REQUESTED\]: ([^-]+)/);
+    return match ? match[1].trim() : null;
+  };
+
   // Calculate stats based on job filter
   const statsInterviews = selectedJobId
     ? interviews.filter((i) => i.application?.job?.id === selectedJobId)
@@ -1141,6 +1154,17 @@ export default function EmployerInterviewsPage() {
                                         Video
                                       </Badge>
                                       {getStatusBadge(interview.status)}
+
+                                      {/* Reschedule Requested Badge */}
+                                      {hasRescheduleRequest(interview.notes) && (
+                                        <Badge
+                                          variant="warning"
+                                          className="gap-1 bg-orange-50 text-orange-700 border-orange-200"
+                                        >
+                                          <RefreshCw className="h-3 w-3" />
+                                          Reschedule Requested
+                                        </Badge>
+                                      )}
 
                                       {/* Round Badge */}
                                       {(interview.round ||
@@ -1734,6 +1758,17 @@ export default function EmployerInterviewsPage() {
                                           Video
                                         </Badge>
                                         {getStatusBadge(interview.status)}
+
+                                        {/* Reschedule Requested Badge */}
+                                        {hasRescheduleRequest(interview.notes) && (
+                                          <Badge
+                                            variant="warning"
+                                            className="gap-1 bg-orange-50 text-orange-700 border-orange-200"
+                                          >
+                                            <RefreshCw className="h-3 w-3" />
+                                            Reschedule Requested
+                                          </Badge>
+                                        )}
 
                                         {/* Round Badge */}
                                         {(interview.round ||
