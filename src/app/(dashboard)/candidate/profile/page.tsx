@@ -127,13 +127,16 @@ export default function CandidateProfilePage() {
       : undefined,
   });
 
-  // Initialize skills
+  // Initialize skills and file URLs
   useEffect(() => {
     if (profile?.skills) {
       setSkills(profile.skills);
     }
     if (profile?.resume) {
       setResumeUrl(profile.resume);
+    }
+    if (profile?.photo) {
+      setPhotoUrl(profile.photo);
     }
   }, [profile]);
 
@@ -182,6 +185,7 @@ export default function CandidateProfilePage() {
       availability: data.availability,
       skills,
       resume: resumeUrl,
+      photo: photoUrl,
       desiredRoles: data.desiredRoles ? data.desiredRoles.split(",").map(r => r.trim()).filter(Boolean) : [],
       nicheCategory: data.nicheCategory || null,
       remotePreference: data.remotePreference || null,

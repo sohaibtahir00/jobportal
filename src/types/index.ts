@@ -107,6 +107,7 @@ export interface Candidate {
   id: string;                    // cuid
   userId: string;                // References User.id
   phone: string | null;
+  photo: string | null;          // URL to profile photo
   resume: string | null;         // URL to resume file
   portfolio: string | null;      // URL to portfolio
   personalWebsite: string | null; // Personal website URL
@@ -465,6 +466,7 @@ export interface CandidateProfileResponse {
 // Update Candidate Profile Request
 export interface UpdateCandidateProfileData {
   phone?: string | null;
+  photo?: string | null;
   resume?: string | null;
   portfolio?: string | null;
   personalWebsite?: string | null;
