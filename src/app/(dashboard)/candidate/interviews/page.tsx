@@ -643,18 +643,18 @@ export default function CandidateInterviewsPage() {
   const handleRescheduleRequest = async (reason: string, message: string) => {
     if (!selectedInterview) return;
 
-    try {
-      const { api } = await import("@/lib/api");
-      // Call the new candidate-specific request-reschedule endpoint
-      await api.post(`/api/interviews/${selectedInterview.id}/request-reschedule`, {
-        reason: `${reason}${message ? `: ${message}` : ""}`,
-      });
+    const { api } = await import("@/lib/api");
+    // Call the new candidate-specific request-reschedule endpoint
+    await api.post(`/api/interviews/${selectedInterview.id}/request-reschedule`, {
+      reason: `${reason}${message ? `: ${message}` : ""}`,
+    });
 
-      // Refresh interviews data after success
+    // Refresh interviews data after success (don't throw if this fails)
+    try {
       await loadInterviews();
-    } catch (error) {
-      console.error("Failed to request reschedule:", error);
-      throw error;
+    } catch (refreshError) {
+      console.error("Failed to refresh interviews:", refreshError);
+      // Don't throw - the main action succeeded
     }
   };
 
