@@ -416,9 +416,11 @@ export default function EmployerInterviewsPage() {
   // Get filter counts
   const getStatusCount = (status: string) => {
     if (status === "action-required") {
-      // Count AWAITING_CONFIRMATION OR interviews with reschedule requests
+      // Count AWAITING_CONFIRMATION OR SCHEDULED interviews with reschedule requests
+      // Only active interviews (SCHEDULED) should trigger action required, not completed/cancelled
       return interviews.filter(
-        (i) => i.status === "AWAITING_CONFIRMATION" || i.notes?.includes("[RESCHEDULE_REQUESTED]")
+        (i) => i.status === "AWAITING_CONFIRMATION" ||
+        (i.status === "SCHEDULED" && i.notes?.includes("[RESCHEDULE_REQUESTED]"))
       ).length;
     }
     if (status === "scheduled") {
@@ -593,8 +595,9 @@ export default function EmployerInterviewsPage() {
 
     // Filter by status
     if (statusFilter === "action-required") {
-      // Include AWAITING_CONFIRMATION OR interviews with reschedule requests
-      const hasRescheduleReq = interview.notes?.includes("[RESCHEDULE_REQUESTED]");
+      // Include AWAITING_CONFIRMATION OR SCHEDULED interviews with reschedule requests
+      // Only active interviews should show - not completed or cancelled
+      const hasRescheduleReq = interview.status === "SCHEDULED" && interview.notes?.includes("[RESCHEDULE_REQUESTED]");
       if (interview.status !== "AWAITING_CONFIRMATION" && !hasRescheduleReq) return false;
     }
     if (statusFilter === "scheduled") {
