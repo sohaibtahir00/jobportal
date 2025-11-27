@@ -25,7 +25,7 @@ import {
 import { Button, Badge, Card, CardContent, Skeleton } from "@/components/ui";
 import { MatchScoreCard, MatchBreakdown } from "@/components/jobs";
 import { api } from "@/lib/api";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, resolveImageUrl } from "@/lib/utils";
 
 interface RecommendedJob {
   job: {
@@ -473,7 +473,7 @@ function RecommendationsList({
                     <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-primary-100 text-xl">
                       {rec.job.employer.companyLogo ? (
                         <img
-                          src={rec.job.employer.companyLogo}
+                          src={resolveImageUrl(rec.job.employer.companyLogo) || ''}
                           alt={rec.job.employer.companyName}
                           className="h-full w-full rounded-xl object-cover"
                         />

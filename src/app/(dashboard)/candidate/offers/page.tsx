@@ -20,6 +20,7 @@ import {
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api";
+import { resolveImageUrl } from "@/lib/utils";
 import { format } from "date-fns";
 
 interface Offer {
@@ -368,7 +369,7 @@ export default function CandidateOffersPage() {
                       <div className="flex-shrink-0">
                         {offer.employer.companyLogo ? (
                           <img
-                            src={offer.employer.companyLogo}
+                            src={resolveImageUrl(offer.employer.companyLogo) || ''}
                             alt={offer.employer.companyName}
                             className="h-20 w-20 rounded-lg object-cover"
                           />

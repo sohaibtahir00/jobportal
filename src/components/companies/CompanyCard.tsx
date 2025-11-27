@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Building2, MapPin, Users, Briefcase, BadgeCheck } from "lucide-react";
 import { Card, CardContent, Badge } from "@/components/ui";
+import { resolveImageUrl } from "@/lib/utils";
 
 export interface PublicCompany {
   id: string;
@@ -65,7 +66,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
             >
               {company.companyLogo ? (
                 <img
-                  src={company.companyLogo}
+                  src={resolveImageUrl(company.companyLogo) || ''}
                   alt={company.companyName}
                   className="h-full w-full object-cover"
                 />

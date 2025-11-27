@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 import { api } from "@/lib/api";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, resolveImageUrl } from "@/lib/utils";
 
 interface CompanyDetails {
   id: string;
@@ -234,7 +234,7 @@ export default function CompanyPage() {
             >
               {company.companyLogo ? (
                 <img
-                  src={company.companyLogo}
+                  src={resolveImageUrl(company.companyLogo) || ''}
                   alt={company.companyName}
                   className="h-full w-full object-cover"
                 />

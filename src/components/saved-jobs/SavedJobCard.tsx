@@ -5,7 +5,7 @@ import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { useUnsaveJob } from "@/hooks/useSavedJobs";
 import { useSubmitApplication } from "@/hooks/useApplications";
 import type { SavedJob } from "@/lib/api/saved-jobs";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, resolveImageUrl } from "@/lib/utils";
 
 interface SavedJobCardProps {
   savedJob: SavedJob;
@@ -107,7 +107,7 @@ export function SavedJobCard({ savedJob, onUnsaveSuccess }: SavedJobCardProps) {
             <div className="h-16 w-16 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
               {job.employer?.companyLogo ? (
                 <img
-                  src={job.employer.companyLogo}
+                  src={resolveImageUrl(job.employer.companyLogo) || ''}
                   alt={job.employer.companyName}
                   className="h-full w-full object-cover"
                 />

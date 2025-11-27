@@ -24,7 +24,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, resolveImageUrl } from "@/lib/utils";
 import { JobCard } from "@/components/jobs/JobCard";
 import { MatchScoreCard } from "@/components/jobs/MatchScoreCard";
 import ApplicationForm from "@/components/jobs/ApplicationForm";
@@ -423,7 +423,7 @@ export default function JobDetailPage() {
                 <div className="mb-6 flex items-start gap-4">
                   <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-primary-100 text-3xl">
                     {job.employer?.companyLogo ? (
-                      <img src={job.employer.companyLogo} alt={job.employer.companyName} className="h-full w-full rounded-lg object-cover" />
+                      <img src={resolveImageUrl(job.employer.companyLogo) || ''} alt={job.employer.companyName} className="h-full w-full rounded-lg object-cover" />
                     ) : (
                       job.employer?.companyName?.charAt(0) || 'J'
                     )}
@@ -623,7 +623,7 @@ export default function JobDetailPage() {
                     >
                       <div className="flex items-center justify-center rounded-lg bg-primary-50 p-8 hover:bg-primary-100 transition-colors">
                         {job.employer.companyLogo ? (
-                          <img src={job.employer.companyLogo} alt={job.employer.companyName} className="h-20 w-20 object-contain" />
+                          <img src={resolveImageUrl(job.employer.companyLogo) || ''} alt={job.employer.companyName} className="h-20 w-20 object-contain" />
                         ) : (
                           <div className="text-6xl">{job.employer.companyName.charAt(0)}</div>
                         )}

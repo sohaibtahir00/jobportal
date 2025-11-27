@@ -4,6 +4,7 @@ import { Calendar, Building2, MapPin, Award, AlertCircle, Trash2 } from "lucide-
 import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { useWithdrawApplication } from "@/hooks/useApplications";
 import type { Application } from "@/types";
+import { resolveImageUrl } from "@/lib/utils";
 
 interface ApplicationCardProps {
   application: Application;
@@ -82,7 +83,7 @@ export function ApplicationCard({ application, onViewDetails, onWithdrawSuccess 
             <div className="h-16 w-16 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
               {application.job?.employer?.companyLogo ? (
                 <img
-                  src={application.job.employer.companyLogo}
+                  src={resolveImageUrl(application.job.employer.companyLogo) || ''}
                   alt={application.job.employer.companyName}
                   className="h-full w-full object-cover"
                 />

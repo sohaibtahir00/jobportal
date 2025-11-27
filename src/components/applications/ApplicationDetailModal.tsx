@@ -19,7 +19,7 @@ import {
 import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { useWithdrawApplication } from "@/hooks/useApplications";
 import type { Application } from "@/types";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, resolveImageUrl } from "@/lib/utils";
 
 interface ApplicationDetailModalProps {
   application: Application;
@@ -185,7 +185,7 @@ export function ApplicationDetailModal({
                 <div className="h-16 w-16 rounded-lg bg-white flex items-center justify-center overflow-hidden flex-shrink-0">
                   {application.job?.employer?.companyLogo ? (
                     <img
-                      src={application.job.employer.companyLogo}
+                      src={resolveImageUrl(application.job.employer.companyLogo) || ''}
                       alt={application.job.employer.companyName}
                       className="h-full w-full object-cover"
                     />

@@ -72,3 +72,38 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
     timeout = setTimeout(later, wait);
   };
 }
+
+/**
+ * Get the backend URL for assets/images
+ * In production, images are served from the backend
+ */
+export function getBackendUrl(): string {
+  return process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '';
+}
+
+/**
+ * Resolve image URL - converts relative paths to absolute backend URLs
+ * @param url - The image URL (can be relative like /uploads/... or absolute)
+ * @returns The resolved absolute URL
+ */
+export function resolveImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+
+  // If already an absolute URL (http:// or https://), return as-is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  // If it's a relative URL starting with /uploads or /api/uploads, prepend backend URL
+  if (url.startsWith('/uploads') || url.startsWith('/api/uploads')) {
+    const backendUrl = getBackendUrl();
+    if (backendUrl) {
+      // Convert /uploads/... to /api/uploads/... for the backend API route
+      const apiPath = url.startsWith('/api/uploads') ? url : `/api${url}`;
+      return `${backendUrl}${apiPath}`;
+    }
+  }
+
+  // Return original URL if no transformation needed
+  return url;
+}

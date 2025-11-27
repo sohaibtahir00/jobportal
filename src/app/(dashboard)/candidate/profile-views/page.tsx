@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { resolveImageUrl } from "@/lib/utils";
 
 interface ProfileView {
   id: string;
@@ -234,7 +235,7 @@ export default function ProfileViewsPage() {
                       <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center flex-shrink-0">
                         {view.employer.companyLogo ? (
                           <img
-                            src={view.employer.companyLogo}
+                            src={resolveImageUrl(view.employer.companyLogo) || ''}
                             alt={view.employer.companyName}
                             className="w-full h-full object-cover rounded-lg"
                           />

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { MapPin, Briefcase, DollarSign, Clock, Heart, CheckCircle, Star } from "lucide-react";
 import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { Job } from "@/types";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, resolveImageUrl } from "@/lib/utils";
 
 interface CandidateJobCardProps {
   job: Job & {
@@ -95,7 +95,7 @@ export function CandidateJobCard({ job, onSaveToggle }: CandidateJobCardProps) {
         <div className="mb-4 flex items-start gap-3 pr-10">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-100 text-2xl">
             {job.employer?.companyLogo ? (
-              <img src={job.employer.companyLogo} alt={job.employer.companyName} className="h-full w-full rounded-lg object-cover" />
+              <img src={resolveImageUrl(job.employer.companyLogo) || ''} alt={job.employer.companyName} className="h-full w-full rounded-lg object-cover" />
             ) : (
               job.employer?.companyName?.charAt(0) || 'J'
             )}
