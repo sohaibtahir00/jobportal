@@ -18,6 +18,10 @@ import {
   Star,
   Download,
   Share2,
+  FileQuestion,
+  PlayCircle,
+  Lightbulb,
+  GraduationCap,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 import { SkillsScoreCard, SkillsScoreData } from "@/components/skills";
@@ -234,24 +238,72 @@ export default function CandidateAssessmentPage() {
             </CardContent>
           </Card>
 
-          {/* Prep Resources */}
-          <Card>
+          {/* Prep Resources - Prominent for candidates who haven't taken assessment */}
+          <Card className="border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
             <CardContent className="p-6">
-              <h3 className="mb-4 text-xl font-bold text-secondary-900">
-                Prepare for Success
-              </h3>
-              <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-4">
+                <GraduationCap className="h-6 w-6 text-amber-600" />
+                <h3 className="text-xl font-bold text-secondary-900">
+                  Preparation Resources
+                </h3>
+                <Badge variant="warning" className="ml-2">Recommended</Badge>
+              </div>
+              <p className="text-secondary-600 mb-4">
+                Maximize your score with our comprehensive preparation materials. Candidates who prepare score 25% higher on average.
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
                 <Link
-                  href="/skills-assessment/prep"
-                  className="flex items-center gap-3 rounded-lg border border-secondary-200 p-4 hover:bg-secondary-50 transition-colors"
+                  href="/skills-assessment/prep/practice"
+                  className="flex items-center gap-3 rounded-lg border border-amber-200 bg-white p-4 hover:bg-amber-50 transition-colors"
                 >
-                  <BookOpen className="h-6 w-6 text-primary-600" />
+                  <PlayCircle className="h-6 w-6 text-green-600" />
                   <div>
-                    <p className="font-medium text-secondary-900">Assessment Prep Guide</p>
-                    <p className="text-sm text-secondary-600">Review topics and sample questions</p>
+                    <p className="font-medium text-secondary-900">Practice Test</p>
+                    <p className="text-sm text-secondary-600">10-minute mini assessment</p>
                   </div>
                   <ArrowRight className="ml-auto h-5 w-5 text-secondary-400" />
                 </Link>
+                <Link
+                  href="/skills-assessment/prep/sample-questions"
+                  className="flex items-center gap-3 rounded-lg border border-amber-200 bg-white p-4 hover:bg-amber-50 transition-colors"
+                >
+                  <FileQuestion className="h-6 w-6 text-blue-600" />
+                  <div>
+                    <p className="font-medium text-secondary-900">Sample Questions</p>
+                    <p className="text-sm text-secondary-600">20+ practice questions</p>
+                  </div>
+                  <ArrowRight className="ml-auto h-5 w-5 text-secondary-400" />
+                </Link>
+                <Link
+                  href="/skills-assessment/prep/study-guide"
+                  className="flex items-center gap-3 rounded-lg border border-amber-200 bg-white p-4 hover:bg-amber-50 transition-colors"
+                >
+                  <BookOpen className="h-6 w-6 text-primary-600" />
+                  <div>
+                    <p className="font-medium text-secondary-900">Study Guide</p>
+                    <p className="text-sm text-secondary-600">Topics & resources</p>
+                  </div>
+                  <ArrowRight className="ml-auto h-5 w-5 text-secondary-400" />
+                </Link>
+                <Link
+                  href="/skills-assessment/prep/tips"
+                  className="flex items-center gap-3 rounded-lg border border-amber-200 bg-white p-4 hover:bg-amber-50 transition-colors"
+                >
+                  <Lightbulb className="h-6 w-6 text-amber-600" />
+                  <div>
+                    <p className="font-medium text-secondary-900">Tips & Strategies</p>
+                    <p className="text-sm text-secondary-600">Expert advice</p>
+                  </div>
+                  <ArrowRight className="ml-auto h-5 w-5 text-secondary-400" />
+                </Link>
+              </div>
+              <div className="mt-4 text-center">
+                <Button variant="outline" asChild>
+                  <Link href="/skills-assessment/prep">
+                    View All Prep Resources
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -339,24 +391,62 @@ export default function CandidateAssessmentPage() {
           </CardContent>
         </Card>
 
-        {/* Prep Resources */}
+        {/* Prep Resources for Retake */}
         <Card>
           <CardContent className="p-6">
             <h3 className="mb-4 text-xl font-bold text-secondary-900">
               Improve Your Skills
             </h3>
-            <div className="space-y-3">
+            <p className="text-secondary-600 mb-4">
+              Use these resources to prepare for your next attempt and improve your score.
+            </p>
+            <div className="grid gap-3 md:grid-cols-2">
               <Link
-                href="/skills-assessment/prep"
+                href="/skills-assessment/prep/practice"
+                className="flex items-center gap-3 rounded-lg border border-secondary-200 p-4 hover:bg-secondary-50 transition-colors"
+              >
+                <PlayCircle className="h-6 w-6 text-green-600" />
+                <div>
+                  <p className="font-medium text-secondary-900">Practice Test</p>
+                  <p className="text-sm text-secondary-600">10-minute assessment</p>
+                </div>
+                <ArrowRight className="ml-auto h-5 w-5 text-secondary-400" />
+              </Link>
+              <Link
+                href="/skills-assessment/prep/sample-questions"
+                className="flex items-center gap-3 rounded-lg border border-secondary-200 p-4 hover:bg-secondary-50 transition-colors"
+              >
+                <FileQuestion className="h-6 w-6 text-blue-600" />
+                <div>
+                  <p className="font-medium text-secondary-900">Sample Questions</p>
+                  <p className="text-sm text-secondary-600">Practice by category</p>
+                </div>
+                <ArrowRight className="ml-auto h-5 w-5 text-secondary-400" />
+              </Link>
+              <Link
+                href="/skills-assessment/prep/study-guide"
                 className="flex items-center gap-3 rounded-lg border border-secondary-200 p-4 hover:bg-secondary-50 transition-colors"
               >
                 <BookOpen className="h-6 w-6 text-primary-600" />
                 <div>
-                  <p className="font-medium text-secondary-900">Study Resources</p>
-                  <p className="text-sm text-secondary-600">Review materials to improve your score</p>
+                  <p className="font-medium text-secondary-900">Study Guide</p>
+                  <p className="text-sm text-secondary-600">Review materials</p>
                 </div>
                 <ArrowRight className="ml-auto h-5 w-5 text-secondary-400" />
               </Link>
+              <Link
+                href="/skills-assessment/prep/tips"
+                className="flex items-center gap-3 rounded-lg border border-secondary-200 p-4 hover:bg-secondary-50 transition-colors"
+              >
+                <Lightbulb className="h-6 w-6 text-amber-600" />
+                <div>
+                  <p className="font-medium text-secondary-900">Tips & Strategies</p>
+                  <p className="text-sm text-secondary-600">Expert advice</p>
+                </div>
+                <ArrowRight className="ml-auto h-5 w-5 text-secondary-400" />
+              </Link>
+            </div>
+            <div className="mt-4 pt-4 border-t border-secondary-200">
               <Link
                 href="/resources"
                 className="flex items-center gap-3 rounded-lg border border-secondary-200 p-4 hover:bg-secondary-50 transition-colors"

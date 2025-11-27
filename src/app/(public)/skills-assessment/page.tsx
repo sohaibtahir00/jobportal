@@ -476,10 +476,10 @@ export default function SkillsAssessmentPage() {
                   Free Practice Test
                 </h3>
                 <p className="mb-4 text-sm text-secondary-600">
-                  50% of real questions
+                  10-minute mini assessment
                 </p>
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="#">Start Practice</Link>
+                  <Link href="/skills-assessment/prep/practice">Start Practice</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -487,10 +487,10 @@ export default function SkillsAssessmentPage() {
             <Card className="border-2 border-accent-200 transition-all hover:shadow-lg">
               <CardContent className="p-6 text-center">
                 <Download className="mx-auto mb-4 h-12 w-12 text-accent-600" />
-                <h3 className="mb-2 font-bold text-secondary-900">Study Guide PDF</h3>
+                <h3 className="mb-2 font-bold text-secondary-900">Study Guide</h3>
                 <p className="mb-4 text-sm text-secondary-600">Comprehensive prep</p>
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="#">Download</Link>
+                  <Link href="/skills-assessment/prep/study-guide">View Guide</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -503,7 +503,7 @@ export default function SkillsAssessmentPage() {
                 </h3>
                 <p className="mb-4 text-sm text-secondary-600">By niche category</p>
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="#">View Samples</Link>
+                  <Link href="/skills-assessment/prep/sample-questions">View Samples</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -514,10 +514,19 @@ export default function SkillsAssessmentPage() {
                 <h3 className="mb-2 font-bold text-secondary-900">Tips for Success</h3>
                 <p className="mb-4 text-sm text-secondary-600">Expert strategies</p>
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="#">Read Tips</Link>
+                  <Link href="/skills-assessment/prep/tips">Read Tips</Link>
                 </Button>
               </CardContent>
             </Card>
+          </div>
+
+          <div className="mt-8 text-center">
+            <Button variant="primary" size="lg" asChild>
+              <Link href="/skills-assessment/prep">
+                View All Prep Resources
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

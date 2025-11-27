@@ -1,11 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   BookOpen,
-  Download,
   FileText,
-  Video,
   Code,
   CheckCircle2,
   Play,
@@ -13,313 +12,350 @@ import {
   Target,
   Zap,
   ArrowRight,
-  ExternalLink,
+  Brain,
+  Shield,
+  DollarSign,
+  Stethoscope,
+  ChevronDown,
+  ChevronUp,
+  Lightbulb,
+  HelpCircle,
+  Monitor,
+  ListChecks,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
+import { assessmentSections, prepFAQs, NicheCategory } from "@/lib/prep-data";
 
 export default function SkillsAssessmentPrepPage() {
-  const studyResources = [
+  const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  const [selectedNiche, setSelectedNiche] = useState<NicheCategory>("AI/ML");
+
+  const niches: { id: NicheCategory; icon: any; name: string; description: string }[] = [
+    {
+      id: "AI/ML",
+      icon: Brain,
+      name: "AI & Machine Learning",
+      description: "ML algorithms, deep learning, MLOps, and data pipelines",
+    },
+    {
+      id: "Healthcare IT",
+      icon: Stethoscope,
+      name: "Healthcare IT",
+      description: "HIPAA compliance, HL7 FHIR, EHR systems, and clinical workflows",
+    },
+    {
+      id: "Fintech",
+      icon: DollarSign,
+      name: "Fintech",
+      description: "Payment systems, PCI DSS, trading platforms, and blockchain",
+    },
+    {
+      id: "Cybersecurity",
+      icon: Shield,
+      name: "Cybersecurity",
+      description: "OWASP, penetration testing, security architecture, and compliance",
+    },
+  ];
+
+  const nicheTopics: Record<NicheCategory, string[]> = {
+    "AI/ML": [
+      "Supervised & Unsupervised Learning",
+      "Neural Networks & Deep Learning",
+      "Model Evaluation & Metrics",
+      "Feature Engineering",
+      "MLOps & Model Deployment",
+      "Natural Language Processing",
+      "Computer Vision Basics",
+      "Reinforcement Learning Concepts",
+    ],
+    "Healthcare IT": [
+      "HIPAA Privacy & Security Rules",
+      "HL7 & FHIR Standards",
+      "EHR/EMR Systems",
+      "Clinical Terminology (ICD-10, CPT, SNOMED)",
+      "Telemedicine Platforms",
+      "Healthcare Data Analytics",
+      "Patient Data Security",
+      "Interoperability Standards",
+    ],
+    Fintech: [
+      "Payment Processing Systems",
+      "PCI DSS Compliance",
+      "KYC/AML Regulations",
+      "Blockchain & Cryptocurrency",
+      "Trading Systems Architecture",
+      "Financial Data Security",
+      "Real-time Transaction Processing",
+      "Fraud Detection Systems",
+    ],
+    Cybersecurity: [
+      "OWASP Top 10 Vulnerabilities",
+      "Penetration Testing",
+      "Network Security",
+      "Identity & Access Management",
+      "Security Information & Event Management",
+      "Incident Response",
+      "Cryptography Fundamentals",
+      "Zero Trust Architecture",
+    ],
+  };
+
+  const quickLinks = [
     {
       icon: FileText,
-      title: "Comprehensive Study Guide",
-      description: "200-page PDF covering all assessment topics in detail",
-      type: "PDF",
-      duration: "8-10 hours",
+      title: "Sample Questions",
+      description: "Practice with 20+ questions across all niches",
+      href: "/skills-assessment/prep/sample-questions",
       color: "primary",
-      downloadUrl: "#",
     },
     {
-      icon: Video,
-      title: "Video Tutorial Series",
-      description: "20 hours of video lessons covering technical concepts",
-      type: "Video",
-      duration: "20 hours",
-      color: "accent",
-      downloadUrl: "#",
-    },
-    {
-      icon: Code,
-      title: "Practice Coding Challenges",
-      description: "50+ coding problems with solutions and explanations",
-      type: "Interactive",
-      duration: "Self-paced",
+      icon: Play,
+      title: "Practice Test",
+      description: "10-minute mini assessment with instant feedback",
+      href: "/skills-assessment/prep/practice",
       color: "success",
-      downloadUrl: "/skills-assessment/start",
     },
     {
       icon: BookOpen,
-      title: "System Design Cheat Sheet",
-      description: "Quick reference guide for system design questions",
-      type: "PDF",
-      duration: "2 hours",
+      title: "Study Guide",
+      description: "Comprehensive guide with resources and checklists",
+      href: "/skills-assessment/prep/study-guide",
+      color: "accent",
+    },
+    {
+      icon: Lightbulb,
+      title: "Tips & Strategies",
+      description: "Expert advice for maximizing your score",
+      href: "/skills-assessment/prep/tips",
       color: "secondary",
-      downloadUrl: "#",
-    },
-  ];
-
-  const topicsCovered = [
-    {
-      category: "Technical Skills",
-      topics: [
-        "Data Structures & Algorithms",
-        "Object-Oriented Programming",
-        "Database Design & SQL",
-        "RESTful API Design",
-        "Version Control (Git)",
-        "Testing & Debugging",
-      ],
-    },
-    {
-      category: "Practical Coding",
-      topics: [
-        "String Manipulation",
-        "Array & List Operations",
-        "Recursion & Dynamic Programming",
-        "Code Optimization",
-        "Error Handling",
-        "Clean Code Principles",
-      ],
-    },
-    {
-      category: "System Design",
-      topics: [
-        "Scalability Patterns",
-        "Caching Strategies",
-        "Load Balancing",
-        "Database Sharding",
-        "Microservices Architecture",
-        "Trade-off Analysis",
-      ],
-    },
-  ];
-
-  const sampleQuestions = [
-    {
-      difficulty: "Easy",
-      question: "What is the difference between == and === in JavaScript?",
-      topic: "Technical Skills",
-    },
-    {
-      difficulty: "Medium",
-      question: "Implement a function to find the longest substring without repeating characters",
-      topic: "Practical Coding",
-    },
-    {
-      difficulty: "Hard",
-      question: "Design a distributed cache system like Redis that can scale to millions of requests per second",
-      topic: "System Design",
-    },
-  ];
-
-  const tips = [
-    {
-      icon: Target,
-      title: "Focus on Fundamentals",
-      description:
-        "Master core concepts rather than memorizing solutions. Understanding principles helps you solve any variation.",
-    },
-    {
-      icon: Clock,
-      title: "Practice Time Management",
-      description:
-        "Each section is timed. Practice answering questions within the allocated time to build speed and confidence.",
-    },
-    {
-      icon: Code,
-      title: "Write Clean Code",
-      description:
-        "Even in coding challenges, focus on readability, naming conventions, and proper formatting. It's part of the evaluation.",
-    },
-    {
-      icon: Zap,
-      title: "Think Aloud (for System Design)",
-      description:
-        "Explain your thought process, discuss trade-offs, and consider edge cases. It shows how you approach problems.",
     },
   ];
 
   return (
     <div className="min-h-screen bg-secondary-50">
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-secondary-200">
+        <div className="container py-3">
+          <nav className="flex items-center gap-2 text-sm">
+            <Link href="/skills-assessment" className="text-secondary-600 hover:text-primary-600">
+              Skills Assessment
+            </Link>
+            <span className="text-secondary-400">/</span>
+            <span className="text-secondary-900 font-medium">Preparation</span>
+          </nav>
+        </div>
+      </div>
+
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary-600 to-accent-600 py-20 text-white">
+      <section className="bg-gradient-to-br from-primary-600 to-accent-600 py-16 text-white">
         <div className="container">
           <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="secondary" className="mb-4">
-              Preparation Resources
+            <Badge variant="secondary" className="mb-4 bg-white/20 text-white">
+              Free Preparation Resources
             </Badge>
-            <h1 className="mb-6 text-4xl font-bold md:text-5xl">
-              Prepare for Success
+            <h1 className="mb-4 text-4xl font-bold md:text-5xl">
+              Prepare for Your Skills Assessment
             </h1>
             <p className="mb-8 text-xl text-primary-100">
-              Free study materials to help you ace the skills assessment
+              Everything you need to succeed - study guides, sample questions, practice tests, and expert tips
             </p>
-            <Button
-              variant="secondary"
-              size="lg"
-              className="bg-white text-primary-600 hover:bg-primary-50"
-              asChild
-            >
-              <Link href="#resources">
-                Explore Resources
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                variant="secondary"
+                size="lg"
+                className="bg-white text-primary-600 hover:bg-primary-50"
+                asChild
+              >
+                <Link href="/skills-assessment/prep/practice">
+                  <Play className="mr-2 h-5 w-5" />
+                  Take Practice Test
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white text-white hover:bg-white/10"
+                asChild
+              >
+                <Link href="/skills-assessment/prep/sample-questions">
+                  <FileText className="mr-2 h-5 w-5" />
+                  Browse Sample Questions
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Study Resources */}
-      <section id="resources" className="py-20">
+      {/* Quick Links */}
+      <section className="py-12 -mt-8">
         <div className="container">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
-              Study Resources
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-secondary-600">
-              Everything you need to prepare, completely free
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {studyResources.map((resource, idx) => {
-              const Icon = resource.icon;
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {quickLinks.map((link, idx) => {
+              const Icon = link.icon;
               return (
-                <Card
-                  key={idx}
-                  className="border-2 border-primary-200 transition-all hover:shadow-lg"
-                >
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex items-start justify-between">
-                      <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-${resource.color}-100`}>
-                        <Icon className={`h-6 w-6 text-${resource.color}-600`} />
+                <Link key={idx} href={link.href}>
+                  <Card className="h-full border-2 border-transparent hover:border-primary-300 hover:shadow-lg transition-all cursor-pointer">
+                    <CardContent className="p-5">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-${link.color}-100 mb-3`}>
+                        <Icon className={`h-5 w-5 text-${link.color}-600`} />
                       </div>
-                      <Badge variant="secondary">{resource.type}</Badge>
-                    </div>
-
-                    <h3 className="mb-2 text-xl font-bold text-secondary-900">
-                      {resource.title}
-                    </h3>
-                    <p className="mb-4 text-secondary-600">
-                      {resource.description}
-                    </p>
-
-                    <div className="mb-4 flex items-center gap-2 text-sm text-secondary-600">
-                      <Clock className="h-4 w-4" />
-                      <span>{resource.duration}</span>
-                    </div>
-
-                    <Button variant="primary" className="w-full" asChild>
-                      <Link href={resource.downloadUrl}>
-                        {resource.type === "Interactive" ? (
-                          <>
-                            <Play className="mr-2 h-4 w-4" />
-                            Start Practicing
-                          </>
-                        ) : (
-                          <>
-                            <Download className="mr-2 h-4 w-4" />
-                            Download
-                          </>
-                        )}
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
+                      <h3 className="font-bold text-secondary-900 mb-1">{link.title}</h3>
+                      <p className="text-sm text-secondary-600">{link.description}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* Topics Covered */}
-      <section className="bg-white py-20">
+      {/* Assessment Overview */}
+      <section className="py-12 bg-white">
         <div className="container">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
-              Topics Covered
+          <div className="mb-10 text-center">
+            <h2 className="mb-3 text-3xl font-bold text-secondary-900">
+              What to Expect
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-secondary-600">
-              Comprehensive coverage of all assessment areas
+              The assessment takes approximately 60 minutes and consists of three sections
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {topicsCovered.map((section, idx) => (
-              <Card key={idx} className="border-2 border-primary-200">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {assessmentSections.map((section, idx) => (
+              <Card key={idx} className="border-2 border-primary-100">
                 <CardContent className="p-6">
-                  <h3 className="mb-4 text-xl font-bold text-primary-600">
-                    {section.category}
-                  </h3>
-                  <ul className="space-y-2">
-                    {section.topics.map((topic, topicIdx) => (
-                      <li
-                        key={topicIdx}
-                        className="flex items-start gap-2 text-secondary-700"
-                      >
-                        <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600" />
-                        <span>{topic}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Sample Questions */}
-      <section className="py-20">
-        <div className="container">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
-              Sample Questions
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-secondary-600">
-              Get a feel for the types of questions you'll encounter
-            </p>
-          </div>
-
-          <div className="mx-auto max-w-3xl space-y-4">
-            {sampleQuestions.map((q, idx) => (
-              <Card key={idx}>
-                <CardContent className="p-6">
-                  <div className="mb-3 flex items-center gap-3">
-                    <Badge
-                      variant={
-                        q.difficulty === "Easy"
-                          ? "success"
-                          : q.difficulty === "Medium"
-                          ? "warning"
-                          : "danger"
-                      }
-                    >
-                      {q.difficulty}
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge variant="primary" className="text-lg px-3 py-1">
+                      {idx + 1}
                     </Badge>
-                    <Badge variant="secondary">{q.topic}</Badge>
+                    <div className="flex items-center gap-1 text-secondary-600">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-sm font-medium">{section.duration} min</span>
+                    </div>
                   </div>
-                  <p className="text-secondary-900">{q.question}</p>
+                  <h3 className="text-xl font-bold text-secondary-900 mb-2">
+                    {section.name}
+                  </h3>
+                  <p className="text-secondary-600 mb-4 text-sm">
+                    {section.description}
+                  </p>
+                  <div className="space-y-2">
+                    {section.topics.map((topic, topicIdx) => (
+                      <div key={topicIdx} className="flex items-start gap-2 text-sm">
+                        <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-success-600" />
+                        <span className="text-secondary-700">{topic}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-secondary-100 text-sm text-secondary-500">
+                    {section.questions} questions
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
           <div className="mt-8 text-center">
-            <Button variant="primary" size="lg" asChild>
-              <Link href="/skills-assessment/start">
-                <Play className="mr-2 h-5 w-5" />
-                Try Full Practice Test
-              </Link>
-            </Button>
+            <p className="text-secondary-600 mb-4">
+              Total: 60 minutes | 23 questions | Proctored
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Tips for Success */}
-      <section className="bg-gradient-to-br from-secondary-50 to-primary-50 py-20">
+      {/* Niche-Specific Prep */}
+      <section className="py-12">
         <div className="container">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-secondary-900 md:text-4xl">
+          <div className="mb-10 text-center">
+            <h2 className="mb-3 text-3xl font-bold text-secondary-900">
+              Niche-Specific Preparation
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-secondary-600">
+              Focus your study on your specialty area
+            </p>
+          </div>
+
+          {/* Niche Tabs */}
+          <div className="flex flex-wrap justify-center gap-3 mb-8">
+            {niches.map((niche) => {
+              const Icon = niche.icon;
+              return (
+                <button
+                  key={niche.id}
+                  onClick={() => setSelectedNiche(niche.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all ${
+                    selectedNiche === niche.id
+                      ? "border-primary-600 bg-primary-600 text-white"
+                      : "border-secondary-200 bg-white text-secondary-700 hover:border-primary-300"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="font-medium">{niche.name}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Selected Niche Content */}
+          <Card className="max-w-4xl mx-auto border-2 border-primary-200">
+            <CardContent className="p-8">
+              <div className="flex items-start gap-4 mb-6">
+                {(() => {
+                  const niche = niches.find((n) => n.id === selectedNiche);
+                  const Icon = niche?.icon || Brain;
+                  return (
+                    <>
+                      <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary-100">
+                        <Icon className="h-7 w-7 text-primary-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-secondary-900">
+                          {niche?.name}
+                        </h3>
+                        <p className="text-secondary-600">{niche?.description}</p>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              <h4 className="font-bold text-secondary-900 mb-4">Key Topics to Study:</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                {nicheTopics[selectedNiche].map((topic, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-success-600 flex-shrink-0" />
+                    <span className="text-secondary-700">{topic}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button variant="primary" asChild>
+                  <Link href={`/skills-assessment/prep/sample-questions?category=${encodeURIComponent(selectedNiche)}`}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    {selectedNiche} Sample Questions
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href="/skills-assessment/prep/study-guide">
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    View Study Guide
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Tips Preview */}
+      <section className="py-12 bg-gradient-to-br from-secondary-50 to-primary-50">
+        <div className="container">
+          <div className="mb-10 text-center">
+            <h2 className="mb-3 text-3xl font-bold text-secondary-900">
               Tips for Success
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-secondary-600">
@@ -327,38 +363,109 @@ export default function SkillsAssessmentPrepPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {tips.map((tip, idx) => {
-              const Icon = tip.icon;
-              return (
-                <Card key={idx} className="border-2 border-accent-200">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100">
-                        <Icon className="h-5 w-5 text-accent-600" />
-                      </div>
-                      <h3 className="font-bold text-secondary-900">{tip.title}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <Card className="border-2 border-accent-200">
+              <CardContent className="p-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 mb-4">
+                  <Monitor className="h-5 w-5 text-accent-600" />
+                </div>
+                <h3 className="font-bold text-secondary-900 mb-2">Test Your Environment</h3>
+                <p className="text-secondary-600 text-sm">
+                  Ensure stable internet, working camera/mic, and a quiet space before starting.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-accent-200">
+              <CardContent className="p-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 mb-4">
+                  <Clock className="h-5 w-5 text-accent-600" />
+                </div>
+                <h3 className="font-bold text-secondary-900 mb-2">Manage Your Time</h3>
+                <p className="text-secondary-600 text-sm">
+                  Don't spend too long on any single question. Mark difficult ones and return later.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-accent-200">
+              <CardContent className="p-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 mb-4">
+                  <Target className="h-5 w-5 text-accent-600" />
+                </div>
+                <h3 className="font-bold text-secondary-900 mb-2">Show Your Work</h3>
+                <p className="text-secondary-600 text-sm">
+                  For coding and design questions, explain your thought process even if incomplete.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mt-8 text-center">
+            <Button variant="outline" asChild>
+              <Link href="/skills-assessment/prep/tips">
+                View All Tips & Strategies
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 bg-white">
+        <div className="container">
+          <div className="mb-10 text-center">
+            <h2 className="mb-3 text-3xl font-bold text-secondary-900">
+              Frequently Asked Questions
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-secondary-600">
+              Common questions about the skills assessment
+            </p>
+          </div>
+
+          <div className="max-w-3xl mx-auto space-y-3">
+            {prepFAQs.slice(0, 6).map((faq, idx) => (
+              <Card key={idx} className="border border-secondary-200">
+                <CardContent className="p-0">
+                  <button
+                    onClick={() => setOpenFAQ(openFAQ === idx ? null : idx)}
+                    className="w-full flex items-center justify-between p-4 text-left hover:bg-secondary-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <HelpCircle className="h-5 w-5 text-primary-600 flex-shrink-0" />
+                      <span className="font-medium text-secondary-900">{faq.question}</span>
                     </div>
-                    <p className="text-secondary-600">{tip.description}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    {openFAQ === idx ? (
+                      <ChevronUp className="h-5 w-5 text-secondary-400" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-secondary-400" />
+                    )}
+                  </button>
+                  {openFAQ === idx && (
+                    <div className="px-4 pb-4 pl-12">
+                      <p className="text-secondary-600">{faq.answer}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-br from-primary-600 to-accent-600 py-20 text-white">
+      <section className="bg-gradient-to-br from-primary-600 to-accent-600 py-16 text-white">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
+            <ListChecks className="h-16 w-16 mx-auto mb-4 text-white/80" />
             <h2 className="mb-4 text-3xl font-bold md:text-4xl">
               Ready to Take the Assessment?
             </h2>
             <p className="mb-8 text-xl text-primary-100">
-              You've got all the tools you need. Start your journey to better opportunities.
+              You've prepared well. Now it's time to showcase your skills and unlock better opportunities.
             </p>
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 variant="secondary"
                 size="lg"
@@ -366,7 +473,7 @@ export default function SkillsAssessmentPrepPage() {
                 asChild
               >
                 <Link href="/skills-assessment/start">
-                  Start Assessment
+                  Start Assessment Now
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -376,9 +483,8 @@ export default function SkillsAssessmentPrepPage() {
                 className="border-white text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="/skills-assessment">
-                  Learn More
-                  <ExternalLink className="ml-2 h-5 w-5" />
+                <Link href="/skills-assessment/prep/practice">
+                  Take Practice Test First
                 </Link>
               </Button>
             </div>
