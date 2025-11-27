@@ -1131,7 +1131,8 @@ export default function CandidateInterviewsPage() {
                                   </Button>
                                 )}
 
-                                {interview.displayStatus === "pending" && (
+                                {/* Only show Change Selection if candidate hasn't selected yet (not AWAITING_CONFIRMATION) */}
+                                {interview.displayStatus === "pending" && interview.status !== "AWAITING_CONFIRMATION" && (
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -1192,37 +1193,20 @@ export default function CandidateInterviewsPage() {
                                   Message
                                 </Button>
 
-                                {/* Reschedule & Cancel for confirmed interviews */}
-                                {interview.displayStatus === "confirmed" && (
-                                  <>
-                                    {/* Only show Request Reschedule if not already requested */}
-                                    {!interview.rescheduleRequested && (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full"
-                                        onClick={() => {
-                                          setSelectedInterview(interview);
-                                          setRescheduleModalOpen(true);
-                                        }}
-                                      >
-                                        <RefreshCw className="mr-2 h-4 w-4" />
-                                        Request Reschedule
-                                      </Button>
-                                    )}
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="w-full text-red-600 border-red-200 hover:bg-red-50"
-                                      onClick={() => {
-                                        setSelectedInterview(interview);
-                                        setCancelModalOpen(true);
-                                      }}
-                                    >
-                                      <XCircle className="mr-2 h-4 w-4" />
-                                      Cancel
-                                    </Button>
-                                  </>
+                                {/* Request Reschedule for confirmed interviews (no cancel for upcoming) */}
+                                {interview.displayStatus === "confirmed" && !interview.rescheduleRequested && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full"
+                                    onClick={() => {
+                                      setSelectedInterview(interview);
+                                      setRescheduleModalOpen(true);
+                                    }}
+                                  >
+                                    <RefreshCw className="mr-2 h-4 w-4" />
+                                    Request Reschedule
+                                  </Button>
                                 )}
                               </div>
                             </div>
