@@ -126,7 +126,10 @@ function RescheduleRequestModal({
     try {
       await onSubmit(reason, message);
       setIsSuccess(true);
-      // Don't close modal - show success state, page will reload
+      // Show success state for 1.5 seconds, then reload page
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (error) {
       console.error("Failed to submit reschedule request:", error);
       setIsSubmitting(false);
@@ -651,8 +654,7 @@ export default function CandidateInterviewsPage() {
         reason: `${reason}${message ? `: ${message}` : ""}`,
       });
 
-      // Reload page to show updated status
-      window.location.reload();
+      // Don't reload here - modal handles showing success state and reloading after delay
     } catch (error) {
       console.error("Failed to request reschedule:", error);
       throw error;
