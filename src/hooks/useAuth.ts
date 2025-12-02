@@ -5,6 +5,23 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 
+// Type declarations for Credential Management API
+interface PasswordCredentialData {
+  id: string;
+  password: string;
+  name?: string;
+}
+
+interface PasswordCredentialConstructor {
+  new (data: PasswordCredentialData): Credential;
+}
+
+declare global {
+  interface Window {
+    PasswordCredential?: PasswordCredentialConstructor;
+  }
+}
+
 export interface SignupData {
   email: string;
   password: string;
@@ -46,9 +63,24 @@ export function useAuth() {
         throw new Error(result.error);
       }
 
+      // Store credentials for browser password manager (desktop browsers)
+      // This explicitly tells the browser to save the credentials after successful AJAX login
+      if (window.PasswordCredential && navigator.credentials) {
+        try {
+          const credential = new window.PasswordCredential({
+            id: email,
+            password: password,
+            name: email,
+          });
+          await navigator.credentials.store(credential);
+        } catch (credError) {
+          // Silently fail - credential storage is optional
+          console.debug("Credential storage not available:", credError);
+        }
+      }
+
       // Redirect based on role after successful login
       // Use window.location.href instead of router.push to trigger full page reload
-      // This allows Chrome to detect successful login and prompt to save password
       const response = await fetch("/api/auth/session");
       const sessionData = await response.json();
 
