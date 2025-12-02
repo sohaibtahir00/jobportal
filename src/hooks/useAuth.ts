@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
@@ -14,6 +15,8 @@ export interface SignupData {
 export function useAuth() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const user = session?.user
     ? {
@@ -28,62 +31,80 @@ export function useAuth() {
     : null;
 
   const login = async ({ email, password, rememberMe }: { email: string; password: string; rememberMe?: boolean }) => {
-    const result = await signIn("credentials", {
-      email,
-      password,
-      rememberMe: String(rememberMe || false),
-      redirect: false,
-    });
+    setIsAuthLoading(true);
+    setAuthError(null);
 
-    if (result?.error) {
-      throw new Error(result.error);
-    }
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        rememberMe: String(rememberMe || false),
+        redirect: false,
+      });
 
-    // Redirect based on role after successful login
-    // Use window.location.href instead of router.push to trigger full page reload
-    // This allows Chrome to detect successful login and prompt to save password
-    const response = await fetch("/api/auth/session");
-    const sessionData = await response.json();
-
-    if (sessionData?.user?.role) {
-      const role = sessionData.user.role.toLowerCase();
-      if (role === "employer") {
-        window.location.href = "/employer/dashboard";
-      } else {
-        window.location.href = "/candidate/dashboard";
+      if (result?.error) {
+        throw new Error(result.error);
       }
+
+      // Redirect based on role after successful login
+      // Use window.location.href instead of router.push to trigger full page reload
+      // This allows Chrome to detect successful login and prompt to save password
+      const response = await fetch("/api/auth/session");
+      const sessionData = await response.json();
+
+      if (sessionData?.user?.role) {
+        const role = sessionData.user.role.toLowerCase();
+        if (role === "employer") {
+          window.location.href = "/employer/dashboard";
+        } else {
+          window.location.href = "/candidate/dashboard";
+        }
+      }
+    } catch (error: any) {
+      setAuthError(error.message || "Login failed");
+      setIsAuthLoading(false);
+      throw error;
     }
   };
 
   const signup = async (data: SignupData) => {
-    // Call backend register API - use relative path since api client already has baseURL configured
-    const response = await api.post('/api/auth/register', {
-      email: data.email,
-      password: data.password,
-      name: data.fullName,
-      role: data.role.toUpperCase(),
-    });
+    setIsAuthLoading(true);
+    setAuthError(null);
 
-    if (response.status !== 201) {
-      throw new Error(response.data.error || "Registration failed");
-    }
+    try {
+      // Call backend register API - use relative path since api client already has baseURL configured
+      const response = await api.post('/api/auth/register', {
+        email: data.email,
+        password: data.password,
+        name: data.fullName,
+        role: data.role.toUpperCase(),
+      });
 
-    // After registration, log the user in
-    const result = await signIn("credentials", {
-      email: data.email,
-      password: data.password,
-      redirect: false,
-    });
+      if (response.status !== 201) {
+        throw new Error(response.data.error || "Registration failed");
+      }
 
-    if (result?.error) {
-      throw new Error(result.error);
-    }
+      // After registration, log the user in
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
 
-    // Redirect to onboarding based on role (instead of dashboard)
-    if (data.role === "employer") {
-      router.push("/onboarding/employer");
-    } else {
-      router.push("/onboarding/candidate");
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      // Redirect to onboarding based on role (instead of dashboard)
+      if (data.role === "employer") {
+        router.push("/onboarding/employer");
+      } else {
+        router.push("/onboarding/candidate");
+      }
+    } catch (error: any) {
+      setAuthError(error.message || "Registration failed");
+      setIsAuthLoading(false);
+      throw error;
     }
   };
 
@@ -92,15 +113,19 @@ export function useAuth() {
     router.push("/login");
   };
 
+  const clearError = () => {
+    setAuthError(null);
+  };
+
   return {
     user,
     isAuthenticated: !!session,
-    isLoading: status === "loading",
-    error: null,
+    isLoading: status === "loading" || isAuthLoading,
+    error: authError,
     login,
     signup,
     logout,
-    clearError: () => {}, // No-op for compatibility
+    clearError,
   };
 }
 
