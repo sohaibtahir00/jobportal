@@ -17,6 +17,8 @@ import {
   Users,
   Search,
   Filter,
+  Clock,
+  Bell,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -38,6 +40,24 @@ const jobStatusColors: Record<string, string> = {
   FILLED: "bg-blue-100 text-blue-800 border-blue-300",
   EXPIRED: "bg-red-100 text-red-800 border-red-300",
 };
+
+// Helper function to check if job needs attention
+// (low applicants OR approaching deadline OR no skills-verified candidates)
+function jobNeedsAttention(job: any): boolean {
+  const lowApplicants = (job.applicationsCount || job._count?.applications || 0) < 5;
+
+  // Check if deadline is approaching (within 7 days)
+  let approachingDeadline = false;
+  if (job.deadline) {
+    const deadline = new Date(job.deadline);
+    const now = new Date();
+    const daysUntilDeadline = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    approachingDeadline = daysUntilDeadline <= 7 && daysUntilDeadline > 0;
+  }
+
+  // Job needs attention if it's active AND has low applicants OR approaching deadline
+  return job.status === "ACTIVE" && (lowApplicants || approachingDeadline);
+}
 
 // Helper function to format date
 function formatDate(date: string | Date): string {
@@ -79,7 +99,18 @@ export default function EmployerJobsPage() {
   const filteredJobs = jobs.filter((job: any) => {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || job.status === statusFilter;
+
+    let matchesStatus = false;
+    if (statusFilter === "all") {
+      matchesStatus = true;
+    } else if (statusFilter === "AWAITING_CLAIM") {
+      matchesStatus = job.isClaimed === false;
+    } else if (statusFilter === "NEEDS_ATTENTION") {
+      matchesStatus = jobNeedsAttention(job);
+    } else {
+      matchesStatus = job.status === statusFilter;
+    }
+
     return matchesSearch && matchesStatus;
   });
 
@@ -87,9 +118,9 @@ export default function EmployerJobsPage() {
   const jobCounts = {
     all: jobs.length,
     ACTIVE: jobs.filter((j: any) => j.status === "ACTIVE").length,
-    DRAFT: jobs.filter((j: any) => j.status === "DRAFT").length,
+    AWAITING_CLAIM: jobs.filter((j: any) => j.isClaimed === false).length,
+    NEEDS_ATTENTION: jobs.filter((j: any) => jobNeedsAttention(j)).length,
     CLOSED: jobs.filter((j: any) => j.status === "CLOSED").length,
-    FILLED: jobs.filter((j: any) => j.status === "FILLED").length,
   };
 
   if (isLoading) {
@@ -198,11 +229,11 @@ export default function EmployerJobsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-secondary-600 mb-1">Draft</p>
-                    <p className="text-3xl font-bold text-yellow-600">{jobCounts.DRAFT}</p>
+                    <p className="text-sm font-medium text-secondary-600 mb-1">Awaiting Claim</p>
+                    <p className="text-3xl font-bold text-yellow-600">{jobCounts.AWAITING_CLAIM}</p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 shadow-lg">
-                    <Edit className="h-6 w-6 text-white" />
+                    <Clock className="h-6 w-6 text-white" />
                   </div>
                 </div>
               </CardContent>
@@ -218,11 +249,11 @@ export default function EmployerJobsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-secondary-600 mb-1">Filled</p>
-                    <p className="text-3xl font-bold text-blue-600">{jobCounts.FILLED}</p>
+                    <p className="text-sm font-medium text-secondary-600 mb-1">Needs Attention</p>
+                    <p className="text-3xl font-bold text-orange-600">{jobCounts.NEEDS_ATTENTION}</p>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
-                    <Users className="h-6 w-6 text-white" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-600 shadow-lg">
+                    <Bell className="h-6 w-6 text-white" />
                   </div>
                 </div>
               </CardContent>
@@ -264,9 +295,9 @@ export default function EmployerJobsPage() {
                     >
                       <option value="all">All Jobs ({jobCounts.all})</option>
                       <option value="ACTIVE">Active ({jobCounts.ACTIVE})</option>
-                      <option value="DRAFT">Draft ({jobCounts.DRAFT})</option>
+                      <option value="AWAITING_CLAIM">Awaiting Claim ({jobCounts.AWAITING_CLAIM})</option>
+                      <option value="NEEDS_ATTENTION">Needs Attention ({jobCounts.NEEDS_ATTENTION})</option>
                       <option value="CLOSED">Closed ({jobCounts.CLOSED})</option>
-                      <option value="FILLED">Filled ({jobCounts.FILLED})</option>
                     </select>
                   </div>
                 </div>
