@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 import Link from "next/link";
+import { api } from "@/lib/api";
 
 export default function PlacementDetailPage() {
   const router = useRouter();
@@ -59,14 +60,11 @@ export default function PlacementDetailPage() {
   const fetchPlacement = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/employer/placements/${placementId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch placement details");
-      }
-      const data = await response.json();
-      setPlacement(data);
+      const response = await api.get(`/api/placements/${placementId}`);
+      // The backend returns { placement: { ...placementData } }
+      setPlacement(response.data.placement);
     } catch (err: any) {
-      setError(err.message || "Failed to load placement details");
+      setError(err.response?.data?.error || err.message || "Failed to load placement details");
     } finally {
       setIsLoading(false);
     }
