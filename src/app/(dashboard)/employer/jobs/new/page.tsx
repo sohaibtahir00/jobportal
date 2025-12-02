@@ -298,6 +298,7 @@ export default function NewJobPage() {
         remoteType: formData.remoteType,
         keyResponsibilities: formData.keyResponsibilities,
         equityOffered: formData.equityOffered,
+        isCompetitive: formData.isCompetitive,
         specificBenefits: formData.specificBenefits,
         requiresAssessment: formData.requiresAssessment,
         minSkillsScore: formData.requiresAssessment ? formData.minSkillsScore : undefined,

@@ -286,6 +286,7 @@ export default function EditJobPage() {
         keyResponsibilities: formData.keyResponsibilities,
         specificBenefits: formData.specificBenefits,
         equityOffered: formData.equityOffered,
+        isCompetitive: formData.isCompetitive,
         requiresAssessment: formData.requiresAssessment,
         minSkillsScore: formData.requiresAssessment ? formData.minSkillsScore : undefined,
         requiredTier: formData.requiresAssessment ? formData.requiredTier : undefined,
