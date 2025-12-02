@@ -681,6 +681,7 @@ export default function EditJobPage() {
                       </label>
                       <input
                         type="number"
+                        step={5000}
                         value={formData.salaryMin || ''}
                         onChange={(e) => updateFormData({ salaryMin: Number(e.target.value) })}
                         placeholder="e.g. 100000"
@@ -694,6 +695,7 @@ export default function EditJobPage() {
                       </label>
                       <input
                         type="number"
+                        step={5000}
                         value={formData.salaryMax || ''}
                         onChange={(e) => updateFormData({ salaryMax: Number(e.target.value) })}
                         placeholder="e.g. 150000"

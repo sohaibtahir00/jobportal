@@ -736,6 +736,7 @@ export default function NewJobPage() {
                       <span className="text-gray-500">$</span>
                       <input
                         type="number"
+                        step={5000}
                         value={formData.salaryMin || ''}
                         onChange={(e) => updateFormData({ salaryMin: Number(e.target.value) })}
                         className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -748,6 +749,7 @@ export default function NewJobPage() {
                       <span className="text-gray-500">$</span>
                       <input
                         type="number"
+                        step={5000}
                         value={formData.salaryMax || ''}
                         onChange={(e) => updateFormData({ salaryMax: Number(e.target.value) })}
                         className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
