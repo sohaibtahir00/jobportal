@@ -186,11 +186,11 @@ export default function LoginPage() {
             </motion.div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Email Input */}
+          {/* Form - using method="post" and action="#" helps Chrome detect login forms */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" method="post" action="#">
+            {/* Email Input - react-hook-form's register adds name attribute automatically */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                 Email address
               </label>
               <div className="relative">
@@ -198,7 +198,7 @@ export default function LoginPage() {
                   type="email"
                   id="email"
                   placeholder="you@example.com"
-                  autoComplete="username"
+                  autoComplete="email"
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-primary-500/20 transition-all outline-none pr-12 ${
                     errors.email
                       ? "border-red-500 focus:border-red-500"
@@ -228,9 +228,9 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* Password Input */}
+            {/* Password Input - react-hook-form's register adds name attribute automatically */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">

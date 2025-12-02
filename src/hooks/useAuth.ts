@@ -65,7 +65,7 @@ export function useAuth() {
 
       // Store credentials for browser password manager (desktop browsers)
       // This explicitly tells the browser to save the credentials after successful AJAX login
-      if (window.PasswordCredential && navigator.credentials) {
+      if (typeof window !== 'undefined' && window.PasswordCredential && navigator.credentials?.store) {
         try {
           const credential = new window.PasswordCredential({
             id: email,
@@ -73,10 +73,13 @@ export function useAuth() {
             name: email,
           });
           await navigator.credentials.store(credential);
+          console.log("Credentials stored successfully");
         } catch (credError) {
-          // Silently fail - credential storage is optional
-          console.debug("Credential storage not available:", credError);
+          // Log for debugging - credential storage may fail in some contexts
+          console.warn("Credential storage failed:", credError);
         }
+      } else {
+        console.log("Credential Management API not available - browser will use native password detection");
       }
 
       // Redirect based on role after successful login
