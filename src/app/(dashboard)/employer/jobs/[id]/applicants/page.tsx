@@ -22,7 +22,7 @@ import {
   Search,
   AlertCircle,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
+import { Button, Badge, Card, CardContent, Input, useToast } from "@/components/ui";
 import { api } from "@/lib/api";
 
 interface Applicant {
@@ -51,6 +51,7 @@ interface Applicant {
 }
 
 export default function ApplicantsPipelinePage() {
+  const { showToast } = useToast();
   const params = useParams();
   const jobId = params.id as string;
   const router = useRouter();
@@ -173,7 +174,7 @@ export default function ApplicantsPipelinePage() {
       console.log("✅ [Kanban] Applicants refreshed from server");
     } catch (err) {
       console.error("Error updating status:", err);
-      alert("Failed to update applicant status");
+      showToast("error", "Update Failed", "Failed to update applicant status.");
     }
   };
 

@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useCandidateProfile } from "@/hooks/useCandidateProfile";
 import { useCandidateDashboard } from "@/hooks/useDashboard";
 import { convertSalaryToDollars, convertSalaryToCents, JobType } from "@/types";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, useToast } from "@/components/ui";
 import {
   Loader2,
   User,
@@ -69,6 +69,7 @@ type ProfileFormData = {
 
 export default function CandidateProfilePage() {
   const { data: session } = useSession();
+  const { showToast } = useToast();
   const {
     profile,
     profileCompletion,
@@ -197,6 +198,10 @@ export default function CandidateProfilePage() {
     updateProfile(payload, {
       onSuccess: () => {
         setIsEditing(false);
+        showToast("success", "Profile Updated", "Your profile has been saved successfully.");
+      },
+      onError: (error: any) => {
+        showToast("error", "Update Failed", error.message || "Failed to update profile.");
       },
     });
   };
@@ -217,7 +222,9 @@ export default function CandidateProfilePage() {
   };
 
   const removeSkill = (index: number) => {
+    const removedSkill = skills[index];
     setSkills(skills.filter((_, i) => i !== index));
+    showToast("info", "Skill Removed", `"${removedSkill}" has been removed.`);
   };
 
   const handleFileUpload = async (file: File, type: 'resume' | 'photo') => {
@@ -226,12 +233,14 @@ export default function CandidateProfilePage() {
       const result = await uploadFile(file, type);
       if (type === 'resume') {
         setResumeUrl(result.url);
+        showToast("success", "Resume Uploaded", "Your resume has been uploaded successfully.");
       } else {
         setPhotoUrl(result.url);
+        showToast("success", "Photo Uploaded", "Your profile photo has been updated.");
       }
     } catch (error) {
       console.error("File upload failed:", error);
-      alert("Failed to upload file");
+      showToast("error", "Upload Failed", "Failed to upload file. Please try again.");
     } finally {
       setUploading(false);
     }

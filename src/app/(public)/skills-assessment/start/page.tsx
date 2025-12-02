@@ -12,7 +12,7 @@ import {
   Flag,
   Loader2,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
+import { Button, Badge, Card, CardContent, Progress, useToast } from "@/components/ui";
 
 // Mock test questions (would come from API in production)
 const TEST_SECTIONS = [
@@ -120,6 +120,7 @@ const TEST_SECTIONS = [
 ];
 
 export default function SkillsAssessmentStartPage() {
+  const { showToast } = useToast();
   const router = useRouter();
   const { data: session, status } = useSession();
   const [currentSection, setCurrentSection] = useState(0);
@@ -161,7 +162,7 @@ export default function SkillsAssessmentStartPage() {
 
   const handleAutoSubmit = () => {
     // Auto-submit when time runs out
-    alert("Time's up! Your assessment will be automatically submitted.");
+    showToast("warning", "Time's Up!", "Your assessment will be automatically submitted.");
     handleSubmitAssessment();
   };
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSubmitApplication } from "@/hooks/useApplications";
 import { useSession } from "next-auth/react";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
-import { Button } from "@/components/ui";
+import { Button, useToast } from "@/components/ui";
 
 interface ApplicationFormProps {
   isOpen?: boolean;
@@ -16,6 +16,7 @@ interface ApplicationFormProps {
 }
 
 export default function ApplicationForm(props: ApplicationFormProps) {
+  const { showToast } = useToast();
   const { data: session } = useSession();
   const [coverLetter, setCoverLetter] = useState("");
   const [availability, setAvailability] = useState("");
@@ -27,12 +28,12 @@ export default function ApplicationForm(props: ApplicationFormProps) {
     e.preventDefault();
 
     if (!props.jobId) {
-      alert("Job ID is missing");
+      showToast("error", "Error", "Job ID is missing");
       return;
     }
 
     if (!session) {
-      alert("Please login to apply");
+      showToast("warning", "Login Required", "Please login to apply for this position.");
       return;
     }
 

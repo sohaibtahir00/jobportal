@@ -7,6 +7,7 @@ import {
   SlotInfo,
   Event,
 } from "react-big-calendar";
+import { useToast } from "@/components/ui";
 import {
   format,
   parse,
@@ -46,6 +47,7 @@ export default function WeeklyCalendarPicker({
   busyTimes = [],
   initialSlots = [],
 }: WeeklyCalendarPickerProps) {
+  const { showToast } = useToast();
   const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>(
     initialSlots.map((slot, idx) => ({
       id: `slot-${idx}`,
@@ -88,7 +90,7 @@ export default function WeeklyCalendarPicker({
 
       // Check if slot is in the past
       if (start < now) {
-        alert("Cannot select time slots in the past. Please choose a future date and time.");
+        showToast("warning", "Invalid Selection", "Cannot select time slots in the past. Please choose a future date and time.");
         return;
       }
 
@@ -104,9 +106,9 @@ export default function WeeklyCalendarPicker({
       if (overlappingBusy) {
         // Show appropriate message based on the busy event title
         if (overlappingBusy.title?.includes("Previously Scheduled")) {
-          alert("⚠️ Cannot select the previously scheduled time slot.\n\nYou are rescheduling this interview, so please choose a different time.");
+          showToast("warning", "Cannot Select Time", "You are rescheduling this interview, so please choose a different time than the previously scheduled slot.");
         } else {
-          alert("This time conflicts with your Google Calendar events.");
+          showToast("warning", "Time Conflict", "This time conflicts with your Google Calendar events.");
         }
         return;
       }

@@ -287,9 +287,10 @@ export default function ApplicantDetailPage() {
     try {
       await api.delete(`/api/interviews/${interviewId}`);
       loadInterviews();
+      showToast("success", "Interview Cancelled", "The interview has been cancelled.");
     } catch (err) {
       console.error("Failed to cancel interview:", err);
-      alert("Failed to cancel interview");
+      showToast("error", "Cancellation Failed", "Failed to cancel the interview.");
     }
   };
 
@@ -338,9 +339,7 @@ export default function ApplicantDetailPage() {
       }
     } catch (err: any) {
       console.error("Failed to reschedule interview:", err);
-      alert(
-        err?.response?.data?.error || "Failed to reschedule interview"
-      );
+      showToast("error", "Reschedule Failed", err?.response?.data?.error || "Failed to reschedule interview.");
       throw err; // Re-throw to let modal handle loading state
     }
   };
@@ -355,8 +354,9 @@ export default function ApplicantDetailPage() {
 
       // Refresh interviews
       loadInterviews();
+      showToast("success", "Interview Cancelled", "The interview has been cancelled.");
     } catch (error) {
-      alert("Failed to cancel interview");
+      showToast("error", "Cancellation Failed", "Failed to cancel the interview.");
     }
   };
 
@@ -366,11 +366,12 @@ export default function ApplicantDetailPage() {
         status: "COMPLETED",
       });
       loadInterviews();
+      showToast("success", "Interview Completed", "The interview has been marked as completed.");
       // Reload applicant data to show updated UI
       window.location.reload();
     } catch (err) {
       console.error("Failed to mark interview as completed:", err);
-      alert("Failed to update interview status");
+      showToast("error", "Update Failed", "Failed to update interview status.");
     }
   };
 
@@ -419,7 +420,7 @@ export default function ApplicantDetailPage() {
       window.location.reload();
     } catch (err: any) {
       console.error("Failed to create offer:", err);
-      alert(err.response?.data?.error || "Failed to create offer");
+      showToast("error", "Failed to Create Offer", err.response?.data?.error || "Something went wrong.");
     } finally {
       setIsCreatingOffer(false);
     }
@@ -462,15 +463,13 @@ export default function ApplicantDetailPage() {
       console.error("Failed to reject candidate:", err);
       const debugInfo = err?.response?.data?.debug;
       if (debugInfo) {
-        alert(
-          `Failed to reject candidate\n\n` +
-            `Debug Info:\n` +
-            `Your User ID: ${debugInfo.yourUserId}\n` +
-            `Required User ID: ${debugInfo.requiredUserId}\n\n` +
-            `Error: ${err?.response?.data?.error}`
+        showToast(
+          "error",
+          "Failed to Reject Candidate",
+          `${err?.response?.data?.error || "Something went wrong."} (Your ID: ${debugInfo.yourUserId}, Required: ${debugInfo.requiredUserId})`
         );
       } else {
-        alert(err?.response?.data?.error || "Failed to reject candidate");
+        showToast("error", "Failed to Reject Candidate", err?.response?.data?.error || "Something went wrong.");
       }
       throw err;
     }

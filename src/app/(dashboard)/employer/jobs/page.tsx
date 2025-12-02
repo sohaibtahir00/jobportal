@@ -29,6 +29,7 @@ import {
   CardContent,
   Badge,
   Button,
+  useToast,
 } from "@/components/ui";
 import { useEmployerDashboard } from "@/hooks/useDashboard";
 
@@ -60,6 +61,7 @@ function formatSalary(min?: number, max?: number): string {
 }
 
 export default function EmployerJobsPage() {
+  const { showToast } = useToast();
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
@@ -72,8 +74,9 @@ export default function EmployerJobsPage() {
   useEffect(() => {
     if (searchParams.get("updated") === "true") {
       refetch();
+      showToast("success", "Job Updated", "Your job posting has been updated successfully.");
     }
-  }, [searchParams, refetch]);
+  }, [searchParams, refetch, showToast]);
 
   // Get all jobs from employer data (backend includes jobs array via Prisma include)
   // TypeScript interface doesn't include it, so we cast to any to access it

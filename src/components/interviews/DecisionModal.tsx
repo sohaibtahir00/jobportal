@@ -63,7 +63,7 @@ export default function DecisionModal({
 
   const handleMakeOffer = async () => {
     if (!applicationId) {
-      alert("Application ID is missing");
+      showToast("error", "Error", "Application ID is missing");
       return;
     }
 
@@ -112,7 +112,7 @@ export default function DecisionModal({
       window.location.reload();
     } catch (err: any) {
       console.error("Failed to create offer:", err);
-      alert(err.response?.data?.error || "Failed to create offer");
+      showToast("error", "Failed to Create Offer", err.response?.data?.error || "Something went wrong.");
     } finally {
       setIsCreatingOffer(false);
     }

@@ -19,11 +19,12 @@ import {
   DollarSign,
   Clock,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
+import { Button, Badge, Card, CardContent, Input, useToast } from "@/components/ui";
 
 export default function AdminJobsPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { showToast } = useToast();
   const [jobs, setJobs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -120,12 +121,14 @@ export default function AdminJobsPage() {
 
       if (response.ok) {
         fetchJobs();
+        showToast("success", "Job Deleted", "The job has been deleted successfully.");
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete job");
+        showToast("error", "Delete Failed", data.error || "Failed to delete job");
       }
     } catch (error) {
       console.error("Failed to delete job:", error);
+      showToast("error", "Delete Failed", "An error occurred while deleting the job.");
     }
   };
 

@@ -22,7 +22,7 @@ import {
   X,
   RefreshCw,
 } from "lucide-react";
-import { Card, CardContent, Button, Badge, Input } from "@/components/ui";
+import { Card, CardContent, Button, Badge, Input, useToast } from "@/components/ui";
 import { api } from "@/lib/api";
 import NotesModal from "@/components/interviews/NotesModal";
 import InterviewActionsDropdown from "@/components/interviews/InterviewActionsDropdown";
@@ -36,6 +36,7 @@ import CompletedInterviewActionsDropdown from "@/components/interviews/Completed
 export default function EmployerInterviewsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { showToast } = useToast();
   const [interviews, setInterviews] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all"); // all, upcoming, past
@@ -92,9 +93,10 @@ export default function EmployerInterviewsPage() {
       // Reload interviews
       const response = await api.get("/api/interviews");
       setInterviews(response.data.interviews || []);
+      showToast("success", "Interview Completed", "The interview has been marked as completed.");
     } catch (err) {
       console.error("Failed to mark interview as completed:", err);
-      alert("Failed to update interview status");
+      showToast("error", "Update Failed", "Failed to update interview status.");
     }
   };
 
@@ -106,9 +108,10 @@ export default function EmployerInterviewsPage() {
       // Reload interviews
       const response = await api.get("/api/interviews");
       setInterviews(response.data.interviews || []);
+      showToast("success", "Interview Cancelled", "The interview has been cancelled.");
     } catch (err) {
       console.error("Failed to cancel interview:", err);
-      alert("Failed to cancel interview");
+      showToast("error", "Cancellation Failed", "Failed to cancel the interview.");
     }
   };
 
@@ -341,15 +344,10 @@ export default function EmployerInterviewsPage() {
       console.error("Failed to reject candidate:", err);
       const debugInfo = err?.response?.data?.debug;
       if (debugInfo) {
-        alert(
-          `Failed to reject candidate\n\n` +
-            `Debug Info:\n` +
-            `Your User ID: ${debugInfo.yourUserId}\n` +
-            `Required User ID: ${debugInfo.requiredUserId}\n\n` +
-            `Error: ${err?.response?.data?.error}`
-        );
+        showToast("error", "Rejection Failed", `${err?.response?.data?.error || "Failed to reject candidate"}`);
+        console.log("Debug Info:", debugInfo);
       } else {
-        alert("Failed to reject candidate");
+        showToast("error", "Rejection Failed", "Failed to reject candidate.");
       }
       throw err; // Re-throw to let modal handle loading state
     }
@@ -393,7 +391,7 @@ export default function EmployerInterviewsPage() {
       }
     } catch (err: any) {
       console.error("Failed to reschedule interview:", err);
-      alert(err?.response?.data?.error || "Failed to reschedule interview");
+      showToast("error", "Reschedule Failed", err?.response?.data?.error || "Failed to reschedule interview.");
       throw err; // Re-throw to let modal handle loading state
     }
   };
