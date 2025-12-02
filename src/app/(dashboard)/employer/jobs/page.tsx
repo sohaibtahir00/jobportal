@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   Briefcase,
@@ -60,11 +61,19 @@ function formatSalary(min?: number, max?: number): string {
 
 export default function EmployerJobsPage() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Fetch employer dashboard data which includes all jobs
-  const { data, isLoading, error } = useEmployerDashboard();
+  const { data, isLoading, error, refetch } = useEmployerDashboard();
+
+  // Refetch data when returning from edit page with updated=true
+  useEffect(() => {
+    if (searchParams.get("updated") === "true") {
+      refetch();
+    }
+  }, [searchParams, refetch]);
 
   // Get all jobs from employer data (backend includes jobs array via Prisma include)
   // TypeScript interface doesn't include it, so we cast to any to access it
