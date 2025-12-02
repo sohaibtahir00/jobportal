@@ -1009,7 +1009,7 @@ export default function EmployerSettingsPage() {
                       </div>
                       <Button
                         variant="outline"
-                        onClick={() => handleDeleteMember(member.id)}
+                        onClick={() => setDeleteMemberModal({ isOpen: true, memberId: member.id, memberName: member.name })}
                         disabled={isSaving}
                         className="border-error-300 text-error-600 hover:bg-error-50"
                       >
@@ -1150,7 +1150,7 @@ export default function EmployerSettingsPage() {
                   {videoIntegration?.platform === "ZOOM" ? (
                     <Button
                       variant="outline"
-                      onClick={disconnectVideo}
+                      onClick={() => setDisconnectVideoModal(true)}
                       disabled={isSaving}
                       className="border-error-300 text-error-600 hover:bg-error-50"
                     >
@@ -1201,7 +1201,7 @@ export default function EmployerSettingsPage() {
                   {videoIntegration?.platform === "GOOGLE_MEET" ? (
                     <Button
                       variant="outline"
-                      onClick={disconnectVideo}
+                      onClick={() => setDisconnectVideoModal(true)}
                       disabled={isSaving}
                       className="border-error-300 text-error-600 hover:bg-error-50"
                     >
@@ -1279,7 +1279,7 @@ export default function EmployerSettingsPage() {
                   {calendarIntegration?.connected ? (
                     <Button
                       variant="outline"
-                      onClick={disconnectCalendar}
+                      onClick={() => setDisconnectCalendarModal(true)}
                       disabled={isSaving}
                       className="border-error-300 text-error-600 hover:bg-error-50"
                     >
@@ -1400,7 +1400,7 @@ export default function EmployerSettingsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDeleteTemplate(template.id)}
+                            onClick={() => setDeleteTemplateModal({ isOpen: true, templateId: template.id, templateName: template.name })}
                             disabled={isSaving}
                             className="border-error-300 text-error-600 hover:bg-error-50"
                           >
@@ -1774,7 +1774,7 @@ export default function EmployerSettingsPage() {
                 </p>
                 <Button
                   variant="outline"
-                  onClick={handleAccountDeletion}
+                  onClick={() => setDeleteAccountModal(true)}
                   disabled={isSaving}
                   className="border-error-600 text-error-600 hover:bg-error-50"
                 >
@@ -1795,6 +1795,78 @@ export default function EmployerSettingsPage() {
           </Card>
         </div>
       </div>
+
+      {/* Delete Team Member Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteMemberModal.isOpen}
+        onClose={() => setDeleteMemberModal({ isOpen: false, memberId: null, memberName: "" })}
+        onConfirm={() => { if (deleteMemberModal.memberId) handleDeleteMember(deleteMemberModal.memberId); }}
+        title="Remove Team Member"
+        message={`Are you sure you want to remove ${deleteMemberModal.memberName || "this team member"}? They will no longer have access to your company's account.`}
+        confirmText="Remove"
+        cancelText="Cancel"
+        variant="danger"
+      />
+
+      {/* Disconnect Video Integration Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={disconnectVideoModal}
+        onClose={() => setDisconnectVideoModal(false)}
+        onConfirm={disconnectVideo}
+        title="Disconnect Video Integration"
+        message="Are you sure you want to disconnect your video integration? You will need to reconnect it to schedule video interviews."
+        confirmText="Disconnect"
+        cancelText="Cancel"
+        variant="warning"
+      />
+
+      {/* Disconnect Calendar Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={disconnectCalendarModal}
+        onClose={() => setDisconnectCalendarModal(false)}
+        onConfirm={disconnectCalendar}
+        title="Disconnect Google Calendar"
+        message="Are you sure you want to disconnect Google Calendar? Calendar sync and availability features will be disabled."
+        confirmText="Disconnect"
+        cancelText="Cancel"
+        variant="warning"
+      />
+
+      {/* Delete Template Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteTemplateModal.isOpen}
+        onClose={() => setDeleteTemplateModal({ isOpen: false, templateId: null, templateName: "" })}
+        onConfirm={() => { if (deleteTemplateModal.templateId) handleDeleteTemplate(deleteTemplateModal.templateId); }}
+        title="Delete Template"
+        message={`Are you sure you want to delete the template "${deleteTemplateModal.templateName || "this template"}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
+
+      {/* Delete Account First Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteAccountModal}
+        onClose={() => setDeleteAccountModal(false)}
+        onConfirm={() => { setDeleteAccountModal(false); setDeleteAccountConfirmModal(true); }}
+        title="Delete Account"
+        message="Are you sure you want to delete your account? This action cannot be undone."
+        confirmText="Continue"
+        cancelText="Cancel"
+        variant="danger"
+      />
+
+      {/* Delete Account Final Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteAccountConfirmModal}
+        onClose={() => setDeleteAccountConfirmModal(false)}
+        onConfirm={handleAccountDeletion}
+        title="Final Confirmation"
+        message="This will permanently delete all your job postings, applicant data, team members, and account information. Are you absolutely sure?"
+        confirmText="Delete My Account"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }
