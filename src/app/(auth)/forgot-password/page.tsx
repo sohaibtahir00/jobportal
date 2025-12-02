@@ -4,13 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { CheckCircle2, ArrowLeft } from "lucide-react";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Input, Button, useToast } from "@/components/ui";
 import {
   forgotPasswordSchema,
   type ForgotPasswordFormData,
 } from "@/lib/validations";
+import api from "@/lib/api";
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,12 +33,16 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await api.post("/api/auth/forgot-password", {
+        email: data.email,
+      });
 
       setIsSuccess(true);
-    } catch (error) {
-      showToast("error", "Request failed", "There was a problem sending the reset link. Please try again.");
+    } catch (error: any) {
+      // The backend always returns success for security (not revealing if email exists)
+      // So we only show error for network/server issues
+      const errorMessage = error.response?.data?.error || "There was a problem sending the reset link. Please try again.";
+      showToast("error", "Request failed", errorMessage);
     } finally {
       setIsLoading(false);
     }
