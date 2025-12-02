@@ -87,6 +87,7 @@ interface JobFormData {
 
   // Application Settings
   deadline: string;
+  maxApplicants: string;
   screeningQuestions: Array<{
     question: string;
     required: boolean;
@@ -132,6 +133,7 @@ export default function EditJobPage() {
     hiringTimeline: "",
     startDateNeeded: "",
     deadline: "",
+    maxApplicants: "",
     screeningQuestions: [],
     status: "ACTIVE",
   });
@@ -211,8 +213,9 @@ export default function EditJobPage() {
           requiredTier: job.requiredTier || "ANY",
           customAssessmentQuestions: job.customAssessmentQuestions || [],
           hiringTimeline: job.hiringTimeline || "",
-          startDateNeeded: job.startDateNeeded || "",
-          deadline: job.deadline || "",
+          startDateNeeded: job.startDateNeeded ? job.startDateNeeded.split('T')[0] : "",
+          deadline: job.deadline ? job.deadline.split('T')[0] : "",
+          maxApplicants: job.maxApplicants ? String(job.maxApplicants) : "",
           screeningQuestions: job.screeningQuestions || [],
           status: job.status || "ACTIVE",
         });
@@ -282,7 +285,6 @@ export default function EditJobPage() {
         remoteType: formData.remoteType,
         keyResponsibilities: formData.keyResponsibilities,
         specificBenefits: formData.specificBenefits,
-        isCompetitive: formData.isCompetitive,
         equityOffered: formData.equityOffered,
         requiresAssessment: formData.requiresAssessment,
         minSkillsScore: formData.requiresAssessment ? formData.minSkillsScore : undefined,
@@ -290,6 +292,7 @@ export default function EditJobPage() {
         customAssessmentQuestions: formData.requiresAssessment ? formData.customAssessmentQuestions : [],
         hiringTimeline: formData.hiringTimeline,
         startDateNeeded: formData.startDateNeeded || undefined,
+        maxApplicants: formData.maxApplicants ? parseInt(formData.maxApplicants) : undefined,
         screeningQuestions: formData.screeningQuestions,
         status: formData.status,
       };
