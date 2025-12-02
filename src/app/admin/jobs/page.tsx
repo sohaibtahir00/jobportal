@@ -19,7 +19,7 @@ import {
   DollarSign,
   Clock,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, Input, useToast, ConfirmationModal } from "@/components/ui";
+import { Button, Badge, Card, CardContent, Input, useToast, ConfirmationModal, InputModal } from "@/components/ui";
 
 export default function AdminJobsPage() {
   const router = useRouter();
@@ -36,6 +36,7 @@ export default function AdminJobsPage() {
   // Confirmation modal states
   const [approveModal, setApproveModal] = useState<{ isOpen: boolean; jobId: string | null }>({ isOpen: false, jobId: null });
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; jobId: string | null }>({ isOpen: false, jobId: null });
+  const [rejectModal, setRejectModal] = useState<{ isOpen: boolean; jobId: string | null }>({ isOpen: false, jobId: null });
 
   // Redirect if not admin
   useEffect(() => {
@@ -96,10 +97,7 @@ export default function AdminJobsPage() {
     }
   };
 
-  const handleReject = async (jobId: string) => {
-    const reason = prompt("Please enter rejection reason:");
-    if (!reason) return;
-
+  const handleReject = async (jobId: string, reason: string) => {
     try {
       const response = await fetch(`/api/admin/jobs/${jobId}/approve`, {
         method: "PATCH",
@@ -109,9 +107,13 @@ export default function AdminJobsPage() {
 
       if (response.ok) {
         fetchJobs();
+        showToast("success", "Job Rejected", "The job has been rejected.");
+      } else {
+        showToast("error", "Rejection Failed", "Failed to reject the job.");
       }
     } catch (error) {
       console.error("Failed to reject job:", error);
+      showToast("error", "Rejection Failed", "An error occurred while rejecting the job.");
     }
   };
 
@@ -327,7 +329,7 @@ export default function AdminJobsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleReject(job.id)}
+                                onClick={() => setRejectModal({ isOpen: true, jobId: job.id })}
                                 className="text-red-600 hover:text-red-700"
                               >
                                 <XCircle className="w-4 h-4" />
@@ -407,6 +409,22 @@ export default function AdminJobsPage() {
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"
+      />
+
+      {/* Reject Job Input Modal */}
+      <InputModal
+        isOpen={rejectModal.isOpen}
+        onClose={() => setRejectModal({ isOpen: false, jobId: null })}
+        onSubmit={(reason) => { if (rejectModal.jobId) handleReject(rejectModal.jobId, reason); }}
+        title="Reject Job"
+        message="Please provide a reason for rejecting this job posting. This will be sent to the employer."
+        inputLabel="Rejection Reason"
+        inputPlaceholder="Enter the reason for rejection..."
+        submitText="Reject Job"
+        cancelText="Cancel"
+        variant="danger"
+        required
+        multiline
       />
     </div>
   );

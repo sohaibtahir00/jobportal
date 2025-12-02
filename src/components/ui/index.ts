@@ -81,3 +81,6 @@ export { Progress } from "./progress";
 
 export { ConfirmationModal, useConfirmationModal } from "./ConfirmationModal";
 export type { ConfirmationModalProps, ConfirmationVariant } from "./ConfirmationModal";
+
+export { InputModal } from "./InputModal";
+export type { InputModalProps, InputModalVariant } from "./InputModal";

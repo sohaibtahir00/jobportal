@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useCandidateProfile } from "@/hooks/useCandidateProfile";
 import { useCandidateDashboard } from "@/hooks/useDashboard";
 import { convertSalaryToDollars, convertSalaryToCents, JobType } from "@/types";
-import { Button, Card, CardContent, CardHeader, CardTitle, useToast } from "@/components/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, useToast, ConfirmationModal } from "@/components/ui";
 import {
   Loader2,
   User,
@@ -28,6 +28,11 @@ import {
   CheckCircle,
   TrendingUp,
   Target,
+  Trash2,
+  Plus,
+  GraduationCap,
+  Building,
+  Calendar,
 } from "lucide-react";
 import Link from "next/link";
 import { SkillsScoreCard } from "@/components/skills";
@@ -101,6 +106,10 @@ export default function CandidateProfilePage() {
   const [resumeUrl, setResumeUrl] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
+  // Delete confirmation modals
+  const [deleteWorkExpModal, setDeleteWorkExpModal] = useState<{ isOpen: boolean; id: string | null; title: string }>({ isOpen: false, id: null, title: "" });
+  const [deleteEduModal, setDeleteEduModal] = useState<{ isOpen: boolean; id: string | null; name: string }>({ isOpen: false, id: null, name: "" });
+
   // Initialize form with profile data
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileFormData>({
     values: profile
@@ -164,6 +173,28 @@ export default function CandidateProfilePage() {
       setEducationEntries(data.educationEntries);
     } catch (error) {
       console.error("Failed to load education:", error);
+    }
+  };
+
+  const handleDeleteWorkExperience = async (id: string) => {
+    try {
+      await deleteWorkExperience(id);
+      setWorkExperiences(workExperiences.filter(exp => exp.id !== id));
+      showToast("success", "Work Experience Deleted", "The work experience has been removed from your profile.");
+    } catch (error) {
+      console.error("Failed to delete work experience:", error);
+      showToast("error", "Delete Failed", "Failed to delete work experience. Please try again.");
+    }
+  };
+
+  const handleDeleteEducation = async (id: string) => {
+    try {
+      await deleteEducation(id);
+      setEducationEntries(educationEntries.filter(edu => edu.id !== id));
+      showToast("success", "Education Deleted", "The education entry has been removed from your profile.");
+    } catch (error) {
+      console.error("Failed to delete education:", error);
+      showToast("error", "Delete Failed", "Failed to delete education. Please try again.");
     }
   };
 
@@ -837,7 +868,201 @@ export default function CandidateProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Work Experience - Complex section truncated for space, will continue... */}
+          {/* Work Experience */}
+          <Card>
+            <CardHeader className="border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Building className="h-5 w-5" />
+                  Work Experience
+                </CardTitle>
+                {isEditing && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditingWorkExp(null);
+                      setShowWorkExpForm(true);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Experience
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-6">
+              {workExperiences.length > 0 ? (
+                <div className="space-y-4">
+                  {workExperiences.map((exp) => (
+                    <div
+                      key={exp.id}
+                      className="p-4 bg-gray-50 rounded-lg border border-gray-200 relative"
+                    >
+                      {isEditing && (
+                        <div className="absolute top-3 right-3 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingWorkExp(exp);
+                              setShowWorkExpForm(true);
+                            }}
+                            className="p-1 text-gray-400 hover:text-primary-600"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleteWorkExpModal({ isOpen: true, id: exp.id, title: exp.jobTitle })}
+                            className="p-1 text-gray-400 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
+                      <div className="pr-16">
+                        <h4 className="font-semibold text-gray-900">{exp.jobTitle}</h4>
+                        <p className="text-gray-700">{exp.companyName}</p>
+                        {exp.location && (
+                          <p className="text-sm text-gray-500 flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {exp.location}
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(exp.startDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                          {" - "}
+                          {exp.isCurrent
+                            ? "Present"
+                            : exp.endDate
+                            ? new Date(exp.endDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+                            : "Present"}
+                        </p>
+                        {exp.description && (
+                          <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{exp.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-2">No work experience added yet</p>
+                  {isEditing && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingWorkExp(null);
+                        setShowWorkExpForm(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Your First Experience
+                    </Button>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Education */}
+          <Card>
+            <CardHeader className="border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5" />
+                  Education
+                </CardTitle>
+                {isEditing && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditingEdu(null);
+                      setShowEduForm(true);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Education
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-6">
+              {educationEntries.length > 0 ? (
+                <div className="space-y-4">
+                  {educationEntries.map((edu) => (
+                    <div
+                      key={edu.id}
+                      className="p-4 bg-gray-50 rounded-lg border border-gray-200 relative"
+                    >
+                      {isEditing && (
+                        <div className="absolute top-3 right-3 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingEdu(edu);
+                              setShowEduForm(true);
+                            }}
+                            className="p-1 text-gray-400 hover:text-primary-600"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleteEduModal({ isOpen: true, id: edu.id, name: edu.schoolName })}
+                            className="p-1 text-gray-400 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
+                      <div className="pr-16">
+                        <h4 className="font-semibold text-gray-900">{edu.degree}</h4>
+                        <p className="text-gray-700">{edu.schoolName}</p>
+                        <p className="text-sm text-gray-500">{edu.fieldOfStudy}</p>
+                        <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                          <Calendar className="h-3 w-3" />
+                          Class of {edu.graduationYear}
+                          {edu.gpa && ` • GPA: ${edu.gpa}`}
+                        </p>
+                        {edu.description && (
+                          <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{edu.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-2">No education added yet</p>
+                  {isEditing && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingEdu(null);
+                        setShowEduForm(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Your Education
+                    </Button>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Job Preferences */}
           <Card>
@@ -1056,6 +1281,30 @@ export default function CandidateProfilePage() {
           )}
         </form>
       </div>
+
+      {/* Delete Work Experience Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteWorkExpModal.isOpen}
+        onClose={() => setDeleteWorkExpModal({ isOpen: false, id: null, title: "" })}
+        onConfirm={() => { if (deleteWorkExpModal.id) handleDeleteWorkExperience(deleteWorkExpModal.id); }}
+        title="Delete Work Experience"
+        message={`Are you sure you want to delete "${deleteWorkExpModal.title}" from your work experience? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
+
+      {/* Delete Education Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteEduModal.isOpen}
+        onClose={() => setDeleteEduModal({ isOpen: false, id: null, name: "" })}
+        onConfirm={() => { if (deleteEduModal.id) handleDeleteEducation(deleteEduModal.id); }}
+        title="Delete Education"
+        message={`Are you sure you want to delete your education at "${deleteEduModal.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }

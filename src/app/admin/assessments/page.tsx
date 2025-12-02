@@ -13,7 +13,7 @@ import {
   Eye,
   Download,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, Input, ConfirmationModal, useToast } from "@/components/ui";
+import { Button, Badge, Card, CardContent, Input, ConfirmationModal, InputModal, useToast } from "@/components/ui";
 
 export default function AdminAssessmentsPage() {
   const router = useRouter();
@@ -24,6 +24,7 @@ export default function AdminAssessmentsPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [stats, setStats] = useState<any>(null);
   const [verifyModal, setVerifyModal] = useState<{ isOpen: boolean; testId: string | null }>({ isOpen: false, testId: null });
+  const [rejectModal, setRejectModal] = useState<{ isOpen: boolean; testId: string | null }>({ isOpen: false, testId: null });
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -80,21 +81,23 @@ export default function AdminAssessmentsPage() {
     }
   };
 
-  const handleReject = async (testId: string) => {
-    const note = prompt("Enter review note (optional):");
-
+  const handleReject = async (testId: string, note: string) => {
     try {
       const response = await fetch(`/api/admin/tests/${testId}/verify`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "reject", note, resetTest: true }),
+        body: JSON.stringify({ action: "reject", note: note || undefined, resetTest: true }),
       });
 
       if (response.ok) {
         fetchAssessments();
+        showToast("success", "Assessment Rejected", "The assessment has been rejected and the candidate can retake the test.");
+      } else {
+        showToast("error", "Rejection Failed", "Failed to reject the assessment.");
       }
     } catch (error) {
       console.error("Failed to reject assessment:", error);
+      showToast("error", "Rejection Failed", "An error occurred while rejecting the assessment.");
     }
   };
 
@@ -288,7 +291,7 @@ export default function AdminAssessmentsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleReject(test.id)}
+                                onClick={() => setRejectModal({ isOpen: true, testId: test.id })}
                                 className="text-red-600"
                               >
                                 <XCircle className="w-4 h-4" />
@@ -319,6 +322,21 @@ export default function AdminAssessmentsPage() {
         confirmText="Verify"
         cancelText="Cancel"
         variant="success"
+      />
+
+      {/* Reject Assessment Input Modal */}
+      <InputModal
+        isOpen={rejectModal.isOpen}
+        onClose={() => setRejectModal({ isOpen: false, testId: null })}
+        onSubmit={(note) => { if (rejectModal.testId) handleReject(rejectModal.testId, note); }}
+        title="Reject Assessment"
+        message="This assessment appears suspicious. You can optionally provide a note explaining the rejection. The candidate will be allowed to retake the test."
+        inputLabel="Review Note (Optional)"
+        inputPlaceholder="Enter your review notes..."
+        submitText="Reject Assessment"
+        cancelText="Cancel"
+        variant="danger"
+        multiline
       />
     </div>
   );
