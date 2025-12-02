@@ -78,3 +78,6 @@ export { EmptyState } from "./EmptyState";
 export type { EmptyStateProps } from "./EmptyState";
 
 export { Progress } from "./progress";
+
+export { ConfirmationModal, useConfirmationModal } from "./ConfirmationModal";
+export type { ConfirmationModalProps, ConfirmationVariant } from "./ConfirmationModal";

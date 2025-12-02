@@ -16,7 +16,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
+import { Button, Badge, Card, CardContent, Input, ConfirmationModal } from "@/components/ui";
 import { api } from "@/lib/api";
 
 export default function CandidateSettingsPage() {
@@ -28,6 +28,10 @@ export default function CandidateSettingsPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+
+  // Delete account modal state
+  const [deleteAccountModal, setDeleteAccountModal] = useState(false);
+  const [deleteAccountConfirmModal, setDeleteAccountConfirmModal] = useState(false);
 
   // Form state
   const [profileData, setProfileData] = useState({
@@ -243,19 +247,20 @@ export default function CandidateSettingsPage() {
     }
   };
 
+  // Step 1: Open first confirmation modal
+  const initiateAccountDeletion = () => {
+    setDeleteAccountModal(true);
+  };
+
+  // Step 2: First modal confirmed, show second confirmation
+  const confirmFirstDeletion = () => {
+    setDeleteAccountModal(false);
+    setDeleteAccountConfirmModal(true);
+  };
+
+  // Step 3: Final confirmation, delete account
   const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete your account? This action cannot be undone."
-    );
-
-    if (!confirmed) return;
-
-    const doubleConfirm = window.confirm(
-      "This will permanently delete all your applications, profile data, and saved jobs. Are you absolutely sure?"
-    );
-
-    if (!doubleConfirm) return;
-
+    setDeleteAccountConfirmModal(false);
     setIsSaving(true);
     setErrorMessage("");
 
@@ -722,7 +727,7 @@ export default function CandidateSettingsPage() {
               <Button
                 variant="outline"
                 className="border-red-300 text-red-600 hover:bg-red-50"
-                onClick={handleDeleteAccount}
+                onClick={initiateAccountDeletion}
               >
                 <Trash2 className="mr-2 h-5 w-5" />
                 Delete Account
@@ -731,6 +736,29 @@ export default function CandidateSettingsPage() {
           </Card>
         </div>
       </div>
+
+      {/* Delete Account Confirmation Modals */}
+      <ConfirmationModal
+        isOpen={deleteAccountModal}
+        onClose={() => setDeleteAccountModal(false)}
+        onConfirm={confirmFirstDeletion}
+        title="Delete Account"
+        message="Are you sure you want to delete your account? This action cannot be undone."
+        confirmText="Continue"
+        cancelText="Cancel"
+        variant="danger"
+      />
+
+      <ConfirmationModal
+        isOpen={deleteAccountConfirmModal}
+        onClose={() => setDeleteAccountConfirmModal(false)}
+        onConfirm={handleDeleteAccount}
+        title="Final Confirmation"
+        message="This will permanently delete all your applications, profile data, and saved jobs. Are you absolutely sure?"
+        confirmText="Delete My Account"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }

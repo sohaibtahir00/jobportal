@@ -14,11 +14,12 @@ import {
   Building2,
   User as UserIcon,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
+import { Button, Badge, Card, CardContent, Input, ConfirmationModal, useToast } from "@/components/ui";
 
 export default function AdminUsersPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { showToast } = useToast();
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,6 +28,7 @@ export default function AdminUsersPage() {
   const [stats, setStats] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [suspendModal, setSuspendModal] = useState<{ isOpen: boolean; userId: string | null; userName: string }>({ isOpen: false, userId: null, userName: "" });
 
   // Redirect if not admin
   useEffect(() => {
@@ -72,8 +74,6 @@ export default function AdminUsersPage() {
   };
 
   const handleSuspend = async (userId: string) => {
-    if (!confirm("Are you sure you want to suspend this user?")) return;
-
     try {
       const response = await fetch(`/api/admin/users/${userId}/suspend`, {
         method: "POST",
@@ -83,9 +83,13 @@ export default function AdminUsersPage() {
 
       if (response.ok) {
         fetchUsers();
+        showToast("success", "User Suspended", "The user has been suspended successfully.");
+      } else {
+        showToast("error", "Suspension Failed", "Failed to suspend the user.");
       }
     } catch (error) {
       console.error("Failed to suspend user:", error);
+      showToast("error", "Suspension Failed", "An error occurred while suspending the user.");
     }
   };
 
@@ -287,7 +291,7 @@ export default function AdminUsersPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleSuspend(user.id)}
+                            onClick={() => setSuspendModal({ isOpen: true, userId: user.id, userName: user.name })}
                           >
                             Suspend
                           </Button>
@@ -324,6 +328,18 @@ export default function AdminUsersPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Suspend Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={suspendModal.isOpen}
+        onClose={() => setSuspendModal({ isOpen: false, userId: null, userName: "" })}
+        onConfirm={() => { if (suspendModal.userId) handleSuspend(suspendModal.userId); }}
+        title="Suspend User"
+        message={`Are you sure you want to suspend ${suspendModal.userName || "this user"}? They will no longer be able to access their account.`}
+        confirmText="Suspend"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }

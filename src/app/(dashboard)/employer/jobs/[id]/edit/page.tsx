@@ -16,6 +16,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { ConfirmationModal } from "@/components/ui";
 
 // Benefits options (same as /new page)
 const BENEFITS_OPTIONS = [
@@ -107,6 +108,7 @@ export default function EditJobPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
   const [customizationStep, setCustomizationStep] = useState(0);
+  const [deleteJobModal, setDeleteJobModal] = useState(false);
 
   // Form state with all fields
   const [formData, setFormData] = useState<JobFormData>({
@@ -308,10 +310,7 @@ export default function EditJobPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this job posting? This action cannot be undone.")) {
-      return;
-    }
-
+    setDeleteJobModal(false);
     setIsDeleting(true);
     setError("");
 
@@ -1509,6 +1508,19 @@ export default function EditJobPage() {
             </div>
           )}
       </div>
+
+      {/* Delete Job Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteJobModal}
+        onClose={() => setDeleteJobModal(false)}
+        onConfirm={handleDelete}
+        title="Delete Job Posting"
+        message="Are you sure you want to delete this job posting? This action cannot be undone."
+        confirmText="Delete Job"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

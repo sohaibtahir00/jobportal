@@ -25,18 +25,27 @@ import {
   Star,
   Calendar,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
+import { Button, Badge, Card, CardContent, Input, ConfirmationModal, useToast } from "@/components/ui";
 import { api } from "@/lib/api";
 
 export default function EmployerSettingsPage() {
   const router = useRouter();
   const { data: session, status, update } = useSession();
+  const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+
+  // Confirmation modal states
+  const [deleteMemberModal, setDeleteMemberModal] = useState<{ isOpen: boolean; memberId: string | null; memberName: string }>({ isOpen: false, memberId: null, memberName: "" });
+  const [disconnectVideoModal, setDisconnectVideoModal] = useState(false);
+  const [disconnectCalendarModal, setDisconnectCalendarModal] = useState(false);
+  const [deleteTemplateModal, setDeleteTemplateModal] = useState<{ isOpen: boolean; templateId: string | null; templateName: string }>({ isOpen: false, templateId: null, templateName: "" });
+  const [deleteAccountModal, setDeleteAccountModal] = useState(false);
+  const [deleteAccountConfirmModal, setDeleteAccountConfirmModal] = useState(false);
 
   // Form state
   const [profileData, setProfileData] = useState({
@@ -314,19 +323,16 @@ export default function EmployerSettingsPage() {
   };
 
   const handleDeleteMember = async (id: string) => {
-    if (!confirm("Are you sure you want to remove this team member?")) return;
-
     setIsSaving(true);
     setErrorMessage("");
 
     try {
       await api.delete(`/api/employer/team-members?id=${id}`);
       setTeamMembers(teamMembers.filter((m) => m.id !== id));
-      setSuccessMessage("Team member removed successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      showToast("success", "Member Removed", "Team member removed successfully!");
     } catch (err: any) {
       console.error("Failed to delete team member:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to delete team member");
+      showToast("error", "Error", err.response?.data?.error || "Failed to delete team member");
     } finally {
       setIsSaving(false);
     }
@@ -363,44 +369,32 @@ export default function EmployerSettingsPage() {
   };
 
   const disconnectVideo = async () => {
-    if (!confirm("Are you sure you want to disconnect your video integration?"))
-      return;
-
     setIsSaving(true);
     setErrorMessage("");
 
     try {
       await api.delete("/api/employer/integrations/video");
       setVideoIntegration(null);
-      setSuccessMessage("Video integration disconnected successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      showToast("success", "Disconnected", "Video integration disconnected successfully!");
     } catch (err: any) {
       console.error("Failed to disconnect video integration:", err);
-      setErrorMessage(
-        err.response?.data?.error || "Failed to disconnect integration"
-      );
+      showToast("error", "Error", err.response?.data?.error || "Failed to disconnect integration");
     } finally {
       setIsSaving(false);
     }
   };
 
   const disconnectCalendar = async () => {
-    if (!confirm("Are you sure you want to disconnect Google Calendar?"))
-      return;
-
     setIsSaving(true);
     setErrorMessage("");
 
     try {
       await api.delete("/api/employer/integrations/google-calendar/disconnect");
       setCalendarIntegration(null);
-      setSuccessMessage("Google Calendar disconnected successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      showToast("success", "Disconnected", "Google Calendar disconnected successfully!");
     } catch (err: any) {
       console.error("Failed to disconnect Google Calendar:", err);
-      setErrorMessage(
-        err.response?.data?.error || "Failed to disconnect calendar"
-      );
+      showToast("error", "Error", err.response?.data?.error || "Failed to disconnect calendar");
     } finally {
       setIsSaving(false);
     }
@@ -477,19 +471,16 @@ export default function EmployerSettingsPage() {
   };
 
   const handleDeleteTemplate = async (templateId: string) => {
-    if (!confirm("Are you sure you want to delete this template?")) return;
-
     setIsSaving(true);
     setErrorMessage("");
 
     try {
       await api.delete(`/api/employer/interview-templates/${templateId}`);
       setTemplates(templates.filter((t) => t.id !== templateId));
-      setSuccessMessage("Template deleted successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      showToast("success", "Template Deleted", "Template deleted successfully!");
     } catch (err: any) {
       console.error("Failed to delete template:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to delete template");
+      showToast("error", "Error", err.response?.data?.error || "Failed to delete template");
     } finally {
       setIsSaving(false);
     }
@@ -543,18 +534,6 @@ export default function EmployerSettingsPage() {
   };
 
   const handleAccountDeletion = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete your account? This action cannot be undone."
-    );
-
-    if (!confirmed) return;
-
-    const doubleConfirm = window.confirm(
-      "This will permanently delete all your job postings, applications, and data. Are you absolutely sure?"
-    );
-
-    if (!doubleConfirm) return;
-
     setIsSaving(true);
     setErrorMessage("");
 
@@ -566,9 +545,23 @@ export default function EmployerSettingsPage() {
       router.push("/");
     } catch (err: any) {
       console.error("Failed to delete account:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to delete account");
+      showToast("error", "Error", err.response?.data?.error || "Failed to delete account");
       setIsSaving(false);
     }
+  };
+
+  const initiateAccountDeletion = () => {
+    setDeleteAccountModal(true);
+  };
+
+  const confirmFirstDeletion = () => {
+    setDeleteAccountModal(false);
+    setDeleteAccountConfirmModal(true);
+  };
+
+  const confirmFinalDeletion = async () => {
+    setDeleteAccountConfirmModal(false);
+    await handleAccountDeletion();
   };
 
   if (status === "loading" || isLoading) {

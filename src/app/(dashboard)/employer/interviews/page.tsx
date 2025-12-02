@@ -22,7 +22,7 @@ import {
   X,
   RefreshCw,
 } from "lucide-react";
-import { Card, CardContent, Button, Badge, Input, useToast } from "@/components/ui";
+import { Card, CardContent, Button, Badge, Input, useToast, ConfirmationModal } from "@/components/ui";
 import { api } from "@/lib/api";
 import NotesModal from "@/components/interviews/NotesModal";
 import InterviewActionsDropdown from "@/components/interviews/InterviewActionsDropdown";
@@ -55,6 +55,7 @@ export default function EmployerInterviewsPage() {
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
   const [nextRoundInfo, setNextRoundInfo] = useState<string>("");
   const [pastSectionExpanded, setPastSectionExpanded] = useState(false);
+  const [cancelInterviewModal, setCancelInterviewModal] = useState<{ isOpen: boolean; interviewId: string | null }>({ isOpen: false, interviewId: null });
 
   // Redirect if not employer
   useEffect(() => {
@@ -101,8 +102,6 @@ export default function EmployerInterviewsPage() {
   };
 
   const handleCancelInterview = async (interviewId: string) => {
-    if (!confirm("Are you sure you want to cancel this interview?")) return;
-
     try {
       await api.delete(`/api/interviews/${interviewId}`);
       // Reload interviews
@@ -113,6 +112,17 @@ export default function EmployerInterviewsPage() {
       console.error("Failed to cancel interview:", err);
       showToast("error", "Cancellation Failed", "Failed to cancel the interview.");
     }
+  };
+
+  const openCancelInterviewModal = (interviewId: string) => {
+    setCancelInterviewModal({ isOpen: true, interviewId });
+  };
+
+  const handleCancelInterviewConfirm = async () => {
+    if (!cancelInterviewModal.interviewId) return;
+    const interviewId = cancelInterviewModal.interviewId;
+    setCancelInterviewModal({ isOpen: false, interviewId: null });
+    await handleCancelInterview(interviewId);
   };
 
   const handleOpenNotesModal = (interview: any) => {
@@ -1654,7 +1664,7 @@ export default function EmployerInterviewsPage() {
                                           handleOpenRescheduleModal(interview);
                                         }}
                                         onCancel={() =>
-                                          handleCancelInterview(interview.id)
+                                          openCancelInterviewModal(interview.id)
                                         }
                                       />
                                     </>
@@ -2281,7 +2291,7 @@ export default function EmployerInterviewsPage() {
                                             );
                                           }}
                                           onCancel={() =>
-                                            handleCancelInterview(interview.id)
+                                            openCancelInterviewModal(interview.id)
                                           }
                                         />
                                       </>
@@ -2459,6 +2469,18 @@ export default function EmployerInterviewsPage() {
         jobTitle={selectedInterview?.application?.job?.title || ""}
         scheduledDate={selectedInterview?.scheduledAt}
         initialReason={getRescheduleRequestReason(selectedInterview?.notes)}
+      />
+
+      {/* Cancel Interview Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={cancelInterviewModal.isOpen}
+        onClose={() => setCancelInterviewModal({ isOpen: false, interviewId: null })}
+        onConfirm={handleCancelInterviewConfirm}
+        title="Cancel Interview"
+        message="Are you sure you want to cancel this interview?"
+        confirmText="Cancel Interview"
+        cancelText="Keep Interview"
+        variant="danger"
       />
     </div>
   );

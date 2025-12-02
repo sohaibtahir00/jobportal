@@ -25,7 +25,7 @@ import {
   DollarSign,
   Lock,
 } from "lucide-react";
-import { useToast } from "@/components/ui";
+import { useToast, ConfirmationModal } from "@/components/ui";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
 import { SkillsScoreCard } from "@/components/skills";
 import { api } from "@/lib/api";
@@ -93,6 +93,9 @@ export default function ApplicantDetailPage() {
   // Reschedule modal state
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState<any>(null);
+
+  // Cancel interview modal state
+  const [cancelInterviewModal, setCancelInterviewModal] = useState<{ isOpen: boolean; interviewId: string | null; handler: "cancel" | "cancelInterview" }>({ isOpen: false, interviewId: null, handler: "cancel" });
 
   // Handle introduction request
   const handleRequestIntroduction = () => {
@@ -282,8 +285,6 @@ export default function ApplicantDetailPage() {
   };
 
   const handleCancelInterview = async (interviewId: string) => {
-    if (!confirm("Are you sure you want to cancel this interview?")) return;
-
     try {
       await api.delete(`/api/interviews/${interviewId}`);
       loadInterviews();
@@ -345,8 +346,6 @@ export default function ApplicantDetailPage() {
   };
 
   const cancelInterview = async (interviewId: string) => {
-    if (!confirm("Are you sure you want to cancel this interview?")) return;
-
     try {
       await api.patch(`/api/interviews/${interviewId}`, {
         status: "CANCELLED",
@@ -357,6 +356,24 @@ export default function ApplicantDetailPage() {
       showToast("success", "Interview Cancelled", "The interview has been cancelled.");
     } catch (error) {
       showToast("error", "Cancellation Failed", "Failed to cancel the interview.");
+    }
+  };
+
+  // Open cancel interview modal
+  const openCancelInterviewModal = (interviewId: string, handler: "cancel" | "cancelInterview") => {
+    setCancelInterviewModal({ isOpen: true, interviewId, handler });
+  };
+
+  // Handle cancel interview confirmation
+  const handleCancelInterviewConfirm = async () => {
+    if (!cancelInterviewModal.interviewId) return;
+
+    setCancelInterviewModal({ isOpen: false, interviewId: null, handler: "cancel" });
+
+    if (cancelInterviewModal.handler === "cancel") {
+      await handleCancelInterview(cancelInterviewModal.interviewId);
+    } else {
+      await cancelInterview(cancelInterviewModal.interviewId);
     }
   };
 
@@ -1207,7 +1224,7 @@ export default function ApplicantDetailPage() {
                                     </button>
                                     <button
                                       onClick={() =>
-                                        cancelInterview(roundInterview.id)
+                                        openCancelInterviewModal(roundInterview.id, "cancelInterview")
                                       }
                                       className="rounded px-3 py-1 text-sm text-red-600 hover:bg-red-50"
                                     >
@@ -1669,6 +1686,18 @@ export default function ApplicantDetailPage() {
         candidateName={applicantData?.name || ""}
         jobTitle={applicantData?.appliedFor || ""}
         scheduledDate={selectedInterview?.scheduledAt}
+      />
+
+      {/* Cancel Interview Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={cancelInterviewModal.isOpen}
+        onClose={() => setCancelInterviewModal({ isOpen: false, interviewId: null, handler: "cancel" })}
+        onConfirm={handleCancelInterviewConfirm}
+        title="Cancel Interview"
+        message="Are you sure you want to cancel this interview?"
+        confirmText="Cancel Interview"
+        cancelText="Keep Interview"
+        variant="danger"
       />
     </div>
   );

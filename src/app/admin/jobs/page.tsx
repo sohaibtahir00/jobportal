@@ -19,7 +19,7 @@ import {
   DollarSign,
   Clock,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, Input, useToast } from "@/components/ui";
+import { Button, Badge, Card, CardContent, Input, useToast, ConfirmationModal } from "@/components/ui";
 
 export default function AdminJobsPage() {
   const router = useRouter();
@@ -32,6 +32,10 @@ export default function AdminJobsPage() {
   const [stats, setStats] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Confirmation modal states
+  const [approveModal, setApproveModal] = useState<{ isOpen: boolean; jobId: string | null }>({ isOpen: false, jobId: null });
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; jobId: string | null }>({ isOpen: false, jobId: null });
 
   // Redirect if not admin
   useEffect(() => {
@@ -75,8 +79,6 @@ export default function AdminJobsPage() {
   };
 
   const handleApprove = async (jobId: string) => {
-    if (!confirm("Are you sure you want to approve this job?")) return;
-
     try {
       const response = await fetch(`/api/admin/jobs/${jobId}/approve`, {
         method: "PATCH",
@@ -86,9 +88,11 @@ export default function AdminJobsPage() {
 
       if (response.ok) {
         fetchJobs();
+        showToast("success", "Job Approved", "The job has been approved successfully.");
       }
     } catch (error) {
       console.error("Failed to approve job:", error);
+      showToast("error", "Approval Failed", "Failed to approve the job.");
     }
   };
 
@@ -112,8 +116,6 @@ export default function AdminJobsPage() {
   };
 
   const handleDelete = async (jobId: string) => {
-    if (!confirm("Are you sure you want to delete this job? This cannot be undone.")) return;
-
     try {
       const response = await fetch(`/api/admin/jobs/${jobId}`, {
         method: "DELETE",
@@ -317,7 +319,7 @@ export default function AdminJobsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleApprove(job.id)}
+                                onClick={() => setApproveModal({ isOpen: true, jobId: job.id })}
                                 className="text-green-600 hover:text-green-700"
                               >
                                 <CheckCircle2 className="w-4 h-4" />
@@ -343,7 +345,7 @@ export default function AdminJobsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDelete(job.id)}
+                              onClick={() => setDeleteModal({ isOpen: true, jobId: job.id })}
                               className="text-red-600 hover:text-red-700"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -382,6 +384,30 @@ export default function AdminJobsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Approve Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={approveModal.isOpen}
+        onClose={() => setApproveModal({ isOpen: false, jobId: null })}
+        onConfirm={() => { if (approveModal.jobId) handleApprove(approveModal.jobId); }}
+        title="Approve Job"
+        message="Are you sure you want to approve this job? It will become visible to all candidates."
+        confirmText="Approve"
+        cancelText="Cancel"
+        variant="success"
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, jobId: null })}
+        onConfirm={() => { if (deleteModal.jobId) handleDelete(deleteModal.jobId); }}
+        title="Delete Job"
+        message="Are you sure you want to delete this job? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }

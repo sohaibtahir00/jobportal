@@ -13,15 +13,17 @@ import {
   Eye,
   Download,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
+import { Button, Badge, Card, CardContent, Input, ConfirmationModal, useToast } from "@/components/ui";
 
 export default function AdminAssessmentsPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { showToast } = useToast();
   const [assessments, setAssessments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
   const [stats, setStats] = useState<any>(null);
+  const [verifyModal, setVerifyModal] = useState<{ isOpen: boolean; testId: string | null }>({ isOpen: false, testId: null });
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -59,8 +61,6 @@ export default function AdminAssessmentsPage() {
   };
 
   const handleVerify = async (testId: string) => {
-    if (!confirm("Verify this assessment as legitimate?")) return;
-
     try {
       const response = await fetch(`/api/admin/tests/${testId}/verify`, {
         method: "PATCH",
@@ -70,9 +70,13 @@ export default function AdminAssessmentsPage() {
 
       if (response.ok) {
         fetchAssessments();
+        showToast("success", "Assessment Verified", "The assessment has been marked as legitimate.");
+      } else {
+        showToast("error", "Verification Failed", "Failed to verify the assessment.");
       }
     } catch (error) {
       console.error("Failed to verify assessment:", error);
+      showToast("error", "Verification Failed", "An error occurred while verifying the assessment.");
     }
   };
 
@@ -276,7 +280,7 @@ export default function AdminAssessmentsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleVerify(test.id)}
+                                onClick={() => setVerifyModal({ isOpen: true, testId: test.id })}
                                 className="text-green-600"
                               >
                                 <CheckCircle2 className="w-4 h-4" />
@@ -304,6 +308,18 @@ export default function AdminAssessmentsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Verify Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={verifyModal.isOpen}
+        onClose={() => setVerifyModal({ isOpen: false, testId: null })}
+        onConfirm={() => { if (verifyModal.testId) handleVerify(verifyModal.testId); }}
+        title="Verify Assessment"
+        message="Are you sure you want to verify this assessment as legitimate? This will confirm the candidate's test results."
+        confirmText="Verify"
+        cancelText="Cancel"
+        variant="success"
+      />
     </div>
   );
 }
