@@ -112,6 +112,36 @@ function JobsContent() {
     }
   }, [searchParams]);
 
+  // Map frontend filter values to backend API values
+  const getRemoteTypeValue = (type: string): 'REMOTE' | 'HYBRID' | 'ON_SITE' | undefined => {
+    const mapping: Record<string, 'REMOTE' | 'HYBRID' | 'ON_SITE'> = {
+      "Remote": "REMOTE",
+      "Hybrid": "HYBRID",
+      "On-site": "ON_SITE",
+    };
+    return mapping[type];
+  };
+
+  const getExperienceLevelValue = (level: string): 'ENTRY_LEVEL' | 'MID_LEVEL' | 'SENIOR_LEVEL' | 'EXECUTIVE' | undefined => {
+    const mapping: Record<string, 'ENTRY_LEVEL' | 'MID_LEVEL' | 'SENIOR_LEVEL' | 'EXECUTIVE'> = {
+      "Entry": "ENTRY_LEVEL",
+      "Mid": "MID_LEVEL",
+      "Senior": "SENIOR_LEVEL",
+      "Lead": "EXECUTIVE",
+    };
+    return mapping[level];
+  };
+
+  const getJobTypeValue = (type: string): 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP' | undefined => {
+    const mapping: Record<string, 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP'> = {
+      "Full-time": "FULL_TIME",
+      "Part-time": "PART_TIME",
+      "Contract": "CONTRACT",
+      "Internship": "INTERNSHIP",
+    };
+    return mapping[type];
+  };
+
   // Build API query params from filters
   const queryParams: GetJobsParams = {
     page: currentPage,
@@ -121,11 +151,12 @@ function JobsContent() {
     niche: filters.niches.length > 0 ? filters.niches[0] : undefined,
     location: filters.locations.length > 0 ? filters.locations[0] : undefined,
     remoteType: filters.remoteTypes.length > 0
-      ? (filters.remoteTypes[0].toUpperCase() as 'REMOTE' | 'HYBRID' | 'ONSITE')
+      ? getRemoteTypeValue(filters.remoteTypes[0])
       : undefined,
     experienceLevel: filters.experienceLevels.length > 0
-      ? (filters.experienceLevels[0].toUpperCase() as 'ENTRY' | 'MID' | 'SENIOR' | 'LEAD')
+      ? getExperienceLevelValue(filters.experienceLevels[0])
       : undefined,
+    type: jobType !== "all" ? getJobTypeValue(jobType) : undefined,
     salaryMin: filters.salaryMin > 0 ? filters.salaryMin : undefined,
     salaryMax: filters.salaryMax < 300000 ? filters.salaryMax : undefined,
   };
@@ -133,22 +164,11 @@ function JobsContent() {
   // Fetch jobs from API
   const { data, isLoading, error } = useJobs(queryParams);
 
-  // Apply client-side filters (job type and date posted) and sorting
+  // Apply client-side filters (date posted only) and sorting
   const filteredAndSortedJobs = useMemo(() => {
     let result = data?.jobs || [];
 
-    // Filter by job type (client-side)
-    if (jobType !== "all") {
-      const typeMapping: Record<string, string> = {
-        "Full-time": "FULL_TIME",
-        "Part-time": "PART_TIME",
-        "Contract": "CONTRACT",
-        "Internship": "INTERNSHIP",
-      };
-      result = result.filter((job) => job.type === typeMapping[jobType]);
-    }
-
-    // Filter by date posted (client-side)
+    // Filter by date posted (client-side only - not supported by backend)
     if (datePosted !== "any") {
       result = result.filter((job) => filterByDatePosted(job, datePosted));
     }
@@ -157,7 +177,7 @@ function JobsContent() {
     result = sortJobs(result, sortBy, isCandidate);
 
     return result;
-  }, [data?.jobs, jobType, datePosted, sortBy, isCandidate]);
+  }, [data?.jobs, datePosted, sortBy, isCandidate]);
 
   const jobs = filteredAndSortedJobs;
   const totalPages = data?.pagination?.totalPages || 1;
@@ -338,7 +358,7 @@ function JobsContent() {
               {/* Row 1: Niche Filter Buttons */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-secondary-700">Category:</label>
+                  <label className="text-sm font-medium text-secondary-700">Niche:</label>
                   {hasActiveFilters && (
                     <Button
                       variant="ghost"
@@ -357,7 +377,7 @@ function JobsContent() {
                     size="sm"
                     onClick={() => handleFilterChange({ ...filters, niches: [] })}
                   >
-                    All Categories
+                    All
                   </Button>
                   {NICHES.map((niche) => (
                     <Button

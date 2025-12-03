@@ -51,6 +51,26 @@ function CandidateJobsContent() {
     }
   }, [searchParams]);
 
+  // Map frontend filter values to backend API values
+  const getRemoteTypeValue = (type: string): 'REMOTE' | 'HYBRID' | 'ON_SITE' | undefined => {
+    const mapping: Record<string, 'REMOTE' | 'HYBRID' | 'ON_SITE'> = {
+      "Remote": "REMOTE",
+      "Hybrid": "HYBRID",
+      "On-site": "ON_SITE",
+    };
+    return mapping[type];
+  };
+
+  const getExperienceLevelValue = (level: string): 'ENTRY_LEVEL' | 'MID_LEVEL' | 'SENIOR_LEVEL' | 'EXECUTIVE' | undefined => {
+    const mapping: Record<string, 'ENTRY_LEVEL' | 'MID_LEVEL' | 'SENIOR_LEVEL' | 'EXECUTIVE'> = {
+      "Entry": "ENTRY_LEVEL",
+      "Mid": "MID_LEVEL",
+      "Senior": "SENIOR_LEVEL",
+      "Lead": "EXECUTIVE",
+    };
+    return mapping[level];
+  };
+
   // Build API query params from filters
   const queryParams: GetJobsParams & { exclusiveOnly?: boolean } = {
     page: currentPage,
@@ -59,10 +79,10 @@ function CandidateJobsContent() {
     niche: filters.niches.length > 0 ? filters.niches[0] : undefined,
     location: filters.locations.length > 0 ? filters.locations[0] : undefined,
     remoteType: filters.remoteTypes.length > 0
-      ? (filters.remoteTypes[0].toUpperCase() as 'REMOTE' | 'HYBRID' | 'ONSITE')
+      ? getRemoteTypeValue(filters.remoteTypes[0])
       : undefined,
     experienceLevel: filters.experienceLevels.length > 0
-      ? (filters.experienceLevels[0].toUpperCase() as 'ENTRY' | 'MID' | 'SENIOR' | 'LEAD')
+      ? getExperienceLevelValue(filters.experienceLevels[0])
       : undefined,
     salaryMin: filters.salaryMin > 0 ? filters.salaryMin : undefined,
     salaryMax: filters.salaryMax < 300000 ? filters.salaryMax : undefined,

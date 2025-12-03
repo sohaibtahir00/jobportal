@@ -15,8 +15,9 @@ export interface GetJobsParams {
   limit?: number;
   niche?: string;
   location?: string;
-  remoteType?: 'REMOTE' | 'HYBRID' | 'ONSITE';
-  experienceLevel?: 'ENTRY' | 'MID' | 'SENIOR' | 'LEAD';
+  remoteType?: 'REMOTE' | 'HYBRID' | 'ON_SITE';
+  experienceLevel?: 'ENTRY_LEVEL' | 'MID_LEVEL' | 'SENIOR_LEVEL' | 'EXECUTIVE';
+  type?: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP';
   salaryMin?: number;
   salaryMax?: number;
   search?: string;
