@@ -29,6 +29,7 @@ import {
 import { useState, useMemo, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Footer } from "@/components/layout";
+import { NotificationsDropdown } from "@/components/layout/NotificationsDropdown";
 
 // This will be replaced with actual auth check later
 const MOCK_CANDIDATE_USER = {
@@ -217,7 +218,7 @@ export default function DashboardLayout({
           <div className="flex-1 lg:hidden" />
 
           <div className="flex items-center space-x-4">
-            {/* Notification bell or other header actions can go here */}
+            <NotificationsDropdown />
           </div>
         </header>
 

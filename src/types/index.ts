@@ -375,13 +375,17 @@ export interface BlogPost {
 // FRONTEND-SPECIFIC TYPES (Not in backend)
 // ============================================================================
 
-// Notification Types (frontend-only, not in backend API docs)
+// Notification Types (matches backend NotificationType enum)
 export type NotificationType =
-  | "application_received"
-  | "application_status_changed"
-  | "new_message"
-  | "job_posted"
-  | "profile_viewed";
+  | "APPLICATION_UPDATE"
+  | "MESSAGE_RECEIVED"
+  | "INTERVIEW_SCHEDULED"
+  | "INTERVIEW_RESCHEDULE_REQUEST"
+  | "ASSESSMENT_COMPLETED"
+  | "JOB_MATCH"
+  | "JOB_STATUS_CHANGE"
+  | "PLACEMENT_UPDATE"
+  | "SYSTEM_ANNOUNCEMENT";
 
 export interface Notification {
   id: string;
@@ -389,7 +393,7 @@ export interface Notification {
   type: NotificationType;
   title: string;
   message: string;
-  read: boolean;
+  isRead: boolean;
   link?: string;
   createdAt: string;             // ISO 8601 DateTime
 }
