@@ -23,7 +23,7 @@ import {
   Heart,
   Sparkles,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { Button, Badge, Card, CardContent, CardHeader, CardTitle, useToast } from "@/components/ui";
 import { formatCurrency, resolveImageUrl } from "@/lib/utils";
 import { JobCard } from "@/components/jobs/JobCard";
 import { MatchScoreCard } from "@/components/jobs/MatchScoreCard";
@@ -41,6 +41,7 @@ export default function JobDetailPage() {
   const jobId = params.id as string;
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [jsonLd, setJsonLd] = useState<Record<string, unknown> | null>(null);
@@ -76,15 +77,42 @@ export default function JobDetailPage() {
     try {
       if (candidateInfo?.isSaved) {
         await api.delete(`/api/jobs/${jobId}/save`);
+        showToast("info", "Job Removed", "Job removed from your saved list.");
       } else {
         await api.post(`/api/jobs/${jobId}/save`);
+        showToast("success", "Job Saved", "Job added to your saved list.");
       }
       // Refetch job to update candidateInfo
       queryClient.invalidateQueries({ queryKey: ['job', jobId] });
     } catch (error) {
       console.error('Failed to toggle save:', error);
+      showToast("error", "Error", "Failed to save job. Please try again.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Share job handler
+  const handleShare = async () => {
+    const shareData = {
+      title: job?.title || 'Job Opportunity',
+      text: `Check out this job: ${job?.title} at ${job?.employer?.companyName || 'Company'}`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        showToast("success", "Link Copied", "Job link copied to clipboard!");
+      }
+    } catch (error) {
+      // User cancelled share or error occurred
+      if ((error as Error).name !== 'AbortError') {
+        await navigator.clipboard.writeText(window.location.href);
+        showToast("success", "Link Copied", "Job link copied to clipboard!");
+      }
     }
   };
 
@@ -289,7 +317,11 @@ export default function JobDetailPage() {
                   </Button>
                 )}
 
-                <Button variant="outline" className="gap-2 px-3 sm:px-4">
+                <Button
+                  variant="outline"
+                  className="gap-2 px-3 sm:px-4"
+                  onClick={handleShare}
+                >
                   <Share2 className="h-4 w-4" />
                   <span className="hidden sm:inline">Share</span>
                 </Button>
@@ -489,11 +521,28 @@ export default function JobDetailPage() {
                     >
                       Apply Now
                     </Button>
-                    <Button variant="outline" size="lg" className="gap-2">
-                      <Bookmark className="h-4 w-4" />
-                      Save Job
-                    </Button>
-                    <Button variant="outline" size="lg" className="gap-2">
+                    {session && (
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="gap-2"
+                        onClick={handleSaveToggle}
+                        disabled={isSaving}
+                      >
+                        {candidateInfo?.isSaved ? (
+                          <Bookmark className="h-4 w-4 fill-primary-500 text-primary-500" />
+                        ) : (
+                          <Bookmark className="h-4 w-4" />
+                        )}
+                        {candidateInfo?.isSaved ? 'Saved' : 'Save Job'}
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="gap-2"
+                      onClick={handleShare}
+                    >
                       <Share2 className="h-4 w-4" />
                       Share
                     </Button>
