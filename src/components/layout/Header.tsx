@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Briefcase, Menu, X, User, LogOut, Shield } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
@@ -14,9 +15,13 @@ export interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ className }) => {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+
+  const isCandidate = session?.user?.role === "CANDIDATE";
+  const isOnJobsPage = pathname === "/jobs";
 
   // Handle scroll effect
   React.useEffect(() => {
@@ -53,10 +58,15 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
     };
   }, [mobileMenuOpen]);
 
-  const navigation = [
-    { name: "Find Jobs", href: "/jobs" },
-    { name: "For Employers", href: "/employers" },
-  ];
+  // Build navigation based on user role
+  const navigation = React.useMemo(() => {
+    const nav = [{ name: "Find Jobs", href: "/jobs" }];
+    // Hide "For Employers" link when logged in as candidate
+    if (!isCandidate) {
+      nav.push({ name: "For Employers", href: "/employers" });
+    }
+    return nav;
+  }, [isCandidate]);
 
   return (
     <header
@@ -119,6 +129,16 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                       Admin Panel
                     </Link>
                   </Button>
+                )}
+
+                {/* Dashboard Link - shown for candidates on /jobs page */}
+                {isCandidate && isOnJobsPage && (
+                  <Link
+                    href="/candidate/dashboard"
+                    className="text-sm font-medium text-secondary-600 transition-colors hover:text-primary-600"
+                  >
+                    Dashboard
+                  </Link>
                 )}
 
                 {/* User Menu */}
