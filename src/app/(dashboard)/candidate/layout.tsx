@@ -25,6 +25,11 @@ export default function CandidateLayout({
       return;
     }
 
+    if (session.user.role === "ADMIN") {
+      router.push("/admin");
+      return;
+    }
+
     if (session.user.role !== "CANDIDATE") {
       router.push("/employer/dashboard");
       return;

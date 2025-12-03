@@ -25,6 +25,11 @@ export default function EmployerLayout({
       return;
     }
 
+    if (session.user.role === "ADMIN") {
+      router.push("/admin");
+      return;
+    }
+
     if (session.user.role !== "EMPLOYER") {
       router.push("/candidate/dashboard");
       return;

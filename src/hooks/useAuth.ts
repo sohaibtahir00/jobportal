@@ -89,7 +89,9 @@ export function useAuth() {
 
       if (sessionData?.user?.role) {
         const role = sessionData.user.role.toLowerCase();
-        if (role === "employer") {
+        if (role === "admin") {
+          window.location.href = "/admin";
+        } else if (role === "employer") {
           window.location.href = "/employer/dashboard";
         } else {
           window.location.href = "/candidate/dashboard";
