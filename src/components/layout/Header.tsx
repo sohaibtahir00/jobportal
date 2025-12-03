@@ -101,8 +101,11 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-medium text-secondary-600 transition-colors hover:text-primary-600"
+                className="flex items-center gap-1.5 text-sm font-medium text-secondary-600 transition-colors hover:text-primary-600"
               >
+                {item.name === "Find Jobs" && isCandidate && (
+                  <Briefcase className="h-4 w-4" />
+                )}
                 {item.name}
               </Link>
             ))}
@@ -269,8 +272,11 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                 key={item.name}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-md px-4 py-3 text-base font-medium text-secondary-900 transition-colors hover:bg-secondary-100"
+                className="flex items-center gap-2 rounded-md px-4 py-3 text-base font-medium text-secondary-900 transition-colors hover:bg-secondary-100"
               >
+                {item.name === "Find Jobs" && isCandidate && (
+                  <Briefcase className="h-5 w-5" />
+                )}
                 {item.name}
               </Link>
             ))}
