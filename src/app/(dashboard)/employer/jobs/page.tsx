@@ -18,7 +18,7 @@ import {
   Users,
   Search,
   Filter,
-  Clock,
+  CheckCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -37,6 +37,7 @@ import { useEmployerDashboard } from "@/hooks/useDashboard";
 const jobStatusColors: Record<string, string> = {
   ACTIVE: "bg-green-100 text-green-800 border-green-300",
   DRAFT: "bg-yellow-100 text-yellow-800 border-yellow-300",
+  PAUSED: "bg-amber-100 text-amber-800 border-amber-300",
   CLOSED: "bg-gray-100 text-gray-800 border-gray-300",
   FILLED: "bg-blue-100 text-blue-800 border-blue-300",
   EXPIRED: "bg-red-100 text-red-800 border-red-300",
@@ -96,8 +97,6 @@ export default function EmployerJobsPage() {
     let matchesStatus = false;
     if (statusFilter === "all") {
       matchesStatus = true;
-    } else if (statusFilter === "AWAITING_CLAIM") {
-      matchesStatus = job.isClaimed === false;
     } else {
       matchesStatus = job.status === statusFilter;
     }
@@ -109,7 +108,7 @@ export default function EmployerJobsPage() {
   const jobCounts = {
     all: jobs.length,
     ACTIVE: jobs.filter((j: any) => j.status === "ACTIVE").length,
-    AWAITING_CLAIM: jobs.filter((j: any) => j.isClaimed === false).length,
+    FILLED: jobs.filter((j: any) => j.status === "FILLED").length,
     CLOSED: jobs.filter((j: any) => j.status === "CLOSED").length,
   };
 
@@ -219,11 +218,11 @@ export default function EmployerJobsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-secondary-600 mb-1">Awaiting Claim</p>
-                    <p className="text-3xl font-bold text-yellow-600">{jobCounts.AWAITING_CLAIM}</p>
+                    <p className="text-sm font-medium text-secondary-600 mb-1">Filled</p>
+                    <p className="text-3xl font-bold text-blue-600">{jobCounts.FILLED}</p>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 shadow-lg">
-                    <Clock className="h-6 w-6 text-white" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
+                    <CheckCircle className="h-6 w-6 text-white" />
                   </div>
                 </div>
               </CardContent>
@@ -285,7 +284,7 @@ export default function EmployerJobsPage() {
                     >
                       <option value="all">All Jobs ({jobCounts.all})</option>
                       <option value="ACTIVE">Active ({jobCounts.ACTIVE})</option>
-                      <option value="AWAITING_CLAIM">Awaiting Claim ({jobCounts.AWAITING_CLAIM})</option>
+                      <option value="FILLED">Filled ({jobCounts.FILLED})</option>
                       <option value="CLOSED">Closed ({jobCounts.CLOSED})</option>
                     </select>
                   </div>

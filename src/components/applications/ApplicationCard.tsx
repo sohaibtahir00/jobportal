@@ -43,6 +43,27 @@ export function ApplicationCard({ application, onViewDetails, onWithdrawSuccess 
     }
   };
 
+  // Helper function to get job status badge (for inactive jobs)
+  const getJobStatusBadge = (status: string) => {
+    switch (status) {
+      case "CLOSED":
+        return { label: "Job Closed", color: "bg-red-100 text-red-700 border border-red-200" };
+      case "PAUSED":
+        return { label: "Job Paused", color: "bg-yellow-100 text-yellow-700 border border-yellow-200" };
+      case "FILLED":
+        return { label: "Position Filled", color: "bg-gray-100 text-gray-700 border border-gray-200" };
+      case "EXPIRED":
+        return { label: "Job Expired", color: "bg-gray-100 text-gray-600 border border-gray-200" };
+      default:
+        return null;
+    }
+  };
+
+  // Check if job is inactive (not ACTIVE or DRAFT)
+  const jobStatus = application.job?.status;
+  const isJobInactive = jobStatus && !["ACTIVE", "DRAFT"].includes(jobStatus);
+  const jobStatusBadge = jobStatus ? getJobStatusBadge(jobStatus) : null;
+
   // Helper function to format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -105,10 +126,17 @@ export function ApplicationCard({ application, onViewDetails, onWithdrawSuccess 
                 </p>
               </div>
 
-              {/* Status Badge */}
-              <Badge className={`${statusBadge.color} border-0`}>
-                {statusBadge.label}
-              </Badge>
+              {/* Status Badges */}
+              <div className="flex flex-wrap gap-2">
+                <Badge className={`${statusBadge.color} border-0`}>
+                  {statusBadge.label}
+                </Badge>
+                {isJobInactive && jobStatusBadge && (
+                  <Badge className={jobStatusBadge.color}>
+                    {jobStatusBadge.label}
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {/* Job Info */}
