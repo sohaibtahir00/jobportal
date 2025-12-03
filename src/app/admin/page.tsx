@@ -26,7 +26,6 @@ import {
   AnalyticsPieChart,
   AnalyticsAreaChart,
 } from "@/components/charts";
-import { api } from "@/lib/api";
 
 // Types
 interface OverviewStats {
@@ -107,13 +106,23 @@ export default function AdminDashboardPage() {
       setError(null);
 
       // Fetch main analytics and chart data in parallel
+      // Use fetch() to call frontend proxy routes (which handle auth via cookies)
       const [analyticsRes, chartsRes] = await Promise.all([
-        api.get("/api/admin/analytics"),
-        api.get(`/api/admin/analytics/charts?range=${dateRange}`),
+        fetch("/api/admin/analytics"),
+        fetch(`/api/admin/analytics/charts?range=${dateRange}`),
       ]);
 
-      const analyticsData = analyticsRes.data;
-      const chartsData = chartsRes.data;
+      if (!analyticsRes.ok) {
+        const err = await analyticsRes.json().catch(() => ({ error: "Failed to fetch analytics" }));
+        throw new Error(err.error || "Failed to fetch analytics");
+      }
+      if (!chartsRes.ok) {
+        const err = await chartsRes.json().catch(() => ({ error: "Failed to fetch charts" }));
+        throw new Error(err.error || "Failed to fetch charts");
+      }
+
+      const analyticsData = await analyticsRes.json();
+      const chartsData = await chartsRes.json();
 
       // Map analytics data to overview stats
       setOverview({
@@ -149,7 +158,7 @@ export default function AdminDashboardPage() {
       });
     } catch (err: any) {
       console.error("Failed to load dashboard:", err);
-      setError(err.response?.data?.error || "Failed to load dashboard data");
+      setError(err.message || "Failed to load dashboard data");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
