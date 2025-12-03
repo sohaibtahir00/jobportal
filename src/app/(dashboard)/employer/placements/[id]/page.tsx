@@ -516,7 +516,7 @@ export default function PlacementDetailPage() {
                     </Button>
                   </Link>
                   <Link
-                    href={`/employer/jobs/${placement.job.id}`}
+                    href={`/jobs/${placement.job.id}`}
                     className="block"
                   >
                     <Button variant="outline" className="w-full">
