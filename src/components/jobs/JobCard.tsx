@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Briefcase, DollarSign, Clock } from "lucide-react";
+import { MapPin, Briefcase, DollarSign, Clock, Star } from "lucide-react";
 import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { Job } from "@/types";
 import { formatCurrency, resolveImageUrl } from "@/lib/utils";
@@ -60,6 +60,9 @@ export function JobCard({ job }: JobCardProps) {
             ) : (
               <p className="text-sm text-secondary-600 truncate">Company</p>
             )}
+            {job.requiresAssessment && (
+              <p className="text-xs text-amber-600 mt-0.5">Skills verified candidates preferred</p>
+            )}
           </div>
         </div>
 
@@ -87,6 +90,12 @@ export function JobCard({ job }: JobCardProps) {
 
         {/* Remote & Type Badges */}
         <div className="mb-3 flex flex-wrap gap-2">
+          {job.requiresAssessment && (
+            <Badge className="bg-amber-100 text-amber-800 border-amber-200" size="sm">
+              <Star className="h-3 w-3 mr-1 fill-amber-500 text-amber-500" />
+              Verified Talent
+            </Badge>
+          )}
           <Badge
             variant={job.remote ? "success" : "secondary"}
             size="sm"

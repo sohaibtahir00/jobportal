@@ -229,6 +229,7 @@ export interface Job {
   slots: number;                 // Default: 1
   views: number;                 // Default: 0
   isClaimed: boolean;            // Whether this is an exclusive job (default: false)
+  requiresAssessment?: boolean;  // Whether employer wants skills-verified candidates
   createdAt: string;             // ISO 8601 DateTime
   updatedAt: string;             // ISO 8601 DateTime
 
