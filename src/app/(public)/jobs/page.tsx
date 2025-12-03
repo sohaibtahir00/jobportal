@@ -15,6 +15,7 @@ const ITEMS_PER_PAGE = 12;
 function JobsContent() {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
+  const [employerId, setEmployerId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>({
@@ -30,6 +31,7 @@ function JobsContent() {
   useEffect(() => {
     const search = searchParams.get("search");
     const location = searchParams.get("location");
+    const employer = searchParams.get("employerId");
 
     if (search) {
       setSearchQuery(search);
@@ -41,6 +43,10 @@ function JobsContent() {
         locations: [location],
       }));
     }
+
+    if (employer) {
+      setEmployerId(employer);
+    }
   }, [searchParams]);
 
   // Build API query params from filters
@@ -48,6 +54,7 @@ function JobsContent() {
     page: currentPage,
     limit: ITEMS_PER_PAGE,
     search: searchQuery || undefined,
+    employerId: employerId || undefined,
     niche: filters.niches.length > 0 ? filters.niches[0] : undefined,
     location: filters.locations.length > 0 ? filters.locations[0] : undefined,
     remoteType: filters.remoteTypes.length > 0
@@ -233,6 +240,7 @@ function JobsContent() {
                   variant="outline"
                   onClick={() => {
                     setSearchQuery("");
+                    setEmployerId(null);
                     handleFilterChange({
                       niches: [],
                       locations: [],

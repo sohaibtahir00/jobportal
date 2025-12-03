@@ -457,7 +457,7 @@ export default function CompanyPage() {
                 </h3>
                 <div className="space-y-3">
                   <Button variant="primary" className="w-full" asChild>
-                    <Link href={`/jobs?search=${encodeURIComponent(company.companyName)}`}>
+                    <Link href={`/jobs?employerId=${company.id}`}>
                       <Briefcase className="mr-2 h-4 w-4" />
                       View All Jobs
                     </Link>

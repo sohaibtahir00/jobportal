@@ -20,6 +20,7 @@ export interface GetJobsParams {
   salaryMin?: number;
   salaryMax?: number;
   search?: string;
+  employerId?: string;
 }
 
 export interface GetJobsResponse {
