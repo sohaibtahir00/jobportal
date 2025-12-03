@@ -305,7 +305,7 @@ export default function PlacementDetailPage() {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
                       <p className="text-sm text-secondary-600 mb-1">Niche</p>
-                      <Badge variant="secondary">{placement.job.niche}</Badge>
+                      <Badge variant="secondary">{placement.job.nicheCategory || "Not specified"}</Badge>
                     </div>
 
                     <div>
@@ -377,14 +377,16 @@ export default function PlacementDetailPage() {
                         Probation End Date
                       </p>
                       <p className="text-sm text-secondary-600">
-                        {new Date(placement.probationEndDate).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          }
-                        )}
+                        {placement.probationEndDate
+                          ? new Date(placement.probationEndDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )
+                          : "Not set"}
                       </p>
                     </div>
                   </div>
