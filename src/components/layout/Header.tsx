@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Briefcase, Menu, X, User, LogOut, Shield } from "lucide-react";
+import { Briefcase, Menu, X, User, LogOut, Shield, Search } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
@@ -21,6 +21,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
 
   const isCandidate = session?.user?.role === "CANDIDATE";
+  const isEmployer = session?.user?.role === "EMPLOYER";
   const isOnJobsPage = pathname === "/jobs";
 
   // Handle scroll effect
@@ -60,13 +61,20 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
 
   // Build navigation based on user role
   const navigation = React.useMemo(() => {
-    const nav = [{ name: "Find Jobs", href: "/jobs" }];
-    // Hide "For Employers" link when logged in as candidate
-    if (!isCandidate) {
-      nav.push({ name: "For Employers", href: "/employers" });
+    // Employer: show only "Find Candidates"
+    if (isEmployer) {
+      return [{ name: "Find Candidates", href: "/employer/search" }];
     }
-    return nav;
-  }, [isCandidate]);
+    // Candidate: show only "Find Jobs"
+    if (isCandidate) {
+      return [{ name: "Find Jobs", href: "/jobs" }];
+    }
+    // Not logged in: show both "Find Jobs" and "For Employers"
+    return [
+      { name: "Find Jobs", href: "/jobs" },
+      { name: "For Employers", href: "/employers" },
+    ];
+  }, [isCandidate, isEmployer]);
 
   return (
     <header
@@ -105,6 +113,9 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
               >
                 {item.name === "Find Jobs" && isCandidate && (
                   <Briefcase className="h-4 w-4" />
+                )}
+                {item.name === "Find Candidates" && isEmployer && (
+                  <Search className="h-4 w-4" />
                 )}
                 {item.name}
               </Link>
@@ -276,6 +287,9 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
               >
                 {item.name === "Find Jobs" && isCandidate && (
                   <Briefcase className="h-5 w-5" />
+                )}
+                {item.name === "Find Candidates" && isEmployer && (
+                  <Search className="h-5 w-5" />
                 )}
                 {item.name}
               </Link>

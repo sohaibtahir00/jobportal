@@ -63,7 +63,6 @@ const employerNavItems = [
   { href: "/employer/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/employer/jobs/new", label: "Post New Job", icon: Briefcase },
   { href: "/employer/applicants", label: "All Applicants", icon: Users },
-  { href: "/employer/search", label: "Search Candidates", icon: Search },
   { href: "/employer/messages", label: "Messages", icon: MessageSquare },
   { href: "/employer/interviews", label: "Interviews", icon: Video },
   { href: "/employer/offers", label: "Offers", icon: Gift },
