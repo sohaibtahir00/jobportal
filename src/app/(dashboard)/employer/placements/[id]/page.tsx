@@ -117,6 +117,11 @@ export default function PlacementDetailPage() {
     return new Date() <= new Date(placement.guaranteeEndDate);
   };
 
+  const hasPlacementStarted = () => {
+    if (!placement?.startDate) return false;
+    return new Date() >= new Date(placement.startDate);
+  };
+
   const canRequestReplacement = () => {
     return (
       placement &&
@@ -578,6 +583,31 @@ export default function PlacementDetailPage() {
                   </div>
                 )}
 
+                {/* Not Started Yet Notice */}
+                {!hasPlacementStarted() && (
+                  <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex gap-3">
+                      <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-900 mb-1">
+                          Placement Has Not Started Yet
+                        </p>
+                        <p className="text-xs text-blue-700">
+                          You can request a replacement after the placement starts on{" "}
+                          <strong>
+                            {new Date(placement.startDate).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </strong>
+                          . Early termination can only be reported once the candidate has begun working.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Form */}
                 <form onSubmit={handleReplacementSubmit} className="space-y-6">
                   <div>
@@ -587,6 +617,7 @@ export default function PlacementDetailPage() {
                     <input
                       type="date"
                       required
+                      disabled={!hasPlacementStarted()}
                       value={replacementData.lastDayWorked}
                       onChange={(e) =>
                         setReplacementData({
@@ -602,7 +633,7 @@ export default function PlacementDetailPage() {
                               .split("T")[0]
                           : undefined
                       }
-                      className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-secondary-100 disabled:cursor-not-allowed"
                     />
                     <p className="text-xs text-secondary-500 mt-1">
                       Enter the candidate's last working day
@@ -615,6 +646,7 @@ export default function PlacementDetailPage() {
                     </label>
                     <textarea
                       required
+                      disabled={!hasPlacementStarted()}
                       value={replacementData.reason}
                       onChange={(e) =>
                         setReplacementData({
@@ -624,7 +656,7 @@ export default function PlacementDetailPage() {
                       }
                       rows={6}
                       placeholder="Please provide detailed information about why the placement didn't work out..."
-                      className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                      className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none disabled:bg-secondary-100 disabled:cursor-not-allowed"
                     />
                     <p className="text-xs text-secondary-500 mt-1">
                       This information helps us find a better match for your next candidate
@@ -644,7 +676,7 @@ export default function PlacementDetailPage() {
                     <Button
                       type="submit"
                       variant="danger"
-                      disabled={isSubmittingReplacement}
+                      disabled={isSubmittingReplacement || !hasPlacementStarted()}
                     >
                       {isSubmittingReplacement ? (
                         <>
