@@ -208,6 +208,70 @@ function JobsContent() {
     datePosted !== "any" ||
     searchQuery !== "";
 
+  // Quick filter helpers
+  const isQuickFilterActive = (filterType: string): boolean => {
+    switch (filterType) {
+      case "all":
+        return !hasActiveFilters;
+      case "remote":
+        return filters.remoteTypes.includes("Remote");
+      case "senior":
+        return filters.experienceLevels.includes("Senior");
+      case "150k":
+        return filters.salaryMin >= 150000;
+      case "aiml":
+        return filters.niches.includes("AI/ML");
+      case "fulltime":
+        return jobType === "Full-time";
+      default:
+        return false;
+    }
+  };
+
+  const handleQuickFilter = (filterType: string) => {
+    setCurrentPage(1);
+    switch (filterType) {
+      case "all":
+        clearAllFilters();
+        break;
+      case "remote":
+        if (filters.remoteTypes.includes("Remote")) {
+          handleFilterChange({ ...filters, remoteTypes: [] });
+        } else {
+          handleFilterChange({ ...filters, remoteTypes: ["Remote"] });
+        }
+        break;
+      case "senior":
+        if (filters.experienceLevels.includes("Senior")) {
+          handleFilterChange({ ...filters, experienceLevels: [] });
+        } else {
+          handleFilterChange({ ...filters, experienceLevels: ["Senior"] });
+        }
+        break;
+      case "150k":
+        if (filters.salaryMin >= 150000) {
+          handleFilterChange({ ...filters, salaryMin: 0 });
+        } else {
+          handleFilterChange({ ...filters, salaryMin: 150000 });
+        }
+        break;
+      case "aiml":
+        if (filters.niches.includes("AI/ML")) {
+          handleFilterChange({ ...filters, niches: [] });
+        } else {
+          handleFilterChange({ ...filters, niches: ["AI/ML"] });
+        }
+        break;
+      case "fulltime":
+        if (jobType === "Full-time") {
+          setJobType("all");
+        } else {
+          setJobType("Full-time");
+        }
+        break;
+    }
+  };
+
   const clearAllFilters = () => {
     setSearchQuery("");
     setEmployerId(null);
@@ -338,14 +402,29 @@ function JobsContent() {
 
           {/* Quick Filters */}
           <div className="mt-6 flex flex-wrap gap-3">
-            {['All Jobs', 'Remote', 'Senior Level', '$150k+', 'AI/ML', 'Full-time'].map((filter) => (
-              <button
-                key={filter}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg text-sm font-medium transition-all"
-              >
-                {filter}
-              </button>
-            ))}
+            {[
+              { label: "All Jobs", type: "all" },
+              { label: "Remote", type: "remote" },
+              { label: "Senior Level", type: "senior" },
+              { label: "$150k+", type: "150k" },
+              { label: "AI/ML", type: "aiml" },
+              { label: "Full-time", type: "fulltime" },
+            ].map((filter) => {
+              const isActive = isQuickFilterActive(filter.type);
+              return (
+                <button
+                  key={filter.type}
+                  onClick={() => handleQuickFilter(filter.type)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    isActive
+                      ? "bg-white text-blue-600 shadow-md"
+                      : "bg-white/20 text-white hover:bg-white/30"
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
