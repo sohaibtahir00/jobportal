@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 import Link from "next/link";
@@ -13,10 +13,32 @@ export default function OAuthCallbackPage() {
   const [isProcessing, setIsProcessing] = useState(true);
   const [statusMessage, setStatusMessage] = useState("Completing authentication...");
 
+  // Use ref to track if we've already started processing to prevent double execution
+  const hasProcessedRef = useRef(false);
+  // Store sessionStorage values in refs before they get cleared
+  const oauthFlowRef = useRef<string | null>(null);
+  const pendingRoleRef = useRef<string | null>(null);
+
+  // Capture sessionStorage values on mount (before any re-renders clear them)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !oauthFlowRef.current) {
+      oauthFlowRef.current = sessionStorage.getItem("oauth_flow");
+      pendingRoleRef.current = sessionStorage.getItem("oauth_pending_role");
+      // Clear immediately after capturing
+      sessionStorage.removeItem("oauth_flow");
+      sessionStorage.removeItem("oauth_pending_role");
+    }
+  }, []);
+
   useEffect(() => {
     const handleOAuthCallback = async () => {
       // Wait for session to load
       if (status === "loading") {
+        return;
+      }
+
+      // Prevent double execution
+      if (hasProcessedRef.current) {
         return;
       }
 
@@ -27,17 +49,23 @@ export default function OAuthCallbackPage() {
         return;
       }
 
-      try {
-        // Get OAuth flow type and pending role from sessionStorage
-        const oauthFlow = sessionStorage.getItem("oauth_flow");
-        const pendingRole = sessionStorage.getItem("oauth_pending_role");
+      // Mark as processing
+      hasProcessedRef.current = true;
 
-        // Clear sessionStorage immediately
-        sessionStorage.removeItem("oauth_flow");
-        sessionStorage.removeItem("oauth_pending_role");
+      try {
+        const oauthFlow = oauthFlowRef.current;
+        const pendingRole = pendingRoleRef.current;
 
         // Check if this is a new OAuth user (doesn't exist in our DB yet)
         const isNewOAuthUser = (session as any).isNewOAuthUser;
+
+        console.log("OAuth Callback Debug:", {
+          isNewOAuthUser,
+          oauthFlow,
+          pendingRole,
+          sessionRole: session.user.role,
+          email: session.user.email
+        });
 
         if (isNewOAuthUser) {
           // This is a new user from OAuth
@@ -78,14 +106,15 @@ export default function OAuthCallbackPage() {
 
             setStatusMessage("Account created! Redirecting to onboarding...");
 
-            // Redirect to onboarding based on role (same as regular signup)
+            // Redirect to onboarding based on role
             const redirectUrl = createData.user.role === "EMPLOYER"
               ? "/onboarding/employer"
               : "/onboarding/candidate";
 
-            // Use window.location for a full page navigation to ensure session is fresh
-            // This prevents the brief flash to dashboard
-            window.location.href = redirectUrl;
+            // Small delay to show success message, then redirect
+            setTimeout(() => {
+              window.location.href = redirectUrl;
+            }, 500);
           } else if (oauthFlow === "login") {
             // Coming from login page but user doesn't exist
             setError("No account found with this email. Please sign up first.");
@@ -110,8 +139,10 @@ export default function OAuthCallbackPage() {
             redirectUrl = "/employer/dashboard";
           }
 
-          // Use window.location for a full page navigation to ensure session is fresh
-          window.location.href = redirectUrl;
+          // Small delay to show message, then redirect
+          setTimeout(() => {
+            window.location.href = redirectUrl;
+          }, 300);
         }
       } catch (err) {
         console.error("OAuth callback error:", err);
