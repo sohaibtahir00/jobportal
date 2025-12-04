@@ -128,13 +128,10 @@ export default function EmployerDashboardPage() {
     setProfileBannerDismissed(true);
   };
 
-  // Check if employer profile is incomplete (missing key fields)
+  // Check if employer profile is incomplete (missing key fields available in dashboard data)
   const isProfileIncomplete = data?.employer && (
-    !data.employer.companyWebsite ||
-    !data.employer.phone ||
-    !data.employer.description ||
     !data.employer.industry ||
-    !data.employer.companySize
+    !data.employer.location
   );
 
   const showProfileBanner = isProfileIncomplete && !profileBannerDismissed;
