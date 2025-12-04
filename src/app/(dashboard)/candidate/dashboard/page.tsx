@@ -30,8 +30,6 @@ import {
   TrendingUp,
   Clock,
   Sparkles,
-  AlertCircle,
-  X,
 } from "lucide-react";
 import { RecommendedJobs } from "@/components/jobs";
 
@@ -74,30 +72,11 @@ export default function CandidateDashboardPage() {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [profileViewsCount, setProfileViewsCount] = useState(0);
-  const [showOnboardingBanner, setShowOnboardingBanner] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
-
-  // Check if onboarding was skipped and banner should be shown
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const bannerDismissed = localStorage.getItem("candidate_profile_banner_dismissed");
-      const onboardingSkipped = localStorage.getItem("candidate_onboarding_skipped");
-
-      // Show banner if onboarding was skipped and banner hasn't been dismissed
-      if (onboardingSkipped === "true" && bannerDismissed !== "true") {
-        setShowOnboardingBanner(true);
-      }
-    }
-  }, []);
-
-  const dismissOnboardingBanner = () => {
-    localStorage.setItem("candidate_profile_banner_dismissed", "true");
-    setShowOnboardingBanner(false);
-  };
 
   // Fetch profile views count
   useEffect(() => {
@@ -200,39 +179,6 @@ export default function CandidateDashboardPage() {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <div className="space-y-6 pb-12">
-        {/* ====================================================================== */}
-        {/* ONBOARDING SKIPPED BANNER */}
-        {/* ====================================================================== */}
-        {showOnboardingBanner && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0" />
-              <span className="text-amber-800">
-                Complete your profile to get better job matches
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/candidate/profile/edit"
-                className="text-amber-700 font-medium hover:underline whitespace-nowrap"
-              >
-                Complete Profile →
-              </Link>
-              <button
-                onClick={dismissOnboardingBanner}
-                className="text-amber-600 hover:text-amber-800 p-1"
-                aria-label="Dismiss"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-
         {/* ====================================================================== */}
         {/* WELCOME SECTION */}
         {/* ====================================================================== */}

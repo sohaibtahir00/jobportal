@@ -106,30 +106,38 @@ export default function EmployerDashboardPage() {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showClaimReminder, setShowClaimReminder] = useState(true);
-  const [showProfileBanner, setShowProfileBanner] = useState(false);
+  const [profileBannerDismissed, setProfileBannerDismissed] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // Check if profile is incomplete and banner should be shown
+  // Check if banner was dismissed
   useEffect(() => {
     if (typeof window !== "undefined") {
       const bannerDismissed = localStorage.getItem("employer_profile_banner_dismissed");
-      const onboardingSkipped = localStorage.getItem("employer_onboarding_skipped");
-
-      // Show banner if onboarding was skipped and banner hasn't been dismissed
-      if (onboardingSkipped === "true" && bannerDismissed !== "true") {
-        setShowProfileBanner(true);
+      if (bannerDismissed === "true") {
+        setProfileBannerDismissed(true);
       }
     }
   }, []);
 
   const dismissProfileBanner = () => {
     localStorage.setItem("employer_profile_banner_dismissed", "true");
-    setShowProfileBanner(false);
+    setProfileBannerDismissed(true);
   };
+
+  // Check if employer profile is incomplete (missing key fields)
+  const isProfileIncomplete = data?.employer && (
+    !data.employer.companyWebsite ||
+    !data.employer.phone ||
+    !data.employer.description ||
+    !data.employer.industry ||
+    !data.employer.companySize
+  );
+
+  const showProfileBanner = isProfileIncomplete && !profileBannerDismissed;
 
   if (isLoading) {
     return (
