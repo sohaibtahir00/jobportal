@@ -47,7 +47,7 @@ export function useAuth() {
       }
     : null;
 
-  const login = async ({ email, password, rememberMe }: { email: string; password: string; rememberMe?: boolean }) => {
+  const login = async ({ email, password, rememberMe, redirectToOnboarding }: { email: string; password: string; rememberMe?: boolean; redirectToOnboarding?: boolean }) => {
     setIsAuthLoading(true);
     setAuthError(null);
 
@@ -89,6 +89,18 @@ export function useAuth() {
 
       if (sessionData?.user?.role) {
         const role = sessionData.user.role.toLowerCase();
+
+        // If user just verified their email, redirect to onboarding
+        if (redirectToOnboarding) {
+          if (role === "employer") {
+            window.location.href = "/onboarding/employer";
+          } else {
+            window.location.href = "/onboarding/candidate";
+          }
+          return;
+        }
+
+        // Regular login redirect to dashboard
         if (role === "admin") {
           window.location.href = "/admin";
         } else if (role === "employer") {
@@ -121,7 +133,14 @@ export function useAuth() {
         throw new Error(response.data.error || "Registration failed");
       }
 
-      // After registration, log the user in
+      // Check if email verification is required
+      if (response.data.requiresVerification) {
+        // Redirect to verification sent page instead of auto-login
+        router.push(`/verify-email-sent?email=${encodeURIComponent(data.email)}`);
+        return;
+      }
+
+      // For OAuth users or if verification not required, log in
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
@@ -132,7 +151,7 @@ export function useAuth() {
         throw new Error(result.error);
       }
 
-      // Redirect to onboarding based on role (instead of dashboard)
+      // Redirect to onboarding based on role
       if (data.role === "employer") {
         router.push("/onboarding/employer");
       } else {

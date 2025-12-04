@@ -1,23 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
-import { Eye, EyeOff, Loader2, Mail, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Loader2, Mail, AlertCircle, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { loginSchema, type LoginFormData } from "@/lib/validations";
+import api from "@/lib/api";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string>("");
+  const [isResending, setIsResending] = useState(false);
+  const [verificationSuccess, setVerificationSuccess] = useState(false);
   const { showToast } = useToast();
   const { login, isLoading, error: authError, clearError } = useAuth();
+
+  // Check for URL params from email verification redirect
+  useEffect(() => {
+    const error = searchParams.get("error");
+    const message = searchParams.get("message");
+
+    if (error && message) {
+      setApiError(decodeURIComponent(message));
+    }
+
+    // Check for successful verification
+    if (searchParams.get("verified") === "true") {
+      setVerificationSuccess(true);
+      showToast("success", "Email verified!", "You can now sign in to your account.");
+    }
+  }, [searchParams, showToast]);
 
   const {
     register,
@@ -30,18 +52,28 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     // Clear any previous errors
     setApiError(null);
+    setEmailNotVerified(false);
+    setVerificationSuccess(false);
     clearError();
 
     try {
+      // Check if user just verified their email (redirect to onboarding after login)
+      const justVerified = searchParams.get("verified") === "true";
+
       // Call the real authentication API
       await login({
         email: data.email,
         password: data.password,
         rememberMe: data.rememberMe,
+        redirectToOnboarding: justVerified,
       });
 
       // Success toast
-      showToast("success", "Welcome back!", "You've successfully logged in.");
+      if (justVerified) {
+        showToast("success", "Welcome!", "Let's complete your profile setup.");
+      } else {
+        showToast("success", "Welcome back!", "You've successfully logged in.");
+      }
 
       // Redirect is handled automatically by AuthContext based on user role
       // No need to manually redirect here
@@ -52,13 +84,32 @@ export default function LoginPage() {
         authError ||
         "An unexpected error occurred. Please try again.";
 
-      setApiError(errorMessage);
-
-      // Show error toast
-      showToast("error", "Login failed", errorMessage);
+      // Check if the error is email not verified
+      if (errorMessage === "EMAIL_NOT_VERIFIED" || errorMessage.includes("EMAIL_NOT_VERIFIED")) {
+        setEmailNotVerified(true);
+        setUnverifiedEmail(data.email);
+        showToast("warning", "Email not verified", "Please verify your email to continue.");
+      } else {
+        setApiError(errorMessage);
+        showToast("error", "Login failed", errorMessage);
+      }
 
       // Log error for debugging
       console.error("Login error:", error);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail || isResending) return;
+
+    setIsResending(true);
+    try {
+      await api.post("/api/auth/send-verification", { email: unverifiedEmail });
+      showToast("success", "Email sent!", "Please check your inbox for the verification link.");
+    } catch (error: any) {
+      showToast("error", "Failed to send", error.response?.data?.error || "Please try again.");
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -167,8 +218,81 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Verification Success Alert */}
+          {verificationSuccess && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3"
+            >
+              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-green-800">
+                  Email Verified!
+                </h3>
+                <p className="text-sm text-green-700 mt-1">
+                  Your email has been verified. You can now sign in to your account.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVerificationSuccess(false)}
+                className="text-green-600 hover:text-green-800"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </motion.div>
+          )}
+
+          {/* Email Not Verified Alert */}
+          {emailNotVerified && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl"
+            >
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-amber-800">
+                    Email Not Verified
+                  </h3>
+                  <p className="text-sm text-amber-700 mt-1">
+                    Please verify your email address before signing in. Check your inbox for a verification link.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={isResending}
+                    className="mt-3 text-sm font-semibold text-amber-700 hover:text-amber-900 underline flex items-center gap-1"
+                  >
+                    {isResending ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Resend verification email"
+                    )}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEmailNotVerified(false)}
+                  className="text-amber-600 hover:text-amber-800"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {/* API Error Alert */}
-          {(apiError || authError) && (
+          {(apiError || authError) && !emailNotVerified && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -418,5 +542,24 @@ export default function LoginPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="text-center">
+        <Loader2 className="w-12 h-12 text-primary-600 animate-spin mx-auto" />
+        <p className="mt-4 text-gray-600">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
