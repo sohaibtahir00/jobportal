@@ -106,11 +106,30 @@ export default function EmployerDashboardPage() {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showClaimReminder, setShowClaimReminder] = useState(true);
+  const [showProfileBanner, setShowProfileBanner] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
+
+  // Check if profile is incomplete and banner should be shown
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const bannerDismissed = localStorage.getItem("employer_profile_banner_dismissed");
+      const onboardingSkipped = localStorage.getItem("employer_onboarding_skipped");
+
+      // Show banner if onboarding was skipped and banner hasn't been dismissed
+      if (onboardingSkipped === "true" && bannerDismissed !== "true") {
+        setShowProfileBanner(true);
+      }
+    }
+  }, []);
+
+  const dismissProfileBanner = () => {
+    localStorage.setItem("employer_profile_banner_dismissed", "true");
+    setShowProfileBanner(false);
+  };
 
   if (isLoading) {
     return (
@@ -234,6 +253,39 @@ export default function EmployerDashboardPage() {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <div className="space-y-6 pb-12">
+        {/* ====================================================================== */}
+        {/* INCOMPLETE PROFILE BANNER */}
+        {/* ====================================================================== */}
+        {showProfileBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+              <span className="text-amber-800">
+                Complete your company profile to attract more candidates
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/employer/settings"
+                className="text-amber-700 font-medium hover:underline whitespace-nowrap"
+              >
+                Complete Profile →
+              </Link>
+              <button
+                onClick={dismissProfileBanner}
+                className="text-amber-600 hover:text-amber-800 p-1"
+                aria-label="Dismiss"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {/* ====================================================================== */}
         {/* WELCOME HEADER */}
         {/* ====================================================================== */}

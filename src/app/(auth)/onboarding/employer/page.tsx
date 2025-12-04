@@ -51,11 +51,11 @@ export default function EmployerOnboardingPage() {
       showToast(
         "success",
         "Profile completed!",
-        "Welcome to your dashboard. Start posting jobs and finding talent."
+        "Now let's complete your company settings."
       );
 
-      // Redirect to employer dashboard
-      router.push("/employer/dashboard");
+      // Redirect to employer settings to complete full profile
+      router.push("/employer/settings");
     } catch (error: any) {
       console.error("Onboarding error:", error);
       showToast(
@@ -209,7 +209,11 @@ export default function EmployerOnboardingPage() {
           {/* Skip Link */}
           <button
             type="button"
-            onClick={() => router.push("/employer/dashboard")}
+            onClick={() => {
+              // Mark onboarding as skipped in localStorage
+              localStorage.setItem("employer_onboarding_skipped", "true");
+              router.push("/employer/dashboard");
+            }}
             className="w-full text-sm text-gray-600 hover:text-gray-800 underline"
             disabled={isSubmitting}
           >

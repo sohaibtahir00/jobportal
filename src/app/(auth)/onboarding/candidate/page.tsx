@@ -76,11 +76,11 @@ export default function CandidateOnboardingPage() {
       showToast(
         "success",
         "Profile completed!",
-        "Welcome to your dashboard. Let's find your dream job."
+        "Now let's complete your full profile."
       );
 
-      // Redirect to candidate dashboard
-      router.push("/candidate/dashboard");
+      // Redirect to profile edit to complete full profile
+      router.push("/candidate/profile/edit");
     } catch (error: any) {
       console.error("Onboarding error:", error);
       showToast(
@@ -265,7 +265,11 @@ export default function CandidateOnboardingPage() {
           {/* Skip Link */}
           <button
             type="button"
-            onClick={() => router.push("/candidate/dashboard")}
+            onClick={() => {
+              // Mark onboarding as skipped in localStorage
+              localStorage.setItem("candidate_onboarding_skipped", "true");
+              router.push("/candidate/dashboard");
+            }}
             className="w-full text-sm text-gray-600 hover:text-gray-800 underline"
             disabled={isSubmitting}
           >
