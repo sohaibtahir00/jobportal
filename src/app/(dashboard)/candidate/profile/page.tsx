@@ -110,6 +110,31 @@ export default function CandidateProfilePage() {
   const [deleteWorkExpModal, setDeleteWorkExpModal] = useState<{ isOpen: boolean; id: string | null; title: string }>({ isOpen: false, id: null, title: "" });
   const [deleteEduModal, setDeleteEduModal] = useState<{ isOpen: boolean; id: string | null; name: string }>({ isOpen: false, id: null, name: "" });
 
+  // Form submission states
+  const [isSubmittingWorkExp, setIsSubmittingWorkExp] = useState(false);
+  const [isSubmittingEdu, setIsSubmittingEdu] = useState(false);
+
+  // Work Experience form state
+  const [workExpFormData, setWorkExpFormData] = useState({
+    companyName: "",
+    jobTitle: "",
+    location: "",
+    startDate: "",
+    endDate: "",
+    isCurrent: false,
+    description: "",
+  });
+
+  // Education form state
+  const [eduFormData, setEduFormData] = useState({
+    schoolName: "",
+    degree: "",
+    fieldOfStudy: "",
+    graduationYear: new Date().getFullYear(),
+    gpa: "",
+    description: "",
+  });
+
   // Initialize form with profile data
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileFormData>({
     values: profile
@@ -195,6 +220,133 @@ export default function CandidateProfilePage() {
     } catch (error) {
       console.error("Failed to delete education:", error);
       showToast("error", "Delete Failed", "Failed to delete education. Please try again.");
+    }
+  };
+
+  // Initialize form data when editing work experience
+  useEffect(() => {
+    if (editingWorkExp) {
+      setWorkExpFormData({
+        companyName: editingWorkExp.companyName,
+        jobTitle: editingWorkExp.jobTitle,
+        location: editingWorkExp.location || "",
+        startDate: editingWorkExp.startDate.split("T")[0],
+        endDate: editingWorkExp.endDate ? editingWorkExp.endDate.split("T")[0] : "",
+        isCurrent: editingWorkExp.isCurrent,
+        description: editingWorkExp.description || "",
+      });
+    } else {
+      setWorkExpFormData({
+        companyName: "",
+        jobTitle: "",
+        location: "",
+        startDate: "",
+        endDate: "",
+        isCurrent: false,
+        description: "",
+      });
+    }
+  }, [editingWorkExp]);
+
+  // Initialize form data when editing education
+  useEffect(() => {
+    if (editingEdu) {
+      setEduFormData({
+        schoolName: editingEdu.schoolName,
+        degree: editingEdu.degree,
+        fieldOfStudy: editingEdu.fieldOfStudy,
+        graduationYear: editingEdu.graduationYear,
+        gpa: editingEdu.gpa?.toString() || "",
+        description: editingEdu.description || "",
+      });
+    } else {
+      setEduFormData({
+        schoolName: "",
+        degree: "",
+        fieldOfStudy: "",
+        graduationYear: new Date().getFullYear(),
+        gpa: "",
+        description: "",
+      });
+    }
+  }, [editingEdu]);
+
+  const handleWorkExpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!workExpFormData.companyName || !workExpFormData.jobTitle || !workExpFormData.startDate) {
+      showToast("error", "Missing Fields", "Please fill in all required fields.");
+      return;
+    }
+
+    setIsSubmittingWorkExp(true);
+    try {
+      const payload = {
+        companyName: workExpFormData.companyName,
+        jobTitle: workExpFormData.jobTitle,
+        location: workExpFormData.location || null,
+        startDate: workExpFormData.startDate,
+        endDate: workExpFormData.isCurrent ? null : workExpFormData.endDate || null,
+        isCurrent: workExpFormData.isCurrent,
+        description: workExpFormData.description || null,
+      };
+
+      if (editingWorkExp) {
+        const result = await updateWorkExperience(editingWorkExp.id, payload);
+        setWorkExperiences(workExperiences.map(exp =>
+          exp.id === editingWorkExp.id ? result.workExperience : exp
+        ));
+        showToast("success", "Updated", "Work experience has been updated.");
+      } else {
+        const result = await createWorkExperience(payload);
+        setWorkExperiences([...workExperiences, result.workExperience]);
+        showToast("success", "Added", "Work experience has been added to your profile.");
+      }
+      setShowWorkExpForm(false);
+      setEditingWorkExp(null);
+    } catch (error: any) {
+      console.error("Failed to save work experience:", error);
+      showToast("error", "Save Failed", error.response?.data?.error || "Failed to save work experience.");
+    } finally {
+      setIsSubmittingWorkExp(false);
+    }
+  };
+
+  const handleEduSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eduFormData.schoolName || !eduFormData.degree || !eduFormData.fieldOfStudy) {
+      showToast("error", "Missing Fields", "Please fill in all required fields.");
+      return;
+    }
+
+    setIsSubmittingEdu(true);
+    try {
+      const payload = {
+        schoolName: eduFormData.schoolName,
+        degree: eduFormData.degree,
+        fieldOfStudy: eduFormData.fieldOfStudy,
+        graduationYear: eduFormData.graduationYear,
+        gpa: eduFormData.gpa ? parseFloat(eduFormData.gpa) : null,
+        description: eduFormData.description || null,
+      };
+
+      if (editingEdu) {
+        const result = await updateEducation(editingEdu.id, payload);
+        setEducationEntries(educationEntries.map(edu =>
+          edu.id === editingEdu.id ? result.education : edu
+        ));
+        showToast("success", "Updated", "Education has been updated.");
+      } else {
+        const result = await createEducation(payload);
+        setEducationEntries([...educationEntries, result.education]);
+        showToast("success", "Added", "Education has been added to your profile.");
+      }
+      setShowEduForm(false);
+      setEditingEdu(null);
+    } catch (error: any) {
+      console.error("Failed to save education:", error);
+      showToast("error", "Save Failed", error.response?.data?.error || "Failed to save education.");
+    } finally {
+      setIsSubmittingEdu(false);
     }
   };
 
@@ -1305,6 +1457,252 @@ export default function CandidateProfilePage() {
         cancelText="Cancel"
         variant="danger"
       />
+
+      {/* Work Experience Form Modal */}
+      {showWorkExpForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {editingWorkExp ? "Edit Work Experience" : "Add Work Experience"}
+              </h3>
+            </div>
+            <form onSubmit={handleWorkExpSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={workExpFormData.companyName}
+                  onChange={(e) => setWorkExpFormData({ ...workExpFormData, companyName: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g., Google"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Job Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={workExpFormData.jobTitle}
+                  onChange={(e) => setWorkExpFormData({ ...workExpFormData, jobTitle: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g., Software Engineer"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  value={workExpFormData.location}
+                  onChange={(e) => setWorkExpFormData({ ...workExpFormData, location: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g., San Francisco, CA"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Start Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={workExpFormData.startDate}
+                    onChange={(e) => setWorkExpFormData({ ...workExpFormData, startDate: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    value={workExpFormData.endDate}
+                    onChange={(e) => setWorkExpFormData({ ...workExpFormData, endDate: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100"
+                    disabled={workExpFormData.isCurrent}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={workExpFormData.isCurrent}
+                    onChange={(e) => setWorkExpFormData({ ...workExpFormData, isCurrent: e.target.checked, endDate: "" })}
+                    className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  />
+                  <span className="text-sm text-gray-700">I currently work here</span>
+                </label>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={workExpFormData.description}
+                  onChange={(e) => setWorkExpFormData({ ...workExpFormData, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="Describe your role and responsibilities..."
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowWorkExpForm(false);
+                    setEditingWorkExp(null);
+                  }}
+                  disabled={isSubmittingWorkExp}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmittingWorkExp}>
+                  {isSubmittingWorkExp ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : editingWorkExp ? (
+                    "Update"
+                  ) : (
+                    "Add"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Education Form Modal */}
+      {showEduForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {editingEdu ? "Edit Education" : "Add Education"}
+              </h3>
+            </div>
+            <form onSubmit={handleEduSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  School Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={eduFormData.schoolName}
+                  onChange={(e) => setEduFormData({ ...eduFormData, schoolName: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g., MIT"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Degree <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={eduFormData.degree}
+                  onChange={(e) => setEduFormData({ ...eduFormData, degree: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g., Bachelor of Science"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Field of Study <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={eduFormData.fieldOfStudy}
+                  onChange={(e) => setEduFormData({ ...eduFormData, fieldOfStudy: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g., Computer Science"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Graduation Year <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={eduFormData.graduationYear}
+                    onChange={(e) => setEduFormData({ ...eduFormData, graduationYear: parseInt(e.target.value) || new Date().getFullYear() })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    min="1950"
+                    max="2030"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    GPA (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={eduFormData.gpa}
+                    onChange={(e) => setEduFormData({ ...eduFormData, gpa: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="e.g., 3.8"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={eduFormData.description}
+                  onChange={(e) => setEduFormData({ ...eduFormData, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="Describe your achievements, activities, etc..."
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowEduForm(false);
+                    setEditingEdu(null);
+                  }}
+                  disabled={isSubmittingEdu}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmittingEdu}>
+                  {isSubmittingEdu ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : editingEdu ? (
+                    "Update"
+                  ) : (
+                    "Add"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
