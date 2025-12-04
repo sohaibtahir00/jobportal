@@ -76,11 +76,11 @@ export default function CandidateOnboardingPage() {
       showToast(
         "success",
         "Profile completed!",
-        "Now let's complete your full profile."
+        "Welcome to your dashboard."
       );
 
-      // Redirect to profile edit to complete full profile
-      router.push("/candidate/profile/edit");
+      // Redirect to profile page
+      router.push("/candidate/profile");
     } catch (error: any) {
       console.error("Onboarding error:", error);
       showToast(
