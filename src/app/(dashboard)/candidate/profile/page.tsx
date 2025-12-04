@@ -54,6 +54,7 @@ type ProfileFormData = {
   phone: string;
   location: string;
   bio: string;
+  currentRole: string;
   experience: number;
   education: string;
   portfolio: string;
@@ -142,6 +143,7 @@ export default function CandidateProfilePage() {
           phone: profile.phone || "",
           location: profile.location || "",
           bio: profile.bio || "",
+          currentRole: profile.currentRole || "",
           experience: profile.experience || 0,
           education: profile.education || "",
           portfolio: profile.portfolio || "",
@@ -358,6 +360,7 @@ export default function CandidateProfilePage() {
       phone: data.phone || null,
       location: data.location || null,
       bio: data.bio || null,
+      currentRole: data.currentRole || null,
       experience: data.experience || null,
       education: data.education || null,
       portfolio: data.portfolio || null,
@@ -732,6 +735,23 @@ export default function CandidateProfilePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                     <Briefcase className="h-4 w-4" />
+                    Current Role/Title
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      {...register("currentRole")}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="e.g., Machine Learning Engineer"
+                    />
+                  ) : (
+                    <p className="text-gray-900">{profile.currentRole || "Not specified"}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4" />
                     Years of Experience
                   </label>
                   {isEditing ? (

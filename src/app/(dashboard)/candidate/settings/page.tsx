@@ -52,6 +52,8 @@ export default function CandidateSettingsPage() {
     jobAlerts: true,
     applicationUpdates: true,
     messages: true,
+    interviewReminders: true,
+    placementUpdates: true,
     weeklyDigest: false,
     marketingEmails: false,
   });
@@ -99,14 +101,16 @@ export default function CandidateSettingsPage() {
             jobAlerts: settingsData.settings.notifyJobAlerts ?? true,
             applicationUpdates: settingsData.settings.notifyApplicationUpdates ?? true,
             messages: settingsData.settings.notifyMessages ?? true,
+            interviewReminders: settingsData.settings.notifyInterviewReminders ?? true,
+            placementUpdates: settingsData.settings.notifyPlacementUpdates ?? true,
             weeklyDigest: settingsData.settings.notifyWeeklyDigest ?? false,
             marketingEmails: settingsData.settings.notifyMarketingEmails ?? false,
           });
 
           setPrivacySettings({
             profileVisibility: settingsData.settings.profileVisibility ? "public" : "private",
-            showEmail: false, // UI-only
-            showPhone: false, // UI-only
+            showEmail: profileData.candidate.showEmail ?? false,
+            showPhone: profileData.candidate.showPhone ?? false,
             allowRecruiterContact: settingsData.settings.allowRecruiterContact ?? true,
           });
         }
@@ -209,6 +213,8 @@ export default function CandidateSettingsPage() {
         notifyJobAlerts: notificationSettings.jobAlerts,
         notifyApplicationUpdates: notificationSettings.applicationUpdates,
         notifyMessages: notificationSettings.messages,
+        notifyInterviewReminders: notificationSettings.interviewReminders,
+        notifyPlacementUpdates: notificationSettings.placementUpdates,
         notifyWeeklyDigest: notificationSettings.weeklyDigest,
         notifyMarketingEmails: notificationSettings.marketingEmails,
       });
@@ -231,9 +237,16 @@ export default function CandidateSettingsPage() {
     setErrorMessage("");
 
     try {
+      // Update user privacy settings
       await api.patch("/api/settings", {
         profileVisibility: privacySettings.profileVisibility === "public",
         allowRecruiterContact: privacySettings.allowRecruiterContact,
+      });
+
+      // Update candidate privacy settings (showEmail, showPhone)
+      await api.patch("/api/candidates/profile", {
+        showEmail: privacySettings.showEmail,
+        showPhone: privacySettings.showPhone,
       });
 
       setSuccessMessage("Privacy settings updated!");
@@ -351,9 +364,12 @@ export default function CandidateSettingsPage() {
                       id="email"
                       type="email"
                       value={profileData.email}
-                      onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                      required
+                      disabled
+                      className="bg-secondary-50 text-secondary-600 cursor-not-allowed"
                     />
+                    <p className="mt-1 text-xs text-secondary-500">
+                      Contact support to change your email address
+                    </p>
                   </div>
 
                   <div>
@@ -562,6 +578,42 @@ export default function CandidateSettingsPage() {
                         setNotificationSettings({
                           ...notificationSettings,
                           messages: e.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-secondary-900">Interview Reminders</p>
+                      <p className="text-sm text-secondary-600">Reminders for upcoming interviews</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={notificationSettings.interviewReminders}
+                      onChange={(e) =>
+                        setNotificationSettings({
+                          ...notificationSettings,
+                          interviewReminders: e.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-secondary-900">Placement Updates</p>
+                      <p className="text-sm text-secondary-600">Updates about your placements</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={notificationSettings.placementUpdates}
+                      onChange={(e) =>
+                        setNotificationSettings({
+                          ...notificationSettings,
+                          placementUpdates: e.target.checked,
                         })
                       }
                       className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"

@@ -107,7 +107,7 @@ export interface Candidate {
   id: string;                    // cuid
   userId: string;                // References User.id
   phone: string | null;
-  photo: string | null;          // URL to profile photo
+  photo: string | null;          // URL to profile photo (canonical field for profile photos)
   resume: string | null;         // URL to resume file
   portfolio: string | null;      // URL to portfolio
   personalWebsite: string | null; // Personal website URL
@@ -115,12 +115,17 @@ export interface Candidate {
   github: string | null;         // GitHub profile URL
   bio: string | null;
   skills: string[];              // PostgreSQL array
+  currentRole: string | null;    // Current job title (e.g., "Machine Learning Engineer")
   experience: number | null;     // Years of experience (integer)
-  education: string | null;
+  education: string | null;      // DEPRECATED: Use educationEntries relation instead
   location: string | null;
   preferredJobType: JobType | null; // UPPERCASE enum
   expectedSalary: number | null; // In dollars (check usage - may be cents)
   availability: boolean;         // Default: true
+
+  // Privacy settings
+  showEmail: boolean;            // Show email on public profile (default: false)
+  showPhone: boolean;            // Show phone on public profile (default: false)
 
   // Enhanced Job Preferences
   desiredRoles: string[];        // Array of desired role titles
@@ -479,12 +484,15 @@ export interface UpdateCandidateProfileData {
   github?: string | null;
   bio?: string | null;
   skills?: string[];
+  currentRole?: string | null;
   experience?: number | null;
   education?: string | null;
   location?: string | null;
   preferredJobType?: JobType | null;
   expectedSalary?: number | null; // In cents!
   availability?: boolean;
+  showEmail?: boolean;
+  showPhone?: boolean;
   desiredRoles?: string[];
   nicheCategory?: string | null;
   remotePreference?: string | null;
