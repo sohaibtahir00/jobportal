@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 import Link from "next/link";
@@ -9,7 +8,6 @@ import Link from "next/link";
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://job-portal-backend-production-cd05.up.railway.app';
 
 export default function OAuthCallbackPage() {
-  const router = useRouter();
   const { data: session, status, update } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
@@ -85,9 +83,9 @@ export default function OAuthCallbackPage() {
               ? "/onboarding/employer"
               : "/onboarding/candidate";
 
-            setTimeout(() => {
-              router.push(redirectUrl);
-            }, 1000);
+            // Use window.location for a full page navigation to ensure session is fresh
+            // This prevents the brief flash to dashboard
+            window.location.href = redirectUrl;
           } else if (oauthFlow === "login") {
             // Coming from login page but user doesn't exist
             setError("No account found with this email. Please sign up first.");
@@ -112,9 +110,8 @@ export default function OAuthCallbackPage() {
             redirectUrl = "/employer/dashboard";
           }
 
-          setTimeout(() => {
-            router.push(redirectUrl);
-          }, 500);
+          // Use window.location for a full page navigation to ensure session is fresh
+          window.location.href = redirectUrl;
         }
       } catch (err) {
         console.error("OAuth callback error:", err);
@@ -124,7 +121,7 @@ export default function OAuthCallbackPage() {
     };
 
     handleOAuthCallback();
-  }, [session, status, router, update]);
+  }, [session, status, update]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
