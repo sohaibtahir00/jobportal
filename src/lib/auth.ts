@@ -29,43 +29,41 @@ export const authOptions: AuthOptions = {
           throw new Error("Email and password are required");
         }
 
-        try {
-          // Call backend validation endpoint
-          const res = await fetch(`${BACKEND_URL}/api/auth/validate`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
-          });
+        // Call backend validation endpoint
+        const res = await fetch(`${BACKEND_URL}/api/auth/validate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+          }),
+        });
 
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ error: "Authentication failed" }));
-            throw new Error(errorData.error || "Invalid credentials");
-          }
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({ error: "Authentication failed" }));
+          const errorMessage = errorData.error || "Invalid credentials";
 
-          const user = await res.json();
-
-          if (user && user.id) {
-            return {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              image: user.image || null,
-              role: user.role,
-              status: user.status,
-              rememberMe: credentials.rememberMe === "true",
-            };
-          }
-
-          return null;
-        } catch (error: any) {
-          console.error("Auth error:", error);
-          throw new Error(error.message || "Authentication failed");
+          // Throw with the exact error message so it can be detected in the frontend
+          throw new Error(errorMessage);
         }
+
+        const user = await res.json();
+
+        if (user && user.id) {
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image || null,
+            role: user.role,
+            status: user.status,
+            rememberMe: credentials.rememberMe === "true",
+          };
+        }
+
+        return null;
       },
     }),
   ],

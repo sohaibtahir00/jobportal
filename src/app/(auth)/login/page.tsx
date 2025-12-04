@@ -60,7 +60,13 @@ function LoginPageContent() {
       // Check if user just verified their email (redirect to onboarding after login)
       const justVerified = searchParams.get("verified") === "true";
 
-      // Call the real authentication API
+      // Pre-validate credentials to get proper error messages (including EMAIL_NOT_VERIFIED)
+      const validateRes = await api.post("/api/auth/validate", {
+        email: data.email,
+        password: data.password,
+      });
+
+      // If validation passed, proceed with NextAuth login
       await login({
         email: data.email,
         password: data.password,
@@ -78,8 +84,9 @@ function LoginPageContent() {
       // Redirect is handled automatically by AuthContext based on user role
       // No need to manually redirect here
     } catch (error: any) {
-      // Extract error message
+      // Extract error message - check axios error response first
       const errorMessage =
+        error.response?.data?.error ||
         error.message ||
         authError ||
         "An unexpected error occurred. Please try again.";
