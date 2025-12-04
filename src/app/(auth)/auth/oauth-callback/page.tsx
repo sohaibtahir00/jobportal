@@ -78,12 +78,12 @@ export default function OAuthCallbackPage() {
               isNewOAuthUser: false,
             });
 
-            setStatusMessage("Account created! Redirecting...");
+            setStatusMessage("Account created! Redirecting to onboarding...");
 
-            // Redirect based on role
+            // Redirect to onboarding based on role (same as regular signup)
             const redirectUrl = createData.user.role === "EMPLOYER"
-              ? "/employer/dashboard"
-              : "/candidate/dashboard";
+              ? "/onboarding/employer"
+              : "/onboarding/candidate";
 
             setTimeout(() => {
               router.push(redirectUrl);
