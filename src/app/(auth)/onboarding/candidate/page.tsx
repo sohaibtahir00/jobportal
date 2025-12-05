@@ -147,10 +147,10 @@ export default function CandidateOnboardingPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
+    // Validate file type - PDF only
     const fileName = file.name.toLowerCase();
-    if (!fileName.endsWith(".pdf") && !fileName.endsWith(".docx")) {
-      showToast("error", "Invalid File", "Please upload a PDF or DOCX file");
+    if (!fileName.endsWith(".pdf")) {
+      showToast("error", "Invalid File", "Please upload a PDF file");
       return;
     }
 
@@ -442,7 +442,7 @@ export default function CandidateOnboardingPage() {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".pdf,.docx"
+          accept=".pdf"
           className="hidden"
           onChange={handleResumeSelect}
           disabled={isParsingResume}
