@@ -3,10 +3,10 @@
  * Extracts text content from PDF files client-side
  */
 
-import * as pdfjsLib from 'pdfjs-dist';
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 
-// Set up the worker - use CDN for the worker to avoid bundling issues
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js`;
+// Disable worker to avoid CDN/bundling issues - runs in main thread instead
+GlobalWorkerOptions.workerSrc = '';
 
 /**
  * Extract text content from a PDF file
@@ -18,8 +18,13 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     // Convert file to ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
 
-    // Load the PDF document
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    // Load the PDF document without worker (runs in main thread)
+    const loadingTask = getDocument({
+      data: arrayBuffer,
+      useWorkerFetch: false,
+      isEvalSupported: false,
+      useSystemFonts: true,
+    });
     const pdf = await loadingTask.promise;
 
     const textParts: string[] = [];
