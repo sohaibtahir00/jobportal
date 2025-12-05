@@ -1,6 +1,6 @@
 /**
  * PDF text extraction utility using PDF.js from CDN
- * Extracts text content from PDF files client-side
+ * Extracts text content AND hyperlink URLs from PDF files client-side
  */
 
 // Declare the pdfjs-dist types for dynamic import
@@ -42,9 +42,9 @@ async function loadPdfJs(): Promise<void> {
 }
 
 /**
- * Extract text content from a PDF file
+ * Extract text content from a PDF file, including hyperlink URLs
  * @param file - The PDF file to extract text from
- * @returns Promise<string> - The extracted text content
+ * @returns Promise<string> - The extracted text content with URLs
  */
 export async function extractTextFromPDF(file: File): Promise<string> {
   try {
@@ -61,22 +61,44 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     const pdf = await loadingTask.promise;
 
     const textParts: string[] = [];
+    const allLinks: string[] = [];
 
-    // Extract text from each page
+    // Extract text and links from each page
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
       const page = await pdf.getPage(pageNum);
-      const textContent = await page.getTextContent();
 
-      // Combine text items into a single string
+      // Extract visible text content
+      const textContent = await page.getTextContent();
       const pageText = textContent.items
         .map((item: any) => item.str)
         .join(' ');
-
       textParts.push(pageText);
+
+      // Extract hyperlink annotations (URLs that may not be visible as text)
+      try {
+        const annotations = await page.getAnnotations();
+        for (const annot of annotations) {
+          // Check for link annotations with URLs
+          if (annot.subtype === 'Link' && annot.url) {
+            allLinks.push(annot.url);
+          }
+        }
+      } catch (annotError) {
+        // Annotations extraction failed, continue without them
+        console.warn('Could not extract annotations from page', pageNum);
+      }
     }
 
     // Join all pages with newlines
-    const fullText = textParts.join('\n\n');
+    let fullText = textParts.join('\n\n');
+
+    // Append extracted URLs at the end so OpenAI can find them
+    if (allLinks.length > 0) {
+      // Remove duplicates
+      const uniqueLinks = [...new Set(allLinks)];
+      fullText += '\n\n--- Professional Links ---\n';
+      fullText += uniqueLinks.join('\n');
+    }
 
     return fullText.trim();
   } catch (error) {
