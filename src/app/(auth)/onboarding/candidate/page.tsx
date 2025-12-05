@@ -29,6 +29,7 @@ import { useSession } from "next-auth/react";
 import api from "@/lib/api";
 import { uploadFile } from "@/lib/api/profile";
 import { JobType } from "@/types";
+import { extractTextFromPDF } from "@/lib/pdf-utils";
 
 // Types
 interface WorkExperience {
@@ -164,14 +165,23 @@ export default function CandidateOnboardingPage() {
     setIsParsingResume(true);
 
     try {
-      // Parse resume
-      const formData = new FormData();
-      formData.append("resume", file);
+      // Extract text from PDF client-side using PDF.js
+      const extractedText = await extractTextFromPDF(file);
 
-      const response = await api.post("/api/candidates/parse-resume", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      if (!extractedText || extractedText.trim().length < 50) {
+        showToast(
+          "error",
+          "Cannot Read PDF",
+          "Could not extract text from this PDF. Please ensure it contains selectable text, not scanned images."
+        );
+        setResumeFile(null);
+        setIsParsingResume(false);
+        return;
+      }
+
+      // Send extracted text to API for AI parsing
+      const response = await api.post("/api/candidates/parse-resume", {
+        text: extractedText,
       });
 
       if (response.data.success) {
