@@ -397,11 +397,13 @@ export default function CandidateOnboardingPage() {
               schoolName: edu.schoolName,
               degree: edu.degree,
               fieldOfStudy: edu.fieldOfStudy,
-              graduationYear: edu.graduationYear,
-              gpa: edu.gpa,
+              graduationYear: edu.graduationYear || new Date().getFullYear(),
+              gpa: edu.gpa || null,
             });
-          } catch (eduError) {
+          } catch (eduError: any) {
             console.error("Education save error:", eduError);
+            // Log the actual error for debugging
+            console.error("Education save details:", eduError.response?.data);
           }
         }
       }
