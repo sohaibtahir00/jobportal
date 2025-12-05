@@ -1,12 +1,45 @@
 /**
- * PDF text extraction utility using PDF.js
+ * PDF text extraction utility using PDF.js from CDN
  * Extracts text content from PDF files client-side
  */
 
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+// Declare the pdfjs-dist types for dynamic import
+declare global {
+  interface Window {
+    pdfjsLib: any;
+  }
+}
 
-// Disable worker to avoid CDN/bundling issues - runs in main thread instead
-GlobalWorkerOptions.workerSrc = '';
+let pdfjsLoaded = false;
+let pdfjsLoadPromise: Promise<void> | null = null;
+
+/**
+ * Dynamically load PDF.js from CDN
+ */
+async function loadPdfJs(): Promise<void> {
+  if (pdfjsLoaded) return;
+
+  if (pdfjsLoadPromise) {
+    return pdfjsLoadPromise;
+  }
+
+  pdfjsLoadPromise = new Promise((resolve, reject) => {
+    // Load the main PDF.js library
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    script.onload = () => {
+      // Set the worker source
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfjsLoaded = true;
+      resolve();
+    };
+    script.onerror = () => reject(new Error('Failed to load PDF.js'));
+    document.head.appendChild(script);
+  });
+
+  return pdfjsLoadPromise;
+}
 
 /**
  * Extract text content from a PDF file
@@ -15,15 +48,15 @@ GlobalWorkerOptions.workerSrc = '';
  */
 export async function extractTextFromPDF(file: File): Promise<string> {
   try {
+    // Load PDF.js if not already loaded
+    await loadPdfJs();
+
     // Convert file to ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
 
-    // Load the PDF document without worker (runs in main thread)
-    const loadingTask = getDocument({
+    // Load the PDF document
+    const loadingTask = window.pdfjsLib.getDocument({
       data: arrayBuffer,
-      useWorkerFetch: false,
-      isEvalSupported: false,
-      useSystemFonts: true,
     });
     const pdf = await loadingTask.promise;
 
