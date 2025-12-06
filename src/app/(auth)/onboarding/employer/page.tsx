@@ -117,6 +117,7 @@ export default function EmployerOnboardingPage() {
           ...prev,
           companyName: data.companyName || prev.companyName,
           companyWebsite: urlToImport,
+          phone: data.phone || prev.phone,
           location: data.location || prev.location,
           companySize: data.companySize || prev.companySize,
           industry: data.industry || prev.industry,
