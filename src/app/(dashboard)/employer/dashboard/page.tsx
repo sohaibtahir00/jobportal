@@ -20,6 +20,8 @@ import {
   Phone,
   Target,
   X,
+  Building2,
+  AlertTriangle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import CountUp from "react-countup";
@@ -96,6 +98,93 @@ const getApplicationStatusLabel = (status: string): string => {
   return statusMap[status] || status.replace(/_/g, " ");
 };
 
+// Format employer field names for display
+const formatFieldName = (field: string): string => {
+  const fieldLabels: Record<string, string> = {
+    companyName: "Company Name",
+    companyLogo: "Company Logo",
+    companyWebsite: "Website",
+    industry: "Industry",
+    location: "Location",
+    description: "Description",
+    companySize: "Company Size",
+    phone: "Phone Number",
+  };
+  return fieldLabels[field] || field;
+};
+
+// Calculate employer profile completeness
+const calculateProfileCompleteness = (employer: any) => {
+  if (!employer) {
+    return { percentage: 0, missingFields: [], completedFields: 0, totalFields: 8 };
+  }
+
+  const fields: Record<string, boolean> = {
+    companyName: !!employer.companyName,
+    companyLogo: !!employer.companyLogo,
+    companyWebsite: !!employer.companyWebsite,
+    industry: !!employer.industry,
+    location: !!employer.location,
+    description: !!employer.description,
+    companySize: !!employer.companySize,
+    phone: !!employer.phone,
+  };
+
+  const completedFields = Object.values(fields).filter(Boolean).length;
+  const totalFields = Object.keys(fields).length;
+  const percentage = Math.round((completedFields / totalFields) * 100);
+
+  const missingFields = Object.entries(fields)
+    .filter(([_, value]) => !value)
+    .map(([key]) => key);
+
+  return { percentage, missingFields, completedFields, totalFields };
+};
+
+// Get banner styling based on completion percentage
+const getBannerStyle = (percentage: number) => {
+  if (percentage < 30) {
+    return {
+      bg: "from-red-50 to-orange-50",
+      border: "border-red-500",
+      iconBg: "bg-red-100",
+      iconColor: "text-red-600",
+      button: "bg-red-600 hover:bg-red-700",
+      progressBg: "bg-red-200",
+      tagBg: "bg-red-100/60",
+      tagText: "text-red-700",
+      dismissColor: "text-red-400 hover:text-red-600",
+      message: "Your company profile needs attention to attract candidates",
+    };
+  } else if (percentage < 70) {
+    return {
+      bg: "from-orange-50 to-amber-50",
+      border: "border-orange-500",
+      iconBg: "bg-orange-100",
+      iconColor: "text-orange-600",
+      button: "bg-orange-600 hover:bg-orange-700",
+      progressBg: "bg-orange-200",
+      tagBg: "bg-white/60",
+      tagText: "text-secondary-700",
+      dismissColor: "text-orange-400 hover:text-orange-600",
+      message: "Add more details to boost your visibility to candidates",
+    };
+  } else {
+    return {
+      bg: "from-yellow-50 to-green-50",
+      border: "border-yellow-500",
+      iconBg: "bg-yellow-100",
+      iconColor: "text-yellow-600",
+      button: "bg-yellow-600 hover:bg-yellow-700",
+      progressBg: "bg-yellow-200",
+      tagBg: "bg-green-100/60",
+      tagText: "text-green-700",
+      dismissColor: "text-yellow-500 hover:text-yellow-700",
+      message: "Almost there! Just a few more fields to complete",
+    };
+  }
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -113,26 +202,37 @@ export default function EmployerDashboardPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Check if banner was dismissed
+  // Check if banner was dismissed (reappears after 24 hours)
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const bannerDismissed = localStorage.getItem("employer_profile_banner_dismissed");
-      if (bannerDismissed === "true") {
-        setProfileBannerDismissed(true);
+      const dismissed = localStorage.getItem("employerProfileBannerDismissed");
+      const dismissedAt = localStorage.getItem("employerProfileBannerDismissedAt");
+
+      if (dismissed && dismissedAt) {
+        const dismissedTime = new Date(dismissedAt).getTime();
+        const now = new Date().getTime();
+        const hoursSinceDismissed = (now - dismissedTime) / (1000 * 60 * 60);
+
+        if (hoursSinceDismissed < 24) {
+          setProfileBannerDismissed(true);
+        } else {
+          localStorage.removeItem("employerProfileBannerDismissed");
+          localStorage.removeItem("employerProfileBannerDismissedAt");
+        }
       }
     }
   }, []);
 
-  const dismissProfileBanner = () => {
-    localStorage.setItem("employer_profile_banner_dismissed", "true");
+  const handleDismissBanner = () => {
     setProfileBannerDismissed(true);
+    localStorage.setItem("employerProfileBannerDismissed", "true");
+    localStorage.setItem("employerProfileBannerDismissedAt", new Date().toISOString());
   };
 
-  // Check if employer profile is incomplete (missing key fields available in dashboard data)
-  const isProfileIncomplete = data?.employer && (
-    !data.employer.industry ||
-    !data.employer.location
-  );
+  // Calculate profile completeness (8 fields total)
+  const profileCompletionData = calculateProfileCompleteness(data?.employer);
+  const isProfileIncomplete = profileCompletionData.percentage < 100;
+  const bannerStyle = getBannerStyle(profileCompletionData.percentage);
 
   const showProfileBanner = isProfileIncomplete && !profileBannerDismissed;
 
@@ -263,31 +363,77 @@ export default function EmployerDashboardPage() {
         {/* ====================================================================== */}
         {showProfileBanner && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0" />
-              <span className="text-amber-800">
-                Complete your company profile to attract more candidates
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/employer/settings"
-                className="text-amber-700 font-medium hover:underline whitespace-nowrap"
-              >
-                Complete Profile →
-              </Link>
+            <Card className={`relative border-0 bg-gradient-to-r ${bannerStyle.bg} shadow-lg border-l-4 ${bannerStyle.border}`}>
+              {/* Dismiss button */}
               <button
-                onClick={dismissProfileBanner}
-                className="text-amber-600 hover:text-amber-800 p-1"
-                aria-label="Dismiss"
+                onClick={handleDismissBanner}
+                className={`absolute top-3 right-3 ${bannerStyle.dismissColor} z-10 p-1 rounded-full hover:bg-white/50 transition-colors`}
+                aria-label="Dismiss for now"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
-            </div>
+
+              <CardContent className="p-6 pr-12">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-full ${bannerStyle.iconBg}`}>
+                        {profileCompletionData.percentage < 30 ? (
+                          <AlertTriangle className={`h-6 w-6 ${bannerStyle.iconColor}`} />
+                        ) : (
+                          <Building2 className={`h-6 w-6 ${bannerStyle.iconColor}`} />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-secondary-900">
+                          Complete Your Company Profile
+                        </h3>
+                        <p className="text-sm text-secondary-600">
+                          {profileCompletionData.percentage}% complete ({profileCompletionData.completedFields}/{profileCompletionData.totalFields} fields) • {bannerStyle.message}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <Progress
+                      value={profileCompletionData.percentage}
+                      className={`h-3 ${bannerStyle.progressBg} mb-3`}
+                    />
+
+                    {/* Missing fields */}
+                    {profileCompletionData.missingFields.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs text-secondary-500">Missing:</span>
+                        {profileCompletionData.missingFields.slice(0, 4).map((field: string) => (
+                          <span
+                            key={field}
+                            className={`px-2 py-0.5 ${bannerStyle.tagBg} ${bannerStyle.tagText} text-xs rounded-full`}
+                          >
+                            {formatFieldName(field)}
+                          </span>
+                        ))}
+                        {profileCompletionData.missingFields.length > 4 && (
+                          <span className="text-xs text-secondary-500">
+                            +{profileCompletionData.missingFields.length - 4} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    asChild
+                    size="lg"
+                    className={`${bannerStyle.button} text-white shrink-0`}
+                  >
+                    <Link href="/employer/settings">Complete Profile</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
 
