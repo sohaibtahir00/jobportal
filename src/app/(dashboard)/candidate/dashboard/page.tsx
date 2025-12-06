@@ -30,6 +30,8 @@ import {
   TrendingUp,
   Clock,
   Sparkles,
+  X,
+  AlertTriangle,
 } from "lucide-react";
 import { RecommendedJobs } from "@/components/jobs";
 
@@ -61,6 +63,69 @@ const statusColors: Record<string, string> = {
   WITHDRAWN: "bg-gray-100 text-gray-800 border-gray-300",
 };
 
+// Format field names for display
+const formatFieldName = (field: string): string => {
+  const fieldLabels: Record<string, string> = {
+    phone: "Phone Number",
+    resume: "Resume",
+    portfolio: "Portfolio",
+    linkedIn: "LinkedIn",
+    github: "GitHub",
+    bio: "Bio",
+    skills: "Skills",
+    experience: "Experience",
+    education: "Education",
+    location: "Location",
+    preferredJobType: "Job Type",
+    expectedSalary: "Expected Salary",
+  };
+  return fieldLabels[field] || field;
+};
+
+// Get banner styling based on completion percentage
+const getBannerStyle = (percentage: number) => {
+  if (percentage < 30) {
+    return {
+      bg: "from-red-50 to-orange-50",
+      border: "border-red-500",
+      iconBg: "bg-red-100",
+      iconColor: "text-red-600",
+      button: "bg-red-600 hover:bg-red-700",
+      progressBg: "bg-red-200",
+      tagBg: "bg-red-100/60",
+      tagText: "text-red-700",
+      dismissColor: "text-red-400 hover:text-red-600",
+      message: "Your profile needs attention - complete it to start applying",
+    };
+  } else if (percentage < 70) {
+    return {
+      bg: "from-orange-50 to-amber-50",
+      border: "border-orange-500",
+      iconBg: "bg-orange-100",
+      iconColor: "text-orange-600",
+      button: "bg-orange-600 hover:bg-orange-700",
+      progressBg: "bg-orange-200",
+      tagBg: "bg-white/60",
+      tagText: "text-secondary-700",
+      dismissColor: "text-orange-400 hover:text-orange-600",
+      message: "Add missing information to boost your visibility",
+    };
+  } else {
+    return {
+      bg: "from-yellow-50 to-green-50",
+      border: "border-yellow-500",
+      iconBg: "bg-yellow-100",
+      iconColor: "text-yellow-600",
+      button: "bg-yellow-600 hover:bg-yellow-700",
+      progressBg: "bg-yellow-200",
+      tagBg: "bg-green-100/60",
+      tagText: "text-green-700",
+      dismissColor: "text-yellow-500 hover:text-yellow-700",
+      message: "Almost there! Just a few more fields to complete",
+    };
+  }
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -72,11 +137,37 @@ export default function CandidateDashboardPage() {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [profileViewsCount, setProfileViewsCount] = useState(0);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
+
+  // Check if banner was dismissed (reappears after 24 hours)
+  useEffect(() => {
+    const dismissed = localStorage.getItem("profileBannerDismissed");
+    const dismissedAt = localStorage.getItem("profileBannerDismissedAt");
+
+    if (dismissed && dismissedAt) {
+      const dismissedTime = new Date(dismissedAt).getTime();
+      const now = new Date().getTime();
+      const hoursSinceDismissed = (now - dismissedTime) / (1000 * 60 * 60);
+
+      if (hoursSinceDismissed < 24) {
+        setBannerDismissed(true);
+      } else {
+        localStorage.removeItem("profileBannerDismissed");
+        localStorage.removeItem("profileBannerDismissedAt");
+      }
+    }
+  }, []);
+
+  const handleDismissBanner = () => {
+    setBannerDismissed(true);
+    localStorage.setItem("profileBannerDismissed", "true");
+    localStorage.setItem("profileBannerDismissedAt", new Date().toISOString());
+  };
 
   // Fetch profile views count
   useEffect(() => {
@@ -121,6 +212,8 @@ export default function CandidateDashboardPage() {
 
   const isProfileIncomplete = (profileCompletionData?.percentage || 0) < 100;
   const hasSkillsAssessment = testInfo?.hasTaken || false;
+  const bannerStyle = getBannerStyle(profileCompletionData?.percentage || 0);
+  const completedFieldsCount = 12 - (profileCompletionData?.missingFields?.length || 0);
 
   // Calculate job counts (placeholder for now)
   const publicJobsCount = recommendedJobs.length;
@@ -220,39 +313,73 @@ export default function CandidateDashboardPage() {
         {/* ====================================================================== */}
         {/* PROFILE COMPLETION BANNER */}
         {/* ====================================================================== */}
-        {isProfileIncomplete && (
+        {isProfileIncomplete && !bannerDismissed && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <Card className="border-0 bg-gradient-to-r from-orange-50 to-amber-50 shadow-lg border-l-4 border-orange-500">
-              <CardContent className="p-6">
+            <Card className={`relative border-0 bg-gradient-to-r ${bannerStyle.bg} shadow-lg border-l-4 ${bannerStyle.border}`}>
+              {/* Dismiss button */}
+              <button
+                onClick={handleDismissBanner}
+                className={`absolute top-3 right-3 ${bannerStyle.dismissColor} z-10 p-1 rounded-full hover:bg-white/50 transition-colors`}
+                aria-label="Dismiss for now"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <CardContent className="p-6 pr-12">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
-                        <Target className="h-6 w-6 text-orange-600" />
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-full ${bannerStyle.iconBg}`}>
+                        {(profileCompletionData?.percentage || 0) < 30 ? (
+                          <AlertTriangle className={`h-6 w-6 ${bannerStyle.iconColor}`} />
+                        ) : (
+                          <Target className={`h-6 w-6 ${bannerStyle.iconColor}`} />
+                        )}
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-secondary-900">
                           Complete Your Profile
                         </h3>
                         <p className="text-sm text-secondary-600">
-                          {profileCompletionData.percentage}% complete - Add missing information to
-                          boost your visibility
+                          {profileCompletionData.percentage}% complete ({completedFieldsCount}/12 fields) • {bannerStyle.message}
                         </p>
                       </div>
                     </div>
+
+                    {/* Progress bar */}
                     <Progress
                       value={profileCompletionData.percentage}
-                      className="h-3 bg-orange-200"
+                      className={`h-3 ${bannerStyle.progressBg} mb-3`}
                     />
+
+                    {/* Missing fields */}
+                    {profileCompletionData.missingFields && profileCompletionData.missingFields.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs text-secondary-500">Missing:</span>
+                        {profileCompletionData.missingFields.slice(0, 4).map((field: string) => (
+                          <span
+                            key={field}
+                            className={`px-2 py-0.5 ${bannerStyle.tagBg} ${bannerStyle.tagText} text-xs rounded-full`}
+                          >
+                            {formatFieldName(field)}
+                          </span>
+                        ))}
+                        {profileCompletionData.missingFields.length > 4 && (
+                          <span className="text-xs text-secondary-500">
+                            +{profileCompletionData.missingFields.length - 4} more
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <Button
                     asChild
                     size="lg"
-                    className="bg-orange-600 hover:bg-orange-700 text-white shrink-0"
+                    className={`${bannerStyle.button} text-white shrink-0`}
                   >
                     <Link href="/candidate/profile">Complete Profile</Link>
                   </Button>
