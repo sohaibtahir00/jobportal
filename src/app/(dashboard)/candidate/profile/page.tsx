@@ -519,7 +519,7 @@ export default function CandidateProfilePage() {
               await api.post("/api/candidates/education", {
                 schoolName: edu.schoolName,
                 degree: edu.degree,
-                fieldOfStudy: edu.fieldOfStudy || null,
+                fieldOfStudy: edu.fieldOfStudy || edu.degree, // Use degree as fallback since fieldOfStudy is required
                 graduationYear: edu.graduationYear || new Date().getFullYear(),
                 gpa: edu.gpa || null,
               });
@@ -529,14 +529,10 @@ export default function CandidateProfilePage() {
           }
         }
 
-        // Upload the resume file
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('type', 'resume');
-        const uploadResult = await api.post("/api/upload/file", formData);
-
-        if (uploadResult.data.url) {
-          setResumeUrl(uploadResult.data.url);
+        // Upload the resume file using the helper function (sets proper headers)
+        const uploadResult = await uploadFile(file, 'resume');
+        if (uploadResult.url) {
+          setResumeUrl(uploadResult.url);
         }
 
         showToast("success", "Profile Updated", "Your profile has been updated from your resume!");

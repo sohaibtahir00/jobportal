@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui";
 import { api } from "@/lib/api";
+import { uploadFile } from "@/lib/api/profile";
 import { extractTextFromPDF, extractTextFromDOCX } from "@/lib/pdf-utils";
 import {
   Send,
@@ -258,7 +259,7 @@ export default function CandidateDashboardPage() {
               await api.post("/api/candidates/education", {
                 schoolName: edu.schoolName,
                 degree: edu.degree,
-                fieldOfStudy: edu.fieldOfStudy || null,
+                fieldOfStudy: edu.fieldOfStudy || edu.degree, // Use degree as fallback since fieldOfStudy is required
                 graduationYear: edu.graduationYear || new Date().getFullYear(),
                 gpa: edu.gpa || null,
               });
@@ -268,11 +269,8 @@ export default function CandidateDashboardPage() {
           }
         }
 
-        // Upload the resume file
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('type', 'resume');
-        await api.post("/api/upload/file", formData);
+        // Upload the resume file using the helper function (sets proper headers)
+        await uploadFile(file, 'resume');
 
         showToast("success", "Profile Updated", "Your profile has been updated from resume!");
 
