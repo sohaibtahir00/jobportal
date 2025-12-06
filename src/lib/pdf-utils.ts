@@ -1,7 +1,10 @@
 /**
- * PDF text extraction utility using PDF.js from CDN
- * Extracts text content AND hyperlink URLs from PDF files client-side
+ * Document text extraction utilities
+ * - PDF: Uses PDF.js from CDN (extracts text content AND hyperlink URLs)
+ * - DOCX/DOC: Uses mammoth library
  */
+
+import mammoth from 'mammoth';
 
 // Declare the pdfjs-dist types for dynamic import
 declare global {
@@ -114,4 +117,42 @@ export async function extractTextFromPDF(file: File): Promise<string> {
  */
 export function isPDFFile(file: File): boolean {
   return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+}
+
+/**
+ * Check if a file is a valid Word document (DOC/DOCX)
+ * @param file - The file to check
+ * @returns boolean
+ */
+export function isWordFile(file: File): boolean {
+  const fileName = file.name.toLowerCase();
+  return (
+    fileName.endsWith('.docx') ||
+    fileName.endsWith('.doc') ||
+    file.type === 'application/msword' ||
+    file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  );
+}
+
+/**
+ * Extract text content from a DOCX/DOC file
+ * @param file - The Word document file to extract text from
+ * @returns Promise<string> - The extracted text content
+ */
+export async function extractTextFromDOCX(file: File): Promise<string> {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+
+    const text = result.value.trim();
+
+    if (!text) {
+      throw new Error('No text content found in document');
+    }
+
+    return text;
+  } catch (error) {
+    console.error('DOCX extraction error:', error);
+    throw new Error('Failed to extract text from Word document');
+  }
 }

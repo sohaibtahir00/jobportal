@@ -29,7 +29,7 @@ import { useSession } from "next-auth/react";
 import api from "@/lib/api";
 import { uploadFile } from "@/lib/api/profile";
 import { JobType } from "@/types";
-import { extractTextFromPDF } from "@/lib/pdf-utils";
+import { extractTextFromPDF, extractTextFromDOCX, isPDFFile, isWordFile } from "@/lib/pdf-utils";
 
 // Types
 interface WorkExperience {
@@ -148,10 +148,12 @@ export default function CandidateOnboardingPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type - PDF only
-    const fileName = file.name.toLowerCase();
-    if (!fileName.endsWith(".pdf")) {
-      showToast("error", "Invalid File", "Please upload a PDF file");
+    // Validate file type - PDF or Word documents
+    const isPdf = isPDFFile(file);
+    const isWord = isWordFile(file);
+
+    if (!isPdf && !isWord) {
+      showToast("error", "Invalid File", "Please upload a PDF or Word document (.pdf, .doc, .docx)");
       return;
     }
 
@@ -165,14 +167,22 @@ export default function CandidateOnboardingPage() {
     setIsParsingResume(true);
 
     try {
-      // Extract text from PDF client-side using PDF.js
-      const extractedText = await extractTextFromPDF(file);
+      // Extract text based on file type
+      let extractedText: string;
+
+      if (isPdf) {
+        extractedText = await extractTextFromPDF(file);
+      } else {
+        extractedText = await extractTextFromDOCX(file);
+      }
 
       if (!extractedText || extractedText.trim().length < 50) {
         showToast(
           "error",
-          "Cannot Read PDF",
-          "Could not extract text from this PDF. Please ensure it contains selectable text, not scanned images."
+          "Cannot Read Document",
+          isPdf
+            ? "Could not extract text from this PDF. Please ensure it contains selectable text, not scanned images."
+            : "Could not extract text from this Word document. Please ensure it's not corrupted."
         );
         setResumeFile(null);
         setIsParsingResume(false);
@@ -454,7 +464,7 @@ export default function CandidateOnboardingPage() {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".pdf"
+          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
           className="hidden"
           onChange={handleResumeSelect}
           disabled={isParsingResume}
