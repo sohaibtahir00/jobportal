@@ -533,6 +533,10 @@ export default function CandidateProfilePage() {
         const uploadResult = await uploadFile(file, 'resume');
         if (uploadResult.url) {
           setResumeUrl(uploadResult.url);
+          // Save the resume URL to the profile (like onboarding does)
+          await api.patch("/api/candidates/profile", {
+            resume: uploadResult.url,
+          });
         }
 
         showToast("success", "Profile Updated", "Your profile has been updated from your resume!");
