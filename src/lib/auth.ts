@@ -96,6 +96,7 @@ export const authOptions: AuthOptions = {
             // User exists - store their data for JWT callback
             (user as any).id = data.user.id;
             (user as any).role = data.user.role;
+            (user as any).onboardingCompleted = data.user.onboardingCompleted;
             (user as any).isOAuthUser = true;
             return true;
           } else {
