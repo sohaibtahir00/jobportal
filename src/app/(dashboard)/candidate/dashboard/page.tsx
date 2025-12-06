@@ -212,8 +212,61 @@ export default function CandidateDashboardPage() {
       });
 
       if (response.data.success) {
-        // Update profile with parsed data
-        await api.patch("/api/candidates/profile", response.data.data);
+        const data = response.data.data;
+
+        // Extract work experience and education arrays (handled separately)
+        const workExperience = data.workExperience || [];
+        const education = data.education || [];
+
+        // Update profile with simple fields only (not arrays)
+        await api.patch("/api/candidates/profile", {
+          phone: data.phone || null,
+          location: data.location || null,
+          bio: data.bio || null,
+          currentRole: data.currentRole || null,
+          experience: data.experience || null,
+          skills: data.skills || [],
+          linkedIn: data.linkedIn || null,
+          github: data.github || null,
+          personalWebsite: data.personalWebsite || null,
+          portfolio: data.portfolio || null,
+        });
+
+        // Create work experience records
+        for (const exp of workExperience) {
+          if (exp.companyName && exp.jobTitle && exp.startDate) {
+            try {
+              await api.post("/api/candidates/work-experience", {
+                companyName: exp.companyName,
+                jobTitle: exp.jobTitle,
+                startDate: exp.startDate,
+                endDate: exp.isCurrent ? null : exp.endDate,
+                isCurrent: exp.isCurrent || false,
+                description: exp.description || null,
+                location: exp.location || null,
+              });
+            } catch (expError) {
+              console.error("Work experience save error:", expError);
+            }
+          }
+        }
+
+        // Create education records
+        for (const edu of education) {
+          if (edu.schoolName && edu.degree) {
+            try {
+              await api.post("/api/candidates/education", {
+                schoolName: edu.schoolName,
+                degree: edu.degree,
+                fieldOfStudy: edu.fieldOfStudy || null,
+                graduationYear: edu.graduationYear || new Date().getFullYear(),
+                gpa: edu.gpa || null,
+              });
+            } catch (eduError) {
+              console.error("Education save error:", eduError);
+            }
+          }
+        }
 
         // Upload the resume file
         const formData = new FormData();
