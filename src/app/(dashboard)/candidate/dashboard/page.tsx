@@ -338,7 +338,7 @@ export default function CandidateDashboardPage() {
   };
   const recentActivity = dashboardData?.recentActivity;
 
-  const isProfileIncomplete = (profileCompletionData?.percentage || 0) < 100;
+  const isProfileIncomplete = (profileCompletionData?.percentage || 0) < 80;
   const hasSkillsAssessment = testInfo?.hasTaken || false;
   const bannerStyle = getBannerStyle(profileCompletionData?.percentage || 0);
   const completedFieldsCount = 12 - (profileCompletionData?.missingFields?.length || 0);
