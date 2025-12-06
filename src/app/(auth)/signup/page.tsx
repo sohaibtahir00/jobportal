@@ -23,6 +23,7 @@ import {
   registrationSchema,
   type RegistrationFormData,
 } from "@/lib/validations";
+import { isWorkEmail, getWorkEmailErrorMessage } from "@/lib/email-utils";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -77,6 +78,14 @@ export default function SignupPage() {
     // Clear any previous errors
     setApiError(null);
     clearError();
+
+    // Validate work email for employers
+    if (data.role === "employer" && !isWorkEmail(data.email)) {
+      const errorMessage = getWorkEmailErrorMessage();
+      setApiError(errorMessage);
+      showToast("error", "Work Email Required", errorMessage);
+      return;
+    }
 
     try {
       // Call the real signup API
@@ -406,12 +415,15 @@ export default function SignupPage() {
             {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Email address
+                {selectedRole === "employer" ? "Work Email Address" : "Email Address"}
+                {selectedRole === "employer" && (
+                  <span className="text-xs text-gray-500 font-normal ml-2">(company email required)</span>
+                )}
               </label>
               <div className="relative">
                 <input
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={selectedRole === "employer" ? "you@company.com" : "you@example.com"}
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-primary-500/20 transition-all outline-none pr-12 ${
                     errors.email
                       ? "border-red-500 focus:border-red-500"
