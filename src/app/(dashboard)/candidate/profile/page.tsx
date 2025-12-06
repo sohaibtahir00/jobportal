@@ -39,6 +39,7 @@ import {
 import { api } from "@/lib/api";
 import { extractTextFromPDF, extractTextFromDOCX } from "@/lib/pdf-utils";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
 import { SkillsScoreCard } from "@/components/skills";
 import {
   getWorkExperiences,
@@ -80,6 +81,7 @@ type ProfileFormData = {
 export default function CandidateProfilePage() {
   const { data: session } = useSession();
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
   const {
     profile,
     profileCompletion,
@@ -213,6 +215,8 @@ export default function CandidateProfilePage() {
       await deleteWorkExperience(id);
       setWorkExperiences(workExperiences.filter(exp => exp.id !== id));
       showToast("success", "Work Experience Deleted", "The work experience has been removed from your profile.");
+      // Invalidate the candidate dashboard query to update banner
+      queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
     } catch (error) {
       console.error("Failed to delete work experience:", error);
       showToast("error", "Delete Failed", "Failed to delete work experience. Please try again.");
@@ -224,6 +228,8 @@ export default function CandidateProfilePage() {
       await deleteEducation(id);
       setEducationEntries(educationEntries.filter(edu => edu.id !== id));
       showToast("success", "Education Deleted", "The education entry has been removed from your profile.");
+      // Invalidate the candidate dashboard query to update banner
+      queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
     } catch (error) {
       console.error("Failed to delete education:", error);
       showToast("error", "Delete Failed", "Failed to delete education. Please try again.");
@@ -308,6 +314,8 @@ export default function CandidateProfilePage() {
         setWorkExperiences([...workExperiences, result.workExperience]);
         showToast("success", "Added", "Work experience has been added to your profile.");
       }
+      // Invalidate the candidate dashboard query to update banner
+      queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
       setShowWorkExpForm(false);
       setEditingWorkExp(null);
     } catch (error: any) {
@@ -347,6 +355,8 @@ export default function CandidateProfilePage() {
         setEducationEntries([...educationEntries, result.education]);
         showToast("success", "Added", "Education has been added to your profile.");
       }
+      // Invalidate the candidate dashboard query to update banner
+      queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
       setShowEduForm(false);
       setEditingEdu(null);
     } catch (error: any) {
@@ -390,6 +400,8 @@ export default function CandidateProfilePage() {
       onSuccess: () => {
         setIsEditing(false);
         showToast("success", "Profile Updated", "Your profile has been saved successfully.");
+        // Invalidate the candidate dashboard query to update banner
+        queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
       },
       onError: (error: any) => {
         showToast("error", "Update Failed", error.message || "Failed to update profile.");
@@ -429,6 +441,8 @@ export default function CandidateProfilePage() {
         setPhotoUrl(result.url);
         showToast("success", "Photo Uploaded", "Your profile photo has been updated.");
       }
+      // Invalidate the candidate dashboard query to update banner
+      queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
     } catch (error) {
       console.error("File upload failed:", error);
       showToast("error", "Upload Failed", "Failed to upload file. Please try again.");
@@ -545,6 +559,8 @@ export default function CandidateProfilePage() {
         refetch();
         loadWorkExperiences();
         loadEducation();
+        // Invalidate the candidate dashboard query to update banner
+        queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
       } else {
         throw new Error(response.data.error || "Failed to parse resume");
       }
