@@ -135,19 +135,43 @@ export function isWordFile(file: File): boolean {
 }
 
 /**
- * Extract text content from a DOCX/DOC file
+ * Extract text content from a DOCX/DOC file, including hyperlinks
  * @param file - The Word document file to extract text from
- * @returns Promise<string> - The extracted text content
+ * @returns Promise<string> - The extracted text content with URLs
  */
 export async function extractTextFromDOCX(file: File): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
 
-    const text = result.value.trim();
+    // First, convert to HTML to extract hyperlinks
+    const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
+    const html = htmlResult.value;
+
+    // Extract all URLs from anchor tags
+    const allLinks: string[] = [];
+    const linkRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>/gi;
+    let match;
+    while ((match = linkRegex.exec(html)) !== null) {
+      const url = match[1];
+      // Only include http/https URLs (skip mailto:, tel:, etc.)
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        allLinks.push(url);
+      }
+    }
+
+    // Now extract plain text
+    const textResult = await mammoth.extractRawText({ arrayBuffer });
+    let text = textResult.value.trim();
 
     if (!text) {
       throw new Error('No text content found in document');
+    }
+
+    // Append extracted URLs at the end so OpenAI can find them (same as PDF)
+    if (allLinks.length > 0) {
+      const uniqueLinks = [...new Set(allLinks)];
+      text += '\n\n--- Professional Links ---\n';
+      text += uniqueLinks.join('\n');
     }
 
     return text;
