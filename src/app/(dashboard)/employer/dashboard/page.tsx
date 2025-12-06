@@ -113,6 +113,9 @@ const formatFieldName = (field: string): string => {
     description: "Description",
     companySize: "Company Size",
     phone: "Phone Number",
+    teamMembers: "Team Members",
+    videoConferencing: "Video Conferencing",
+    googleCalendar: "Google Calendar",
   };
   return fieldLabels[field] || field;
 };
@@ -120,7 +123,7 @@ const formatFieldName = (field: string): string => {
 // Calculate employer profile completeness
 const calculateProfileCompleteness = (employer: any) => {
   if (!employer) {
-    return { percentage: 0, missingFields: [], completedFields: 0, totalFields: 8 };
+    return { percentage: 0, missingFields: [], completedFields: 0, totalFields: 11 };
   }
 
   const fields: Record<string, boolean> = {
@@ -132,6 +135,10 @@ const calculateProfileCompleteness = (employer: any) => {
     description: !!employer.description,
     companySize: !!employer.companySize,
     phone: !!employer.phone,
+    // New integration checks
+    teamMembers: (employer.teamMembersCount || 0) >= 1,
+    videoConferencing: !!employer.videoConferencingConnected,
+    googleCalendar: !!employer.googleCalendarConnected,
   };
 
   const completedFields = Object.values(fields).filter(Boolean).length;

@@ -27,11 +27,13 @@ import {
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input, ConfirmationModal, useToast } from "@/components/ui";
 import { api } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function EmployerSettingsPage() {
   const router = useRouter();
   const { data: session, status, update } = useSession();
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -222,6 +224,9 @@ export default function EmployerSettingsPage() {
         name: profileData.companyName,
       });
 
+      // Invalidate the employer dashboard query to trigger refresh
+      queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
+
       setSuccessMessage("Profile updated successfully!");
       setIsSaving(false);
 
@@ -313,6 +318,8 @@ export default function EmployerSettingsPage() {
       setNewMember({ name: "", email: "", title: "" });
       setShowAddMember(false);
       setSuccessMessage("Team member added successfully!");
+      // Invalidate the employer dashboard query to update banner
+      queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Failed to add team member:", err);
@@ -330,6 +337,8 @@ export default function EmployerSettingsPage() {
       await api.delete(`/api/employer/team-members?id=${id}`);
       setTeamMembers(teamMembers.filter((m) => m.id !== id));
       showToast("success", "Member Removed", "Team member removed successfully!");
+      // Invalidate the employer dashboard query to update banner
+      queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
     } catch (err: any) {
       console.error("Failed to delete team member:", err);
       showToast("error", "Error", err.response?.data?.error || "Failed to delete team member");
@@ -376,6 +385,8 @@ export default function EmployerSettingsPage() {
       await api.delete("/api/employer/integrations/video");
       setVideoIntegration(null);
       showToast("success", "Disconnected", "Video integration disconnected successfully!");
+      // Invalidate the employer dashboard query to update banner
+      queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
     } catch (err: any) {
       console.error("Failed to disconnect video integration:", err);
       showToast("error", "Error", err.response?.data?.error || "Failed to disconnect integration");
@@ -392,6 +403,8 @@ export default function EmployerSettingsPage() {
       await api.delete("/api/employer/integrations/google-calendar/disconnect");
       setCalendarIntegration(null);
       showToast("success", "Disconnected", "Google Calendar disconnected successfully!");
+      // Invalidate the employer dashboard query to update banner
+      queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
     } catch (err: any) {
       console.error("Failed to disconnect Google Calendar:", err);
       showToast("error", "Error", err.response?.data?.error || "Failed to disconnect calendar");
