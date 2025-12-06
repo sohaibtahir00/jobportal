@@ -57,9 +57,6 @@ function LoginPageContent() {
     clearError();
 
     try {
-      // Check if user just verified their email (redirect to onboarding after login)
-      const justVerified = searchParams.get("verified") === "true";
-
       // Pre-validate credentials to get proper error messages (including EMAIL_NOT_VERIFIED)
       const validateRes = await api.post("/api/auth/validate", {
         email: data.email,
@@ -71,15 +68,10 @@ function LoginPageContent() {
         email: data.email,
         password: data.password,
         rememberMe: data.rememberMe,
-        redirectToOnboarding: justVerified,
       });
 
       // Success toast
-      if (justVerified) {
-        showToast("success", "Welcome!", "Let's complete your profile setup.");
-      } else {
-        showToast("success", "Welcome back!", "You've successfully logged in.");
-      }
+      showToast("success", "Welcome back!", "You've successfully logged in.");
 
       // Redirect is handled automatically by AuthContext based on user role
       // No need to manually redirect here

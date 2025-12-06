@@ -59,6 +59,7 @@ export const authOptions: AuthOptions = {
             image: user.image || null,
             role: user.role,
             status: user.status,
+            onboardingCompleted: user.onboardingCompleted,
             rememberMe: credentials.rememberMe === "true",
           };
         }
@@ -133,10 +134,12 @@ export const authOptions: AuthOptions = {
           if ((user as any).role) {
             token.role = (user as any).role;
           }
+          token.onboardingCompleted = (user as any).onboardingCompleted ?? false;
         } else {
           // Regular credentials sign in
           token.id = user.id;
           token.role = (user as any).role;
+          token.onboardingCompleted = (user as any).onboardingCompleted ?? false;
           token.rememberMe = (user as any).rememberMe || false;
 
           // Set expiration based on rememberMe
@@ -204,6 +207,7 @@ export const authOptions: AuthOptions = {
         session.user.role = token.role as 'CANDIDATE' | 'EMPLOYER' | 'ADMIN';
         (session as any).isNewOAuthUser = token.isNewOAuthUser || false;
         (session as any).isOAuthUser = token.isOAuthUser || false;
+        (session as any).onboardingCompleted = token.onboardingCompleted ?? false;
       }
       return session;
     },

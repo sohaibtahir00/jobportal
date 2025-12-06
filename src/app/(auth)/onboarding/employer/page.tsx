@@ -48,6 +48,11 @@ export default function EmployerOnboardingPage() {
         phone: data.phone,
       });
 
+      // Mark onboarding as completed
+      await api.patch("/api/settings", {
+        onboardingCompleted: true,
+      });
+
       showToast(
         "success",
         "Profile completed!",
@@ -209,9 +214,15 @@ export default function EmployerOnboardingPage() {
           {/* Skip Link */}
           <button
             type="button"
-            onClick={() => {
-              // Mark onboarding as skipped in localStorage
-              localStorage.setItem("employer_onboarding_skipped", "true");
+            onClick={async () => {
+              // Mark onboarding as completed even when skipped
+              try {
+                await api.patch("/api/settings", {
+                  onboardingCompleted: true,
+                });
+              } catch (e) {
+                console.error("Failed to mark onboarding as complete:", e);
+              }
               router.push("/employer/dashboard");
             }}
             className="w-full text-sm text-gray-600 hover:text-gray-800 underline"

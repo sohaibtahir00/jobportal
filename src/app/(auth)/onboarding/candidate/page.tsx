@@ -418,6 +418,11 @@ export default function CandidateOnboardingPage() {
         }
       }
 
+      // 5. Mark onboarding as completed
+      await api.patch("/api/settings", {
+        onboardingCompleted: true,
+      });
+
       showToast("success", "Profile Completed!", "Welcome to your dashboard.");
       router.push("/candidate/profile");
     } catch (error: any) {

@@ -127,10 +127,26 @@ export default function OAuthCallbackPage() {
             return;
           }
         } else {
-          // Existing user - just redirect to their dashboard
+          // Existing user - check if onboarding is completed
+          const onboardingCompleted = (session as any).onboardingCompleted ?? false;
+          const role = session.user.role;
+
+          // If onboarding not completed, redirect to onboarding
+          if (!onboardingCompleted && role !== "ADMIN") {
+            setStatusMessage("Redirecting to complete your profile...");
+            const redirectUrl = role === "EMPLOYER"
+              ? "/onboarding/employer"
+              : "/onboarding/candidate";
+
+            setTimeout(() => {
+              window.location.href = redirectUrl;
+            }, 300);
+            return;
+          }
+
+          // Onboarding completed - redirect to dashboard
           setStatusMessage("Welcome back! Redirecting...");
 
-          const role = session.user.role;
           let redirectUrl = "/candidate/dashboard";
 
           if (role === "ADMIN") {

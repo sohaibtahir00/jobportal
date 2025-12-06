@@ -47,7 +47,7 @@ export function useAuth() {
       }
     : null;
 
-  const login = async ({ email, password, rememberMe, redirectToOnboarding }: { email: string; password: string; rememberMe?: boolean; redirectToOnboarding?: boolean }) => {
+  const login = async ({ email, password, rememberMe }: { email: string; password: string; rememberMe?: boolean }) => {
     setIsAuthLoading(true);
     setAuthError(null);
 
@@ -89,9 +89,10 @@ export function useAuth() {
 
       if (sessionData?.user?.role) {
         const role = sessionData.user.role.toLowerCase();
+        const onboardingCompleted = sessionData.onboardingCompleted ?? false;
 
-        // If user just verified their email, redirect to onboarding
-        if (redirectToOnboarding) {
+        // If user hasn't completed onboarding, redirect to onboarding
+        if (!onboardingCompleted && role !== "admin") {
           if (role === "employer") {
             window.location.href = "/onboarding/employer";
           } else {
