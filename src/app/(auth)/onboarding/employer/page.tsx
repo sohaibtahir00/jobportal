@@ -26,7 +26,7 @@ type EmployerOnboardingData = z.infer<typeof employerOnboardingSchema>;
 
 export default function EmployerOnboardingPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
 
@@ -52,6 +52,9 @@ export default function EmployerOnboardingPage() {
       await api.patch("/api/settings", {
         onboardingCompleted: true,
       });
+
+      // Update session to reflect onboardingCompleted change
+      await updateSession({ onboardingCompleted: true });
 
       showToast(
         "success",
@@ -220,6 +223,8 @@ export default function EmployerOnboardingPage() {
                 await api.patch("/api/settings", {
                   onboardingCompleted: true,
                 });
+                // Update session to reflect onboardingCompleted change
+                await updateSession({ onboardingCompleted: true });
               } catch (e) {
                 console.error("Failed to mark onboarding as complete:", e);
               }

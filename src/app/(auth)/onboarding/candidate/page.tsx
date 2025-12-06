@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast, Button } from "@/components/ui";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import api from "@/lib/api";
 import { uploadFile } from "@/lib/api/profile";
 import { JobType } from "@/types";
@@ -98,7 +98,7 @@ const jobTypes = [
 
 export default function CandidateOnboardingPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -422,6 +422,10 @@ export default function CandidateOnboardingPage() {
       await api.patch("/api/settings", {
         onboardingCompleted: true,
       });
+
+      // 6. Update session to reflect onboardingCompleted change
+      // This ensures the JWT token is refreshed with the new value
+      await updateSession({ onboardingCompleted: true });
 
       showToast("success", "Profile Completed!", "Welcome to your dashboard.");
       router.push("/candidate/profile");

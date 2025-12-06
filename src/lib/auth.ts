@@ -171,6 +171,10 @@ export const authOptions: AuthOptions = {
         if (session?.isNewOAuthUser === false) {
           token.isNewOAuthUser = false;
         }
+        // Update onboardingCompleted flag when passed
+        if (session?.onboardingCompleted !== undefined) {
+          token.onboardingCompleted = session.onboardingCompleted;
+        }
 
         // Otherwise, fetch updated user data from backend
         if (!session?.name && !session?.email && token.id) {
