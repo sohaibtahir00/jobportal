@@ -12,7 +12,9 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/components/ui";
 import { api } from "@/lib/api";
+import { extractTextFromPDF, extractTextFromDOCX } from "@/lib/pdf-utils";
 import {
   Send,
   Eye,
@@ -32,6 +34,9 @@ import {
   Sparkles,
   X,
   AlertTriangle,
+  FileUp,
+  Loader2,
+  Edit,
 } from "lucide-react";
 import { RecommendedJobs } from "@/components/jobs";
 
@@ -132,12 +137,14 @@ const getBannerStyle = (percentage: number) => {
 
 export default function CandidateDashboardPage() {
   const { data: session } = useSession();
-  const { profile, profileCompletion, isLoading: profileLoading } = useCandidateProfile();
-  const { data: dashboardData, isLoading: dashboardLoading } = useCandidateDashboard();
+  const { profile, profileCompletion, isLoading: profileLoading, refetch: refetchProfile } = useCandidateProfile();
+  const { data: dashboardData, isLoading: dashboardLoading, refetch: refetchDashboard } = useCandidateDashboard();
+  const { showToast } = useToast();
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [profileViewsCount, setProfileViewsCount] = useState(0);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [isParsingResume, setIsParsingResume] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -167,6 +174,69 @@ export default function CandidateDashboardPage() {
     setBannerDismissed(true);
     localStorage.setItem("profileBannerDismissed", "true");
     localStorage.setItem("profileBannerDismissedAt", new Date().toISOString());
+  };
+
+  // Handle resume upload and parsing
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fileName = file.name.toLowerCase();
+
+    // Validate file type
+    if (!fileName.endsWith('.pdf') && !fileName.endsWith('.docx') && !fileName.endsWith('.doc')) {
+      showToast("error", "Invalid File", "Please upload a PDF or Word document");
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("error", "File Too Large", "Maximum file size is 5MB");
+      return;
+    }
+
+    setIsParsingResume(true);
+
+    try {
+      // Extract text based on file type
+      let extractedText: string;
+      if (fileName.endsWith('.pdf')) {
+        extractedText = await extractTextFromPDF(file);
+      } else {
+        extractedText = await extractTextFromDOCX(file);
+      }
+
+      // Parse with AI
+      const response = await api.post("/api/candidates/parse-resume", {
+        text: extractedText,
+      });
+
+      if (response.data.success) {
+        // Update profile with parsed data
+        await api.patch("/api/candidates/profile", response.data.data);
+
+        // Upload the resume file
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('type', 'resume');
+        await api.post("/api/upload/file", formData);
+
+        showToast("success", "Profile Updated", "Your profile has been updated from resume!");
+
+        // Refresh dashboard and profile data
+        refetchProfile();
+        refetchDashboard();
+      } else {
+        throw new Error(response.data.error || "Failed to parse resume");
+      }
+    } catch (error: any) {
+      console.error("Resume parsing error:", error);
+      showToast("error", "Import Failed", error.message || "Failed to parse resume. Please try again or edit manually.");
+    } finally {
+      setIsParsingResume(false);
+      // Reset file input
+      e.target.value = '';
+    }
   };
 
   // Fetch profile views count
@@ -376,13 +446,50 @@ export default function CandidateDashboardPage() {
                       </div>
                     )}
                   </div>
-                  <Button
-                    asChild
-                    size="lg"
-                    className={`${bannerStyle.button} text-white shrink-0`}
-                  >
-                    <Link href="/candidate/profile">Complete Profile</Link>
-                  </Button>
+
+                  {/* Action buttons */}
+                  <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                    {/* Resume Upload Button */}
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleResumeUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        disabled={isParsingResume}
+                      />
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="pointer-events-none border-2 bg-white/80"
+                        disabled={isParsingResume}
+                      >
+                        {isParsingResume ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Parsing...
+                          </>
+                        ) : (
+                          <>
+                            <FileUp className="h-4 w-4 mr-2" />
+                            Upload Resume
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {/* Manual Edit Button */}
+                    <Button
+                      asChild
+                      size="lg"
+                      className={`${bannerStyle.button} text-white`}
+                    >
+                      <Link href="/candidate/profile">
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Manually
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

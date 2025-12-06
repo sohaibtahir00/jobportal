@@ -22,6 +22,8 @@ import {
   X,
   Building2,
   AlertTriangle,
+  Globe,
+  Edit,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import CountUp from "react-countup";
@@ -34,8 +36,10 @@ import {
   Badge,
   Button,
   Progress,
+  useToast,
 } from "@/components/ui";
 import { useEmployerDashboard } from "@/hooks/useDashboard";
+import { api } from "@/lib/api";
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -191,11 +195,14 @@ const getBannerStyle = (percentage: number) => {
 
 export default function EmployerDashboardPage() {
   const { data: session } = useSession();
-  const { data, isLoading, error } = useEmployerDashboard();
+  const { data, isLoading, error, refetch: refetchDashboard } = useEmployerDashboard();
+  const { showToast } = useToast();
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showClaimReminder, setShowClaimReminder] = useState(true);
   const [profileBannerDismissed, setProfileBannerDismissed] = useState(false);
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [isImportingWebsite, setIsImportingWebsite] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -227,6 +234,60 @@ export default function EmployerDashboardPage() {
     setProfileBannerDismissed(true);
     localStorage.setItem("employerProfileBannerDismissed", "true");
     localStorage.setItem("employerProfileBannerDismissedAt", new Date().toISOString());
+  };
+
+  // Handle website import
+  const handleWebsiteImport = async () => {
+    if (!websiteUrl) return;
+
+    // Basic URL validation and normalization
+    let url = websiteUrl.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch {
+      showToast("error", "Invalid URL", "Please enter a valid website URL");
+      return;
+    }
+
+    setIsImportingWebsite(true);
+
+    try {
+      const response = await api.post("/api/employers/parse-website", { url });
+
+      if (response.data.success && response.data.data) {
+        const parsedData = response.data.data;
+
+        // Update profile with parsed data
+        await api.patch("/api/employers/profile", {
+          companyName: parsedData.companyName || undefined,
+          companyWebsite: url,
+          description: parsedData.description || undefined,
+          industry: parsedData.industry || undefined,
+          location: parsedData.location || undefined,
+          companySize: parsedData.companySize || undefined,
+          phone: parsedData.phone || undefined,
+          companyLogo: parsedData.logo || undefined,
+        });
+
+        showToast("success", "Company Info Imported", "Your company profile has been updated!");
+        setWebsiteUrl("");
+
+        // Refresh dashboard data
+        refetchDashboard();
+      } else {
+        throw new Error(response.data.error || "Failed to import from website");
+      }
+    } catch (error: any) {
+      console.error("Website import error:", error);
+      showToast("error", "Import Failed", error.response?.data?.error || error.message || "Failed to import from website. Please try again or edit manually.");
+    } finally {
+      setIsImportingWebsite(false);
+    }
   };
 
   // Calculate profile completeness (8 fields total)
@@ -424,13 +485,57 @@ export default function EmployerDashboardPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Manual Edit Button */}
                   <Button
                     asChild
                     size="lg"
                     className={`${bannerStyle.button} text-white shrink-0`}
                   >
-                    <Link href="/employer/settings">Complete Profile</Link>
+                    <Link href="/employer/settings">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Manually
+                    </Link>
                   </Button>
+                </div>
+
+                {/* Website Import Section */}
+                <div className="flex flex-col sm:flex-row gap-2 items-center pt-4 mt-4 border-t border-orange-200/50">
+                  <span className="text-sm text-secondary-600 whitespace-nowrap">Quick import:</span>
+                  <div className="flex flex-1 gap-2 w-full sm:w-auto">
+                    <input
+                      type="url"
+                      placeholder="https://yourcompany.com"
+                      value={websiteUrl}
+                      onChange={(e) => setWebsiteUrl(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && websiteUrl) {
+                          e.preventDefault();
+                          handleWebsiteImport();
+                        }
+                      }}
+                      className="flex-1 px-3 py-2 text-sm border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white/80"
+                      disabled={isImportingWebsite}
+                    />
+                    <Button
+                      onClick={handleWebsiteImport}
+                      disabled={!websiteUrl || isImportingWebsite}
+                      variant="outline"
+                      className="shrink-0 bg-white/80"
+                    >
+                      {isImportingWebsite ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Importing...
+                        </>
+                      ) : (
+                        <>
+                          <Globe className="h-4 w-4 mr-2" />
+                          Import
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useCandidateProfile } from "@/hooks/useCandidateProfile";
 import { useCandidateDashboard } from "@/hooks/useDashboard";
 import { convertSalaryToDollars, convertSalaryToCents, JobType } from "@/types";
-import { Button, Card, CardContent, CardHeader, CardTitle, useToast, ConfirmationModal } from "@/components/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, useToast, ConfirmationModal } from "@/components/ui";
 import {
   Loader2,
   User,
@@ -33,7 +33,11 @@ import {
   GraduationCap,
   Building,
   Calendar,
+  FileUp,
+  Sparkles,
 } from "lucide-react";
+import { api } from "@/lib/api";
+import { extractTextFromPDF, extractTextFromDOCX } from "@/lib/pdf-utils";
 import Link from "next/link";
 import { SkillsScoreCard } from "@/components/skills";
 import {
@@ -106,6 +110,7 @@ export default function CandidateProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [resumeUrl, setResumeUrl] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [isParsingResume, setIsParsingResume] = useState(false);
 
   // Delete confirmation modals
   const [deleteWorkExpModal, setDeleteWorkExpModal] = useState<{ isOpen: boolean; id: string | null; title: string }>({ isOpen: false, id: null, title: "" });
@@ -432,6 +437,72 @@ export default function CandidateProfilePage() {
     }
   };
 
+  // Handle resume import with AI parsing
+  const handleResumeImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fileName = file.name.toLowerCase();
+
+    // Validate file type
+    if (!fileName.endsWith('.pdf') && !fileName.endsWith('.docx') && !fileName.endsWith('.doc')) {
+      showToast("error", "Invalid File", "Please upload a PDF or Word document");
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("error", "File Too Large", "Maximum file size is 5MB");
+      return;
+    }
+
+    setIsParsingResume(true);
+
+    try {
+      // Extract text based on file type
+      let extractedText: string;
+      if (fileName.endsWith('.pdf')) {
+        extractedText = await extractTextFromPDF(file);
+      } else {
+        extractedText = await extractTextFromDOCX(file);
+      }
+
+      // Parse with AI
+      const response = await api.post("/api/candidates/parse-resume", {
+        text: extractedText,
+      });
+
+      if (response.data.success) {
+        // Update profile with parsed data
+        await api.patch("/api/candidates/profile", response.data.data);
+
+        // Upload the resume file
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('type', 'resume');
+        const uploadResult = await api.post("/api/upload/file", formData);
+
+        if (uploadResult.data.url) {
+          setResumeUrl(uploadResult.data.url);
+        }
+
+        showToast("success", "Profile Updated", "Your profile has been updated from your resume!");
+
+        // Refresh profile data
+        refetch();
+      } else {
+        throw new Error(response.data.error || "Failed to parse resume");
+      }
+    } catch (error: any) {
+      console.error("Resume parsing error:", error);
+      showToast("error", "Import Failed", error.message || "Failed to parse resume. Please try again.");
+    } finally {
+      setIsParsingResume(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -495,6 +566,51 @@ export default function CandidateProfilePage() {
             Manage your professional information and job preferences
           </p>
         </div>
+
+        {/* Resume Import Section - Always visible */}
+        <Card className="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg text-purple-900">
+              <Sparkles className="h-5 w-5 text-purple-600" />
+              Update Profile from Resume
+            </CardTitle>
+            <CardDescription className="text-purple-700">
+              Upload your latest resume to automatically extract and update your profile information using AI
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <div className="relative">
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleResumeImport}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={isParsingResume}
+                />
+                <Button
+                  className="pointer-events-none bg-purple-600 hover:bg-purple-700 text-white"
+                  disabled={isParsingResume}
+                >
+                  {isParsingResume ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Parsing Resume...
+                    </>
+                  ) : (
+                    <>
+                      <FileUp className="h-4 w-4 mr-2" />
+                      Choose Resume (PDF or Word)
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p className="text-sm text-purple-600">
+                We&apos;ll extract your work experience, education, skills, and more
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Profile Completion */}
         {profileCompletion && (
