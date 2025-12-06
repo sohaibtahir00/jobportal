@@ -441,6 +441,113 @@ export default function CandidateOnboardingPage() {
     }
   };
 
+  // Handle skip at any step - saves data up to current step
+  const handleSkip = async (fromStep: number) => {
+    setIsSubmitting(true);
+
+    try {
+      // Step 1: No profile data to save, just mark onboarding complete
+      // Step 2 & 3: Save profile data if any exists
+
+      if (fromStep >= 2) {
+        // Check if there's any meaningful profile data to save
+        const hasProfileData = profileData.currentRole ||
+          profileData.phone ||
+          profileData.location ||
+          profileData.bio ||
+          profileData.skills.length > 0 ||
+          profileData.workExperience.length > 0 ||
+          profileData.education.length > 0;
+
+        if (hasProfileData) {
+          // Save candidate profile (without requiring currentRole for skip)
+          await api.patch("/api/candidates/profile", {
+            phone: profileData.phone || null,
+            location: profileData.location || null,
+            bio: profileData.bio || null,
+            currentRole: profileData.currentRole || null,
+            experience: profileData.experience,
+            skills: profileData.skills,
+            linkedIn: profileData.linkedIn || null,
+            github: profileData.github || null,
+            personalWebsite: profileData.personalWebsite || null,
+            portfolio: profileData.portfolio || null,
+            resume: uploadedResumeUrl || null,
+            // Skip job preferences when skipping
+            nicheCategory: null,
+            preferredJobType: null,
+            expectedSalary: null,
+            remotePreference: null,
+            openToContract: false,
+            willingToRelocate: false,
+          });
+
+          // Update user name if changed
+          if (profileData.name && profileData.name !== session?.user?.name) {
+            await api.patch("/api/settings", {
+              name: profileData.name,
+            });
+          }
+
+          // Save work experience records
+          for (const exp of profileData.workExperience) {
+            if (exp.companyName && exp.jobTitle && exp.startDate) {
+              try {
+                await api.post("/api/candidates/work-experience", {
+                  companyName: exp.companyName,
+                  jobTitle: exp.jobTitle,
+                  startDate: exp.startDate,
+                  endDate: exp.isCurrent ? null : exp.endDate,
+                  isCurrent: exp.isCurrent,
+                  description: exp.description,
+                  location: exp.location,
+                });
+              } catch (expError) {
+                console.error("Work experience save error:", expError);
+              }
+            }
+          }
+
+          // Save education records
+          for (const edu of profileData.education) {
+            if (edu.schoolName && edu.degree && edu.fieldOfStudy) {
+              try {
+                await api.post("/api/candidates/education", {
+                  schoolName: edu.schoolName,
+                  degree: edu.degree,
+                  fieldOfStudy: edu.fieldOfStudy,
+                  graduationYear: edu.graduationYear || new Date().getFullYear(),
+                  gpa: edu.gpa || null,
+                });
+              } catch (eduError) {
+                console.error("Education save error:", eduError);
+              }
+            }
+          }
+        }
+      }
+
+      // Always mark onboarding as completed
+      await api.patch("/api/settings", {
+        onboardingCompleted: true,
+      });
+
+      // Update session to reflect onboardingCompleted change
+      await updateSession({ onboardingCompleted: true });
+
+      router.push("/candidate/dashboard");
+    } catch (error: any) {
+      console.error("Skip onboarding error:", error);
+      showToast(
+        "error",
+        "Failed to Skip",
+        error.response?.data?.error || "Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Render Step 1: Import Method
   const renderStep1 = () => (
     <motion.div
@@ -519,12 +626,22 @@ export default function CandidateOnboardingPage() {
       {/* Manual Entry Option */}
       <button
         onClick={() => setCurrentStep(2)}
-        disabled={isParsingResume}
+        disabled={isParsingResume || isSubmitting}
         className="w-full py-4 border-2 border-gray-300 rounded-xl text-gray-700 font-medium hover:border-gray-400 hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
       >
         <Edit2 className="h-5 w-5" />
         Fill in Manually
         <ChevronRight className="h-5 w-5" />
+      </button>
+
+      {/* Skip for now */}
+      <button
+        type="button"
+        onClick={() => handleSkip(1)}
+        disabled={isParsingResume || isSubmitting}
+        className="w-full text-sm text-gray-600 hover:text-gray-800 underline mt-4"
+      >
+        {isSubmitting ? "Skipping..." : "Skip for now (you can complete this later)"}
       </button>
     </motion.div>
   );
@@ -928,13 +1045,23 @@ export default function CandidateOnboardingPage() {
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between pt-4">
-        <Button type="button" variant="outline" onClick={() => setCurrentStep(1)}>
-          <ChevronLeft className="h-4 w-4 mr-1" /> Back
-        </Button>
-        <Button type="button" onClick={() => setCurrentStep(3)}>
-          Continue <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
+      <div className="flex flex-col gap-3 pt-4">
+        <div className="flex justify-between">
+          <Button type="button" variant="outline" onClick={() => setCurrentStep(1)} disabled={isSubmitting}>
+            <ChevronLeft className="h-4 w-4 mr-1" /> Back
+          </Button>
+          <Button type="button" onClick={() => setCurrentStep(3)} disabled={isSubmitting}>
+            Continue <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+        <button
+          type="button"
+          onClick={() => handleSkip(2)}
+          disabled={isSubmitting}
+          className="w-full text-sm text-gray-600 hover:text-gray-800 underline"
+        >
+          {isSubmitting ? "Skipping..." : "Skip for now (you can complete this later)"}
+        </button>
       </div>
     </motion.div>
   );
@@ -1100,14 +1227,11 @@ export default function CandidateOnboardingPage() {
           </Button>
           <button
             type="button"
-            onClick={() => {
-              localStorage.setItem("candidate_onboarding_skipped", "true");
-              router.push("/candidate/dashboard");
-            }}
+            onClick={() => handleSkip(3)}
             className="text-sm text-gray-600 hover:text-gray-800 underline"
             disabled={isSubmitting}
           >
-            Skip for now
+            {isSubmitting ? "Skipping..." : "Skip for now"}
           </button>
         </div>
       </div>
