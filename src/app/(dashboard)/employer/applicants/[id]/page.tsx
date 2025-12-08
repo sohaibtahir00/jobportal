@@ -24,6 +24,9 @@ import {
   Gift,
   DollarSign,
   Lock,
+  Clock,
+  XCircle,
+  RefreshCw,
 } from "lucide-react";
 import { useToast, ConfirmationModal } from "@/components/ui";
 import { Button, Badge, Card, CardContent, Progress } from "@/components/ui";
@@ -102,6 +105,11 @@ export default function ApplicantDetailPage() {
 
   // Cancel interview modal state
   const [cancelInterviewModal, setCancelInterviewModal] = useState<{ isOpen: boolean; interviewId: string | null; handler: "cancel" | "cancelInterview" }>({ isOpen: false, interviewId: null, handler: "cancel" });
+
+  // Withdraw offer modal state
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawReason, setWithdrawReason] = useState("");
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   // Handle introduction request
   const handleRequestIntroduction = () => {
@@ -204,6 +212,9 @@ export default function ApplicantDetailPage() {
           appliedFor: app.job.title,
           jobId: app.jobId,
           coverLetter: app.coverLetter || "No cover letter provided",
+
+          // Offer data for button state management
+          offer: app.offer || null,
         };
 
         console.log("✅ [Applicant Detail] Transformed data:", transformedData);
@@ -550,6 +561,37 @@ export default function ApplicantDetailPage() {
     }
   };
 
+  // Handle withdrawing an offer
+  const handleWithdrawOffer = async () => {
+    if (!applicantData?.offer?.id) {
+      showToast("error", "No offer to withdraw");
+      return;
+    }
+
+    setIsWithdrawing(true);
+    try {
+      await api.post(`/api/offers/${applicantData.offer.id}/withdraw`, {
+        withdrawReason: withdrawReason || null,
+      });
+
+      showToast("success", "Offer withdrawn successfully");
+      setShowWithdrawModal(false);
+      setWithdrawReason("");
+
+      // Reload page to refresh data
+      window.location.reload();
+    } catch (err: any) {
+      console.error("Failed to withdraw offer:", err);
+      showToast(
+        "error",
+        "Failed to Withdraw Offer",
+        err?.response?.data?.error || "Something went wrong."
+      );
+    } finally {
+      setIsWithdrawing(false);
+    }
+  };
+
   const getInterviewStatusBadge = (status: string) => {
     switch (status) {
       case "SCHEDULED":
@@ -596,19 +638,143 @@ export default function ApplicantDetailPage() {
     }
   };
 
-  // Helper to get formatted application status label
-  const getApplicationStatusLabel = (status: string): string => {
-    const statusMap: Record<string, string> = {
-      pending: "New",
-      shortlisted: "Shortlisted",
-      interview_scheduled: "In Interview Process",
-      interviewed: "In Interview Process",
-      offered: "Offer",
-      accepted: "Hired",
-      rejected: "Rejected",
-      withdrawn: "Withdrawn",
+  // Helper to get offer button state based on application and offer status
+  const getOfferButtonState = (applicationStatus: string, offer: any) => {
+    const status = applicationStatus.toUpperCase();
+    const offerStatus = offer?.status;
+
+    // Terminal states - not clickable
+    if (status === "WITHDRAWN") {
+      return {
+        text: "Withdrawn",
+        className: "bg-gray-300 text-gray-600 cursor-not-allowed",
+        disabled: true,
+        icon: null,
+      };
+    }
+
+    if (status === "ACCEPTED" || offerStatus === "ACCEPTED") {
+      return {
+        text: "Hired",
+        className: "bg-green-600 text-white cursor-not-allowed",
+        disabled: true,
+        icon: <CheckCircle className="mr-2 h-5 w-5" />,
+      };
+    }
+
+    // Offer pending - waiting for candidate response
+    if (status === "OFFERED" && offerStatus === "PENDING") {
+      return {
+        text: "Offer Pending",
+        className: "bg-amber-500 text-white cursor-not-allowed",
+        disabled: true,
+        icon: <Clock className="mr-2 h-5 w-5" />,
+      };
+    }
+
+    // Offer was declined - allow resend
+    if (offerStatus === "DECLINED") {
+      return {
+        text: "Resend Offer",
+        className: "bg-orange-100 text-orange-700 border border-orange-300 hover:bg-orange-200",
+        disabled: false,
+        icon: <RefreshCw className="mr-2 h-5 w-5" />,
+        allowResend: true,
+      };
+    }
+
+    // Offer was withdrawn by employer - allow new offer
+    if (offerStatus === "WITHDRAWN") {
+      return {
+        text: "Make Job Offer",
+        className: "bg-green-600 hover:bg-green-700 text-white",
+        disabled: false,
+        icon: <Gift className="mr-2 h-5 w-5" />,
+      };
+    }
+
+    // Offer expired - allow new offer
+    if (offerStatus === "EXPIRED") {
+      return {
+        text: "Offer Expired - Resend",
+        className: "bg-orange-100 text-orange-700 border border-orange-300 hover:bg-orange-200",
+        disabled: false,
+        icon: <RefreshCw className="mr-2 h-5 w-5" />,
+        allowResend: true,
+      };
+    }
+
+    // Rejected without offer
+    if (status === "REJECTED" && !offer) {
+      return {
+        text: "Rejected",
+        className: "bg-gray-300 text-gray-600 cursor-not-allowed",
+        disabled: true,
+        icon: <XCircle className="mr-2 h-5 w-5" />,
+      };
+    }
+
+    // Default - can make offer
+    return {
+      text: "Make Job Offer",
+      className: "bg-green-600 hover:bg-green-700 text-white",
+      disabled: false,
+      icon: <Gift className="mr-2 h-5 w-5" />,
     };
-    return statusMap[status] || status;
+  };
+
+  // Helper to get display status (shows "Offer Declined" instead of "Rejected" when applicable)
+  const getDisplayStatus = (applicationStatus: string, offer: any) => {
+    const status = applicationStatus.toUpperCase();
+    const offerStatus = offer?.status;
+
+    // Check if rejected due to offer decline
+    if (status === "REJECTED" && offerStatus === "DECLINED") {
+      return {
+        label: "Offer Declined",
+        variant: "warning" as const,
+        description: "Candidate declined the offer",
+      };
+    }
+
+    // Check if offer was withdrawn
+    if (offerStatus === "WITHDRAWN") {
+      return {
+        label: "Offer Withdrawn",
+        variant: "secondary" as const,
+        description: "Offer was withdrawn",
+      };
+    }
+
+    // Check if offer expired
+    if (offerStatus === "EXPIRED") {
+      return {
+        label: "Offer Expired",
+        variant: "secondary" as const,
+        description: "Offer expired without response",
+      };
+    }
+
+    // Default status mapping
+    const statusMap: Record<string, { label: string; variant: "primary" | "success" | "danger" | "warning" | "secondary" }> = {
+      PENDING: { label: "New", variant: "primary" },
+      REVIEWED: { label: "Reviewed", variant: "primary" },
+      SHORTLISTED: { label: "Shortlisted", variant: "primary" },
+      INTERVIEW_SCHEDULED: { label: "In Interview Process", variant: "primary" },
+      INTERVIEWED: { label: "Interviewed", variant: "primary" },
+      OFFERED: { label: "Offer Sent", variant: "warning" },
+      ACCEPTED: { label: "Hired", variant: "success" },
+      REJECTED: { label: "Rejected", variant: "danger" },
+      WITHDRAWN: { label: "Withdrawn", variant: "secondary" },
+    };
+
+    return statusMap[status] || { label: status, variant: "secondary" as const };
+  };
+
+  // Helper to get formatted application status label (kept for backward compatibility)
+  const getApplicationStatusLabel = (status: string): string => {
+    const displayStatus = getDisplayStatus(status, applicantData?.offer);
+    return displayStatus.label;
   };
 
   if (status === "loading") {
@@ -782,19 +948,50 @@ export default function ApplicantDetailPage() {
                     <Video className="mr-2 h-5 w-5" />
                     Schedule Interview
                   </Button>
-                  {(applicantData.applicationStatus === "shortlisted" ||
-                    interviews.some(
-                      (interview) => interview.status === "COMPLETED"
-                    )) && (
-                    <Button
-                      variant="primary"
-                      className="w-full bg-green-600 hover:bg-green-700"
-                      onClick={handleOpenOfferModal}
-                    >
-                      <Gift className="mr-2 h-5 w-5" />
-                      Make Job Offer
-                    </Button>
-                  )}
+                  {/* Offer Button - Dynamic state based on application/offer status */}
+                  {(() => {
+                    const buttonState = getOfferButtonState(
+                      applicantData.applicationStatus,
+                      applicantData.offer
+                    );
+
+                    // Show the button if:
+                    // 1. Can make an offer (not disabled) OR
+                    // 2. There's already an offer (to show status) OR
+                    // 3. Shortlisted or has completed interview
+                    const showButton = !buttonState.disabled ||
+                      applicantData.offer ||
+                      applicantData.applicationStatus === "shortlisted" ||
+                      applicantData.applicationStatus === "offered" ||
+                      applicantData.applicationStatus === "accepted" ||
+                      interviews.some((i) => i.status === "COMPLETED");
+
+                    if (!showButton) return null;
+
+                    return (
+                      <Button
+                        variant="primary"
+                        className={`w-full ${buttonState.className}`}
+                        onClick={buttonState.disabled ? undefined : handleOpenOfferModal}
+                        disabled={buttonState.disabled}
+                      >
+                        {buttonState.icon}
+                        {buttonState.text}
+                      </Button>
+                    );
+                  })()}
+                  {/* Withdraw Offer Button - Only show when offer is PENDING */}
+                  {applicantData.applicationStatus === "offered" &&
+                    applicantData.offer?.status === "PENDING" && (
+                      <Button
+                        variant="outline"
+                        className="w-full border-orange-300 text-orange-600 hover:bg-orange-50"
+                        onClick={() => setShowWithdrawModal(true)}
+                      >
+                        <XCircle className="mr-2 h-5 w-5" />
+                        Withdraw Offer
+                      </Button>
+                    )}
                   <Button
                     variant="outline"
                     className="w-full"
@@ -833,9 +1030,17 @@ export default function ApplicantDetailPage() {
                   <h4 className="mb-3 text-sm font-semibold text-secondary-700">
                     Application Status
                   </h4>
-                  <Badge variant="primary">
-                    {getApplicationStatusLabel(applicantData.applicationStatus)}
-                  </Badge>
+                  {(() => {
+                    const displayStatus = getDisplayStatus(
+                      applicantData.applicationStatus,
+                      applicantData.offer
+                    );
+                    return (
+                      <Badge variant={displayStatus.variant}>
+                        {displayStatus.label}
+                      </Badge>
+                    );
+                  })()}
                   <p className="mt-2 text-sm text-secondary-600">
                     Applied for: {applicantData.appliedFor}
                   </p>
@@ -1774,6 +1979,84 @@ export default function ApplicantDetailPage() {
         cancelText="Keep Interview"
         variant="danger"
       />
+
+      {/* Withdraw Offer Modal */}
+      {showWithdrawModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="w-full max-w-md">
+            <CardContent className="p-6">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-secondary-900">
+                  Withdraw Offer
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowWithdrawModal(false);
+                    setWithdrawReason("");
+                  }}
+                  disabled={isWithdrawing}
+                  className="rounded-lg p-2 hover:bg-secondary-100"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 p-4">
+                <p className="text-sm text-amber-800">
+                  <strong>Warning:</strong> Withdrawing this offer will notify the candidate.
+                  They will no longer be able to accept the offer.
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <label className="mb-2 block text-sm font-medium text-secondary-700">
+                  Reason for withdrawal (optional)
+                </label>
+                <textarea
+                  value={withdrawReason}
+                  onChange={(e) => setWithdrawReason(e.target.value)}
+                  className="w-full rounded-lg border border-secondary-300 p-3 focus:border-primary-500 focus:outline-none"
+                  rows={3}
+                  placeholder="Enter reason for withdrawing the offer..."
+                  disabled={isWithdrawing}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowWithdrawModal(false);
+                    setWithdrawReason("");
+                  }}
+                  disabled={isWithdrawing}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleWithdrawOffer}
+                  disabled={isWithdrawing}
+                  className="flex-1 bg-orange-600 hover:bg-orange-700"
+                >
+                  {isWithdrawing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Withdrawing...
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Withdraw Offer
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

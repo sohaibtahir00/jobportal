@@ -48,6 +48,11 @@ interface Applicant {
     testScore: number | null;
     testTier: string | null;
   };
+  // Offer data for proper status display
+  offer?: {
+    id: string;
+    status: string;
+  } | null;
 }
 
 export default function ApplicantsPipelinePage() {
@@ -104,6 +109,50 @@ export default function ApplicantsPipelinePage() {
     ACCEPTED: "bg-green-100 text-green-800",
     REJECTED: "bg-red-100 text-red-800",
     WITHDRAWN: "bg-gray-100 text-gray-600",
+    // Additional states for offer-related status
+    OFFER_DECLINED: "bg-orange-100 text-orange-800",
+    OFFER_WITHDRAWN: "bg-gray-100 text-gray-600",
+    OFFER_EXPIRED: "bg-gray-100 text-gray-600",
+  };
+
+  // Helper function to get proper display status considering offer state
+  const getDisplayStatus = (applicant: Applicant) => {
+    const status = applicant.status;
+    const offerStatus = applicant.offer?.status;
+
+    // Check if rejected due to offer decline
+    if (status === "REJECTED" && offerStatus === "DECLINED") {
+      return {
+        label: "Offer Declined",
+        icon: "📩",
+        color: STATUS_COLORS.OFFER_DECLINED,
+      };
+    }
+
+    // Check if offer was withdrawn
+    if (offerStatus === "WITHDRAWN") {
+      return {
+        label: "Offer Withdrawn",
+        icon: "↩️",
+        color: STATUS_COLORS.OFFER_WITHDRAWN,
+      };
+    }
+
+    // Check if offer expired
+    if (offerStatus === "EXPIRED") {
+      return {
+        label: "Offer Expired",
+        icon: "⏰",
+        color: STATUS_COLORS.OFFER_EXPIRED,
+      };
+    }
+
+    // Default status
+    return {
+      label: status.replace(/_/g, " "),
+      icon: STATUS_ICONS[status] || "📋",
+      color: STATUS_COLORS[status] || "bg-gray-100 text-gray-800",
+    };
   };
 
   // Redirect if not logged in or not employer
@@ -369,11 +418,16 @@ export default function ApplicantsPipelinePage() {
                               )}
                             </div>
                           )}
-                          {/* Status Badge with Icon */}
-                          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[applicant.status] || "bg-gray-100 text-gray-800"}`}>
-                            <span>{STATUS_ICONS[applicant.status] || "📋"}</span>
-                            <span>{stage.label}</span>
-                          </div>
+                          {/* Status Badge with Icon - Uses offer status for proper display */}
+                          {(() => {
+                            const displayStatus = getDisplayStatus(applicant);
+                            return (
+                              <div className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${displayStatus.color}`}>
+                                <span>{displayStatus.icon}</span>
+                                <span>{displayStatus.label}</span>
+                              </div>
+                            );
+                          })()}
                         </div>
 
                         <div className="mb-3 space-y-1 text-xs text-secondary-600">
