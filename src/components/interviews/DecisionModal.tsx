@@ -34,6 +34,7 @@ export default function DecisionModal({
   const { showToast } = useToast();
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [isCreatingOffer, setIsCreatingOffer] = useState(false);
+  const [isLoadingDefaults, setIsLoadingDefaults] = useState(false);
   const [offerData, setOfferData] = useState({
     position: "",
     salary: "",
@@ -44,6 +45,11 @@ export default function DecisionModal({
     expiresAt: "",
     customMessage: "",
   });
+  // Store salary range from job for display
+  const [salaryRange, setSalaryRange] = useState<{ min: number | null; max: number | null }>({
+    min: null,
+    max: null,
+  });
 
   if (!isOpen) return null;
 
@@ -52,12 +58,62 @@ export default function DecisionModal({
     onClose();
   };
 
-  const handleSendOfferClick = () => {
-    // Pre-fill position with job title
-    setOfferData((prev) => ({
-      ...prev,
-      position: jobTitle || "",
-    }));
+  const handleSendOfferClick = async () => {
+    // Fetch offer defaults from job posting
+    if (applicationId) {
+      setIsLoadingDefaults(true);
+      try {
+        const response = await api.get(`/api/offers/defaults/${applicationId}`);
+        const defaults = response.data.defaults;
+
+        // Convert cents to dollars for display in form
+        const salaryInDollars = defaults.suggestedSalary
+          ? (defaults.suggestedSalary / 100).toString()
+          : "";
+
+        // Store salary range for display (in dollars)
+        setSalaryRange({
+          min: defaults.salaryMin ? defaults.salaryMin / 100 : null,
+          max: defaults.salaryMax ? defaults.salaryMax / 100 : null,
+        });
+
+        // Format start date for input (YYYY-MM-DD)
+        const startDate = defaults.startDate
+          ? new Date(defaults.startDate).toISOString().split("T")[0]
+          : "";
+
+        // Format expires date for input (YYYY-MM-DD)
+        const expiresAt = defaults.expiresAt
+          ? new Date(defaults.expiresAt).toISOString().split("T")[0]
+          : "";
+
+        setOfferData({
+          position: defaults.position || jobTitle || "",
+          salary: salaryInDollars,
+          equity: defaults.suggestedEquity ? defaults.suggestedEquity.toString() : "",
+          signingBonus: "",
+          benefits: defaults.benefits || [],
+          startDate: startDate,
+          expiresAt: expiresAt,
+          customMessage: "",
+        });
+      } catch (err) {
+        console.error("Failed to fetch offer defaults:", err);
+        // Fallback to just job title if defaults fetch fails
+        setOfferData((prev) => ({
+          ...prev,
+          position: jobTitle || "",
+        }));
+      } finally {
+        setIsLoadingDefaults(false);
+      }
+    } else {
+      // No applicationId, just set position
+      setOfferData((prev) => ({
+        ...prev,
+        position: jobTitle || "",
+      }));
+    }
     setShowOfferModal(true);
   };
 
@@ -284,18 +340,30 @@ export default function DecisionModal({
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-secondary-900">
-                  Make Job Offer
-                </h2>
+                <div>
+                  <h2 className="text-2xl font-bold text-secondary-900">
+                    Make Job Offer
+                  </h2>
+                  <p className="text-sm text-secondary-500 mt-1">
+                    Pre-filled from job posting - all fields are editable
+                  </p>
+                </div>
                 <button
                   onClick={() => setShowOfferModal(false)}
-                  disabled={isCreatingOffer}
+                  disabled={isCreatingOffer || isLoadingDefaults}
                   className="rounded-lg p-2 hover:bg-secondary-100"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
+              {isLoadingDefaults ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600 mb-3" />
+                  <p className="text-secondary-600">Loading offer details from job posting...</p>
+                </div>
+              ) : (
+              <>
               <div className="space-y-4">
                 {/* Position */}
                 <div>
@@ -332,6 +400,16 @@ export default function DecisionModal({
                       disabled={isCreatingOffer}
                     />
                   </div>
+                  {/* Show salary range from job posting */}
+                  {(salaryRange.min || salaryRange.max) && (
+                    <p className="mt-1 text-xs text-secondary-500">
+                      Job posting range: {salaryRange.min && salaryRange.max
+                        ? `$${salaryRange.min.toLocaleString()} - $${salaryRange.max.toLocaleString()}`
+                        : salaryRange.min
+                        ? `From $${salaryRange.min.toLocaleString()}`
+                        : `Up to $${salaryRange.max?.toLocaleString()}`}
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
@@ -512,6 +590,8 @@ export default function DecisionModal({
                   )}
                 </Button>
               </div>
+              </>
+              )}
             </CardContent>
           </Card>
         </div>
