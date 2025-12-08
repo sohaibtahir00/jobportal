@@ -142,6 +142,7 @@ export default function CandidateOnboardingPage() {
 
   // Submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
 
   // Handle resume file selection and parsing
   const handleResumeSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -443,7 +444,7 @@ export default function CandidateOnboardingPage() {
 
   // Handle skip at any step - saves data up to current step
   const handleSkip = async (fromStep: number) => {
-    setIsSubmitting(true);
+    setIsSkipping(true);
 
     try {
       // Step 1: No profile data to save, just mark onboarding complete
@@ -544,7 +545,7 @@ export default function CandidateOnboardingPage() {
         error.response?.data?.error || "Please try again."
       );
     } finally {
-      setIsSubmitting(false);
+      setIsSkipping(false);
     }
   };
 
@@ -638,10 +639,10 @@ export default function CandidateOnboardingPage() {
       <button
         type="button"
         onClick={() => handleSkip(1)}
-        disabled={isParsingResume || isSubmitting}
+        disabled={isParsingResume || isSubmitting || isSkipping}
         className="w-full text-sm text-gray-600 hover:text-gray-800 underline mt-4"
       >
-        {isSubmitting ? "Skipping..." : "Skip for now (you can complete this later)"}
+        {isSkipping ? "Skipping..." : "Skip for now (you can complete this later)"}
       </button>
     </motion.div>
   );
@@ -1047,20 +1048,20 @@ export default function CandidateOnboardingPage() {
       {/* Navigation */}
       <div className="flex flex-col gap-3 pt-4">
         <div className="flex justify-between">
-          <Button type="button" variant="outline" onClick={() => setCurrentStep(1)} disabled={isSubmitting}>
+          <Button type="button" variant="outline" onClick={() => setCurrentStep(1)} disabled={isSubmitting || isSkipping}>
             <ChevronLeft className="h-4 w-4 mr-1" /> Back
           </Button>
-          <Button type="button" onClick={() => setCurrentStep(3)} disabled={isSubmitting}>
+          <Button type="button" onClick={() => setCurrentStep(3)} disabled={isSubmitting || isSkipping}>
             Continue <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
         <button
           type="button"
           onClick={() => handleSkip(2)}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isSkipping}
           className="w-full text-sm text-gray-600 hover:text-gray-800 underline"
         >
-          {isSubmitting ? "Skipping..." : "Skip for now (you can complete this later)"}
+          {isSkipping ? "Skipping..." : "Skip for now (you can complete this later)"}
         </button>
       </div>
     </motion.div>
@@ -1205,7 +1206,7 @@ export default function CandidateOnboardingPage() {
         <Button
           type="button"
           onClick={() => handleSubmit(false)}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isSkipping}
           className="w-full py-3 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700"
         >
           {isSubmitting ? (
@@ -1222,16 +1223,16 @@ export default function CandidateOnboardingPage() {
         </Button>
 
         <div className="flex justify-between">
-          <Button type="button" variant="outline" onClick={() => setCurrentStep(2)} disabled={isSubmitting}>
+          <Button type="button" variant="outline" onClick={() => setCurrentStep(2)} disabled={isSubmitting || isSkipping}>
             <ChevronLeft className="h-4 w-4 mr-1" /> Back
           </Button>
           <button
             type="button"
             onClick={() => handleSkip(3)}
             className="text-sm text-gray-600 hover:text-gray-800 underline"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSkipping}
           >
-            {isSubmitting ? "Skipping..." : "Skip for now"}
+            {isSkipping ? "Skipping..." : "Skip for now"}
           </button>
         </div>
       </div>

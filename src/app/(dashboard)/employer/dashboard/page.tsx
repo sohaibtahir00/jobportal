@@ -7,6 +7,8 @@ import {
   Briefcase,
   FileText,
   CheckCircle2,
+  CheckCircle,
+  Circle,
   Users,
   DollarSign,
   Plus,
@@ -24,6 +26,8 @@ import {
   AlertTriangle,
   Globe,
   Edit,
+  Video,
+  CreditCard,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import CountUp from "react-countup";
@@ -113,19 +117,17 @@ const formatFieldName = (field: string): string => {
     description: "Description",
     companySize: "Company Size",
     phone: "Phone Number",
-    teamMembers: "Team Members",
-    videoConferencing: "Video Conferencing",
-    googleCalendar: "Google Calendar",
   };
   return fieldLabels[field] || field;
 };
 
-// Calculate employer profile completeness
+// Calculate employer profile completeness (basic company info only)
 const calculateProfileCompleteness = (employer: any) => {
   if (!employer) {
-    return { percentage: 0, missingFields: [], completedFields: 0, totalFields: 11 };
+    return { percentage: 0, missingFields: [], completedFields: 0, totalFields: 8 };
   }
 
+  // Only basic company profile fields - NOT interview setup items
   const fields: Record<string, boolean> = {
     companyName: !!employer.companyName,
     companyLogo: !!employer.companyLogo,
@@ -135,10 +137,6 @@ const calculateProfileCompleteness = (employer: any) => {
     description: !!employer.description,
     companySize: !!employer.companySize,
     phone: !!employer.phone,
-    // New integration checks
-    teamMembers: (employer.teamMembersCount || 0) >= 1,
-    videoConferencing: !!employer.videoConferencingConnected,
-    googleCalendar: !!employer.googleCalendarConnected,
   };
 
   const completedFields = Object.values(fields).filter(Boolean).length;
@@ -150,6 +148,25 @@ const calculateProfileCompleteness = (employer: any) => {
     .map(([key]) => key);
 
   return { percentage, missingFields, completedFields, totalFields };
+};
+
+// Calculate interview setup completeness (separate from profile)
+const calculateSetupCompleteness = (employer: any, teamMembersCount: number) => {
+  const hasTeamMembers = teamMembersCount >= 1;
+  const hasVideoConferencing = !!employer?.videoConferencingConnected;
+  const hasCalendar = !!employer?.googleCalendarConnected;
+  const hasPaymentMethod = !!employer?.stripeCustomerId;
+
+  const completedSteps = [hasTeamMembers, hasVideoConferencing, hasCalendar, hasPaymentMethod].filter(Boolean).length;
+
+  return {
+    hasTeamMembers,
+    hasVideoConferencing,
+    hasCalendar,
+    hasPaymentMethod,
+    completedSteps,
+    totalSteps: 4,
+  };
 };
 
 // Get banner styling based on completion percentage
@@ -299,8 +316,14 @@ export default function EmployerDashboardPage() {
 
   // Calculate profile completeness (8 fields total)
   const profileCompletionData = calculateProfileCompleteness(data?.employer);
-  const isProfileIncomplete = profileCompletionData.percentage < 100;
+  const isProfileIncomplete = profileCompletionData.percentage < 75; // Banner disappears at 75%
   const bannerStyle = getBannerStyle(profileCompletionData.percentage);
+
+  // Calculate setup/interview readiness (separate from profile)
+  // Note: These fields may not exist yet in the API response, so we use safe defaults
+  const employerData = data?.employer as any;
+  const setupData = calculateSetupCompleteness(employerData, employerData?.teamMembersCount || 0);
+  const showSetupCard = setupData.completedSteps < setupData.totalSteps;
 
   const showProfileBanner = isProfileIncomplete && !profileBannerDismissed;
 
@@ -427,7 +450,35 @@ export default function EmployerDashboardPage() {
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <div className="space-y-6 pb-12">
         {/* ====================================================================== */}
-        {/* INCOMPLETE PROFILE BANNER */}
+        {/* WELCOME HEADER - First */}
+        {/* ====================================================================== */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-gradient-to-r from-primary-600 to-blue-700 rounded-2xl shadow-2xl overflow-hidden"
+        >
+          <div className="px-6 py-8 lg:px-10 lg:py-10">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                  Welcome back, {employer.companyName}!
+                </h1>
+                <p className="text-blue-100 text-lg">
+                  {currentTime.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ====================================================================== */}
+        {/* INCOMPLETE PROFILE BANNER - After Welcome */}
         {/* ====================================================================== */}
         {showProfileBanner && (
           <motion.div
@@ -550,32 +601,94 @@ export default function EmployerDashboardPage() {
         )}
 
         {/* ====================================================================== */}
-        {/* WELCOME HEADER */}
+        {/* GET READY TO HIRE CHECKLIST - After Profile Banner */}
         {/* ====================================================================== */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-gradient-to-r from-primary-600 to-blue-700 rounded-2xl shadow-2xl overflow-hidden"
-        >
-          <div className="px-6 py-8 lg:px-10 lg:py-10">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
-                  Welcome back, {employer.companyName}!
-                </h1>
-                <p className="text-blue-100 text-lg">
-                  {currentTime.toLocaleDateString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+        {showSetupCard && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+          >
+            <Card className="border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Briefcase className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-secondary-900">Get Ready to Hire</h3>
+                      <p className="text-sm text-secondary-600">Complete these steps to start interviewing candidates</p>
+                    </div>
+                  </div>
+                  <span className="text-sm text-secondary-500">{setupData.completedSteps}/{setupData.totalSteps} complete</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {/* Team Members */}
+                  <div className={`p-3 rounded-lg border ${setupData.hasTeamMembers ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      {setupData.hasTeamMembers ? (
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Circle className="h-4 w-4 text-gray-300" />
+                      )}
+                      <span className="text-sm font-medium">Team Members</span>
+                    </div>
+                    <p className="text-xs text-secondary-500">Add your hiring team</p>
+                  </div>
+
+                  {/* Video Conferencing */}
+                  <div className={`p-3 rounded-lg border ${setupData.hasVideoConferencing ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      {setupData.hasVideoConferencing ? (
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Circle className="h-4 w-4 text-gray-300" />
+                      )}
+                      <span className="text-sm font-medium">Video Conferencing</span>
+                    </div>
+                    <p className="text-xs text-secondary-500">Connect Zoom or Meet</p>
+                  </div>
+
+                  {/* Calendar */}
+                  <div className={`p-3 rounded-lg border ${setupData.hasCalendar ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      {setupData.hasCalendar ? (
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Circle className="h-4 w-4 text-gray-300" />
+                      )}
+                      <span className="text-sm font-medium">Calendar Sync</span>
+                    </div>
+                    <p className="text-xs text-secondary-500">Connect Google Calendar</p>
+                  </div>
+
+                  {/* Payment Method */}
+                  <div className={`p-3 rounded-lg border ${setupData.hasPaymentMethod ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      {setupData.hasPaymentMethod ? (
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Circle className="h-4 w-4 text-gray-300" />
+                      )}
+                      <span className="text-sm font-medium">Payment Method</span>
+                    </div>
+                    <p className="text-xs text-secondary-500">Add billing details</p>
+                  </div>
+                </div>
+
+                {/* Setup Button */}
+                <Button asChild variant="outline" className="mt-4">
+                  <Link href="/employer/settings">
+                    <Edit className="h-4 w-4 mr-2" />
+                    Complete Setup
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* ====================================================================== */}
         {/* QUICK STATS CARDS */}

@@ -67,6 +67,7 @@ export default function EmployerOnboardingPage() {
   const { data: session, update: updateSession } = useSession();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [importError, setImportError] = useState<string | null>(null);
@@ -249,7 +250,7 @@ export default function EmployerOnboardingPage() {
 
   // Skip onboarding
   const handleSkip = async () => {
-    setIsSubmitting(true);
+    setIsSkipping(true);
 
     try {
       // Save any data that was entered
@@ -277,7 +278,7 @@ export default function EmployerOnboardingPage() {
       // Still try to redirect
       router.push("/employer/dashboard");
     } finally {
-      setIsSubmitting(false);
+      setIsSkipping(false);
     }
   };
 
@@ -386,10 +387,10 @@ export default function EmployerOnboardingPage() {
       <button
         type="button"
         onClick={handleSkip}
-        disabled={isImporting || isSubmitting}
+        disabled={isImporting || isSubmitting || isSkipping}
         className="w-full text-sm text-gray-600 hover:text-gray-800 underline"
       >
-        {isSubmitting ? "Skipping..." : "Skip for now (you can complete this later)"}
+        {isSkipping ? "Skipping..." : "Skip for now (you can complete this later)"}
       </button>
     </motion.div>
   );
@@ -651,7 +652,7 @@ export default function EmployerOnboardingPage() {
       <div className="space-y-3">
         <button
           onClick={handleSubmit}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isSkipping}
           className="w-full py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-accent-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
           {isSubmitting ? (
@@ -667,17 +668,17 @@ export default function EmployerOnboardingPage() {
         <div className="flex justify-between items-center">
           <button
             onClick={() => setCurrentStep(1)}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSkipping}
             className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"
           >
             <ChevronLeft className="w-4 h-4" /> Back
           </button>
           <button
             onClick={handleSkip}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSkipping}
             className="text-sm text-gray-600 hover:text-gray-800 underline"
           >
-            {isSubmitting ? "Skipping..." : "Skip for now"}
+            {isSkipping ? "Skipping..." : "Skip for now"}
           </button>
         </div>
       </div>
