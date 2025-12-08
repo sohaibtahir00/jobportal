@@ -626,56 +626,64 @@ export default function EmployerDashboardPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {/* Team Members */}
-                  <div className={`p-3 rounded-lg border ${setupData.hasTeamMembers ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      {setupData.hasTeamMembers ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <Circle className="h-4 w-4 text-gray-300" />
-                      )}
-                      <span className="text-sm font-medium">Team Members</span>
+                  <Link href="/employer/settings" className="block">
+                    <div className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${setupData.hasTeamMembers ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        {setupData.hasTeamMembers ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-gray-300" />
+                        )}
+                        <span className="text-sm font-medium">Team Members</span>
+                      </div>
+                      <p className="text-xs text-secondary-500">Add your hiring team</p>
                     </div>
-                    <p className="text-xs text-secondary-500">Add your hiring team</p>
-                  </div>
+                  </Link>
 
                   {/* Video Conferencing */}
-                  <div className={`p-3 rounded-lg border ${setupData.hasVideoConferencing ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      {setupData.hasVideoConferencing ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <Circle className="h-4 w-4 text-gray-300" />
-                      )}
-                      <span className="text-sm font-medium">Video Conferencing</span>
+                  <Link href="/employer/settings" className="block">
+                    <div className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${setupData.hasVideoConferencing ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        {setupData.hasVideoConferencing ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-gray-300" />
+                        )}
+                        <span className="text-sm font-medium">Video Conferencing</span>
+                      </div>
+                      <p className="text-xs text-secondary-500">Connect Zoom or Meet</p>
                     </div>
-                    <p className="text-xs text-secondary-500">Connect Zoom or Meet</p>
-                  </div>
+                  </Link>
 
                   {/* Calendar */}
-                  <div className={`p-3 rounded-lg border ${setupData.hasCalendar ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      {setupData.hasCalendar ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <Circle className="h-4 w-4 text-gray-300" />
-                      )}
-                      <span className="text-sm font-medium">Calendar Sync</span>
+                  <Link href="/employer/settings" className="block">
+                    <div className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${setupData.hasCalendar ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        {setupData.hasCalendar ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-gray-300" />
+                        )}
+                        <span className="text-sm font-medium">Calendar Sync</span>
+                      </div>
+                      <p className="text-xs text-secondary-500">Connect Google Calendar</p>
                     </div>
-                    <p className="text-xs text-secondary-500">Connect Google Calendar</p>
-                  </div>
+                  </Link>
 
                   {/* Payment Method */}
-                  <div className={`p-3 rounded-lg border ${setupData.hasPaymentMethod ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      {setupData.hasPaymentMethod ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <Circle className="h-4 w-4 text-gray-300" />
-                      )}
-                      <span className="text-sm font-medium">Payment Method</span>
+                  <Link href="/employer/settings#billing" className="block">
+                    <div className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${setupData.hasPaymentMethod ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        {setupData.hasPaymentMethod ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-gray-300" />
+                        )}
+                        <span className="text-sm font-medium">Payment Method</span>
+                      </div>
+                      <p className="text-xs text-secondary-500">Add billing details</p>
                     </div>
-                    <p className="text-xs text-secondary-500">Add billing details</p>
-                  </div>
+                  </Link>
                 </div>
 
                 {/* Setup Button */}

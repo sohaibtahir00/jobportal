@@ -24,7 +24,9 @@ import {
   Edit,
   Star,
   Calendar,
+  CreditCard,
 } from "lucide-react";
+import Link from "next/link";
 import { Button, Badge, Card, CardContent, Input, ConfirmationModal, useToast } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
@@ -106,6 +108,19 @@ export default function EmployerSettingsPage() {
     rounds: [{ name: "", duration: 30, description: "" }],
   });
 
+  // Billing state
+  const [isSettingUpBilling, setIsSettingUpBilling] = useState(false);
+  const [hasStripeCustomer, setHasStripeCustomer] = useState(false);
+  const [stripeCustomerId, setStripeCustomerId] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<{
+    id: string;
+    last4: string;
+    expMonth: number;
+    expYear: number;
+    brand: string;
+  } | null>(null);
+  const [billingLoading, setBillingLoading] = useState(true);
+
   // Load settings
   useEffect(() => {
     const loadSettings = async () => {
@@ -180,6 +195,20 @@ export default function EmployerSettingsPage() {
         } catch (err) {
           console.error("Failed to load templates:", err);
           setTemplates([]);
+        }
+
+        // Load billing status
+        try {
+          const billingResponse = await api.get("/api/stripe/billing-status");
+          if (billingResponse.data) {
+            setHasStripeCustomer(!!billingResponse.data.stripeCustomerId);
+            setStripeCustomerId(billingResponse.data.stripeCustomerId);
+            setPaymentMethod(billingResponse.data.paymentMethod);
+          }
+        } catch (err) {
+          console.error("Failed to load billing status:", err);
+        } finally {
+          setBillingLoading(false);
         }
 
         setIsLoading(false);
@@ -575,6 +604,27 @@ export default function EmployerSettingsPage() {
   const confirmFinalDeletion = async () => {
     setDeleteAccountConfirmModal(false);
     await handleAccountDeletion();
+  };
+
+  // Set up billing (create Stripe customer)
+  const handleSetupBilling = async () => {
+    setIsSettingUpBilling(true);
+    setErrorMessage("");
+    try {
+      const response = await api.post("/api/stripe/create-customer");
+      if (response.data.customerId) {
+        setHasStripeCustomer(true);
+        setStripeCustomerId(response.data.customerId);
+        showToast("success", "Billing Set Up", "Your billing account has been set up successfully!");
+        // Invalidate the employer dashboard query to update banner
+        queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
+      }
+    } catch (err: any) {
+      console.error("Failed to set up billing:", err);
+      showToast("error", "Error", err.response?.data?.error || "Failed to set up billing. Please try again.");
+    } finally {
+      setIsSettingUpBilling(false);
+    }
   };
 
   if (status === "loading" || isLoading) {
@@ -1327,6 +1377,105 @@ export default function EmployerSettingsPage() {
                   show when setting interview availability, helping you avoid scheduling conflicts.
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Billing Section */}
+          <Card className="mb-6" id="billing">
+            <CardContent className="p-6">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
+                  <CreditCard className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-secondary-900">
+                    Billing & Payments
+                  </h2>
+                  <p className="text-sm text-secondary-600">
+                    Manage your payment methods and billing information
+                  </p>
+                </div>
+              </div>
+
+              {billingLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Stripe Customer Status */}
+                  <div className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-3 w-3 rounded-full ${hasStripeCustomer ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                      <div>
+                        <p className="font-medium text-secondary-900">Billing Account Status</p>
+                        <p className="text-sm text-secondary-600">
+                          {hasStripeCustomer
+                            ? `Connected (ID: ...${stripeCustomerId?.slice(-6)})`
+                            : 'Not set up yet'}
+                        </p>
+                      </div>
+                    </div>
+                    {!hasStripeCustomer && (
+                      <Button onClick={handleSetupBilling} disabled={isSettingUpBilling}>
+                        {isSettingUpBilling ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Setting up...
+                          </>
+                        ) : (
+                          'Set Up Billing'
+                        )}
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Payment Method */}
+                  {hasStripeCustomer && (
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-secondary-900">Payment Method</h4>
+                      {paymentMethod ? (
+                        <div className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <CreditCard className="h-5 w-5 text-secondary-500" />
+                            <div>
+                              <p className="font-medium text-secondary-900">
+                                {paymentMethod.brand.charAt(0).toUpperCase() + paymentMethod.brand.slice(1)} •••• {paymentMethod.last4}
+                              </p>
+                              <p className="text-sm text-secondary-600">
+                                Expires {paymentMethod.expMonth.toString().padStart(2, '0')}/{paymentMethod.expYear}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between p-4 border border-dashed rounded-lg">
+                          <p className="text-secondary-600">No payment method on file</p>
+                          <p className="text-sm text-secondary-500">Payment methods are added during checkout</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Invoices Link */}
+                  <div className="pt-4 border-t">
+                    <Button variant="outline" asChild className="w-full sm:w-auto">
+                      <Link href="/employer/invoices">
+                        <FileText className="h-4 w-4 mr-2" />
+                        View Invoices & Payment History
+                      </Link>
+                    </Button>
+                  </div>
+
+                  {/* Info Box */}
+                  <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
+                    <p className="text-sm text-blue-800">
+                      💡 <strong>Tip:</strong> Your billing account will be automatically set up when you make your first payment.
+                      You can also set it up now to streamline the checkout process.
+                    </p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
