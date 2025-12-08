@@ -44,8 +44,12 @@ export function PaymentModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentComplete, setPaymentComplete] = useState(false);
+  const [isElementsReady, setIsElementsReady] = useState(false);
 
   if (!isOpen) return null;
+
+  // Check if Stripe key is configured
+  const stripeKeyMissing = !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
   const formatAmount = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -190,7 +194,31 @@ export function PaymentModal({
 
               {/* Stripe Payment Element */}
               <div className="mb-6">
-                <PaymentElement />
+                {stripeKeyMissing ? (
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
+                    <AlertCircle className="mx-auto mb-2 h-8 w-8 text-red-500" />
+                    <p className="text-sm font-medium text-red-800">
+                      Payment system not configured
+                    </p>
+                    <p className="text-xs text-red-600 mt-1">
+                      Please contact support to enable payments.
+                    </p>
+                  </div>
+                ) : !stripe ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary-600 mr-2" />
+                    <span className="text-secondary-600">Loading payment form...</span>
+                  </div>
+                ) : (
+                  <PaymentElement
+                    onReady={() => setIsElementsReady(true)}
+                    onChange={(event) => {
+                      if (event.complete) {
+                        setIsElementsReady(true);
+                      }
+                    }}
+                  />
+                )}
               </div>
 
               {/* Error Message */}
@@ -234,13 +262,18 @@ export function PaymentModal({
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={!stripe || isProcessing}
+                  disabled={!stripe || !elements || isProcessing || stripeKeyMissing}
                   className="flex-1"
                 >
                   {isProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Processing...
+                    </>
+                  ) : !stripe ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading...
                     </>
                   ) : (
                     <>
