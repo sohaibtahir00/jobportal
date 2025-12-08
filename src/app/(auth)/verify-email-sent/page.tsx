@@ -45,78 +45,100 @@ function VerifyEmailSentContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <motion.div
-        className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center"
+        className="w-full max-w-md"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Icon */}
-        <div className="mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-100 rounded-full">
-            <Mail className="w-10 h-10 text-primary-600" />
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          {/* Logo */}
+          <div className="text-center mb-6">
+            <Link href="/" className="inline-block">
+              <img
+                src="/logo.png"
+                alt="SkillProof"
+                className="h-16 w-auto mx-auto"
+              />
+            </Link>
           </div>
-        </div>
 
-        {/* Heading */}
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">
-          Check your email
-        </h1>
+          {/* Icon */}
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-100 rounded-full">
+              <Mail className="w-10 h-10 text-primary-600" />
+            </div>
+          </div>
 
-        {/* Description */}
-        <p className="text-gray-600 mb-2">
-          We sent a verification link to
-        </p>
-        {email && (
-          <p className="text-primary-600 font-semibold mb-6 break-all">
-            {email}
+          {/* Heading */}
+          <h1 className="text-2xl font-bold text-gray-900 text-center mb-3">
+            Check your email
+          </h1>
+
+          {/* Description */}
+          <p className="text-gray-600 text-center mb-2">
+            We sent a verification link to
           </p>
-        )}
-        <p className="text-gray-600 mb-8">
-          Click the link in the email to verify your account and continue setting up your profile.
-        </p>
-
-        {/* Resend Button */}
-        <button
-          onClick={handleResendEmail}
-          disabled={isResending || resendCooldown > 0 || !email}
-          className="w-full py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {isResending ? (
-            <>
-              <RefreshCw className="w-5 h-5 animate-spin" />
-              Sending...
-            </>
-          ) : resendCooldown > 0 ? (
-            `Resend in ${resendCooldown}s`
-          ) : (
-            <>
-              <RefreshCw className="w-5 h-5" />
-              Resend verification email
-            </>
+          {email && (
+            <p className="text-primary-600 font-semibold text-center mb-6 break-all">
+              {email}
+            </p>
           )}
-        </button>
+          <p className="text-gray-600 text-center mb-8">
+            Click the link in the email to verify your account and continue setting up your profile.
+          </p>
 
-        {/* Help Text */}
-        <div className="mt-8 space-y-3 text-sm text-gray-500">
-          <div className="flex items-start gap-2 justify-center">
-            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <span>Didn't receive it? Check your spam folder</span>
-          </div>
-          <p>The link expires in 24 hours</p>
-        </div>
-
-        {/* Back to Login */}
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors"
+          {/* Resend Button */}
+          <button
+            onClick={handleResendEmail}
+            disabled={isResending || resendCooldown > 0 || !email}
+            className="w-full py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-accent-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to login
-          </Link>
+            {isResending ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Sending...
+              </>
+            ) : resendCooldown > 0 ? (
+              `Resend in ${resendCooldown}s`
+            ) : (
+              <>
+                <RefreshCw className="w-5 h-5" />
+                Resend verification email
+              </>
+            )}
+          </button>
+
+          {/* Help Text */}
+          <div className="mt-8 space-y-3 text-sm text-gray-500 text-center">
+            <div className="flex items-center gap-2 justify-center">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>Didn't receive it? Check your spam folder</span>
+            </div>
+            <p>The link expires in 24 hours</p>
+          </div>
+
+          {/* Back to Login */}
+          <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to login
+            </Link>
+          </div>
         </div>
+
+        {/* Support link */}
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Need help?{" "}
+          <Link href="/contact" className="text-primary-600 hover:text-primary-700 font-medium">
+            Contact support
+          </Link>
+        </p>
       </motion.div>
     </div>
   );
@@ -124,7 +146,7 @@ function VerifyEmailSentContent() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
         <Loader2 className="w-12 h-12 text-primary-600 animate-spin mx-auto" />
         <p className="mt-4 text-gray-600">Loading...</p>

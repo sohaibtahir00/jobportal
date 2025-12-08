@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://job-portal-backend-production-cd05.up.railway.app';
 
@@ -171,74 +172,102 @@ export default function OAuthCallbackPage() {
   }, [session, status, update]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 text-center">
-        {isProcessing && !error ? (
-          <>
-            <div className="mb-6">
-              <Loader2 className="w-12 h-12 mx-auto text-primary-600 animate-spin" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 via-white to-purple-50 p-4">
+      <motion.div
+        className="w-full max-w-md"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          {/* Logo */}
+          <div className="text-center mb-6">
+            <Link href="/" className="inline-block">
+              <img
+                src="/logo.png"
+                alt="SkillProof"
+                className="h-16 w-auto mx-auto"
+              />
+            </Link>
+          </div>
+
+          {isProcessing && !error ? (
+            <div className="text-center">
+              {/* Loading Icon */}
+              <div className="mb-6">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-100 rounded-full">
+                  <Loader2 className="w-10 h-10 text-primary-600 animate-spin" />
+                </div>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                {statusMessage}
+              </h1>
+              <p className="text-gray-600">
+                Please wait while we set up your account.
+              </p>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {statusMessage}
-            </h1>
-            <p className="text-gray-600">
-              Please wait while we set up your account.
-            </p>
-          </>
-        ) : error ? (
-          <>
-            <div className="mb-6">
-              <AlertCircle className="w-12 h-12 mx-auto text-red-500" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Authentication Failed
-            </h1>
-            <p className="text-gray-600 mb-6">{error}</p>
-            <div className="space-y-3">
-              {error.includes("sign up first") && (
+          ) : error ? (
+            <div className="text-center">
+              {/* Error Icon */}
+              <div className="mb-6">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full">
+                  <AlertCircle className="w-10 h-10 text-red-600" />
+                </div>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Authentication Failed
+              </h1>
+              <p className="text-gray-600 mb-6">{error}</p>
+              <div className="space-y-3">
+                {error.includes("sign up first") && (
+                  <Link
+                    href="/signup"
+                    className="block w-full py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-accent-700 transition-all shadow-lg text-center"
+                  >
+                    Go to Sign Up
+                  </Link>
+                )}
+                {error.includes("log in instead") && (
+                  <Link
+                    href="/login"
+                    className="block w-full py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-accent-700 transition-all shadow-lg text-center"
+                  >
+                    Go to Login
+                  </Link>
+                )}
+                {error.includes("select a role") && (
+                  <Link
+                    href="/signup"
+                    className="block w-full py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-accent-700 transition-all shadow-lg text-center"
+                  >
+                    Go to Sign Up
+                  </Link>
+                )}
                 <Link
-                  href="/signup"
-                  className="block w-full py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all"
+                  href="/"
+                  className="block w-full py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all text-center"
                 >
-                  Go to Sign Up
+                  Go to Home
                 </Link>
-              )}
-              {error.includes("log in instead") && (
-                <Link
-                  href="/login"
-                  className="block w-full py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all"
-                >
-                  Go to Login
-                </Link>
-              )}
-              {error.includes("select a role") && (
-                <Link
-                  href="/signup"
-                  className="block w-full py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all"
-                >
-                  Go to Sign Up
-                </Link>
-              )}
-              <Link
-                href="/"
-                className="block w-full py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
-              >
-                Go to Home
-              </Link>
+              </div>
             </div>
-          </>
-        ) : (
-          <>
-            <div className="mb-6">
-              <CheckCircle className="w-12 h-12 mx-auto text-green-500" />
+          ) : (
+            <div className="text-center">
+              {/* Success Icon */}
+              <div className="mb-6">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full">
+                  <CheckCircle className="w-10 h-10 text-green-600" />
+                </div>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Success!
+              </h1>
+              <p className="text-gray-600">Redirecting you now...</p>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Success!
-            </h1>
-            <p className="text-gray-600">Redirecting you now...</p>
-          </>
-        )}
-      </div>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 }
