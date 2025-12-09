@@ -914,6 +914,8 @@ export default function ApplicantDetailPage() {
                   introductionId={applicantData._introductionId}
                   protectionEndsAt={applicantData._protectionEndsAt}
                   introRequestedAt={applicantData._introRequestedAt}
+                  introducedAt={applicantData._introducedAt}
+                  candidateResponse={applicantData._candidateResponse}
                   onIntroductionRequested={handleIntroductionRequested}
                 />
               </CardContent>

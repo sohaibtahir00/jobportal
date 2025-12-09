@@ -286,6 +286,8 @@ export default function CandidateProfilePage() {
               introductionId={candidateData._introductionId}
               protectionEndsAt={candidateData._protectionEndsAt}
               introRequestedAt={candidateData._introRequestedAt}
+              introducedAt={candidateData._introducedAt}
+              candidateResponse={candidateData._candidateResponse}
               onIntroductionRequested={handleIntroductionRequested}
             />
 

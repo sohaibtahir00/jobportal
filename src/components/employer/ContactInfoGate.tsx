@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Lock,
   Mail,
@@ -15,6 +16,10 @@ import {
   Loader2,
   Shield,
   ArrowRight,
+  XCircle,
+  MessageCircle,
+  Copy,
+  Search,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, useToast } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -52,6 +57,8 @@ export type IntroductionStatus =
   | "CLOSED_NO_HIRE"
   | "EXPIRED";
 
+export type CandidateResponse = "PENDING" | "ACCEPTED" | "DECLINED" | "QUESTIONS" | null;
+
 interface ContactInfoGateProps {
   candidateId: string;
   candidateName: string;
@@ -69,6 +76,8 @@ interface ContactInfoGateProps {
   introductionId: string | null;
   protectionEndsAt: string | null;
   introRequestedAt?: string | null;
+  introducedAt?: string | null;
+  candidateResponse?: CandidateResponse;
   // Callbacks
   onIntroductionRequested?: () => void;
 }
@@ -88,15 +97,25 @@ export function ContactInfoGate({
   introductionId,
   protectionEndsAt,
   introRequestedAt,
+  introducedAt,
+  candidateResponse,
   onIntroductionRequested,
 }: ContactInfoGateProps) {
   const { showToast } = useToast();
   const [isRequesting, setIsRequesting] = useState(false);
   const [localIntroStatus, setLocalIntroStatus] = useState(introductionStatus);
   const [localIntroRequestedAt, setLocalIntroRequestedAt] = useState(introRequestedAt);
+  const [localCandidateResponse, setLocalCandidateResponse] = useState(candidateResponse);
 
-  // Check if introduction has been requested
-  const isIntroRequested = localIntroStatus === "INTRO_REQUESTED";
+  // Check if introduction has been requested and is pending
+  const isIntroPending = localIntroStatus === "INTRO_REQUESTED" &&
+    (localCandidateResponse === "PENDING" || !localCandidateResponse);
+
+  // Check if candidate has questions
+  const hasQuestions = localCandidateResponse === "QUESTIONS";
+
+  // Check if candidate declined
+  const isDeclined = localIntroStatus === "CANDIDATE_DECLINED" || localCandidateResponse === "DECLINED";
 
   // Check if full access is granted (introduced or beyond)
   const hasFullAccess = [
@@ -104,7 +123,17 @@ export function ContactInfoGate({
     "INTERVIEWING",
     "OFFER_EXTENDED",
     "HIRED",
-  ].includes(localIntroStatus as string);
+  ].includes(localIntroStatus as string) || localCandidateResponse === "ACCEPTED";
+
+  // Copy to clipboard helper
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("success", "Copied!", `${label} copied to clipboard`);
+    } catch {
+      showToast("error", "Failed to copy", "Please try again");
+    }
+  };
 
   // Handle request introduction
   const handleRequestIntroduction = async () => {
@@ -117,10 +146,11 @@ export function ContactInfoGate({
       if (response.data.success) {
         setLocalIntroStatus("INTRO_REQUESTED");
         setLocalIntroRequestedAt(new Date().toISOString());
+        setLocalCandidateResponse("PENDING");
         showToast(
           "success",
           "Introduction Requested",
-          "We'll notify you when the candidate responds."
+          response.data.message || "We'll notify you when the candidate responds."
         );
         onIntroductionRequested?.();
       }
@@ -129,7 +159,7 @@ export function ContactInfoGate({
       showToast(
         "error",
         "Request Failed",
-        error.response?.data?.error || "Please try again later."
+        error.response?.data?.message || error.response?.data?.error || "Please try again later."
       );
     } finally {
       setIsRequesting(false);
@@ -168,114 +198,147 @@ export function ContactInfoGate({
     }
 
     return (
-      <Card>
+      <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-secondary-900 flex items-center gap-2">
-              <Mail className="h-5 w-5 text-secondary-600" />
-              Contact Information
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Introduction Accepted
             </h3>
             <Badge variant="success" className="gap-1">
               <CheckCircle className="h-3 w-3" />
-              Full Access
+              Connected
             </Badge>
           </div>
 
           <div className="space-y-3">
             {email && (
-              <a
-                href={`mailto:${email}`}
-                className="flex items-center gap-3 p-3 rounded-lg bg-secondary-50 hover:bg-secondary-100 transition-colors group"
-              >
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/80 border border-green-200">
                 <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
                   <Mail className="h-5 w-5 text-primary-600" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-secondary-500">Email</p>
-                  <p className="text-sm font-medium text-secondary-900 truncate group-hover:text-primary-600">
+                  <p className="text-sm font-medium text-secondary-900 truncate">
                     {email}
                   </p>
                 </div>
-                <ExternalLink className="h-4 w-4 text-secondary-400 group-hover:text-primary-600" />
-              </a>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => copyToClipboard(email, "Email")}
+                    className="p-2 hover:bg-secondary-100 rounded-md transition-colors"
+                    title="Copy email"
+                  >
+                    <Copy className="h-4 w-4 text-secondary-500" />
+                  </button>
+                  <a
+                    href={`mailto:${email}`}
+                    className="p-2 hover:bg-secondary-100 rounded-md transition-colors"
+                    title="Send email"
+                  >
+                    <ExternalLink className="h-4 w-4 text-secondary-500" />
+                  </a>
+                </div>
+              </div>
             )}
 
             {phone && (
-              <a
-                href={`tel:${phone}`}
-                className="flex items-center gap-3 p-3 rounded-lg bg-secondary-50 hover:bg-secondary-100 transition-colors group"
-              >
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/80 border border-green-200">
                 <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
                   <Phone className="h-5 w-5 text-green-600" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-secondary-500">Phone</p>
-                  <p className="text-sm font-medium text-secondary-900 truncate group-hover:text-primary-600">
+                  <p className="text-sm font-medium text-secondary-900 truncate">
                     {phone}
                   </p>
                 </div>
-                <ExternalLink className="h-4 w-4 text-secondary-400 group-hover:text-primary-600" />
-              </a>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => copyToClipboard(phone, "Phone")}
+                    className="p-2 hover:bg-secondary-100 rounded-md transition-colors"
+                    title="Copy phone"
+                  >
+                    <Copy className="h-4 w-4 text-secondary-500" />
+                  </button>
+                  <a
+                    href={`tel:${phone}`}
+                    className="p-2 hover:bg-secondary-100 rounded-md transition-colors"
+                    title="Call"
+                  >
+                    <ExternalLink className="h-4 w-4 text-secondary-500" />
+                  </a>
+                </div>
+              </div>
             )}
 
             {linkedIn && (
-              <a
-                href={linkedIn.startsWith("http") ? linkedIn : `https://${linkedIn}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 rounded-lg bg-secondary-50 hover:bg-secondary-100 transition-colors group"
-              >
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/80 border border-green-200">
                 <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                   <Linkedin className="h-5 w-5 text-blue-600" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-secondary-500">LinkedIn</p>
-                  <p className="text-sm font-medium text-secondary-900 truncate group-hover:text-primary-600">
+                  <p className="text-sm font-medium text-secondary-900 truncate">
                     View Profile
                   </p>
                 </div>
-                <ExternalLink className="h-4 w-4 text-secondary-400 group-hover:text-primary-600" />
-              </a>
+                <a
+                  href={linkedIn.startsWith("http") ? linkedIn : `https://${linkedIn}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 hover:bg-secondary-100 rounded-md transition-colors"
+                  title="Open LinkedIn"
+                >
+                  <ExternalLink className="h-4 w-4 text-secondary-500" />
+                </a>
+              </div>
             )}
 
             {github && (
-              <a
-                href={github.startsWith("http") ? github : `https://${github}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 rounded-lg bg-secondary-50 hover:bg-secondary-100 transition-colors group"
-              >
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/80 border border-green-200">
                 <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
                   <Github className="h-5 w-5 text-gray-700" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-secondary-500">GitHub</p>
-                  <p className="text-sm font-medium text-secondary-900 truncate group-hover:text-primary-600">
+                  <p className="text-sm font-medium text-secondary-900 truncate">
                     View Profile
                   </p>
                 </div>
-                <ExternalLink className="h-4 w-4 text-secondary-400 group-hover:text-primary-600" />
-              </a>
+                <a
+                  href={github.startsWith("http") ? github : `https://${github}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 hover:bg-secondary-100 rounded-md transition-colors"
+                  title="Open GitHub"
+                >
+                  <ExternalLink className="h-4 w-4 text-secondary-500" />
+                </a>
+              </div>
             )}
 
             {(portfolio || personalWebsite) && (
-              <a
-                href={(portfolio || personalWebsite)!.startsWith("http") ? (portfolio || personalWebsite)! : `https://${portfolio || personalWebsite}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 rounded-lg bg-secondary-50 hover:bg-secondary-100 transition-colors group"
-              >
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/80 border border-green-200">
                 <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
                   <Globe className="h-5 w-5 text-purple-600" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-secondary-500">Portfolio / Website</p>
-                  <p className="text-sm font-medium text-secondary-900 truncate group-hover:text-primary-600">
+                  <p className="text-sm font-medium text-secondary-900 truncate">
                     View Website
                   </p>
                 </div>
-                <ExternalLink className="h-4 w-4 text-secondary-400 group-hover:text-primary-600" />
-              </a>
+                <a
+                  href={(portfolio || personalWebsite)!.startsWith("http") ? (portfolio || personalWebsite)! : `https://${portfolio || personalWebsite}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 hover:bg-secondary-100 rounded-md transition-colors"
+                  title="Open Website"
+                >
+                  <ExternalLink className="h-4 w-4 text-secondary-500" />
+                </a>
+              </div>
             )}
 
             {resumeUrl && (
@@ -298,13 +361,126 @@ export function ContactInfoGate({
               </a>
             )}
           </div>
+
+          {/* Connection info footer */}
+          <div className="mt-4 pt-4 border-t border-green-200 space-y-2">
+            {introducedAt && (
+              <p className="text-xs text-secondary-600">
+                Connected on:{" "}
+                {new Date(introducedAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            )}
+            {protectionEndsAt && (
+              <div className="flex items-start gap-2 text-xs text-secondary-500">
+                <Shield className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>
+                  Protection period ends: {formatProtectionDate(protectionEndsAt)}
+                </span>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     );
   }
 
-  // If introduction has been requested but not yet accepted
-  if (isIntroRequested) {
+  // Candidate declined - show unavailable state
+  if (isDeclined) {
+    return (
+      <Card className="border-secondary-300 bg-gradient-to-br from-secondary-50 to-gray-50">
+        <CardContent className="p-6">
+          <h3 className="font-bold text-secondary-900 mb-4 flex items-center gap-2">
+            <Mail className="h-5 w-5 text-secondary-600" />
+            Contact Information
+          </h3>
+
+          <div className="bg-white/80 rounded-xl p-6 border border-secondary-200">
+            <div className="flex justify-center mb-4">
+              <div className="h-16 w-16 rounded-full bg-secondary-100 flex items-center justify-center">
+                <XCircle className="h-8 w-8 text-secondary-500" />
+              </div>
+            </div>
+
+            <h4 className="text-lg font-semibold text-center text-secondary-900 mb-2">
+              Candidate Unavailable
+            </h4>
+
+            <p className="text-secondary-600 text-center text-sm mb-6">
+              This candidate is not available for this opportunity at this time.
+            </p>
+
+            <Link href="/employer/candidates">
+              <Button variant="outline" className="w-full">
+                <Search className="mr-2 h-4 w-4" />
+                Browse Other Candidates
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Candidate has questions - show pending with questions state
+  if (hasQuestions) {
+    return (
+      <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50">
+        <CardContent className="p-6">
+          <h3 className="font-bold text-secondary-900 mb-4 flex items-center gap-2">
+            <Mail className="h-5 w-5 text-secondary-600" />
+            Contact Information
+          </h3>
+
+          <div className="bg-white/80 rounded-xl p-6 border border-purple-200">
+            <div className="flex justify-center mb-4">
+              <div className="h-16 w-16 rounded-full bg-purple-100 flex items-center justify-center">
+                <MessageCircle className="h-8 w-8 text-purple-600" />
+              </div>
+            </div>
+
+            <h4 className="text-lg font-semibold text-center text-secondary-900 mb-2">
+              Candidate Has Questions
+            </h4>
+
+            <p className="text-secondary-600 text-center text-sm mb-4">
+              The candidate would like more information before connecting.
+              <br />
+              Our team is facilitating - you'll hear from us soon.
+            </p>
+
+            {localIntroRequestedAt && (
+              <p className="text-xs text-secondary-500 text-center">
+                Requested on:{" "}
+                {new Date(localIntroRequestedAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            )}
+          </div>
+
+          {/* Protection period notice */}
+          {protectionEndsAt && (
+            <div className="mt-4 flex items-start gap-2 text-xs text-secondary-500">
+              <Shield className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>
+                This candidate is covered under your Service Agreement.
+                Protection period: Until {formatProtectionDate(protectionEndsAt)}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // If introduction has been requested but not yet accepted (pending)
+  if (isIntroPending) {
     return (
       <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
         <CardContent className="p-6">
