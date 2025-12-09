@@ -16,6 +16,7 @@ import {
   Loader2,
   Shield,
   AlertTriangle,
+  Mail,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -27,6 +28,7 @@ const adminNavItems = [
   { href: "/admin/jobs", label: "Jobs Management", icon: Briefcase },
   { href: "/admin/assessments", label: "Assessments Review", icon: Award },
   { href: "/admin/placements", label: "Placements & Revenue", icon: DollarSign },
+  { href: "/admin/check-ins", label: "Check-in Emails", icon: Mail },
   { href: "/admin/circumvention", label: "Circumvention Flags", icon: AlertTriangle },
   { href: "/admin/settings", label: "Platform Settings", icon: SettingsIcon },
 ];
