@@ -182,6 +182,7 @@ export async function claimJob(
     salaryMax?: number;
     startDateNeeded?: string;
     candidatesNeeded?: number;
+    acknowledgment: boolean;
   }
 ): Promise<{
   message: string;

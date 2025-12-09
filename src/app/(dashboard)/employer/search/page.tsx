@@ -24,7 +24,9 @@ import { AgreementGate } from "@/components/employer/AgreementGate";
 
 interface Candidate {
   id: string;
-  name: string;
+  firstName: string;
+  lastInitial: string;
+  displayName: string; // firstName + lastInitial for display
   title: string;
   location: string;
   experience: string;
@@ -92,19 +94,28 @@ export default function EmployerSearchPage() {
           const response = await api.get(`/api/candidates/search?${params.toString()}`);
           const apiCandidates = response.data.candidates || [];
 
-          const transformedCandidates: Candidate[] = apiCandidates.map((c: any) => ({
-            id: c.id,
-            name: c.user.name || c.user.email,
-            title: c.currentTitle || "Not specified",
-            location: c.location || "Not specified",
-            experience: c.experience ? `${c.experience} years` : "Not specified",
-            experienceYears: c.experience || 0,
-            skillsScore: c.testScore || 0,
-            tier: c.testTier || "Not Assessed",
-            skills: c.skills || [],
-            seeking: c.preferredJobType || "Not specified",
-            available: c.availability || false,
-          }));
+          const transformedCandidates: Candidate[] = apiCandidates.map((c: any) => {
+            // Use firstName and lastInitial from API (masked name for privacy)
+            const firstName = c.firstName || "Unknown";
+            const lastInitial = c.lastInitial || "";
+            const displayName = `${firstName} ${lastInitial}`.trim();
+
+            return {
+              id: c.id,
+              firstName,
+              lastInitial,
+              displayName,
+              title: c.currentTitle || "Not specified",
+              location: c.location || "Not specified",
+              experience: c.yearsExperience ? `${c.yearsExperience} years` : "Not specified",
+              experienceYears: c.yearsExperience || 0,
+              skillsScore: c.skillsScore || 0,
+              tier: c.skillsTier || "Not Assessed",
+              skills: c.skills || [],
+              seeking: c.preferredJobType || "Not specified",
+              available: c.availability || false,
+            };
+          });
 
           setCandidates(transformedCandidates);
           setIsLoading(false);
@@ -139,7 +150,7 @@ export default function EmployerSearchPage() {
         case "experience-asc":
           return a.experienceYears - b.experienceYears;
         case "name-asc":
-          return a.name.localeCompare(b.name);
+          return a.displayName.localeCompare(b.displayName);
         default:
           return 0;
       }
@@ -577,11 +588,11 @@ export default function EmployerSearchPage() {
               {paginatedCandidates.map((candidate) => (
                 <Card key={candidate.id} className="transition-all hover:shadow-lg hover:-translate-y-1">
                   <CardContent className="p-6">
-                    {/* Header with Name and Score */}
+                    {/* Header with Masked Name and Score */}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-bold text-secondary-900 truncate">
-                          {candidate.name}
+                          {candidate.displayName}
                         </h3>
                         <p className="text-sm text-secondary-600 truncate">{candidate.title}</p>
                       </div>

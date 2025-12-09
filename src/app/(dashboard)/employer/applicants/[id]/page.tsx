@@ -3,27 +3,19 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import {
   ChevronLeft,
   Star,
   MapPin,
   Calendar,
-  Award,
   Briefcase,
   MessageSquare,
   X,
   Loader2,
-  FileText,
-  TrendingUp,
-  Code,
-  Database,
-  Shield,
   Video,
   CheckCircle,
   Gift,
   DollarSign,
-  Lock,
   Clock,
   XCircle,
   RefreshCw,
@@ -35,6 +27,7 @@ import { api } from "@/lib/api";
 import RejectCandidateModal from "@/components/interviews/RejectCandidateModal";
 import RescheduleInterviewModal from "@/components/interviews/RescheduleInterviewModal";
 import { AgreementGate } from "@/components/employer/AgreementGate";
+import { ContactInfoGate } from "@/components/employer/ContactInfoGate";
 
 // Backend URL for file downloads
 const BACKEND_URL =
@@ -112,12 +105,32 @@ export default function ApplicantDetailPage() {
   const [withdrawReason, setWithdrawReason] = useState("");
   const [isWithdrawing, setIsWithdrawing] = useState(false);
 
-  // Handle introduction request
-  const handleRequestIntroduction = () => {
-    showToast(
-      "success",
-      "Introduction Requested - We'll connect you with this candidate within 24 hours."
-    );
+  // Handle introduction request - reload data to update gating status
+  const handleIntroductionRequested = async () => {
+    // Reload applicant data to get updated gating status
+    if (!applicantId || status !== "authenticated") return;
+
+    try {
+      const response = await api.get(
+        `/api/employer/applications/${applicantId}`
+      );
+      const app = response.data.application;
+
+      if (app) {
+        // Update the relevant gating fields
+        setApplicantData((prev: any) => ({
+          ...prev,
+          _accessLevel: app.candidate._accessLevel,
+          _introductionStatus: app.candidate._introductionStatus || "NONE",
+          _introductionId: app.candidate._introductionId,
+          _protectionEndsAt: app.candidate._protectionEndsAt,
+          _introRequestedAt: app.candidate._introRequestedAt,
+          _contactGated: app.candidate._contactGated ?? true,
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to refresh applicant data:", err);
+    }
   };
 
   // Redirect if not logged in or not employer
@@ -216,6 +229,14 @@ export default function ApplicantDetailPage() {
 
           // Offer data for button state management
           offer: app.offer || null,
+
+          // Gating metadata from API
+          _accessLevel: app.candidate._accessLevel,
+          _introductionStatus: app.candidate._introductionStatus || "NONE",
+          _introductionId: app.candidate._introductionId,
+          _protectionEndsAt: app.candidate._protectionEndsAt,
+          _introRequestedAt: app.candidate._introRequestedAt,
+          _contactGated: app.candidate._contactGated ?? true,
         };
 
         console.log("✅ [Applicant Detail] Transformed data:", transformedData);
@@ -877,23 +898,24 @@ export default function ApplicantDetailPage() {
                   </div>
                 </div>
 
-                {/* Contact Info - Gated */}
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-amber-600" />
-                    <span className="font-medium text-amber-800">Contact Information Protected</span>
-                  </div>
-                  <p className="text-sm text-amber-700 mt-2">
-                    To protect candidate privacy and ensure quality introductions, contact details are shared after you request an introduction.
-                  </p>
-                  <Button
-                    className="mt-3"
-                    size="sm"
-                    onClick={handleRequestIntroduction}
-                  >
-                    Request Introduction
-                  </Button>
-                </div>
+                {/* Contact Info - Using ContactInfoGate Component */}
+                <ContactInfoGate
+                  candidateId={applicantData.candidateId}
+                  candidateName={applicantData.name || "Candidate"}
+                  email={applicantData.email}
+                  phone={applicantData.phone !== "Not provided" ? applicantData.phone : null}
+                  linkedIn={applicantData.linkedin}
+                  github={applicantData.github}
+                  portfolio={applicantData.portfolio}
+                  personalWebsite={applicantData.personalWebsite}
+                  resume={applicantData.resume}
+                  isContactGated={applicantData._contactGated ?? true}
+                  introductionStatus={applicantData._introductionStatus || "NONE"}
+                  introductionId={applicantData._introductionId}
+                  protectionEndsAt={applicantData._protectionEndsAt}
+                  introRequestedAt={applicantData._introRequestedAt}
+                  onIntroductionRequested={handleIntroductionRequested}
+                />
               </CardContent>
             </Card>
 
@@ -1006,18 +1028,6 @@ export default function ApplicantDetailPage() {
                     <MessageSquare className="mr-2 h-5 w-5" />
                     Send Message
                   </Button>
-                  {/* Resume - Gated */}
-                  {applicantData.resume && (
-                    <div className="w-full bg-secondary-50 border border-secondary-200 rounded-lg p-3">
-                      <div className="flex items-center gap-2 text-secondary-600">
-                        <FileText className="h-4 w-4" />
-                        <span className="text-sm font-medium">Resume Available</span>
-                      </div>
-                      <p className="text-xs text-secondary-500 mt-1">
-                        Available after introduction request
-                      </p>
-                    </div>
-                  )}
                   <Button
                     variant="outline"
                     className="w-full border-red-300 text-red-600 hover:bg-red-50"
@@ -1136,28 +1146,6 @@ export default function ApplicantDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Professional Links - Gated */}
-          {(applicantData.linkedin ||
-            applicantData.github ||
-            applicantData.portfolio ||
-            applicantData.personalWebsite) && (
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-amber-600" />
-                    <span className="font-medium text-amber-800">Professional Links Protected</span>
-                  </div>
-                  <p className="text-sm text-amber-700 mt-2">
-                    LinkedIn, GitHub, Portfolio, and Website links are available after you request an introduction.
-                  </p>
-                  <Button className="mt-3" size="sm" onClick={handleRequestIntroduction}>
-                    Request Introduction
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Work Experience - Full Details */}
           {applicantData.workExperience &&

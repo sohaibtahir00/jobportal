@@ -9,45 +9,18 @@ import {
   Star,
   MapPin,
   Briefcase,
-  MessageSquare,
   Loader2,
   Video,
   Award,
   Building,
   GraduationCap,
   Clock,
-  Lock,
-  FileText,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, useToast } from "@/components/ui";
 import { SkillsScoreCard } from "@/components/skills";
 import { api } from "@/lib/api";
 import { AgreementGate } from "@/components/employer/AgreementGate";
-
-// Backend URL for file downloads
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://job-portal-backend-production-cd05.up.railway.app";
-
-// Helper function to get full resume URL
-const getResumeUrl = (resumePath: string | null): string | null => {
-  if (!resumePath) return null;
-  if (resumePath.startsWith("http://") || resumePath.startsWith("https://")) {
-    return resumePath;
-  }
-
-  // Normalize path: handle both /uploads/resume/ and /uploads/resumes/
-  let normalizedPath = resumePath;
-  // Convert /uploads/resume/ (without s) to /uploads/resumes/ (with s)
-  if (normalizedPath.includes("/uploads/resume/") && !normalizedPath.includes("/uploads/resumes/")) {
-    normalizedPath = normalizedPath.replace("/uploads/resume/", "/uploads/resumes/");
-  }
-
-  const apiPath = normalizedPath.startsWith("/uploads/")
-    ? normalizedPath.replace("/uploads/", "/api/uploads/")
-    : normalizedPath;
-  return `${BACKEND_URL}${apiPath}`;
-};
+import { ContactInfoGate } from "@/components/employer/ContactInfoGate";
 
 export default function CandidateProfilePage() {
   const params = useParams();
@@ -59,13 +32,44 @@ export default function CandidateProfilePage() {
   const [error, setError] = useState("");
   const [candidateData, setCandidateData] = useState<any>(null);
 
-  // Handle introduction request
-  const handleRequestIntroduction = () => {
-    showToast(
-      "success",
-      "Introduction Requested",
-      "We'll connect you with this candidate within 24 hours."
-    );
+  // Callback when introduction is requested
+  const handleIntroductionRequested = () => {
+    // Refresh the candidate data to get updated status
+    if (candidateId && status === "authenticated") {
+      loadCandidate();
+    }
+  };
+
+  // Load candidate data
+  const loadCandidate = async () => {
+    if (!candidateId) return;
+
+    try {
+      setIsLoading(true);
+      setError("");
+
+      console.log("🔍 [Candidate Profile] Fetching candidate:", candidateId);
+
+      const response = await api.get(`/api/employer/candidates/${candidateId}`);
+      console.log("📦 [Candidate Profile] Response:", response.data);
+
+      const candidate = response.data.candidate;
+
+      if (!candidate) {
+        throw new Error("Candidate not found");
+      }
+
+      setCandidateData(candidate);
+      setIsLoading(false);
+    } catch (err: any) {
+      console.error("❌ [Candidate Profile] Error:", err);
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "Failed to load candidate profile"
+      );
+      setIsLoading(false);
+    }
   };
 
   // Redirect if not logged in or not employer
@@ -78,39 +82,8 @@ export default function CandidateProfilePage() {
     }
   }, [status, session, router]);
 
-  // Load candidate data
+  // Load candidate data on mount
   useEffect(() => {
-    const loadCandidate = async () => {
-      if (!candidateId) return;
-
-      try {
-        setIsLoading(true);
-        setError("");
-
-        console.log("🔍 [Candidate Profile] Fetching candidate:", candidateId);
-
-        const response = await api.get(`/api/employer/candidates/${candidateId}`);
-        console.log("📦 [Candidate Profile] Response:", response.data);
-
-        const candidate = response.data.candidate;
-
-        if (!candidate) {
-          throw new Error("Candidate not found");
-        }
-
-        setCandidateData(candidate);
-        setIsLoading(false);
-      } catch (err: any) {
-        console.error("❌ [Candidate Profile] Error:", err);
-        setError(
-          err.response?.data?.error ||
-            err.message ||
-            "Failed to load candidate profile"
-        );
-        setIsLoading(false);
-      }
-    };
-
     if (status === "authenticated") {
       loadCandidate();
     }
@@ -294,105 +267,79 @@ export default function CandidateProfilePage() {
                   )}
                 </div>
 
-                {/* Contact Info - Gated */}
-                <div className="border-t border-secondary-200 pt-4">
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2">
-                      <Lock className="h-5 w-5 text-amber-600" />
-                      <span className="font-medium text-amber-800">Contact Information Protected</span>
-                    </div>
-                    <p className="text-sm text-amber-700 mt-2">
-                      To protect candidate privacy and ensure quality introductions, contact details are shared after you request an introduction.
-                    </p>
-                    <Button
-                      className="mt-3"
-                      size="sm"
-                      onClick={handleRequestIntroduction}
-                    >
-                      Request Introduction
-                    </Button>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="mb-4 font-bold text-secondary-900">Actions</h3>
-                <div className="space-y-3">
-                  <Button
-                    variant="primary"
-                    className="w-full"
-                    onClick={handleRequestIntroduction}
-                  >
-                    <MessageSquare className="mr-2 h-5 w-5" />
-                    Request Introduction
-                  </Button>
+            {/* Contact Info Gate */}
+            <ContactInfoGate
+              candidateId={candidateId}
+              candidateName={candidateData.user?.name || "Candidate"}
+              email={candidateData.user?.email || candidateData.email}
+              phone={candidateData.phone}
+              linkedIn={candidateData.linkedIn}
+              github={candidateData.github}
+              portfolio={candidateData.portfolio}
+              personalWebsite={candidateData.personalWebsite}
+              resume={candidateData.resume}
+              isContactGated={candidateData._contactGated ?? true}
+              introductionStatus={candidateData._introductionStatus || "NONE"}
+              introductionId={candidateData._introductionId}
+              protectionEndsAt={candidateData._protectionEndsAt}
+              introRequestedAt={candidateData._introRequestedAt}
+              onIntroductionRequested={handleIntroductionRequested}
+            />
 
-                  {/* Resume - Gated */}
-                  {candidateData.resume && (
-                    <div className="bg-secondary-50 border border-secondary-200 rounded-lg p-3">
-                      <div className="flex items-center gap-2 text-secondary-600">
-                        <FileText className="h-4 w-4" />
-                        <span className="text-sm font-medium">Resume Available</span>
-                      </div>
-                      <p className="text-xs text-secondary-500 mt-1">
-                        Available after introduction request
-                      </p>
-                    </div>
-                  )}
-                </div>
+            {/* Skills Score Card */}
+            {candidateData.hasTakenTest && candidateData.testScore && (
+              <Card>
+                <CardContent className="p-6">
+                  <h4 className="mb-3 font-semibold text-secondary-900">
+                    Skills Assessment
+                  </h4>
+                  <SkillsScoreCard
+                    data={{
+                      overallScore: candidateData.testScore || 0,
+                      percentile: candidateData.testPercentile || 0,
+                      tier: candidateData.testTier || "INTERMEDIATE",
+                      completedAt: candidateData.lastTestDate || new Date().toISOString(),
+                      proctored: true,
+                    }}
+                    variant="compact"
+                    showActions={false}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
-                {/* Skills Score Card */}
-                {candidateData.hasTakenTest && candidateData.testScore && (
-                  <div className="mt-6 border-t border-secondary-200 pt-6">
-                    <h4 className="mb-3 text-sm font-semibold text-secondary-700">
-                      Skills Assessment
-                    </h4>
-                    <SkillsScoreCard
-                      data={{
-                        overallScore: candidateData.testScore || 0,
-                        percentile: candidateData.testPercentile || 0,
-                        tier: candidateData.testTier || "INTERMEDIATE",
-                        completedAt: candidateData.lastTestDate || new Date().toISOString(),
-                        proctored: true,
-                      }}
-                      variant="compact"
-                      showActions={false}
-                    />
+            {/* Applications to Your Jobs */}
+            {candidateData.applications && candidateData.applications.length > 0 && (
+              <Card>
+                <CardContent className="p-6">
+                  <h4 className="mb-3 font-semibold text-secondary-900">
+                    Applications to Your Jobs
+                  </h4>
+                  <div className="space-y-2">
+                    {candidateData.applications.map((app: any) => (
+                      <Link
+                        key={app.id}
+                        href={`/employer/applicants/${app.id}`}
+                        className="block rounded-lg border border-secondary-200 p-3 hover:bg-secondary-50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium text-secondary-900 text-sm">
+                            {app.job?.title}
+                          </span>
+                          {getApplicationStatusBadge(app.status)}
+                        </div>
+                        <p className="text-xs text-secondary-500">
+                          Applied {new Date(app.appliedAt).toLocaleDateString()}
+                        </p>
+                      </Link>
+                    ))}
                   </div>
-                )}
-
-                {/* Applications to Your Jobs */}
-                {candidateData.applications && candidateData.applications.length > 0 && (
-                  <div className="mt-6 border-t border-secondary-200 pt-6">
-                    <h4 className="mb-3 text-sm font-semibold text-secondary-700">
-                      Applications to Your Jobs
-                    </h4>
-                    <div className="space-y-2">
-                      {candidateData.applications.map((app: any) => (
-                        <Link
-                          key={app.id}
-                          href={`/employer/applicants/${app.id}`}
-                          className="block rounded-lg border border-secondary-200 p-3 hover:bg-secondary-50 transition-colors"
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-medium text-secondary-900 text-sm">
-                              {app.job?.title}
-                            </span>
-                            {getApplicationStatusBadge(app.status)}
-                          </div>
-                          <p className="text-xs text-secondary-500">
-                            Applied {new Date(app.appliedAt).toLocaleDateString()}
-                          </p>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Bio */}

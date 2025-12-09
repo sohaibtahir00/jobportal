@@ -19,6 +19,7 @@ import {
   Clock,
   ExternalLink,
   AlertCircle,
+  FileText,
 } from "lucide-react";
 import {
   Button,
@@ -41,6 +42,7 @@ interface ClaimFormData {
   salaryMax: string;
   startDateNeeded: string;
   candidatesNeeded: string;
+  acknowledgment: boolean;
 }
 
 export default function EmployerClaimPage() {
@@ -68,6 +70,7 @@ export default function EmployerClaimPage() {
     salaryMax: "",
     startDateNeeded: "",
     candidatesNeeded: "10",
+    acknowledgment: false,
   });
 
   const claimMutation = useClaimJob(selectedJob?.id || "");
@@ -88,11 +91,22 @@ export default function EmployerClaimPage() {
       salaryMax: job.salaryMax?.toString() || "",
       startDateNeeded: "",
       candidatesNeeded: "10",
+      acknowledgment: false,
     });
   };
 
   const handleSubmitClaim = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate acknowledgment
+    if (!formData.acknowledgment) {
+      showToast(
+        "error",
+        "Acknowledgment Required",
+        "Please acknowledge the Service Agreement terms before claiming this job."
+      );
+      return;
+    }
 
     try {
       const result = await claimMutation.mutateAsync({
@@ -102,6 +116,7 @@ export default function EmployerClaimPage() {
         salaryMax: formData.salaryMax ? parseInt(formData.salaryMax) : undefined,
         startDateNeeded: formData.startDateNeeded || undefined,
         candidatesNeeded: formData.candidatesNeeded ? parseInt(formData.candidatesNeeded) : 10,
+        acknowledgment: formData.acknowledgment,
       });
 
       showToast(
@@ -119,6 +134,7 @@ export default function EmployerClaimPage() {
         salaryMax: "",
         startDateNeeded: "",
         candidatesNeeded: "10",
+        acknowledgment: false,
       });
 
       // Refresh search
@@ -566,6 +582,38 @@ export default function EmployerClaimPage() {
                 </div>
               </div>
 
+              {/* Service Agreement Acknowledgment */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <FileText className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-amber-900 mb-3">
+                      Service Agreement Acknowledgment
+                    </h4>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.acknowledgment}
+                        onChange={(e) => setFormData({ ...formData, acknowledgment: e.target.checked })}
+                        className="mt-1 h-4 w-4 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+                      />
+                      <span className="text-sm text-amber-800">
+                        I acknowledge that candidates who apply to this job posting are covered under my existing{" "}
+                        <a
+                          href="/employer/agreement"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary-600 hover:text-primary-700 underline font-medium"
+                        >
+                          SkillProof Service Agreement
+                        </a>
+                        . If I hire any candidate introduced through SkillProof for this role, I agree to pay the applicable placement fee as outlined in the agreement.
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
               {/* Submit Button */}
               <div className="flex gap-3 justify-end pt-4 border-t">
                 <Button
@@ -581,6 +629,7 @@ export default function EmployerClaimPage() {
                   variant="primary"
                   loading={claimMutation.isPending}
                   loadingText="Claiming job..."
+                  disabled={!formData.acknowledgment || claimMutation.isPending}
                 >
                   Submit Claim
                 </Button>

@@ -94,7 +94,9 @@ interface Application {
     resume: string | null;
     user: {
       name: string;
-      email: string;
+      firstName?: string;
+      lastInitial?: string;
+      email: string | null; // Hidden in list view
       image: string | null;
       id: string;
     };
@@ -658,13 +660,13 @@ export default function EmployerApplicantsPage() {
                       {app.candidate.user.image ? (
                         <img
                           src={app.candidate.user.image}
-                          alt={app.candidate.user.name}
+                          alt={app.candidate.user.firstName || "Candidate"}
                           className="w-16 h-16 rounded-full object-cover"
                         />
                       ) : (
                         <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
                           <span className="text-2xl font-bold text-primary-600">
-                            {app.candidate.user.name.charAt(0).toUpperCase()}
+                            {(app.candidate.user.firstName || app.candidate.user.name || "?").charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
@@ -677,10 +679,12 @@ export default function EmployerApplicantsPage() {
                         Applied for: {app.job.title}
                       </p>
 
-                      {/* Candidate Name & Status */}
+                      {/* Candidate Name (Masked: firstName + lastInitial) & Status */}
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="text-lg font-semibold text-secondary-900">
-                          {app.candidate.user.name}
+                          {app.candidate.user.firstName && app.candidate.user.lastInitial
+                            ? `${app.candidate.user.firstName} ${app.candidate.user.lastInitial}`
+                            : app.candidate.user.name}
                         </h3>
                         <div
                           className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${
@@ -900,7 +904,11 @@ export default function EmployerApplicantsPage() {
           setRejectingApplication(null);
         }}
         onConfirm={handleConfirmReject}
-        candidateName={rejectingApplication?.candidate.user.name || ""}
+        candidateName={
+          rejectingApplication?.candidate.user.firstName && rejectingApplication?.candidate.user.lastInitial
+            ? `${rejectingApplication.candidate.user.firstName} ${rejectingApplication.candidate.user.lastInitial}`
+            : rejectingApplication?.candidate.user.name || ""
+        }
         jobTitle={rejectingApplication?.job.title || ""}
       />
     </div>

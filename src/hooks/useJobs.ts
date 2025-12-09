@@ -147,6 +147,7 @@ export function useClaimJob(id: string) {
       salaryMax?: number;
       startDateNeeded?: string;
       candidatesNeeded?: number;
+      acknowledgment: boolean;
     }) => claimJob(id, claimData),
     onSuccess: (data) => {
       // Update the job in cache with claimed status
