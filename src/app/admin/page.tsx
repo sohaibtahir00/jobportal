@@ -566,8 +566,8 @@ export default function AdminDashboardPage() {
                 ) : (
                   <p className="text-secondary-500">No recent activity</p>
                 )}
-                <Button variant="outline" className="mt-6 w-full" size="sm">
-                  View All Activity
+                <Button variant="outline" className="mt-6 w-full" size="sm" asChild>
+                  <Link href="/admin/reports">View All Activity</Link>
                 </Button>
               </CardContent>
             </Card>
