@@ -18,6 +18,10 @@ import {
   Eye,
   Calendar,
   RefreshCw,
+  AlertTriangle,
+  Clock,
+  Send,
+  ChevronRight,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 import {
@@ -70,6 +74,24 @@ interface ChartData {
   weeklySignups: { week: string; candidates: number; employers: number }[];
 }
 
+interface ExpiringIntroduction {
+  id: string;
+  candidateName: string;
+  employerCompanyName: string;
+  jobTitle: string | null;
+  protectionEndsAt: string;
+  daysUntilExpiry: number;
+}
+
+interface ExpiryData {
+  introductions: ExpiringIntroduction[];
+  counts: {
+    in7Days: number;
+    in30Days: number;
+    in90Days: number;
+  };
+}
+
 type DateRange = "7days" | "30days" | "90days" | "6months" | "year";
 
 export default function AdminDashboardPage() {
@@ -86,6 +108,8 @@ export default function AdminDashboardPage() {
   const [topPerformers, setTopPerformers] = useState<TopPerformer[]>([]);
   const [topEmployers, setTopEmployers] = useState<TopEmployer[]>([]);
   const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [expiryData, setExpiryData] = useState<ExpiryData | null>(null);
+  const [isSendingFinalCheckIn, setIsSendingFinalCheckIn] = useState<string | null>(null);
 
   // Redirect if not logged in or not admin
   useEffect(() => {
@@ -105,11 +129,12 @@ export default function AdminDashboardPage() {
       }
       setError(null);
 
-      // Fetch main analytics and chart data in parallel
+      // Fetch main analytics, chart data, and expiry data in parallel
       // Use fetch() to call frontend proxy routes (which handle auth via cookies)
-      const [analyticsRes, chartsRes] = await Promise.all([
+      const [analyticsRes, chartsRes, expiryRes] = await Promise.all([
         fetch("/api/admin/analytics"),
         fetch(`/api/admin/analytics/charts?range=${dateRange}`),
+        fetch("/api/admin/introductions/expiring?withinDays=30&limit=5"),
       ]);
 
       if (!analyticsRes.ok) {
@@ -123,6 +148,12 @@ export default function AdminDashboardPage() {
 
       const analyticsData = await analyticsRes.json();
       const chartsData = await chartsRes.json();
+
+      // Parse expiry data (don't fail if this errors)
+      let expiryDataParsed: ExpiryData | null = null;
+      if (expiryRes.ok) {
+        expiryDataParsed = await expiryRes.json();
+      }
 
       // Map analytics data to overview stats
       setOverview({
@@ -156,6 +187,11 @@ export default function AdminDashboardPage() {
         applicationStatus: chartsData.applicationStatus || [],
         weeklySignups: chartsData.weeklySignups || [],
       });
+
+      // Set expiry data
+      if (expiryDataParsed) {
+        setExpiryData(expiryDataParsed);
+      }
     } catch (err: any) {
       console.error("Failed to load dashboard:", err);
       setError(err.message || "Failed to load dashboard data");
@@ -173,6 +209,30 @@ export default function AdminDashboardPage() {
 
   const handleRefresh = () => {
     loadDashboard(true);
+  };
+
+  const handleSendFinalCheckIn = async (introductionId: string) => {
+    if (!confirm("Send final check-in email to this candidate?")) return;
+
+    setIsSendingFinalCheckIn(introductionId);
+    try {
+      const res = await fetch(`/api/admin/introductions/${introductionId}/final-check-in`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        alert("Final check-in email sent successfully!");
+        loadDashboard(true);
+      } else {
+        const err = await res.json();
+        alert(`Failed to send: ${err.error || "Unknown error"}`);
+      }
+    } catch (error) {
+      console.error("Error sending final check-in:", error);
+      alert("Failed to send final check-in email");
+    } finally {
+      setIsSendingFinalCheckIn(null);
+    }
   };
 
   const dateRangeOptions: { value: DateRange; label: string }[] = [
@@ -506,6 +566,113 @@ export default function AdminDashboardPage() {
                 </CardContent>
               </Card>
             </div>
+          )}
+
+          {/* Protection Periods Expiring Widget */}
+          {expiryData && (expiryData.counts.in7Days > 0 || expiryData.counts.in30Days > 0) && (
+            <Card className="mb-8 border-l-4 border-l-yellow-500">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-secondary-900 flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-yellow-600" />
+                    Protection Periods Expiring Soon
+                  </h2>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/admin/introductions?filter=expiring">
+                      View All
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </Button>
+                </div>
+
+                {/* Counts Summary */}
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className={`p-4 rounded-lg ${expiryData.counts.in7Days > 0 ? 'bg-red-50 border border-red-200' : 'bg-secondary-50'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <AlertTriangle className={`h-4 w-4 ${expiryData.counts.in7Days > 0 ? 'text-red-600' : 'text-secondary-400'}`} />
+                      <span className="text-sm font-medium text-secondary-600">7 Days</span>
+                    </div>
+                    <p className={`text-2xl font-bold ${expiryData.counts.in7Days > 0 ? 'text-red-600' : 'text-secondary-400'}`}>
+                      {expiryData.counts.in7Days}
+                    </p>
+                  </div>
+                  <div className={`p-4 rounded-lg ${expiryData.counts.in30Days > 0 ? 'bg-yellow-50 border border-yellow-200' : 'bg-secondary-50'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar className={`h-4 w-4 ${expiryData.counts.in30Days > 0 ? 'text-yellow-600' : 'text-secondary-400'}`} />
+                      <span className="text-sm font-medium text-secondary-600">30 Days</span>
+                    </div>
+                    <p className={`text-2xl font-bold ${expiryData.counts.in30Days > 0 ? 'text-yellow-600' : 'text-secondary-400'}`}>
+                      {expiryData.counts.in30Days}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-secondary-50">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar className="h-4 w-4 text-secondary-400" />
+                      <span className="text-sm font-medium text-secondary-600">90 Days</span>
+                    </div>
+                    <p className="text-2xl font-bold text-secondary-600">
+                      {expiryData.counts.in90Days}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Expiring Soon List */}
+                {expiryData.introductions.length > 0 && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-secondary-50 px-4 py-2 border-b">
+                      <span className="text-sm font-medium text-secondary-700">
+                        Expiring Soon - Action Required
+                      </span>
+                    </div>
+                    <div className="divide-y divide-secondary-100">
+                      {expiryData.introductions.slice(0, 5).map((intro) => (
+                        <div key={intro.id} className="flex items-center justify-between p-4 hover:bg-secondary-50">
+                          <div className="flex-1">
+                            <p className="font-medium text-secondary-900">
+                              {intro.candidateName}
+                              <span className="text-secondary-500 mx-2">→</span>
+                              {intro.employerCompanyName}
+                            </p>
+                            <p className="text-sm text-secondary-600">
+                              {intro.jobTitle || "Position not specified"}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge
+                              variant={intro.daysUntilExpiry <= 7 ? "danger" : "warning"}
+                              size="sm"
+                            >
+                              {intro.daysUntilExpiry} days left
+                            </Badge>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleSendFinalCheckIn(intro.id)}
+                              disabled={isSendingFinalCheckIn === intro.id}
+                            >
+                              {isSendingFinalCheckIn === intro.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <Send className="h-4 w-4 mr-1" />
+                                  Final Check
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {expiryData.introductions.length === 0 && (
+                  <p className="text-secondary-500 text-center py-4">
+                    No introductions expiring in the next 30 days.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           )}
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
