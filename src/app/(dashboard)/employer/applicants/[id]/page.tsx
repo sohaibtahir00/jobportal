@@ -34,6 +34,7 @@ import { SkillsScoreCard } from "@/components/skills";
 import { api } from "@/lib/api";
 import RejectCandidateModal from "@/components/interviews/RejectCandidateModal";
 import RescheduleInterviewModal from "@/components/interviews/RescheduleInterviewModal";
+import { AgreementGate } from "@/components/employer/AgreementGate";
 
 // Backend URL for file downloads
 const BACKEND_URL =
@@ -816,6 +817,7 @@ export default function ApplicantDetailPage() {
   }
 
   return (
+    <AgreementGate>
     <div className="min-h-screen bg-secondary-50 py-8">
       <div className="container">
         <div className="mx-auto max-w-6xl">
@@ -2058,5 +2060,6 @@ export default function ApplicantDetailPage() {
         </div>
       )}
     </div>
+    </AgreementGate>
   );
 }

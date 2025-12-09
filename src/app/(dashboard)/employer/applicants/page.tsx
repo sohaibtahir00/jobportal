@@ -34,6 +34,7 @@ import {
 } from "@/components/ui";
 import api from "@/lib/api";
 import RejectCandidateModal from "@/components/interviews/RejectCandidateModal";
+import { AgreementGate } from "@/components/employer/AgreementGate";
 
 // Backend URL for file downloads
 const BACKEND_URL =
@@ -404,6 +405,7 @@ export default function EmployerApplicantsPage() {
   };
 
   return (
+    <AgreementGate>
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
@@ -902,5 +904,6 @@ export default function EmployerApplicantsPage() {
         jobTitle={rejectingApplication?.job.title || ""}
       />
     </div>
+    </AgreementGate>
   );
 }

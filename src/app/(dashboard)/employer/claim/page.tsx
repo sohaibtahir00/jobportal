@@ -32,6 +32,7 @@ import {
   useToast,
 } from "@/components/ui";
 import { useClaimedJobs, useSearchUnclaimedJobs, useClaimJob } from "@/hooks/useJobs";
+import { AgreementGate } from "@/components/employer/AgreementGate";
 
 interface ClaimFormData {
   phone: string;
@@ -136,6 +137,7 @@ export default function EmployerClaimPage() {
   const unclaimedJobs = searchData?.jobs || [];
 
   return (
+    <AgreementGate>
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
@@ -588,5 +590,6 @@ export default function EmployerClaimPage() {
         </div>
       )}
     </div>
+    </AgreementGate>
   );
 }

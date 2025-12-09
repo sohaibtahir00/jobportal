@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
 import { api } from "@/lib/api";
+import { AgreementGate } from "@/components/employer/AgreementGate";
 
 interface Candidate {
   id: string;
@@ -283,6 +284,7 @@ export default function EmployerSearchPage() {
   }
 
   return (
+    <AgreementGate>
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-purple-50">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary-600 to-accent-600 text-white py-12">
@@ -732,5 +734,6 @@ export default function EmployerSearchPage() {
         )}
       </div>
     </div>
+    </AgreementGate>
   );
 }
