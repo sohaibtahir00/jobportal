@@ -494,7 +494,7 @@ export default function JobDetailPage() {
                       <span className="text-secondary-400">•</span>
                       <div className="flex items-center gap-1">
                         <Briefcase className="h-4 w-4" />
-                        <span>{job.type}</span>
+                        <span>{job.type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())}</span>
                       </div>
                       <span className="text-secondary-400">•</span>
                       <div className="flex items-center gap-1">
@@ -596,9 +596,11 @@ export default function JobDetailPage() {
                 <CardTitle>About the Role</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-secondary-700 leading-relaxed whitespace-pre-wrap">
-                  {job.description}
-                </p>
+                <div className="text-secondary-700 leading-relaxed space-y-4">
+                  {job.description.split(/\n\n|\n/).filter((p: string) => p.trim()).map((paragraph: string, idx: number) => (
+                    <p key={idx}>{paragraph.trim()}</p>
+                  ))}
+                </div>
               </CardContent>
             </Card>
 
@@ -608,9 +610,14 @@ export default function JobDetailPage() {
                 <CardTitle>Responsibilities</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-secondary-700 leading-relaxed whitespace-pre-wrap">
-                  {job.responsibilities}
-                </p>
+                <ul className="space-y-3">
+                  {job.responsibilities.split(/\n/).filter((item: string) => item.trim()).map((item: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-3 text-secondary-700">
+                      <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary-500" />
+                      <span>{item.trim().replace(/^[-•]\s*/, '')}</span>
+                    </li>
+                  ))}
+                </ul>
               </CardContent>
             </Card>
 
@@ -620,28 +627,51 @@ export default function JobDetailPage() {
                 <CardTitle>Requirements</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-secondary-700 leading-relaxed whitespace-pre-wrap">
-                  {job.requirements}
-                </p>
+                <ul className="space-y-3">
+                  {job.requirements.split(/\n/).filter((item: string) => item.trim()).map((item: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-3 text-secondary-700">
+                      <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary-500" />
+                      <span>{item.trim().replace(/^[-•]\s*/, '')}</span>
+                    </li>
+                  ))}
+                </ul>
               </CardContent>
             </Card>
 
 
-            {/* Tech Stack */}
+            {/* Required Skills */}
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Tech Stack</CardTitle>
+                <CardTitle>Required Skills</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {job.skills && job.skills.map((tag, index) => (
+                  {job.skills && job.skills.map((skill: string, index: number) => (
                     <Badge key={index} variant="secondary" size="lg">
-                      {tag}
+                      {skill}
                     </Badge>
                   ))}
                 </div>
               </CardContent>
             </Card>
+
+            {/* Tech Stack */}
+            {(job as any).techStack && (job as any).techStack.length > 0 && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Tech Stack</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {(job as any).techStack.map((tech: string, index: number) => (
+                      <Badge key={index} className="bg-primary-100 text-primary-700 border-primary-200" size="lg">
+                        {tech}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Benefits */}
             {job.benefits && (
@@ -650,9 +680,14 @@ export default function JobDetailPage() {
                   <CardTitle>Benefits & Perks</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-secondary-700 leading-relaxed whitespace-pre-wrap">
-                    {job.benefits}
-                  </p>
+                  <ul className="space-y-3">
+                    {job.benefits.split(/\n/).filter((item: string) => item.trim()).map((item: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-3 text-secondary-700">
+                        <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-green-500" />
+                        <span>{item.trim().replace(/^[-•]\s*/, '')}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </CardContent>
               </Card>
             )}
