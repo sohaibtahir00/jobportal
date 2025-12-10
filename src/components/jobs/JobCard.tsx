@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, DollarSign, Clock, Star } from "lucide-react";
+import { MapPin, Briefcase, DollarSign, Clock, Star } from "lucide-react";
 import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { Job } from "@/types";
 import { formatCurrency, resolveImageUrl } from "@/lib/utils";
@@ -17,6 +17,49 @@ export function JobCard({ job }: JobCardProps) {
   // Helper function to format experience level (normalize case)
   const formatExperienceLevel = (level: string) => {
     return level.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
+  // Helper function to simplify location (extract city and country)
+  const simplifyLocation = (location: string) => {
+    if (!location) return '';
+
+    // Split by comma and get parts
+    const parts = location.split(',').map(part => part.trim());
+
+    if (parts.length <= 2) {
+      // Already simple enough (e.g., "New York, USA")
+      return location;
+    }
+
+    // Try to extract city and country
+    // Common patterns: "Street Address, City, State, Country" or "Address, City, Country"
+    // We want: "City, Country"
+
+    // Get the last part (usually country)
+    const country = parts[parts.length - 1];
+
+    // Find city - usually the part before state/country
+    // Skip parts that look like street addresses (contain numbers at the start)
+    let city = '';
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i];
+      // Skip if it starts with a number (likely street address)
+      if (!/^\d/.test(part) && part.length > 2) {
+        city = part;
+        break;
+      }
+    }
+
+    // If we couldn't find a city, use the second-to-last part
+    if (!city && parts.length >= 2) {
+      city = parts[parts.length - 2];
+    }
+
+    if (city && country) {
+      return `${city}, ${country}`;
+    }
+
+    return location;
   };
 
   // Helper function to get relative time
@@ -73,9 +116,12 @@ export function JobCard({ job }: JobCardProps) {
         <div className="mb-4 space-y-2 flex-grow">
           <div className="flex items-center gap-2 text-sm text-secondary-600">
             <MapPin className="h-4 w-4 flex-shrink-0" />
-            <span className="truncate">{job.location}</span>
+            <span className="truncate">{simplifyLocation(job.location)}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-secondary-600">
+            <Briefcase className="h-4 w-4 flex-shrink-0" />
+            <span>{formatJobType(job.type)}</span>
+            <span className="text-secondary-400">•</span>
             <span className="truncate">{formatExperienceLevel(job.experienceLevel)}</span>
           </div>
           {job.salaryMin && job.salaryMax && (
@@ -99,7 +145,7 @@ export function JobCard({ job }: JobCardProps) {
           <Badge variant="success" size="sm">
             {job.remote ? 'Remote' : 'On-site'}
           </Badge>
-          <Badge variant="secondary" size="sm">
+          <Badge className="bg-primary-100 text-primary-700 border-primary-200" size="sm">
             {formatJobType(job.type)}
           </Badge>
         </div>
@@ -114,7 +160,7 @@ export function JobCard({ job }: JobCardProps) {
             ))}
             {techTags.length > 3 && (
               <Link href={`/jobs/${job.id}`}>
-                <Badge variant="secondary" size="sm" className="cursor-pointer hover:bg-secondary-300">
+                <Badge className="bg-primary-100 text-primary-700 border-primary-200 cursor-pointer hover:bg-primary-200" size="sm">
                   +{techTags.length - 3} more
                 </Badge>
               </Link>
