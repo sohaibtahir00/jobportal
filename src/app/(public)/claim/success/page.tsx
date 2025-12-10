@@ -200,10 +200,10 @@ export default function ClaimSuccessPage() {
                     <p className="mt-1">
                       Email us at{" "}
                       <a
-                        href="mailto:support@jobportal.com"
+                        href="mailto:support@getskillproof.com"
                         className="text-primary-600 hover:underline"
                       >
-                        support@jobportal.com
+                        support@getskillproof.com
                       </a>{" "}
                       or call{" "}
                       <a

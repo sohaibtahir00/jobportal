@@ -726,7 +726,7 @@ export default function TermsPage() {
                     <div className="space-y-3 text-secondary-700">
                       <p className="font-semibold text-secondary-900">Termination by You:</p>
                       <p>
-                        You may terminate your account at any time by contacting us at support@example.com or using the account deletion feature in your settings. Upon termination, your profile will be deactivated and removed from public view within 48 hours.
+                        You may terminate your account at any time by contacting us at support@getskillproof.com or using the account deletion feature in your settings. Upon termination, your profile will be deactivated and removed from public view within 48 hours.
                       </p>
 
                       <p className="font-semibold text-secondary-900 mt-4">Termination by Us:</p>
@@ -848,24 +848,24 @@ export default function TermsPage() {
                       <div className="bg-secondary-50 rounded-lg p-6 space-y-4 mt-4">
                         <div>
                           <p className="font-semibold text-secondary-900">General Inquiries:</p>
-                          <p>Email: <a href="mailto:support@example.com" className="text-primary-600 hover:underline">support@example.com</a></p>
+                          <p>Email: <a href="mailto:support@getskillproof.com" className="text-primary-600 hover:underline">support@getskillproof.com</a></p>
                         </div>
                         <div>
                           <p className="font-semibold text-secondary-900">Legal & Compliance:</p>
-                          <p>Email: <a href="mailto:legal@example.com" className="text-primary-600 hover:underline">legal@example.com</a></p>
+                          <p>Email: <a href="mailto:admin@getskillproof.com" className="text-primary-600 hover:underline">admin@getskillproof.com</a></p>
                         </div>
                         <div>
                           <p className="font-semibold text-secondary-900">Payment & Billing:</p>
-                          <p>Email: <a href="mailto:billing@example.com" className="text-primary-600 hover:underline">billing@example.com</a></p>
+                          <p>Email: <a href="mailto:billing@getskillproof.com" className="text-primary-600 hover:underline">billing@getskillproof.com</a></p>
                         </div>
                         <div>
                           <p className="font-semibold text-secondary-900">Privacy & Data:</p>
-                          <p>Email: <a href="mailto:privacy@example.com" className="text-primary-600 hover:underline">privacy@example.com</a></p>
+                          <p>Email: <a href="mailto:admin@getskillproof.com" className="text-primary-600 hover:underline">admin@getskillproof.com</a></p>
                         </div>
                         <div>
                           <p className="font-semibold text-secondary-900">Mailing Address:</p>
                           <p>
-                            AI/ML Job Portal<br />
+                            SkillProof<br />
                             [Street Address]<br />
                             [City, State ZIP]<br />
                             [Country]

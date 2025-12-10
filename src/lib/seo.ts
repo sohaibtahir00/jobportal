@@ -106,7 +106,7 @@ export function generateOrganizationJsonLd() {
       "@type": "ContactPoint",
       telephone: "+1-555-123-4567",
       contactType: "Customer Service",
-      email: "support@aiml-jobs.com",
+      email: "support@getskillproof.com",
       areaServed: "US",
       availableLanguage: "English",
     },
