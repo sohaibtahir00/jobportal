@@ -229,6 +229,7 @@ export interface Job {
   salaryMax: number | null;
   experienceLevel: ExperienceLevel; // UPPERCASE enum, required
   skills: string[];              // PostgreSQL array
+  techStack?: string[];          // Tech stack required for the job
   benefits: string | null;       // Text field
   deadline: string | null;       // ISO 8601 DateTime
   slots: number;                 // Default: 1

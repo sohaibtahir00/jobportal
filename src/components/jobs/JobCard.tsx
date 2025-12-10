@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Briefcase, DollarSign, Clock, Star } from "lucide-react";
+import { MapPin, DollarSign, Clock, Star } from "lucide-react";
 import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { Job } from "@/types";
 import { formatCurrency, resolveImageUrl } from "@/lib/utils";
@@ -9,14 +9,14 @@ interface JobCardProps {
 }
 
 export function JobCard({ job }: JobCardProps) {
-  // Helper function to format job type for display
+  // Helper function to format job type for display (normalize case)
   const formatJobType = (type: string) => {
-    return type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+    return type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
-  // Helper function to format experience level
+  // Helper function to format experience level (normalize case)
   const formatExperienceLevel = (level: string) => {
-    return level.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+    return level.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   // Helper function to get relative time
@@ -32,6 +32,9 @@ export function JobCard({ job }: JobCardProps) {
     if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
     return `${Math.floor(diffInDays / 30)} months ago`;
   };
+
+  // Use techStack if available, otherwise fall back to skills
+  const techTags = job.techStack && job.techStack.length > 0 ? job.techStack : job.skills;
 
   return (
     <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1 overflow-hidden">
@@ -73,9 +76,6 @@ export function JobCard({ job }: JobCardProps) {
             <span className="truncate">{job.location}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-secondary-600">
-            <Briefcase className="h-4 w-4 flex-shrink-0" />
-            <span>{formatJobType(job.type)}</span>
-            <span className="text-secondary-400">•</span>
             <span className="truncate">{formatExperienceLevel(job.experienceLevel)}</span>
           </div>
           {job.salaryMin && job.salaryMax && (
@@ -96,29 +96,28 @@ export function JobCard({ job }: JobCardProps) {
               Verified Talent
             </Badge>
           )}
-          <Badge
-            variant={job.remote ? "success" : "secondary"}
-            size="sm"
-          >
+          <Badge variant="success" size="sm">
             {job.remote ? 'Remote' : 'On-site'}
           </Badge>
-          <Badge variant="outline" size="sm" className="capitalize">
+          <Badge variant="secondary" size="sm">
             {formatJobType(job.type)}
           </Badge>
         </div>
 
-        {/* Skills Tags */}
-        {job.skills && job.skills.length > 0 && (
+        {/* Tech Stack Tags */}
+        {techTags && techTags.length > 0 && (
           <div className="mb-4 flex flex-wrap gap-2">
-            {job.skills.slice(0, 3).map((tag: string, idx: number) => (
+            {techTags.slice(0, 3).map((tag: string, idx: number) => (
               <Badge key={idx} variant="secondary" size="sm">
                 {tag}
               </Badge>
             ))}
-            {job.skills.length > 3 && (
-              <Badge variant="secondary" size="sm">
-                +{job.skills.length - 3}
-              </Badge>
+            {techTags.length > 3 && (
+              <Link href={`/jobs/${job.id}`}>
+                <Badge variant="secondary" size="sm" className="cursor-pointer hover:bg-secondary-300">
+                  +{techTags.length - 3} more
+                </Badge>
+              </Link>
             )}
           </div>
         )}
