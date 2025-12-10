@@ -81,10 +81,10 @@ export function JobCard({ job }: JobCardProps) {
 
   return (
     <Card
-      className="h-full transition-all hover:shadow-lg hover:-translate-y-1 overflow-hidden"
+      className="h-full transition-all hover:shadow-lg hover:-translate-y-1 overflow-hidden rounded-lg"
       style={{
-        border: '1px solid transparent',
-        background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, rgba(29, 78, 216, 0.3), transparent 50%) border-box',
+        border: '1px solid #e2e8f0',
+        borderLeft: '3px solid #3b82f6',
       }}
     >
       <CardContent className="p-6 flex flex-col h-full">
