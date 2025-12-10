@@ -539,6 +539,7 @@ export default function Home() {
             {filteredJobs.map((job) => (
               <Card
                 key={job.id}
+                variant="accent"
                 className="transition-all hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm"
               >
                 <CardContent className="p-6">
