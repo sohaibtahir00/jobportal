@@ -109,6 +109,13 @@ export function JobCard({ job }: JobCardProps) {
             {job.requiresAssessment && (
               <p className="text-xs text-amber-600 mt-0.5">Skills verified candidates preferred</p>
             )}
+            {/* Verified Talent Badge - moved to header */}
+            {job.requiresAssessment && (
+              <Badge className="bg-amber-100 text-amber-800 border-amber-200 mt-2" size="sm">
+                <Star className="h-3 w-3 mr-1 fill-amber-500 text-amber-500" />
+                Verified Talent
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -136,12 +143,6 @@ export function JobCard({ job }: JobCardProps) {
 
         {/* Remote & Type Badges */}
         <div className="mb-3 flex flex-wrap gap-2">
-          {job.requiresAssessment && (
-            <Badge className="bg-amber-100 text-amber-800 border-amber-200" size="sm">
-              <Star className="h-3 w-3 mr-1 fill-amber-500 text-amber-500" />
-              Verified Talent
-            </Badge>
-          )}
           <Badge variant="success" size="sm">
             {job.remote ? 'Remote' : 'On-site'}
           </Badge>
@@ -174,7 +175,7 @@ export function JobCard({ job }: JobCardProps) {
             <Clock className="h-3 w-3" />
             <span>{getRelativeTime(job.createdAt)}</span>
           </div>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="primary" size="sm" asChild>
             <Link href={`/jobs/${job.id}`}>View Details</Link>
           </Button>
         </div>
