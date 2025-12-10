@@ -127,8 +127,12 @@ export function JobCard({ job }: JobCardProps) {
           </div>
           <div className="flex items-center gap-2 text-sm text-secondary-600">
             <Briefcase className="h-4 w-4 flex-shrink-0" />
-            <span>{formatJobType(job.type)}</span>
-            <span className="text-secondary-400">•</span>
+            {job.niche && (
+              <>
+                <span className="truncate">{job.niche}</span>
+                <span className="text-secondary-400">•</span>
+              </>
+            )}
             <span className="truncate">{formatExperienceLevel(job.experienceLevel)}</span>
           </div>
           {job.salaryMin && job.salaryMax && (
@@ -162,7 +166,7 @@ export function JobCard({ job }: JobCardProps) {
             {techTags.length > 3 && (
               <Link href={`/jobs/${job.id}`}>
                 <Badge className="bg-primary-100 text-primary-700 border-primary-200 cursor-pointer hover:bg-primary-200" size="sm">
-                  +{techTags.length - 3} more
+                  +{techTags.length - 3} more skills
                 </Badge>
               </Link>
             )}
