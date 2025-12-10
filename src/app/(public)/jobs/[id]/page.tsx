@@ -670,9 +670,9 @@ export default function JobDetailPage() {
                       href={`/companies/${(job.employer as any).slug || job.employer.id}`}
                       className="block"
                     >
-                      <div className="flex items-center justify-center rounded-lg bg-primary-50 p-8 hover:bg-primary-100 transition-colors">
+                      <div className={`flex items-center justify-center rounded-lg p-6 transition-colors ${job.employer.companyLogo ? 'bg-white hover:bg-secondary-50' : 'bg-primary-50 hover:bg-primary-100'}`}>
                         {job.employer.companyLogo ? (
-                          <img src={resolveImageUrl(job.employer.companyLogo) || ''} alt={job.employer.companyName} className="h-20 w-20 object-contain" />
+                          <img src={resolveImageUrl(job.employer.companyLogo) || ''} alt={job.employer.companyName} className="h-32 w-auto max-w-full object-contain" />
                         ) : (
                           <div className="text-6xl">{job.employer.companyName.charAt(0)}</div>
                         )}
