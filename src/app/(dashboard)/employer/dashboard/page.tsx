@@ -759,7 +759,7 @@ export default function EmployerDashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card className="border-2 border-primary-100 shadow-lg">
+          <Card variant="accent" className="border-2 border-primary-100 shadow-lg">
             <CardContent className="p-6">
               <h3 className="text-xl font-bold text-secondary-900 mb-4">
                 Quick Actions
@@ -890,7 +890,7 @@ export default function EmployerDashboardPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <Card className="shadow-lg h-full">
+            <Card variant="accent" className="shadow-lg h-full">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-secondary-900">
@@ -1001,7 +1001,7 @@ export default function EmployerDashboardPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <Card className="shadow-lg h-full">
+            <Card variant="accent" className="shadow-lg h-full">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-secondary-900">
@@ -1178,7 +1178,7 @@ export default function EmployerDashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.7 }}
         >
-          <Card className="shadow-lg">
+          <Card variant="accent" className="shadow-lg">
             <CardContent className="p-6">
               <h3 className="text-xl font-bold text-secondary-900 mb-6">
                 Pipeline Overview

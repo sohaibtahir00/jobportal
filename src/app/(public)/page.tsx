@@ -659,7 +659,7 @@ export default function Home() {
               const Icon = step.icon;
               return (
                 <div key={index} className="relative">
-                  <Card className="h-full border-0 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 bg-white/80 backdrop-blur-sm">
+                  <Card variant="accent" className="h-full border-0 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 bg-white/80 backdrop-blur-sm">
                     <CardContent className="p-8 text-center">
                       <div className="mb-6 flex justify-center">
                         <div className="relative">
@@ -813,7 +813,7 @@ export default function Home() {
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
               {/* Left Column - Benefits List */}
               <div className="flex flex-col justify-center">
-                <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all">
+                <Card variant="accent" className="border-0 bg-white/90 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all">
                   <CardContent className="p-8">
                     <h3 className="mb-6 text-2xl font-bold text-secondary-900">
                       Benefits of Verification
@@ -1105,7 +1105,7 @@ export default function Home() {
       <section className="bg-secondary-50 py-20">
         <div className="container">
           <div className="mx-auto max-w-3xl">
-            <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm">
+            <Card variant="accent" className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm">
               <CardContent className="p-8 text-center md:p-12">
                 <div className="mb-4 flex justify-center">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-accent-100 shadow-lg">

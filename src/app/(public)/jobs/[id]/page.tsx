@@ -469,7 +469,7 @@ export default function JobDetailPage() {
             )}
 
             {/* Job Header */}
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardContent className="p-8">
                 <div className="mb-6 flex items-start gap-4">
                   <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-primary-100 text-3xl">
@@ -594,7 +594,7 @@ export default function JobDetailPage() {
             </Card>
 
             {/* Job Description */}
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardHeader>
                 <CardTitle>About the Role</CardTitle>
               </CardHeader>
@@ -611,7 +611,7 @@ export default function JobDetailPage() {
             </Card>
 
             {/* Responsibilities */}
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardHeader>
                 <CardTitle>Responsibilities</CardTitle>
               </CardHeader>
@@ -631,7 +631,7 @@ export default function JobDetailPage() {
             </Card>
 
             {/* Requirements */}
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardHeader>
                 <CardTitle>Requirements</CardTitle>
               </CardHeader>
@@ -669,7 +669,7 @@ export default function JobDetailPage() {
 
 
             {/* Required Skills */}
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardHeader>
                 <CardTitle>Required Skills</CardTitle>
               </CardHeader>
@@ -686,7 +686,7 @@ export default function JobDetailPage() {
 
             {/* Tech Stack */}
             {(job as any).techStack && (job as any).techStack.length > 0 && (
-              <Card className="mb-6">
+              <Card variant="accent" className="mb-6">
                 <CardHeader>
                   <CardTitle>Tech Stack</CardTitle>
                 </CardHeader>
@@ -704,7 +704,7 @@ export default function JobDetailPage() {
 
             {/* Benefits */}
             {job.benefits && (
-              <Card className="mb-6">
+              <Card variant="accent" className="mb-6">
                 <CardHeader>
                   <CardTitle>Benefits & Perks</CardTitle>
                 </CardHeader>
@@ -779,7 +779,7 @@ export default function JobDetailPage() {
 
               {/* Company Info */}
               {job.employer && (
-                <Card>
+                <Card variant="accent">
                   <CardHeader>
                     <CardTitle>About {job.employer.companyName}</CardTitle>
                   </CardHeader>

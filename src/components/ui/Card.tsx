@@ -3,15 +3,17 @@ import { cn } from "@/lib/utils";
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
+  variant?: "default" | "accent";
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, variant = "default", ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={cn(
           "rounded-lg border border-secondary-200 bg-white shadow-sm",
+          variant === "accent" && "border-l-[3px] border-l-primary-500",
           className
         )}
         {...props}

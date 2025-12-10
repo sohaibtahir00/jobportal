@@ -81,11 +81,8 @@ export function JobCard({ job }: JobCardProps) {
 
   return (
     <Card
-      className="h-full transition-all hover:shadow-lg hover:-translate-y-1 overflow-hidden rounded-lg"
-      style={{
-        border: '1px solid #e2e8f0',
-        borderLeft: '3px solid #3b82f6',
-      }}
+      variant="accent"
+      className="h-full transition-all hover:shadow-lg hover:-translate-y-1 overflow-hidden"
     >
       <CardContent className="p-6 flex flex-col h-full">
         {/* Header with Logo and Title */}

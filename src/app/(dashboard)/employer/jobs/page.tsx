@@ -256,7 +256,7 @@ export default function EmployerJobsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
         >
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row gap-4">
                 {/* Search */}
@@ -325,7 +325,7 @@ export default function EmployerJobsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
-                  <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary-200">
+                  <Card variant="accent" className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary-200">
                     <CardContent className="p-6">
                       <div className="flex flex-col lg:flex-row lg:items-start gap-4">
                         {/* Job Info */}

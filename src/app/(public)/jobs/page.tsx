@@ -431,7 +431,7 @@ function JobsContent() {
 
       <div className="container py-8">
         {/* Horizontal Filters Card */}
-        <Card className="mb-6">
+        <Card variant="accent" className="mb-6">
           <CardContent className="p-6">
             <div className="space-y-4">
               {/* Row 1: Niche Filter Buttons */}
