@@ -532,14 +532,26 @@ export default function JobDetailPage() {
                 {session?.user?.role !== 'EMPLOYER' && (
                   <div>
                     <div className="flex flex-wrap gap-3">
-                      <Button
-                        variant="primary"
-                        size="lg"
-                        className="flex-1 sm:flex-initial"
-                        onClick={() => setIsApplicationFormOpen(true)}
-                      >
-                        Apply Now
-                      </Button>
+                      {candidateInfo?.hasApplied ? (
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          disabled
+                          className="flex-1 sm:flex-initial gap-2 border-green-300 bg-green-50 text-green-700"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          Applied
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          size="lg"
+                          className="flex-1 sm:flex-initial"
+                          onClick={() => setIsApplicationFormOpen(true)}
+                        >
+                          Apply Now
+                        </Button>
+                      )}
                       {session && (
                         <Button
                           variant="outline"
@@ -566,9 +578,11 @@ export default function JobDetailPage() {
                         Share
                       </Button>
                     </div>
-                    <p className="mt-2 text-sm text-secondary-600">
-                      Application takes 2 minutes
-                    </p>
+                    {!candidateInfo?.hasApplied && (
+                      <p className="mt-2 text-sm text-secondary-600">
+                        Application takes 2 minutes
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -776,25 +790,39 @@ export default function JobDetailPage() {
                 </Card>
               )}
 
-              {/* Apply CTA - Hide for employers */}
+              {/* Apply CTA - Hide for employers, show different state if already applied */}
               {session?.user?.role !== 'EMPLOYER' && (
-                <Card className="bg-gradient-to-br from-primary-600 to-primary-700 text-white">
-                  <CardContent className="p-6 text-center">
-                    <h3 className="mb-2 text-lg font-semibold">
-                      Ready to Apply?
-                    </h3>
-                    <p className="mb-4 text-sm text-primary-100">
-                      Join {job.employer?.companyName || 'our team'} and make an impact
-                    </p>
-                    <Button
-                      variant="secondary"
-                      className="w-full bg-white text-primary-600 hover:bg-primary-50"
-                      onClick={() => setIsApplicationFormOpen(true)}
-                    >
-                      Apply Now
-                    </Button>
-                  </CardContent>
-                </Card>
+                candidateInfo?.hasApplied ? (
+                  <Card className="bg-gradient-to-br from-green-600 to-green-700 text-white">
+                    <CardContent className="p-6 text-center">
+                      <CheckCircle className="mx-auto mb-3 h-10 w-10" />
+                      <h3 className="mb-2 text-lg font-semibold">
+                        Already Applied
+                      </h3>
+                      <p className="text-sm text-green-100">
+                        Application is under review
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="bg-gradient-to-br from-primary-600 to-primary-700 text-white">
+                    <CardContent className="p-6 text-center">
+                      <h3 className="mb-2 text-lg font-semibold">
+                        Ready to Apply?
+                      </h3>
+                      <p className="mb-4 text-sm text-primary-100">
+                        Join {job.employer?.companyName || 'our team'} and make an impact
+                      </p>
+                      <Button
+                        variant="secondary"
+                        className="w-full bg-white text-primary-600 hover:bg-primary-50"
+                        onClick={() => setIsApplicationFormOpen(true)}
+                      >
+                        Apply Now
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )
               )}
             </div>
           </div>
