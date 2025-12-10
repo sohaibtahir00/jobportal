@@ -127,9 +127,9 @@ export function JobCard({ job }: JobCardProps) {
           </div>
           <div className="flex items-center gap-2 text-sm text-secondary-600">
             <Briefcase className="h-4 w-4 flex-shrink-0" />
-            {job.niche && (
+            {(job as any).nicheCategory && (
               <>
-                <span className="truncate">{job.niche}</span>
+                <span className="truncate">{(job as any).nicheCategory}</span>
                 <span className="text-secondary-400">•</span>
               </>
             )}
