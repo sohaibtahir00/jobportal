@@ -1568,7 +1568,7 @@ export default function EmployerInterviewsPage() {
                                       href={interview.meetingLink}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="flex items-center gap-2 rounded-lg border border-primary-600 bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+                                      className="flex items-center gap-2 rounded-lg border border-primary-600 bg-gradient-to-r from-primary-600 to-accent-600 px-4 py-2 text-sm font-medium text-white hover:from-primary-700 hover:to-accent-700"
                                     >
                                       <ExternalLink className="h-4 w-4" />
                                       Join Meeting
@@ -2193,7 +2193,7 @@ export default function EmployerInterviewsPage() {
                                         href={interview.meetingLink}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center gap-2 rounded-lg border border-primary-600 bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+                                        className="flex items-center gap-2 rounded-lg border border-primary-600 bg-gradient-to-r from-primary-600 to-accent-600 px-4 py-2 text-sm font-medium text-white hover:from-primary-700 hover:to-accent-700"
                                       >
                                         <ExternalLink className="h-4 w-4" />
                                         Join Meeting

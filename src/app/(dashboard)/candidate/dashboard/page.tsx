@@ -632,7 +632,7 @@ export default function CandidateDashboardPage() {
                       <Button
                         asChild
                         size="lg"
-                        className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg"
+                        className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white shadow-lg"
                       >
                         <Link href="/skills-assessment">
                           <Award className="mr-2 h-5 w-5" />
@@ -817,7 +817,7 @@ export default function CandidateDashboardPage() {
                 <Button
                   asChild
                   size="lg"
-                  className="bg-primary-600 hover:bg-primary-700 text-white shrink-0"
+                  className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white shrink-0"
                 >
                   <Link href="/candidate/jobs">
                     <Briefcase className="mr-2 h-4 w-4" />

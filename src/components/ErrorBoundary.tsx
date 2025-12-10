@@ -121,7 +121,7 @@ class ErrorBoundary extends Component<Props, State> {
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <button
                   onClick={this.handleReload}
-                  className="inline-flex items-center justify-center gap-2 rounded-md bg-primary-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2"
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-primary-600 to-accent-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:from-primary-700 hover:to-accent-700 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2"
                 >
                   <RefreshCw className="h-4 w-4" />
                   Reload Page

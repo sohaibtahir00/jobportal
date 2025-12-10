@@ -817,7 +817,7 @@ export default function CandidateProfilePage() {
                         <span>Access to 250+ exclusive jobs</span>
                       </div>
                     </div>
-                    <Button asChild size="sm" className="bg-primary-600 hover:bg-primary-700">
+                    <Button asChild size="sm" className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700">
                       <Link href="/skills-assessment">
                         <Award className="mr-2 h-4 w-4" />
                         Start Assessment
@@ -840,7 +840,7 @@ export default function CandidateProfilePage() {
                 variant="compact"
               />
               <div className="flex gap-2">
-                <Button asChild size="sm" className="bg-primary-600 hover:bg-primary-700">
+                <Button asChild size="sm" className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700">
                   <Link href="/candidate/assessment">
                     <TrendingUp className="mr-2 h-4 w-4" />
                     View Full Report

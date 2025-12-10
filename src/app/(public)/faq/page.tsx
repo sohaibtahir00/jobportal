@@ -214,7 +214,7 @@ export default function FAQPage() {
               </p>
               <a
                 href="/contact"
-                className="inline-flex items-center rounded-lg bg-primary-600 px-6 py-3 font-semibold text-white hover:bg-primary-700"
+                className="inline-flex items-center rounded-lg bg-gradient-to-r from-primary-600 to-accent-600 px-6 py-3 font-semibold text-white hover:from-primary-700 hover:to-accent-700"
               >
                 Contact Support
               </a>

@@ -92,7 +92,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               href="/"
               className="flex items-center gap-2 transition-opacity hover:opacity-80"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-primary-600 to-accent-600">
                 <Briefcase className="h-6 w-6 text-white" />
               </div>
               <span className="text-xl font-bold text-secondary-900">
@@ -158,7 +158,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                     className="h-10 w-full rounded-md border border-secondary-300 bg-white pl-10 pr-3 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
                   />
                 </div>
-                <button className="h-10 rounded-md bg-primary-600 px-4 text-sm font-medium text-white transition-colors hover:bg-primary-700">
+                <button className="h-10 rounded-md bg-gradient-to-r from-primary-600 to-accent-600 px-4 text-sm font-medium text-white transition-colors hover:from-primary-700 hover:to-accent-700">
                   Subscribe
                 </button>
               </div>

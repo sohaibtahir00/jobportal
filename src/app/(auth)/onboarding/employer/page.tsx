@@ -342,7 +342,7 @@ export default function EmployerOnboardingPage() {
           <button
             onClick={handleImportWebsite}
             disabled={isImporting || !websiteUrl.trim()}
-            className="px-6 py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-accent-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isImporting ? (
               <>

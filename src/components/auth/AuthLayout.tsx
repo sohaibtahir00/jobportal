@@ -16,7 +16,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
           {/* Logo */}
           <Link href="/" className="mb-8 inline-block">
             <div className="flex items-center space-x-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-primary-600 to-accent-600">
                 <Briefcase className="h-6 w-6 text-white" />
               </div>
               <span className="text-2xl font-bold text-secondary-900">

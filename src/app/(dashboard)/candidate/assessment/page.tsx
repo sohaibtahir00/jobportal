@@ -197,7 +197,7 @@ export default function CandidateAssessmentPage() {
                   The assessment takes about 45-60 minutes and covers technical skills,
                   problem solving, code quality, and system design.
                 </p>
-                <Button size="lg" className="bg-primary-600 hover:bg-primary-700" asChild>
+                <Button size="lg" className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700" asChild>
                   <Link href="/skills-assessment/start">
                     <Award className="mr-2 h-5 w-5" />
                     Start Assessment Now

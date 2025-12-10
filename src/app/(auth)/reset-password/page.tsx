@@ -88,7 +88,7 @@ function ResetPasswordContent() {
           <div className="space-y-4">
             <Link
               href="/forgot-password"
-              className="inline-block w-full rounded-lg bg-primary-600 px-6 py-3 text-center font-medium text-white hover:bg-primary-700 transition-colors"
+              className="inline-block w-full rounded-lg bg-gradient-to-r from-primary-600 to-accent-600 px-6 py-3 text-center font-medium text-white hover:from-primary-700 hover:to-accent-700 transition-colors"
             >
               Request new reset link
             </Link>
@@ -126,7 +126,7 @@ function ResetPasswordContent() {
 
           <Link
             href="/login"
-            className="inline-block w-full rounded-lg bg-primary-600 px-6 py-3 text-center font-medium text-white hover:bg-primary-700 transition-colors"
+            className="inline-block w-full rounded-lg bg-gradient-to-r from-primary-600 to-accent-600 px-6 py-3 text-center font-medium text-white hover:from-primary-700 hover:to-accent-700 transition-colors"
           >
             Sign in
           </Link>

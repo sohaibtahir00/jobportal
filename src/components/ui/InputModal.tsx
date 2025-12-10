@@ -63,7 +63,7 @@ const variantConfig: Record<
     icon: MessageSquare,
     iconBg: "bg-primary-100",
     iconColor: "text-primary-600",
-    buttonClass: "bg-primary-600 hover:bg-primary-700 focus:ring-primary-500",
+    buttonClass: "bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 focus:ring-primary-500",
   },
 };
 
