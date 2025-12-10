@@ -35,7 +35,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        "bg-primary-600 text-white hover:bg-primary-700 focus-visible:ring-primary-600 active:bg-primary-800",
+        "bg-gradient-to-r from-primary-600 to-accent-600 text-white hover:from-primary-700 hover:to-accent-700 focus-visible:ring-primary-600 active:from-primary-800 active:to-accent-800",
       secondary:
         "bg-secondary-200 text-secondary-900 hover:bg-secondary-300 focus-visible:ring-secondary-500 active:bg-secondary-400",
       outline:
