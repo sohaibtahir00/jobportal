@@ -260,7 +260,22 @@ export default function JobDetailPage() {
               {/* Actions */}
               <div className="flex items-center gap-2 sm:gap-3">
                 {/* Apply Button - Show different states based on authentication and application status */}
-                {!session ? (
+                {/* For employers, show job status instead of apply button */}
+                {session?.user?.role === 'EMPLOYER' ? (
+                  <Badge
+                    className={`flex-1 sm:flex-none text-sm sm:text-base px-4 py-2 ${
+                      job.status === 'ACTIVE'
+                        ? 'bg-green-100 text-green-800 border-green-200'
+                        : job.status === 'DRAFT'
+                        ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                        : job.status === 'CLOSED'
+                        ? 'bg-red-100 text-red-800 border-red-200'
+                        : 'bg-secondary-100 text-secondary-800 border-secondary-200'
+                    }`}
+                  >
+                    {job.status === 'ACTIVE' ? 'Active Job' : job.status.charAt(0) + job.status.slice(1).toLowerCase()}
+                  </Badge>
+                ) : !session ? (
                   <Button
                     variant="primary"
                     asChild
@@ -298,8 +313,8 @@ export default function JobDetailPage() {
                   </Button>
                 )}
 
-                {/* Save Button - Only show for authenticated users */}
-                {session && (
+                {/* Save Button - Only show for authenticated candidates (not employers) */}
+                {session && session.user?.role !== 'EMPLOYER' && (
                   <Button
                     variant="outline"
                     onClick={handleSaveToggle}
@@ -521,7 +536,7 @@ export default function JobDetailPage() {
                     >
                       Apply Now
                     </Button>
-                    {session && (
+                    {session && session.user?.role !== 'EMPLOYER' && (
                       <Button
                         variant="outline"
                         size="lg"
