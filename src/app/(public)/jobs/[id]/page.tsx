@@ -201,15 +201,16 @@ export default function JobDetailPage() {
                     <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span className="truncate max-w-[150px] sm:max-w-none">{job.employer?.companyName || 'Company'}</span>
                   </span>
-                  <span className="hidden sm:inline">•</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm sm:text-base text-white/90 mt-1">
                   <span className="flex items-center gap-1">
                     <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="truncate max-w-[120px] sm:max-w-none">{job.location}</span>
+                    <span className="truncate max-w-[200px] sm:max-w-none">{job.location}</span>
                   </span>
-                  <span className="hidden sm:inline">•</span>
+                  <span>•</span>
                   <span className="flex items-center gap-1">
                     <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" />
-                    {job.type}
+                    {job.type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())}
                   </span>
                 </div>
               </div>
@@ -511,7 +512,9 @@ export default function JobDetailPage() {
                     {job.remote ? 'Remote' : 'On-site'}
                   </Badge>
                   <Badge variant="outline">{job.niche}</Badge>
-                  <Badge variant="secondary">{job.experienceLevel}</Badge>
+                  <Badge variant="secondary">
+                    {job.experienceLevel.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                  </Badge>
                 </div>
 
                 {/* Salary */}
@@ -597,9 +600,12 @@ export default function JobDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-secondary-700 leading-relaxed space-y-4">
-                  {job.description.split(/\n\n|\n/).filter((p: string) => p.trim()).map((paragraph: string, idx: number) => (
-                    <p key={idx}>{paragraph.trim()}</p>
-                  ))}
+                  {job.description
+                    .split(/\n\n|\n|(?<=\.)\s+(?=[A-Z])/)
+                    .filter((p: string) => p.trim() && p.trim().length > 20)
+                    .map((paragraph: string, idx: number) => (
+                      <p key={idx}>{paragraph.trim()}</p>
+                    ))}
                 </div>
               </CardContent>
             </Card>
@@ -611,12 +617,15 @@ export default function JobDetailPage() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  {job.responsibilities.split(/\n/).filter((item: string) => item.trim()).map((item: string, idx: number) => (
-                    <li key={idx} className="flex items-start gap-3 text-secondary-700">
-                      <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary-500" />
-                      <span>{item.trim().replace(/^[-•]\s*/, '')}</span>
-                    </li>
-                  ))}
+                  {job.responsibilities
+                    .split(/\n|(?<=\.)\s+(?=[A-Z•\-\d])/)
+                    .filter((item: string) => item.trim() && item.trim().length > 5)
+                    .map((item: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-3 text-secondary-700">
+                        <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary-500" />
+                        <span>{item.trim().replace(/^[-•\d.]+\s*/, '')}</span>
+                      </li>
+                    ))}
                 </ul>
               </CardContent>
             </Card>
@@ -628,12 +637,15 @@ export default function JobDetailPage() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  {job.requirements.split(/\n/).filter((item: string) => item.trim()).map((item: string, idx: number) => (
-                    <li key={idx} className="flex items-start gap-3 text-secondary-700">
-                      <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary-500" />
-                      <span>{item.trim().replace(/^[-•]\s*/, '')}</span>
-                    </li>
-                  ))}
+                  {job.requirements
+                    .split(/\n|(?<=\.)\s+(?=[A-Z•\-\d])/)
+                    .filter((item: string) => item.trim() && item.trim().length > 5)
+                    .map((item: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-3 text-secondary-700">
+                        <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary-500" />
+                        <span>{item.trim().replace(/^[-•\d.]+\s*/, '')}</span>
+                      </li>
+                    ))}
                 </ul>
               </CardContent>
             </Card>
@@ -681,12 +693,15 @@ export default function JobDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {job.benefits.split(/\n/).filter((item: string) => item.trim()).map((item: string, idx: number) => (
-                      <li key={idx} className="flex items-start gap-3 text-secondary-700">
-                        <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-green-500" />
-                        <span>{item.trim().replace(/^[-•]\s*/, '')}</span>
-                      </li>
-                    ))}
+                    {job.benefits
+                      .split(/\n|(?<=\.)\s+(?=[A-Z•\-\d])/)
+                      .filter((item: string) => item.trim() && item.trim().length > 5)
+                      .map((item: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-3 text-secondary-700">
+                          <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-green-500" />
+                          <span>{item.trim().replace(/^[-•\d.]+\s*/, '')}</span>
+                        </li>
+                      ))}
                   </ul>
                 </CardContent>
               </Card>
