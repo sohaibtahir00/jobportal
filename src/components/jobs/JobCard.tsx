@@ -84,9 +84,9 @@ export function JobCard({ job }: JobCardProps) {
       <CardContent className="p-6 flex flex-col h-full">
         {/* Header with Logo and Title */}
         <div className="mb-4 flex items-start gap-3">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-100 text-2xl overflow-hidden">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary-100 text-2xl">
             {job.employer?.companyLogo ? (
-              <img src={resolveImageUrl(job.employer.companyLogo) || ''} alt={job.employer.companyName} className="max-h-12 max-w-12 rounded-lg object-contain" />
+              <img src={resolveImageUrl(job.employer.companyLogo) || ''} alt={job.employer.companyName} className="h-full w-full rounded-lg object-cover" />
             ) : (
               job.employer?.companyName?.charAt(0) || 'J'
             )}
