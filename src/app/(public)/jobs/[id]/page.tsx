@@ -637,15 +637,28 @@ export default function JobDetailPage() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  {job.requirements
-                    .split(/\n|(?<=\.)\s+(?=[A-Z•\-\d])/)
-                    .filter((item: string) => item.trim() && item.trim().length > 5)
-                    .map((item: string, idx: number) => (
-                      <li key={idx} className="flex items-start gap-3 text-secondary-700">
-                        <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary-500" />
-                        <span>{item.trim().replace(/^[-•\d.]+\s*/, '')}</span>
-                      </li>
-                    ))}
+                  {(() => {
+                    const text = job.requirements;
+                    // Check if it's comma-separated (no newlines and has commas)
+                    const hasNewlines = /\n/.test(text);
+                    const hasCommas = /,/.test(text);
+                    let items: string[];
+                    if (!hasNewlines && hasCommas) {
+                      // Split by comma for comma-separated lists
+                      items = text.split(/,\s*/);
+                    } else {
+                      // Split by newlines or sentence boundaries
+                      items = text.split(/\n|(?<=\.)\s+(?=[A-Z•\-\d])/);
+                    }
+                    return items
+                      .filter((item: string) => item.trim() && item.trim().length > 3)
+                      .map((item: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-3 text-secondary-700">
+                          <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary-500" />
+                          <span>{item.trim().replace(/^[-•\d.]+\s*/, '')}</span>
+                        </li>
+                      ));
+                  })()}
                 </ul>
               </CardContent>
             </Card>
@@ -693,15 +706,28 @@ export default function JobDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {job.benefits
-                      .split(/\n|(?<=\.)\s+(?=[A-Z•\-\d])/)
-                      .filter((item: string) => item.trim() && item.trim().length > 5)
-                      .map((item: string, idx: number) => (
-                        <li key={idx} className="flex items-start gap-3 text-secondary-700">
-                          <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-green-500" />
-                          <span>{item.trim().replace(/^[-•\d.]+\s*/, '')}</span>
-                        </li>
-                      ))}
+                    {(() => {
+                      const text = job.benefits;
+                      // Check if it's comma-separated (no newlines and has commas)
+                      const hasNewlines = /\n/.test(text);
+                      const hasCommas = /,/.test(text);
+                      let items: string[];
+                      if (!hasNewlines && hasCommas) {
+                        // Split by comma for comma-separated lists
+                        items = text.split(/,\s*/);
+                      } else {
+                        // Split by newlines or sentence boundaries
+                        items = text.split(/\n|(?<=\.)\s+(?=[A-Z•\-\d])/);
+                      }
+                      return items
+                        .filter((item: string) => item.trim() && item.trim().length > 3)
+                        .map((item: string, idx: number) => (
+                          <li key={idx} className="flex items-start gap-3 text-secondary-700">
+                            <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-green-500" />
+                            <span>{item.trim().replace(/^[-•\d.]+\s*/, '').replace(/^and\s+/i, '')}</span>
+                          </li>
+                        ));
+                    })()}
                   </ul>
                 </CardContent>
               </Card>
