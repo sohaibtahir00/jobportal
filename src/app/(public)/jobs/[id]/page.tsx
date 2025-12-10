@@ -332,14 +332,17 @@ export default function JobDetailPage() {
                   </Button>
                 )}
 
-                <Button
-                  variant="outline"
-                  className="gap-2 px-3 sm:px-4"
-                  onClick={handleShare}
-                >
-                  <Share2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Share</span>
-                </Button>
+                {/* Share button - Hide for employers */}
+                {session?.user?.role !== 'EMPLOYER' && (
+                  <Button
+                    variant="outline"
+                    className="gap-2 px-3 sm:px-4"
+                    onClick={handleShare}
+                  >
+                    <Share2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Share</span>
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -525,47 +528,49 @@ export default function JobDetailPage() {
                   </div>
                 )}
 
-                {/* Action Buttons */}
-                <div>
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      className="flex-1 sm:flex-initial"
-                      onClick={() => setIsApplicationFormOpen(true)}
-                    >
-                      Apply Now
-                    </Button>
-                    {session && session.user?.role !== 'EMPLOYER' && (
+                {/* Action Buttons - Hide for employers */}
+                {session?.user?.role !== 'EMPLOYER' && (
+                  <div>
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        className="flex-1 sm:flex-initial"
+                        onClick={() => setIsApplicationFormOpen(true)}
+                      >
+                        Apply Now
+                      </Button>
+                      {session && (
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="gap-2"
+                          onClick={handleSaveToggle}
+                          disabled={isSaving}
+                        >
+                          {candidateInfo?.isSaved ? (
+                            <Bookmark className="h-4 w-4 fill-primary-500 text-primary-500" />
+                          ) : (
+                            <Bookmark className="h-4 w-4" />
+                          )}
+                          {candidateInfo?.isSaved ? 'Saved' : 'Save Job'}
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="lg"
                         className="gap-2"
-                        onClick={handleSaveToggle}
-                        disabled={isSaving}
+                        onClick={handleShare}
                       >
-                        {candidateInfo?.isSaved ? (
-                          <Bookmark className="h-4 w-4 fill-primary-500 text-primary-500" />
-                        ) : (
-                          <Bookmark className="h-4 w-4" />
-                        )}
-                        {candidateInfo?.isSaved ? 'Saved' : 'Save Job'}
+                        <Share2 className="h-4 w-4" />
+                        Share
                       </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="gap-2"
-                      onClick={handleShare}
-                    >
-                      <Share2 className="h-4 w-4" />
-                      Share
-                    </Button>
+                    </div>
+                    <p className="mt-2 text-sm text-secondary-600">
+                      Application takes 2 minutes
+                    </p>
                   </div>
-                  <p className="mt-2 text-sm text-secondary-600">
-                    Application takes 2 minutes
-                  </p>
-                </div>
+                )}
 
                 {/* Skills Assessment CTA - Always show for now */}
               </CardContent>
@@ -771,24 +776,26 @@ export default function JobDetailPage() {
                 </Card>
               )}
 
-              {/* Apply CTA */}
-              <Card className="bg-gradient-to-br from-primary-600 to-primary-700 text-white">
-                <CardContent className="p-6 text-center">
-                  <h3 className="mb-2 text-lg font-semibold">
-                    Ready to Apply?
-                  </h3>
-                  <p className="mb-4 text-sm text-primary-100">
-                    Join {job.employer?.companyName || 'our team'} and make an impact
-                  </p>
-                  <Button
-                    variant="secondary"
-                    className="w-full bg-white text-primary-600 hover:bg-primary-50"
-                    onClick={() => setIsApplicationFormOpen(true)}
-                  >
-                    Apply Now
-                  </Button>
-                </CardContent>
-              </Card>
+              {/* Apply CTA - Hide for employers */}
+              {session?.user?.role !== 'EMPLOYER' && (
+                <Card className="bg-gradient-to-br from-primary-600 to-primary-700 text-white">
+                  <CardContent className="p-6 text-center">
+                    <h3 className="mb-2 text-lg font-semibold">
+                      Ready to Apply?
+                    </h3>
+                    <p className="mb-4 text-sm text-primary-100">
+                      Join {job.employer?.companyName || 'our team'} and make an impact
+                    </p>
+                    <Button
+                      variant="secondary"
+                      className="w-full bg-white text-primary-600 hover:bg-primary-50"
+                      onClick={() => setIsApplicationFormOpen(true)}
+                    >
+                      Apply Now
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>
