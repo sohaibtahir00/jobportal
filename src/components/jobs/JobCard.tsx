@@ -80,7 +80,13 @@ export function JobCard({ job }: JobCardProps) {
   const techTags = job.techStack && job.techStack.length > 0 ? job.techStack : job.skills;
 
   return (
-    <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1 overflow-hidden">
+    <Card
+      className="h-full transition-all hover:shadow-lg hover:-translate-y-1 overflow-hidden"
+      style={{
+        border: '1px solid transparent',
+        background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, rgba(29, 78, 216, 0.3), transparent 50%) border-box',
+      }}
+    >
       <CardContent className="p-6 flex flex-col h-full">
         {/* Header with Logo and Title */}
         <div className="mb-4 flex items-start gap-3">
