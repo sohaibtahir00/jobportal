@@ -13,8 +13,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         className={cn(
           "rounded-lg border border-secondary-200 bg-white shadow-sm",
-          variant === "accent" && "border-l-[3px] border-l-primary-500",
-          className
+          className,
+          variant === "accent" && "!border-l-[3px] !border-l-primary-500"
         )}
         {...props}
       >
