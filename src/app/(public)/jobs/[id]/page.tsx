@@ -639,13 +639,17 @@ export default function JobDetailPage() {
                 <ul className="space-y-3">
                   {(() => {
                     const text = job.requirements;
-                    // Check if it's comma-separated (no newlines and has commas)
+                    // Check if it's comma-separated (no newlines and has commas outside parentheses)
                     const hasNewlines = /\n/.test(text);
-                    const hasCommas = /,/.test(text);
+                    // Count commas outside parentheses
+                    const commasOutsideParens = text.replace(/\([^)]*\)/g, '').match(/,/g);
+                    const hasMultipleCommas = commasOutsideParens && commasOutsideParens.length >= 2;
                     let items: string[];
-                    if (!hasNewlines && hasCommas) {
-                      // Split by comma for comma-separated lists
-                      items = text.split(/,\s*/);
+                    if (!hasNewlines && hasMultipleCommas) {
+                      // Split by comma followed by space, but not inside parentheses
+                      // Use a placeholder to protect parenthetical content
+                      const protected_text = text.replace(/\(([^)]*)\)/g, '<<<$1>>>');
+                      items = protected_text.split(/,\s*/).map((item: string) => item.replace(/<<<([^>]*)>>>/g, '($1)'));
                     } else {
                       // Split by newlines or sentence boundaries
                       items = text.split(/\n|(?<=\.)\s+(?=[A-Z•\-\d])/);
@@ -708,13 +712,17 @@ export default function JobDetailPage() {
                   <ul className="space-y-3">
                     {(() => {
                       const text = job.benefits;
-                      // Check if it's comma-separated (no newlines and has commas)
+                      // Check if it's comma-separated (no newlines and has commas outside parentheses)
                       const hasNewlines = /\n/.test(text);
-                      const hasCommas = /,/.test(text);
+                      // Count commas outside parentheses
+                      const commasOutsideParens = text.replace(/\([^)]*\)/g, '').match(/,/g);
+                      const hasMultipleCommas = commasOutsideParens && commasOutsideParens.length >= 2;
                       let items: string[];
-                      if (!hasNewlines && hasCommas) {
-                        // Split by comma for comma-separated lists
-                        items = text.split(/,\s*/);
+                      if (!hasNewlines && hasMultipleCommas) {
+                        // Split by comma followed by space, but not inside parentheses
+                        // Use a placeholder to protect parenthetical content
+                        const protected_text = text.replace(/\(([^)]*)\)/g, '<<<$1>>>');
+                        items = protected_text.split(/,\s*/).map((item: string) => item.replace(/<<<([^>]*)>>>/g, '($1)'));
                       } else {
                         // Split by newlines or sentence boundaries
                         items = text.split(/\n|(?<=\.)\s+(?=[A-Z•\-\d])/);
