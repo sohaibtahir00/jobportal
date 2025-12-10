@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
+import { resolveImageUrl } from "@/lib/utils";
 
 // Backend API URL
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://job-portal-backend-production-cd05.up.railway.app";
@@ -387,14 +388,12 @@ export default function IntroductionRespondPage() {
               <CardContent className="p-6">
                 {/* Company Header */}
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-16 h-16 bg-secondary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-16 h-16 bg-secondary-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {introduction.employer.logo ? (
-                      <Image
-                        src={introduction.employer.logo}
+                      <img
+                        src={resolveImageUrl(introduction.employer.logo) || ''}
                         alt={introduction.employer.companyName}
-                        width={64}
-                        height={64}
-                        className="rounded-lg object-cover"
+                        className="h-full w-full rounded-lg object-cover"
                       />
                     ) : (
                       <Building2 className="h-8 w-8 text-secondary-400" />
