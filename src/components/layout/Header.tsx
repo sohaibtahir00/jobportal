@@ -8,6 +8,7 @@ import { Briefcase, Menu, X, User, LogOut, Shield, Search, Settings, Receipt, La
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
+import { NotificationsDropdown } from "./NotificationsDropdown";
 
 export interface HeaderProps {
   className?: string;
@@ -177,6 +178,9 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                     </Link>
                   </Button>
                 )}
+
+                {/* Notifications Bell */}
+                <NotificationsDropdown />
 
                 {/* User Menu */}
                 <div className="relative">
