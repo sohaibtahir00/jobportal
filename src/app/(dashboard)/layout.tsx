@@ -136,13 +136,13 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 transform bg-white shadow-lg transition-all duration-300 ease-in-out lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } ${sidebarCollapsed ? "lg:w-[70px]" : "lg:w-64"} w-64`}
+        className={`fixed left-0 z-30 transform bg-white shadow-lg transition-all duration-300 ease-in-out lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0 inset-y-0" : "-translate-x-full inset-y-0"
+        } lg:top-16 lg:bottom-0 ${sidebarCollapsed ? "lg:w-[70px]" : "lg:w-64"} w-64`}
       >
         <div className="flex h-full flex-col overflow-y-auto overflow-x-hidden">
           {/* Toggle Button Row */}
-          <div className={`flex h-16 items-center border-b border-secondary-200 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"}`}>
+          <div className={`flex h-14 items-center border-b border-secondary-200 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"}`}>
             {/* Mobile: Show logo and close button */}
             <Link href="/" className="flex items-center lg:hidden">
               <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
