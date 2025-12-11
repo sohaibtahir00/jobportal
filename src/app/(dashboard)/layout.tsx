@@ -137,18 +137,17 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 transform bg-white shadow-lg transition-all duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 transform bg-white shadow-lg transition-all duration-300 ease-in-out lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } ${sidebarCollapsed ? "lg:w-[70px]" : "lg:w-64"} w-64`}
       >
         <div className="flex h-full flex-col overflow-y-auto overflow-x-hidden">
-          {/* Logo & Toggle Button */}
+          {/* Toggle Button Row */}
           <div className={`flex h-16 items-center border-b border-secondary-200 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"}`}>
-            {!sidebarCollapsed && (
-              <Link href="/" className="flex items-center">
-                <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
-              </Link>
-            )}
+            {/* Mobile: Show logo and close button */}
+            <Link href="/" className="flex items-center lg:hidden">
+              <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
+            </Link>
             {/* Mobile close button */}
             <button
               onClick={() => setSidebarOpen(false)}
@@ -157,7 +156,7 @@ export default function DashboardLayout({
             >
               <X className="h-6 w-6 text-secondary-600" />
             </button>
-            {/* Desktop collapse toggle - prominent expand button when collapsed */}
+            {/* Desktop: Collapse toggle only (no logo in sidebar) */}
             <button
               onClick={toggleSidebarCollapsed}
               className={`hidden lg:flex items-center justify-center rounded-md transition-colors ${
@@ -171,33 +170,7 @@ export default function DashboardLayout({
             </button>
           </div>
 
-          {/* User Info */}
-          <div className={`border-b border-secondary-200 ${sidebarCollapsed ? "p-3" : "p-6"}`}>
-            <div className={`flex items-center ${sidebarCollapsed ? "justify-center" : "space-x-3"}`}>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600 flex-shrink-0">
-                <span className="text-sm font-semibold">
-                  {session.user?.name
-                    ? session.user.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                    : session.user?.email?.[0].toUpperCase()}
-                </span>
-              </div>
-              {!sidebarCollapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-medium text-secondary-900">
-                    {session.user?.name || "User"}
-                  </p>
-                  <p className="truncate text-xs text-secondary-500">
-                    {session.user?.email}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Navigation */}
+          {/* Navigation - starts directly after toggle */}
           <nav className={`flex-1 space-y-1 py-4 ${sidebarCollapsed ? "px-2" : "px-3"}`}>
             {navItems.map((item) => {
               const isActive = pathname === item.href;
@@ -242,8 +215,8 @@ export default function DashboardLayout({
       <div className={`transition-all duration-300 ${sidebarCollapsed ? "lg:pl-[70px]" : "lg:pl-64"}`}>
         {/* Top Bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center border-b border-secondary-200 bg-white px-4 shadow-sm lg:px-8">
-          {/* Left side: Mobile menu button + Logo when collapsed */}
-          <div className="flex items-center">
+          {/* Left side: Mobile menu button + Logo (always visible on desktop) */}
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden"
@@ -251,22 +224,20 @@ export default function DashboardLayout({
             >
               <Menu className="h-6 w-6 text-secondary-600" />
             </button>
-            {/* Show logo in header when sidebar is collapsed */}
-            {sidebarCollapsed && (
-              <Link href="/" className="hidden lg:flex items-center">
-                <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
-              </Link>
-            )}
+            {/* Logo - always visible in header on desktop */}
+            <Link href="/" className="hidden lg:flex items-center">
+              <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
+            </Link>
           </div>
 
           {/* Spacer to push right content */}
           <div className="flex-1" />
 
-          {/* Right side: Notifications + User info */}
-          <div className="flex items-center gap-4">
+          {/* Right side: Notifications + User dropdown */}
+          <div className="flex items-center gap-3">
             <NotificationsDropdown />
             {/* User info display */}
-            <div className="hidden sm:flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-sm">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-primary-600">
                 <span className="text-xs font-semibold">
                   {session.user?.name
@@ -277,7 +248,7 @@ export default function DashboardLayout({
                     : session.user?.email?.[0].toUpperCase()}
                 </span>
               </div>
-              <span className="font-medium text-secondary-700 max-w-[120px] truncate">
+              <span className="hidden sm:block font-medium text-secondary-700 max-w-[120px] truncate">
                 {session.user?.name || session.user?.email}
               </span>
             </div>
