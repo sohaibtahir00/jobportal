@@ -91,7 +91,7 @@ export default function EmployersPage() {
       company: "TechVision AI",
       image: "👩‍💼",
       content:
-        "We hired three exceptional ML engineers through Job Portal in just two weeks. The quality of candidates was outstanding, and the 18% fee was worth every penny for the time saved.",
+        "We hired three exceptional ML engineers through SkillProof in just two weeks. The quality of candidates was outstanding, and the 18% fee was worth every penny for the time saved.",
       rating: 5,
     },
     {
@@ -109,7 +109,7 @@ export default function EmployersPage() {
       company: "CloudAI Solutions",
       image: "👩‍💼",
       content:
-        "Job Portal transformed our hiring process. The platform is intuitive, candidates are top-notch, and their support team is incredibly responsive. Highly recommend!",
+        "SkillProof transformed our hiring process. The platform is intuitive, candidates are top-notch, and their support team is incredibly responsive. Highly recommend!",
       rating: 5,
     },
   ];

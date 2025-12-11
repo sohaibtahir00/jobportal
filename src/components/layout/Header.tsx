@@ -95,10 +95,10 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
           >
             <Image
               src="/logo.png"
-              alt="Job Portal"
-              width={280}
-              height={70}
-              className="h-14 md:h-16 w-auto"
+              alt="SkillProof"
+              width={160}
+              height={40}
+              className="h-8 md:h-10 w-auto"
               priority
             />
           </Link>

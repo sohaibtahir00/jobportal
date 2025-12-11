@@ -132,7 +132,7 @@ export default function DashboardLayout({
           {/* Logo & Close Button */}
           <div className="flex h-16 items-center justify-between border-b border-secondary-200 px-6">
             <Link href="/" className="flex items-center">
-              <img src="/logo.png" alt="Job Portal" className="h-14 w-auto" />
+              <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}

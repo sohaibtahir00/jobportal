@@ -1,7 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  Briefcase,
   Facebook,
   Twitter,
   Linkedin,
@@ -90,14 +89,9 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
           <div className="lg:col-span-2">
             <Link
               href="/"
-              className="flex items-center gap-2 transition-opacity hover:opacity-80"
+              className="flex items-center transition-opacity hover:opacity-80"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-primary-600 to-accent-600">
-                <Briefcase className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-secondary-900">
-                Job Portal
-              </span>
+              <img src="/logo.png" alt="SkillProof" className="h-10 w-auto" />
             </Link>
             <p className="mt-4 text-sm text-secondary-600">
               Specialized recruitment for AI/ML, Healthcare IT, Fintech &
@@ -246,7 +240,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
         <div className="mt-12 border-t border-secondary-200 pt-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <p className="text-center text-sm text-secondary-600">
-              &copy; {currentYear} Job Portal. All rights reserved.
+              &copy; {currentYear} SkillProof. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <Link

@@ -29,15 +29,15 @@ import {
 import { api } from "@/lib/api";
 
 // Agreement text - same as backend
-const AGREEMENT_TEXT = `HIREHUB AI SERVICE AGREEMENT
+const AGREEMENT_TEXT = `SkillProof AI SERVICE AGREEMENT
 
 Effective Date: Upon Electronic Acceptance
 
-This Service Agreement ("Agreement") is entered into between HireHub AI ("Company", "we", "us", "our") and the employer organization ("Employer", "you", "your") identified during registration.
+This Service Agreement ("Agreement") is entered into between SkillProof AI ("Company", "we", "us", "our") and the employer organization ("Employer", "you", "your") identified during registration.
 
 1. SERVICES PROVIDED
 
-1.1 HireHub AI provides a technology-enabled recruitment platform connecting Employers with pre-vetted technology professionals ("Candidates").
+1.1 SkillProof AI provides a technology-enabled recruitment platform connecting Employers with pre-vetted technology professionals ("Candidates").
 
 1.2 Our services include:
 - Access to our curated database of technology professionals
@@ -93,7 +93,7 @@ This Service Agreement ("Agreement") is entered into between HireHub AI ("Compan
 
 5.3 Circumvention: You agree not to circumvent our services by:
 - Contacting Candidates directly after their profiles are removed from our platform
-- Hiring Candidates through another agency who were first introduced by HireHub AI
+- Hiring Candidates through another agency who were first introduced by SkillProof AI
 - Encouraging Candidates to apply directly to avoid fees
 
 6. DATA PRIVACY & CONFIDENTIALITY
@@ -114,7 +114,7 @@ This Service Agreement ("Agreement") is entered into between HireHub AI ("Compan
 
 8. LIMITATION OF LIABILITY
 
-8.1 HireHub AI's total liability shall not exceed the fees paid by you in the 12 months preceding any claim.
+8.1 SkillProof AI's total liability shall not exceed the fees paid by you in the 12 months preceding any claim.
 
 8.2 We are not liable for:
 - Candidate performance or conduct
@@ -157,7 +157,8 @@ export default function ServiceAgreementPage() {
 
   // State
   const [loading, setLoading] = useState(true);
-  const [agreementStatus, setAgreementStatus] = useState<AgreementStatus | null>(null);
+  const [agreementStatus, setAgreementStatus] =
+    useState<AgreementStatus | null>(null);
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [signerName, setSignerName] = useState("");
   const [signerTitle, setSignerTitle] = useState("");
@@ -232,7 +233,11 @@ export default function ServiceAgreementPage() {
     e.preventDefault();
 
     if (!hasScrolledToBottom) {
-      showToast("error", "Please Read Agreement", "You must scroll through the entire agreement before signing.");
+      showToast(
+        "error",
+        "Please Read Agreement",
+        "You must scroll through the entire agreement before signing."
+      );
       return;
     }
 
@@ -249,7 +254,11 @@ export default function ServiceAgreementPage() {
         agreedToTerms: true,
       });
 
-      showToast("success", "Agreement Signed", "Thank you for signing the service agreement.");
+      showToast(
+        "success",
+        "Agreement Signed",
+        "Thank you for signing the service agreement."
+      );
 
       // Check if there's a redirect URL in query params
       const urlParams = new URLSearchParams(window.location.search);
@@ -312,13 +321,16 @@ export default function ServiceAgreementPage() {
               </h1>
 
               <p className="text-secondary-600 mb-6">
-                You signed the HireHub AI Service Agreement on{" "}
+                You signed the SkillProof AI Service Agreement on{" "}
                 <span className="font-semibold">{signedDate}</span>
               </p>
 
               <div className="bg-white/80 rounded-lg p-4 mb-6 inline-block">
                 <p className="text-sm text-secondary-500">
-                  Agreement Version: <span className="font-medium">{agreementStatus.agreementVersion || "v1.0"}</span>
+                  Agreement Version:{" "}
+                  <span className="font-medium">
+                    {agreementStatus.agreementVersion || "v1.0"}
+                  </span>
                 </p>
               </div>
 
@@ -334,9 +346,7 @@ export default function ServiceAgreementPage() {
                   View Agreement
                 </Button>
                 <Button asChild>
-                  <Link href="/employer/dashboard">
-                    Continue to Dashboard
-                  </Link>
+                  <Link href="/employer/dashboard">Continue to Dashboard</Link>
                 </Button>
               </div>
             </CardContent>
@@ -356,7 +366,11 @@ export default function ServiceAgreementPage() {
               <div className="p-4 border-b flex justify-between items-center">
                 <h2 className="text-lg font-semibold">Service Agreement</h2>
                 <button
-                  onClick={() => document.getElementById("agreementModal")?.classList.add("hidden")}
+                  onClick={() =>
+                    document
+                      .getElementById("agreementModal")
+                      ?.classList.add("hidden")
+                  }
                   className="text-secondary-400 hover:text-secondary-600"
                 >
                   &times;
@@ -371,7 +385,11 @@ export default function ServiceAgreementPage() {
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => document.getElementById("agreementModal")?.classList.add("hidden")}
+                  onClick={() =>
+                    document
+                      .getElementById("agreementModal")
+                      ?.classList.add("hidden")
+                  }
                 >
                   Close
                 </Button>
@@ -399,10 +417,11 @@ export default function ServiceAgreementPage() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-secondary-900 mb-2">
-            HireHub AI Service Agreement
+            SkillProof AI Service Agreement
           </h1>
           <p className="text-secondary-600 max-w-2xl mx-auto">
-            Before accessing candidate profiles, please review and sign our service agreement.
+            Before accessing candidate profiles, please review and sign our
+            service agreement.
           </p>
         </div>
 
@@ -459,7 +478,10 @@ export default function ServiceAgreementPage() {
                   onChange={(e) => {
                     setSignerName(e.target.value);
                     if (formErrors.signerName) {
-                      setFormErrors((prev) => ({ ...prev, signerName: undefined }));
+                      setFormErrors((prev) => ({
+                        ...prev,
+                        signerName: undefined,
+                      }));
                     }
                   }}
                   error={formErrors.signerName}
@@ -474,7 +496,10 @@ export default function ServiceAgreementPage() {
                   onChange={(e) => {
                     setSignerTitle(e.target.value);
                     if (formErrors.signerTitle) {
-                      setFormErrors((prev) => ({ ...prev, signerTitle: undefined }));
+                      setFormErrors((prev) => ({
+                        ...prev,
+                        signerTitle: undefined,
+                      }));
                     }
                   }}
                   error={formErrors.signerTitle}
@@ -492,7 +517,9 @@ export default function ServiceAgreementPage() {
                       : formErrors.agreedToTerms
                       ? "border-red-300 bg-red-50"
                       : "border-secondary-200 hover:border-primary-300"
-                  } ${!hasScrolledToBottom ? "opacity-50 cursor-not-allowed" : ""}`}
+                  } ${
+                    !hasScrolledToBottom ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 >
                   <input
                     type="checkbox"
@@ -500,7 +527,10 @@ export default function ServiceAgreementPage() {
                     onChange={(e) => {
                       setAgreedToTerms(e.target.checked);
                       if (formErrors.agreedToTerms) {
-                        setFormErrors((prev) => ({ ...prev, agreedToTerms: undefined }));
+                        setFormErrors((prev) => ({
+                          ...prev,
+                          agreedToTerms: undefined,
+                        }));
                       }
                     }}
                     disabled={!hasScrolledToBottom}
@@ -508,16 +538,20 @@ export default function ServiceAgreementPage() {
                   />
                   <div>
                     <span className="text-sm font-medium text-secondary-900">
-                      I have read and agree to the terms of this Service Agreement
+                      I have read and agree to the terms of this Service
+                      Agreement
                     </span>
                     <p className="text-xs text-secondary-500 mt-1">
                       By signing, I confirm I am authorized to bind{" "}
-                      <span className="font-medium">my organization</span> to this agreement.
+                      <span className="font-medium">my organization</span> to
+                      this agreement.
                     </p>
                   </div>
                 </label>
                 {formErrors.agreedToTerms && (
-                  <p className="mt-1 text-xs text-red-600">{formErrors.agreedToTerms}</p>
+                  <p className="mt-1 text-xs text-red-600">
+                    {formErrors.agreedToTerms}
+                  </p>
                 )}
               </div>
 
@@ -565,8 +599,12 @@ export default function ServiceAgreementPage() {
                   <span className="text-blue-600 font-bold text-sm">%</span>
                 </div>
                 <div>
-                  <p className="font-medium text-secondary-900">15-20% Placement Fee</p>
-                  <p className="text-sm text-secondary-600">Based on candidate's first-year base salary</p>
+                  <p className="font-medium text-secondary-900">
+                    15-20% Placement Fee
+                  </p>
+                  <p className="text-sm text-secondary-600">
+                    Based on candidate's first-year base salary
+                  </p>
                 </div>
               </div>
 
@@ -575,8 +613,12 @@ export default function ServiceAgreementPage() {
                   <Calendar className="h-4 w-4 text-blue-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-secondary-900">12-Month Protection</p>
-                  <p className="text-sm text-secondary-600">From when you first view a candidate</p>
+                  <p className="font-medium text-secondary-900">
+                    12-Month Protection
+                  </p>
+                  <p className="text-sm text-secondary-600">
+                    From when you first view a candidate
+                  </p>
                 </div>
               </div>
 
@@ -585,8 +627,12 @@ export default function ServiceAgreementPage() {
                   <Shield className="h-4 w-4 text-blue-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-secondary-900">90-Day Guarantee</p>
-                  <p className="text-sm text-secondary-600">Replacement or prorated refund</p>
+                  <p className="font-medium text-secondary-900">
+                    90-Day Guarantee
+                  </p>
+                  <p className="text-sm text-secondary-600">
+                    Replacement or prorated refund
+                  </p>
                 </div>
               </div>
 
@@ -595,8 +641,12 @@ export default function ServiceAgreementPage() {
                   <AlertCircle className="h-4 w-4 text-blue-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-secondary-900">Fee Applies Regardless</p>
-                  <p className="text-sm text-secondary-600">Of how the hire occurs within protection period</p>
+                  <p className="font-medium text-secondary-900">
+                    Fee Applies Regardless
+                  </p>
+                  <p className="text-sm text-secondary-600">
+                    Of how the hire occurs within protection period
+                  </p>
                 </div>
               </div>
             </div>

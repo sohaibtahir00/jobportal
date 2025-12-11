@@ -15,14 +15,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
         <div className="mx-auto w-full max-w-md">
           {/* Logo */}
           <Link href="/" className="mb-8 inline-block">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-primary-600 to-accent-600">
-                <Briefcase className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-secondary-900">
-                JobPortal
-              </span>
-            </div>
+            <img src="/logo.png" alt="SkillProof" className="h-10 w-auto" />
           </Link>
 
           {/* Header */}
@@ -100,7 +93,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
             {/* Testimonial */}
             <div className="mt-12 rounded-lg bg-white/10 p-6 backdrop-blur-sm">
               <p className="text-lg italic text-white">
-                "JobPortal helped me land my dream role as an ML Engineer at a
+                "SkillProof helped me land my dream role as an ML Engineer at a
                 top tech company. The platform is intuitive and the quality of
                 opportunities is unmatched."
               </p>

@@ -208,8 +208,8 @@ export default function SignupPage() {
           <div className="mb-8">
             <img
               src="/logo.png"
-              alt="Job Portal"
-              className="h-20 md:h-24 w-auto mb-4"
+              alt="SkillProof"
+              className="h-12 md:h-14 w-auto mb-4"
             />
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Create your account
