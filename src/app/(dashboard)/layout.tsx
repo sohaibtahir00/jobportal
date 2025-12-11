@@ -26,7 +26,6 @@ import {
 import { useState, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Footer } from "@/components/layout";
-import { NotificationsDropdown } from "@/components/layout/NotificationsDropdown";
 
 // This will be replaced with actual auth check later
 const MOCK_CANDIDATE_USER = {
@@ -204,47 +203,14 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <div className={`transition-all duration-300 ${sidebarCollapsed ? "lg:pl-[70px]" : "lg:pl-64"}`}>
-        {/* Top Bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center border-b border-secondary-200 bg-white px-4 shadow-sm lg:px-8">
-          {/* Left side: Mobile menu button + Logo (always visible on desktop) */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden"
-              aria-label="Open sidebar"
-            >
-              <Menu className="h-6 w-6 text-secondary-600" />
-            </button>
-            {/* Logo - always visible in header on desktop */}
-            <Link href="/" className="hidden lg:flex items-center">
-              <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
-            </Link>
-          </div>
-
-          {/* Spacer to push right content */}
-          <div className="flex-1" />
-
-          {/* Right side: Notifications + User dropdown */}
-          <div className="flex items-center gap-3">
-            <NotificationsDropdown />
-            {/* User info display */}
-            <div className="flex items-center gap-2 text-sm">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-primary-600">
-                <span className="text-xs font-semibold">
-                  {session.user?.name
-                    ? session.user.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                    : session.user?.email?.[0].toUpperCase()}
-                </span>
-              </div>
-              <span className="hidden sm:block font-medium text-secondary-700 max-w-[120px] truncate">
-                {session.user?.name || session.user?.email}
-              </span>
-            </div>
-          </div>
-        </header>
+        {/* Mobile menu button - fixed position on mobile only */}
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-4 left-4 z-50 lg:hidden bg-white rounded-md p-2 shadow-md"
+          aria-label="Open sidebar"
+        >
+          <Menu className="h-6 w-6 text-secondary-600" />
+        </button>
 
         {/* Page Content */}
         <main className="p-4 lg:p-8">
