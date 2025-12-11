@@ -241,7 +241,8 @@ export default function DashboardLayout({
       {/* Main Content */}
       <div className={`transition-all duration-300 ${sidebarCollapsed ? "lg:pl-[70px]" : "lg:pl-64"}`}>
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-secondary-200 bg-white px-4 shadow-sm lg:px-8">
+        <header className="sticky top-0 z-30 flex h-16 items-center border-b border-secondary-200 bg-white px-4 shadow-sm lg:px-8">
+          {/* Left side: Mobile menu button + Logo when collapsed */}
           <div className="flex items-center">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -252,16 +253,34 @@ export default function DashboardLayout({
             </button>
             {/* Show logo in header when sidebar is collapsed */}
             {sidebarCollapsed && (
-              <Link href="/" className="hidden lg:flex items-center ml-2">
+              <Link href="/" className="hidden lg:flex items-center">
                 <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
               </Link>
             )}
           </div>
 
-          <div className="flex-1 lg:hidden" />
+          {/* Spacer to push right content */}
+          <div className="flex-1" />
 
-          <div className="flex items-center space-x-4">
+          {/* Right side: Notifications + User info */}
+          <div className="flex items-center gap-4">
             <NotificationsDropdown />
+            {/* User info display */}
+            <div className="hidden sm:flex items-center gap-2 text-sm">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-primary-600">
+                <span className="text-xs font-semibold">
+                  {session.user?.name
+                    ? session.user.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                    : session.user?.email?.[0].toUpperCase()}
+                </span>
+              </div>
+              <span className="font-medium text-secondary-700 max-w-[120px] truncate">
+                {session.user?.name || session.user?.email}
+              </span>
+            </div>
           </div>
         </header>
 

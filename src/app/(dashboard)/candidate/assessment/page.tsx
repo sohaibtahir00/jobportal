@@ -153,14 +153,27 @@ export default function CandidateAssessmentPage() {
   }
 
   if (error) {
+    const isProfileError = error.includes("profile");
     return (
       <div className="container py-8">
-        <Card className="border-red-200 bg-red-50">
+        <Card className={isProfileError ? "border-amber-200 bg-amber-50" : "border-red-200 bg-red-50"}>
           <CardContent className="p-6 text-center">
-            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
-            <h2 className="mb-2 text-xl font-bold text-red-800">Error</h2>
-            <p className="mb-4 text-red-700">{error}</p>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <AlertCircle className={`mx-auto mb-4 h-12 w-12 ${isProfileError ? "text-amber-500" : "text-red-500"}`} />
+            <h2 className={`mb-2 text-xl font-bold ${isProfileError ? "text-amber-800" : "text-red-800"}`}>
+              {isProfileError ? "Complete Your Profile First" : "Error"}
+            </h2>
+            <p className={`mb-4 ${isProfileError ? "text-amber-700" : "text-red-700"}`}>{error}</p>
+            <div className="flex gap-3 justify-center">
+              {isProfileError ? (
+                <Button asChild>
+                  <Link href="/candidate/profile">
+                    Go to My Profile
+                  </Link>
+                </Button>
+              ) : (
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
