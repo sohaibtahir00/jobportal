@@ -828,7 +828,7 @@ export default function CandidateDashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card className="shadow-lg border-2 border-primary-100">
+          <Card variant="accent" className="shadow-lg border-2 border-primary-100">
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div className="flex items-start gap-4">
