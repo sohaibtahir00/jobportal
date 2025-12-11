@@ -24,15 +24,6 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
   const isEmployer = session?.user?.role === "EMPLOYER";
   const isAdmin = session?.user?.role === "ADMIN";
 
-  // Don't render public header on dashboard pages (they have their own layout)
-  const isDashboardRoute = pathname.startsWith("/candidate") ||
-                           pathname.startsWith("/employer") ||
-                           pathname.startsWith("/admin");
-
-  if (isDashboardRoute) {
-    return null;
-  }
-
   // Determine logo link based on login state
   const logoHref = React.useMemo(() => {
     if (isCandidate) return "/candidate/dashboard";
