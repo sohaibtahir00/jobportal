@@ -41,7 +41,13 @@ interface Interview {
   companyLogo?: string;
   type: "phone" | "video" | "onsite";
   status: string; // Will handle all 7 statuses
-  displayStatus: "action-required" | "pending" | "confirmed" | "completed" | "cancelled" | "rescheduled";
+  displayStatus:
+    | "action-required"
+    | "pending"
+    | "confirmed"
+    | "completed"
+    | "cancelled"
+    | "rescheduled";
   date: string;
   time: string;
   duration: string;
@@ -66,26 +72,36 @@ const hasRescheduleRequest = (notes: string | null | undefined): boolean => {
 };
 
 // Helper function to extract reschedule request reason from notes
-const getRescheduleRequestReason = (notes: string | null | undefined): string | null => {
+const getRescheduleRequestReason = (
+  notes: string | null | undefined
+): string | null => {
   if (!notes) return null;
   const match = notes.match(/\[RESCHEDULE_REQUESTED\]: ([^-]+)/);
   return match ? match[1].trim() : null;
 };
 
 // Helper function to get clean employer notes (without system markers)
-const getCleanEmployerNotes = (notes: string | null | undefined): string | null => {
+const getCleanEmployerNotes = (
+  notes: string | null | undefined
+): string | null => {
   if (!notes) return null;
 
   let cleanNotes = notes;
 
   // Remove [RESCHEDULE_REQUESTED] markers and their content
-  cleanNotes = cleanNotes.replace(/\[RESCHEDULE_REQUESTED\]: [^\n]+(\n\n)?/g, '');
+  cleanNotes = cleanNotes.replace(
+    /\[RESCHEDULE_REQUESTED\]: [^\n]+(\n\n)?/g,
+    ""
+  );
 
   // Remove [PENDING_RESCHEDULE] markers and their content
-  cleanNotes = cleanNotes.replace(/\[PENDING_RESCHEDULE\][^\n]*(\n\n)?/g, '');
+  cleanNotes = cleanNotes.replace(/\[PENDING_RESCHEDULE\][^\n]*(\n\n)?/g, "");
 
   // Remove [Rescheduled from previous interview] markers
-  cleanNotes = cleanNotes.replace(/\[Rescheduled from previous interview\][^\n]*(\n\n)?/g, '');
+  cleanNotes = cleanNotes.replace(
+    /\[Rescheduled from previous interview\][^\n]*(\n\n)?/g,
+    ""
+  );
 
   // Trim and return null if empty
   cleanNotes = cleanNotes.trim();
@@ -148,10 +164,15 @@ function RescheduleRequestModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={isSubmitting ? undefined : onClose} />
+      <div
+        className="fixed inset-0 bg-black/50"
+        onClick={isSubmitting ? undefined : onClose}
+      />
       <div className="relative z-50 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-secondary-900">Request Reschedule</h3>
+          <h3 className="text-lg font-bold text-secondary-900">
+            Request Reschedule
+          </h3>
           <button
             onClick={onClose}
             className="rounded-lg p-1 text-secondary-500 hover:bg-secondary-100"
@@ -162,7 +183,8 @@ function RescheduleRequestModal({
         </div>
 
         <p className="mb-4 text-sm text-secondary-600">
-          Request to reschedule your interview for <span className="font-medium">{jobTitle}</span>
+          Request to reschedule your interview for{" "}
+          <span className="font-medium">{jobTitle}</span>
         </p>
 
         <div className="mb-4">
@@ -205,7 +227,12 @@ function RescheduleRequestModal({
         )}
 
         <div className="flex gap-3">
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="flex-1">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="flex-1"
+          >
             Cancel
           </Button>
           <Button
@@ -267,7 +294,9 @@ function CancelInterviewModal({
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative z-50 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-secondary-900">Cancel Interview</h3>
+          <h3 className="text-lg font-bold text-secondary-900">
+            Cancel Interview
+          </h3>
           <button
             onClick={onClose}
             className="rounded-lg p-1 text-secondary-500 hover:bg-secondary-100"
@@ -281,7 +310,9 @@ function CancelInterviewModal({
           <div className="flex items-start gap-2">
             <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-red-800">This action cannot be undone</p>
+              <p className="text-sm font-medium text-red-800">
+                This action cannot be undone
+              </p>
               <p className="text-sm text-red-700">
                 The employer will be notified of your cancellation.
               </p>
@@ -308,7 +339,12 @@ function CancelInterviewModal({
         </div>
 
         <div className="flex gap-3">
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="flex-1">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="flex-1"
+          >
             Keep Interview
           </Button>
           <Button
@@ -356,7 +392,9 @@ export default function CandidateInterviewsPage() {
   // Modal states
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
-  const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null);
+  const [selectedInterview, setSelectedInterview] = useState<Interview | null>(
+    null
+  );
 
   // Redirect if not logged in or not candidate
   useEffect(() => {
@@ -388,14 +426,19 @@ export default function CandidateInterviewsPage() {
 
       // Transform all interviews
       const transformed = backendInterviews.map((interview: any) => {
-        const scheduledDate = interview.scheduledAt ? new Date(interview.scheduledAt) : null;
+        const scheduledDate = interview.scheduledAt
+          ? new Date(interview.scheduledAt)
+          : null;
         const now = new Date();
 
         // Determine display status
         let displayStatus: Interview["displayStatus"] = "confirmed";
         if (interview.status === "AWAITING_CANDIDATE") {
           displayStatus = "action-required";
-        } else if (interview.status === "AWAITING_CONFIRMATION" || interview.status === "PENDING_AVAILABILITY") {
+        } else if (
+          interview.status === "AWAITING_CONFIRMATION" ||
+          interview.status === "PENDING_AVAILABILITY"
+        ) {
           displayStatus = "pending";
         } else if (interview.status === "CANCELLED") {
           displayStatus = "cancelled";
@@ -403,14 +446,22 @@ export default function CandidateInterviewsPage() {
           displayStatus = "rescheduled";
         } else if (interview.status === "COMPLETED") {
           displayStatus = "completed";
-        } else if (scheduledDate && scheduledDate < now && interview.status === "SCHEDULED") {
+        } else if (
+          scheduledDate &&
+          scheduledDate < now &&
+          interview.status === "SCHEDULED"
+        ) {
           displayStatus = "completed";
         }
 
         // Parse notes for reschedule reason
         let rescheduleReason = null;
-        if (interview.notes?.includes("[Rescheduled from previous interview]")) {
-          const parts = interview.notes.split("[Rescheduled from previous interview]");
+        if (
+          interview.notes?.includes("[Rescheduled from previous interview]")
+        ) {
+          const parts = interview.notes.split(
+            "[Rescheduled from previous interview]"
+          );
           rescheduleReason = parts[1]?.trim() || null;
         }
 
@@ -418,9 +469,13 @@ export default function CandidateInterviewsPage() {
           id: interview.id,
           jobId: interview.application?.job?.id,
           jobTitle: interview.application?.job?.title || "Unknown Position",
-          companyName: interview.application?.job?.employer?.companyName || "Company",
+          companyName:
+            interview.application?.job?.employer?.companyName || "Company",
           companyLogo: interview.application?.job?.employer?.logo,
-          type: (interview.type?.toLowerCase() || "video") as "phone" | "video" | "onsite",
+          type: (interview.type?.toLowerCase() || "video") as
+            | "phone"
+            | "video"
+            | "onsite",
           status: interview.status,
           displayStatus,
           date: scheduledDate?.toISOString().split("T")[0] || "",
@@ -431,7 +486,10 @@ export default function CandidateInterviewsPage() {
           meetingLink: interview.meetingLink,
           interviewerName: interview.interviewer?.name || "Hiring Manager",
           interviewerTitle: interview.interviewer?.title || "Employer",
-          round: interview.round || interview.roundName || `Round ${interview.roundNumber || 1}`,
+          round:
+            interview.round ||
+            interview.roundName ||
+            `Round ${interview.roundNumber || 1}`,
           roundNumber: interview.roundNumber || 1,
           notes: interview.notes,
           rescheduleReason,
@@ -458,10 +516,17 @@ export default function CandidateInterviewsPage() {
   // Filter logic
   const filteredInterviews = allInterviews.filter((interview) => {
     // Status filter
-    if (statusFilter === "action-required" && interview.displayStatus !== "action-required") return false;
-    if (statusFilter === "confirmed" && interview.displayStatus !== "confirmed") return false;
-    if (statusFilter === "completed" && interview.displayStatus !== "completed") return false;
-    if (statusFilter === "cancelled" && interview.displayStatus !== "cancelled") return false;
+    if (
+      statusFilter === "action-required" &&
+      interview.displayStatus !== "action-required"
+    )
+      return false;
+    if (statusFilter === "confirmed" && interview.displayStatus !== "confirmed")
+      return false;
+    if (statusFilter === "completed" && interview.displayStatus !== "completed")
+      return false;
+    if (statusFilter === "cancelled" && interview.displayStatus !== "cancelled")
+      return false;
 
     // Type filter
     if (typeFilter !== "all" && interview.type !== typeFilter) return false;
@@ -469,12 +534,18 @@ export default function CandidateInterviewsPage() {
     // Round filter
     if (roundFilter === "1" && interview.roundNumber !== 1) return false;
     if (roundFilter === "2" && interview.roundNumber !== 2) return false;
-    if (roundFilter === "3+" && (!interview.roundNumber || interview.roundNumber < 3)) return false;
+    if (
+      roundFilter === "3+" &&
+      (!interview.roundNumber || interview.roundNumber < 3)
+    )
+      return false;
 
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const matchesCompany = interview.companyName.toLowerCase().includes(query);
+      const matchesCompany = interview.companyName
+        .toLowerCase()
+        .includes(query);
       const matchesJob = interview.jobTitle.toLowerCase().includes(query);
       if (!matchesCompany && !matchesJob) return false;
     }
@@ -515,9 +586,15 @@ export default function CandidateInterviewsPage() {
   });
 
   // Stats calculations
-  const actionRequiredCount = allInterviews.filter((i) => i.displayStatus === "action-required").length;
-  const upcomingCount = allInterviews.filter((i) => i.displayStatus === "confirmed" || i.displayStatus === "pending").length;
-  const completedCount = allInterviews.filter((i) => i.displayStatus === "completed").length;
+  const actionRequiredCount = allInterviews.filter(
+    (i) => i.displayStatus === "action-required"
+  ).length;
+  const upcomingCount = allInterviews.filter(
+    (i) => i.displayStatus === "confirmed" || i.displayStatus === "pending"
+  ).length;
+  const completedCount = allInterviews.filter(
+    (i) => i.displayStatus === "completed"
+  ).length;
 
   // Check if any filter is active
   const hasActiveFilters =
@@ -645,9 +722,12 @@ export default function CandidateInterviewsPage() {
 
     const { api } = await import("@/lib/api");
     // Call the new candidate-specific request-reschedule endpoint
-    await api.post(`/api/interviews/${selectedInterview.id}/request-reschedule`, {
-      reason: `${reason}${message ? `: ${message}` : ""}`,
-    });
+    await api.post(
+      `/api/interviews/${selectedInterview.id}/request-reschedule`,
+      {
+        reason: `${reason}${message ? `: ${message}` : ""}`,
+      }
+    );
 
     // Refresh interviews data after success (don't throw if this fails)
     try {
@@ -679,9 +759,14 @@ export default function CandidateInterviewsPage() {
   const getStatusCount = (status: string) => {
     if (status === "all") return allInterviews.length;
     if (status === "action-required") return actionRequiredCount;
-    if (status === "confirmed") return allInterviews.filter((i) => i.displayStatus === "confirmed" || i.displayStatus === "pending").length;
+    if (status === "confirmed")
+      return allInterviews.filter(
+        (i) => i.displayStatus === "confirmed" || i.displayStatus === "pending"
+      ).length;
     if (status === "completed") return completedCount;
-    if (status === "cancelled") return allInterviews.filter((i) => i.displayStatus === "cancelled").length;
+    if (status === "cancelled")
+      return allInterviews.filter((i) => i.displayStatus === "cancelled")
+        .length;
     return 0;
   };
 
@@ -692,9 +777,13 @@ export default function CandidateInterviewsPage() {
 
   const getRoundCount = (round: string) => {
     if (round === "all") return allInterviews.length;
-    if (round === "1") return allInterviews.filter((i) => i.roundNumber === 1).length;
-    if (round === "2") return allInterviews.filter((i) => i.roundNumber === 2).length;
-    if (round === "3+") return allInterviews.filter((i) => i.roundNumber && i.roundNumber >= 3).length;
+    if (round === "1")
+      return allInterviews.filter((i) => i.roundNumber === 1).length;
+    if (round === "2")
+      return allInterviews.filter((i) => i.roundNumber === 2).length;
+    if (round === "3+")
+      return allInterviews.filter((i) => i.roundNumber && i.roundNumber >= 3)
+        .length;
     return 0;
   };
 
@@ -719,7 +808,9 @@ export default function CandidateInterviewsPage() {
         <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="mb-2 text-3xl font-bold text-secondary-900">My Interviews</h1>
+            <h1 className="mb-2 text-3xl font-bold text-secondary-900">
+              My Interviews
+            </h1>
             <p className="text-secondary-600">
               Manage your upcoming and past interviews
             </p>
@@ -731,7 +822,9 @@ export default function CandidateInterviewsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-secondary-600">Total Interviews</p>
+                    <p className="text-sm font-medium text-secondary-600">
+                      Total Interviews
+                    </p>
                     <p className="mt-2 text-3xl font-bold text-secondary-900">
                       {allInterviews.length}
                     </p>
@@ -741,16 +834,37 @@ export default function CandidateInterviewsPage() {
               </CardContent>
             </Card>
 
-            <Card variant="accent" className={actionRequiredCount > 0 ? "border-warning-200 bg-warning-50" : ""}>
+            <Card
+              variant="accent"
+              className={
+                actionRequiredCount > 0
+                  ? "border-warning-200 bg-warning-50"
+                  : ""
+              }
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-secondary-600">Action Required</p>
-                    <p className={`mt-2 text-3xl font-bold ${actionRequiredCount > 0 ? "text-warning-600" : "text-secondary-900"}`}>
+                    <p className="text-sm font-medium text-secondary-600">
+                      Action Required
+                    </p>
+                    <p
+                      className={`mt-2 text-3xl font-bold ${
+                        actionRequiredCount > 0
+                          ? "text-warning-600"
+                          : "text-secondary-900"
+                      }`}
+                    >
                       {actionRequiredCount}
                     </p>
                   </div>
-                  <AlertCircle className={`h-12 w-12 ${actionRequiredCount > 0 ? "text-warning-400" : "text-secondary-300"}`} />
+                  <AlertCircle
+                    className={`h-12 w-12 ${
+                      actionRequiredCount > 0
+                        ? "text-warning-400"
+                        : "text-secondary-300"
+                    }`}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -759,8 +873,12 @@ export default function CandidateInterviewsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-secondary-600">Upcoming</p>
-                    <p className="mt-2 text-3xl font-bold text-primary-600">{upcomingCount}</p>
+                    <p className="text-sm font-medium text-secondary-600">
+                      Upcoming
+                    </p>
+                    <p className="mt-2 text-3xl font-bold text-primary-600">
+                      {upcomingCount}
+                    </p>
                   </div>
                   <CalendarClock className="h-12 w-12 text-primary-300" />
                 </div>
@@ -771,8 +889,12 @@ export default function CandidateInterviewsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-secondary-600">Completed</p>
-                    <p className="mt-2 text-3xl font-bold text-success-600">{completedCount}</p>
+                    <p className="text-sm font-medium text-secondary-600">
+                      Completed
+                    </p>
+                    <p className="mt-2 text-3xl font-bold text-success-600">
+                      {completedCount}
+                    </p>
                   </div>
                   <CheckCircle2 className="h-12 w-12 text-success-300" />
                 </div>
@@ -787,7 +909,9 @@ export default function CandidateInterviewsPage() {
                 {/* Row 1: Status Filter Buttons */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-secondary-700">Status:</label>
+                    <label className="text-sm font-medium text-secondary-700">
+                      Status:
+                    </label>
                     {hasActiveFilters && (
                       <Button
                         variant="ghost"
@@ -809,7 +933,11 @@ export default function CandidateInterviewsPage() {
                       All ({getStatusCount("all")})
                     </Button>
                     <Button
-                      variant={statusFilter === "action-required" ? "primary" : "outline"}
+                      variant={
+                        statusFilter === "action-required"
+                          ? "primary"
+                          : "outline"
+                      }
                       size="sm"
                       onClick={() => setStatusFilter("action-required")}
                       className={
@@ -822,21 +950,27 @@ export default function CandidateInterviewsPage() {
                       Action Required ({getStatusCount("action-required")})
                     </Button>
                     <Button
-                      variant={statusFilter === "confirmed" ? "primary" : "outline"}
+                      variant={
+                        statusFilter === "confirmed" ? "primary" : "outline"
+                      }
                       size="sm"
                       onClick={() => setStatusFilter("confirmed")}
                     >
                       Upcoming ({getStatusCount("confirmed")})
                     </Button>
                     <Button
-                      variant={statusFilter === "completed" ? "primary" : "outline"}
+                      variant={
+                        statusFilter === "completed" ? "primary" : "outline"
+                      }
                       size="sm"
                       onClick={() => setStatusFilter("completed")}
                     >
                       Completed ({getStatusCount("completed")})
                     </Button>
                     <Button
-                      variant={statusFilter === "cancelled" ? "primary" : "outline"}
+                      variant={
+                        statusFilter === "cancelled" ? "primary" : "outline"
+                      }
                       size="sm"
                       onClick={() => setStatusFilter("cancelled")}
                     >
@@ -860,10 +994,18 @@ export default function CandidateInterviewsPage() {
                       onChange={(e) => setTypeFilter(e.target.value)}
                       className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
                     >
-                      <option value="all">All Types ({getTypeCount("all")})</option>
-                      <option value="video">Video ({getTypeCount("video")})</option>
-                      <option value="phone">Phone ({getTypeCount("phone")})</option>
-                      <option value="onsite">Onsite ({getTypeCount("onsite")})</option>
+                      <option value="all">
+                        All Types ({getTypeCount("all")})
+                      </option>
+                      <option value="video">
+                        Video ({getTypeCount("video")})
+                      </option>
+                      <option value="phone">
+                        Phone ({getTypeCount("phone")})
+                      </option>
+                      <option value="onsite">
+                        Onsite ({getTypeCount("onsite")})
+                      </option>
                     </select>
                   </div>
 
@@ -877,10 +1019,14 @@ export default function CandidateInterviewsPage() {
                       onChange={(e) => setRoundFilter(e.target.value)}
                       className="w-full rounded-lg border border-secondary-300 bg-white px-4 py-2 text-sm text-secondary-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors"
                     >
-                      <option value="all">All Rounds ({getRoundCount("all")})</option>
+                      <option value="all">
+                        All Rounds ({getRoundCount("all")})
+                      </option>
                       <option value="1">Round 1 ({getRoundCount("1")})</option>
                       <option value="2">Round 2 ({getRoundCount("2")})</option>
-                      <option value="3+">Round 3+ ({getRoundCount("3+")})</option>
+                      <option value="3+">
+                        Round 3+ ({getRoundCount("3+")})
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -906,7 +1052,8 @@ export default function CandidateInterviewsPage() {
                     <div className="flex items-center gap-2">
                       <Filter className="h-4 w-4 text-blue-600" />
                       <span className="font-medium text-blue-900">
-                        Showing {filteredInterviews.length} of {allInterviews.length} interviews
+                        Showing {filteredInterviews.length} of{" "}
+                        {allInterviews.length} interviews
                       </span>
                     </div>
                     <button
@@ -926,7 +1073,9 @@ export default function CandidateInterviewsPage() {
             <Card variant="accent">
               <CardContent className="p-12 text-center">
                 <Calendar className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
-                <h3 className="mb-2 text-xl font-bold text-secondary-900">No interviews found</h3>
+                <h3 className="mb-2 text-xl font-bold text-secondary-900">
+                  No interviews found
+                </h3>
                 <p className="mb-6 text-secondary-600">
                   {hasActiveFilters
                     ? "Try adjusting your filters to see more results."
@@ -938,7 +1087,7 @@ export default function CandidateInterviewsPage() {
                   </Button>
                 ) : (
                   <Button variant="primary" asChild>
-                    <Link href="/candidate/jobs">Browse Jobs</Link>
+                    <Link href="/jobs">Browse Jobs</Link>
                   </Button>
                 )}
               </CardContent>
@@ -949,12 +1098,19 @@ export default function CandidateInterviewsPage() {
               {sortedActiveInterviews.length > 0 && (
                 <div>
                   <div className="mb-4 flex items-center gap-2">
-                    <h2 className="text-lg font-semibold text-secondary-900">Active Interviews</h2>
-                    <Badge variant="primary">{sortedActiveInterviews.length}</Badge>
+                    <h2 className="text-lg font-semibold text-secondary-900">
+                      Active Interviews
+                    </h2>
+                    <Badge variant="primary">
+                      {sortedActiveInterviews.length}
+                    </Badge>
                   </div>
                   <div className="space-y-4">
                     {sortedActiveInterviews.map((interview) => {
-                      const countdown = getCountdown(interview.date, interview.time);
+                      const countdown = getCountdown(
+                        interview.date,
+                        interview.time
+                      );
 
                       return (
                         <Card
@@ -980,23 +1136,38 @@ export default function CandidateInterviewsPage() {
                                         className="h-full w-full object-cover"
                                       />
                                     ) : (
-                                      <span>{interview.companyName.charAt(0).toUpperCase()}</span>
+                                      <span>
+                                        {interview.companyName
+                                          .charAt(0)
+                                          .toUpperCase()}
+                                      </span>
                                     )}
                                   </div>
 
                                   {/* Job info and badges */}
                                   <div className="flex-1">
                                     <div className="mb-2 flex items-center gap-2 flex-wrap">
-                                      {getStatusBadge(interview.displayStatus, interview.status)}
+                                      {getStatusBadge(
+                                        interview.displayStatus,
+                                        interview.status
+                                      )}
                                       {interview.rescheduleRequested && (
-                                        <Badge variant="warning" className="gap-1">
+                                        <Badge
+                                          variant="warning"
+                                          className="gap-1"
+                                        >
                                           <RefreshCw className="h-3 w-3" />
                                           Reschedule Requested
                                         </Badge>
                                       )}
-                                      <Badge variant="secondary" className="gap-1">
+                                      <Badge
+                                        variant="secondary"
+                                        className="gap-1"
+                                      >
                                         {getTypeIcon(interview.type)}
-                                        <span className="capitalize">{interview.type}</span>
+                                        <span className="capitalize">
+                                          {interview.type}
+                                        </span>
                                       </Badge>
                                       <Badge
                                         variant="secondary"
@@ -1026,21 +1197,27 @@ export default function CandidateInterviewsPage() {
                                 </div>
 
                                 {/* Status-specific message */}
-                                {interview.displayStatus === "action-required" && (
+                                {interview.displayStatus ===
+                                  "action-required" && (
                                   <p className="mb-3 text-sm font-medium text-warning-700">
-                                    Employer has sent you available time slots - please select your preferred times
+                                    Employer has sent you available time slots -
+                                    please select your preferred times
                                   </p>
                                 )}
                                 {interview.displayStatus === "pending" && (
                                   <p className="mb-3 text-sm text-secondary-600">
-                                    You've selected your preferred times - waiting for employer to confirm
+                                    You've selected your preferred times -
+                                    waiting for employer to confirm
                                   </p>
                                 )}
-                                {interview.rescheduleRequested && interview.displayStatus === "confirmed" && (
-                                  <p className="mb-3 text-sm text-warning-700">
-                                    You've requested to reschedule this interview - waiting for employer to respond
-                                  </p>
-                                )}
+                                {interview.rescheduleRequested &&
+                                  interview.displayStatus === "confirmed" && (
+                                    <p className="mb-3 text-sm text-warning-700">
+                                      You've requested to reschedule this
+                                      interview - waiting for employer to
+                                      respond
+                                    </p>
+                                  )}
 
                                 {/* Date/Time info */}
                                 {interview.date && (
@@ -1057,7 +1234,11 @@ export default function CandidateInterviewsPage() {
                                     )}
                                     {countdown && (
                                       <Badge
-                                        variant={countdown.urgent ? "warning" : "primary"}
+                                        variant={
+                                          countdown.urgent
+                                            ? "warning"
+                                            : "primary"
+                                        }
                                         size="sm"
                                       >
                                         {countdown.text}
@@ -1078,18 +1259,23 @@ export default function CandidateInterviewsPage() {
                                 <div className="mt-2 flex items-center gap-2 text-sm text-secondary-600">
                                   <User className="h-4 w-4 text-secondary-500" />
                                   <span>
-                                    {interview.interviewerName} - {interview.interviewerTitle}
+                                    {interview.interviewerName} -{" "}
+                                    {interview.interviewerTitle}
                                   </span>
                                 </div>
 
                                 {/* Application Status */}
                                 <div className="mt-3">
-                                  {getApplicationStatusBadge(interview.applicationStatus)}
+                                  {getApplicationStatusBadge(
+                                    interview.applicationStatus
+                                  )}
                                 </div>
 
                                 {/* Notes (cleaned of system markers) */}
                                 {(() => {
-                                  const cleanNotes = getCleanEmployerNotes(interview.notes);
+                                  const cleanNotes = getCleanEmployerNotes(
+                                    interview.notes
+                                  );
                                   return cleanNotes ? (
                                     <div className="mt-4 rounded-lg bg-yellow-50 p-3">
                                       <div className="mb-1 flex items-center gap-2">
@@ -1098,7 +1284,9 @@ export default function CandidateInterviewsPage() {
                                           Notes from Employer:
                                         </span>
                                       </div>
-                                      <p className="text-sm text-yellow-800">{cleanNotes}</p>
+                                      <p className="text-sm text-yellow-800">
+                                        {cleanNotes}
+                                      </p>
                                     </div>
                                   ) : null;
                                 })()}
@@ -1112,19 +1300,24 @@ export default function CandidateInterviewsPage() {
                                         Rescheduled:
                                       </span>
                                     </div>
-                                    <p className="text-sm text-blue-800">{interview.rescheduleReason}</p>
+                                    <p className="text-sm text-blue-800">
+                                      {interview.rescheduleReason}
+                                    </p>
                                   </div>
                                 )}
                               </div>
 
                               {/* Action Buttons */}
                               <div className="flex flex-col gap-2 lg:w-48">
-                                {interview.displayStatus === "action-required" && (
+                                {interview.displayStatus ===
+                                  "action-required" && (
                                   <Button
                                     variant="primary"
                                     size="sm"
                                     onClick={() =>
-                                      router.push(`/candidate/interviews/select/${interview.id}`)
+                                      router.push(
+                                        `/candidate/interviews/select/${interview.id}`
+                                      )
                                     }
                                   >
                                     <Calendar className="mr-2 h-4 w-4" />
@@ -1133,23 +1326,32 @@ export default function CandidateInterviewsPage() {
                                 )}
 
                                 {/* Only show Change Selection if candidate hasn't selected yet (not AWAITING_CONFIRMATION) */}
-                                {interview.displayStatus === "pending" && interview.status !== "AWAITING_CONFIRMATION" && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      router.push(`/candidate/interviews/select/${interview.id}`)
-                                    }
-                                  >
-                                    <Calendar className="mr-2 h-4 w-4" />
-                                    Change Selection
-                                  </Button>
-                                )}
+                                {interview.displayStatus === "pending" &&
+                                  interview.status !==
+                                    "AWAITING_CONFIRMATION" && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() =>
+                                        router.push(
+                                          `/candidate/interviews/select/${interview.id}`
+                                        )
+                                      }
+                                    >
+                                      <Calendar className="mr-2 h-4 w-4" />
+                                      Change Selection
+                                    </Button>
+                                  )}
 
                                 {interview.displayStatus === "confirmed" && (
                                   <>
                                     {interview.meetingLink && (
-                                      <Button variant="primary" size="sm" className="w-full" asChild>
+                                      <Button
+                                        variant="primary"
+                                        size="sm"
+                                        className="w-full"
+                                        asChild
+                                      >
                                         <a
                                           href={interview.meetingLink}
                                           target="_blank"
@@ -1165,7 +1367,12 @@ export default function CandidateInterviewsPage() {
 
                                 {/* View Job button */}
                                 {interview.jobId && (
-                                  <Button variant="outline" size="sm" className="w-full" asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full"
+                                    asChild
+                                  >
                                     <Link href={`/jobs/${interview.jobId}`}>
                                       <Briefcase className="mr-2 h-4 w-4" />
                                       View Job
@@ -1175,7 +1382,12 @@ export default function CandidateInterviewsPage() {
 
                                 {/* Prepare for Interview */}
                                 {interview.displayStatus === "confirmed" && (
-                                  <Button variant="outline" size="sm" className="w-full" asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full"
+                                    asChild
+                                  >
                                     <Link href="/skills-assessment/prep">
                                       <BookOpen className="mr-2 h-4 w-4" />
                                       Prepare
@@ -1188,27 +1400,30 @@ export default function CandidateInterviewsPage() {
                                   variant="outline"
                                   size="sm"
                                   className="w-full"
-                                  onClick={() => router.push("/candidate/messages")}
+                                  onClick={() =>
+                                    router.push("/candidate/messages")
+                                  }
                                 >
                                   <MessageSquare className="mr-2 h-4 w-4" />
                                   Message
                                 </Button>
 
                                 {/* Request Reschedule for confirmed interviews (no cancel for upcoming) */}
-                                {interview.displayStatus === "confirmed" && !interview.rescheduleRequested && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="w-full"
-                                    onClick={() => {
-                                      setSelectedInterview(interview);
-                                      setRescheduleModalOpen(true);
-                                    }}
-                                  >
-                                    <RefreshCw className="mr-2 h-4 w-4" />
-                                    Request Reschedule
-                                  </Button>
-                                )}
+                                {interview.displayStatus === "confirmed" &&
+                                  !interview.rescheduleRequested && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="w-full"
+                                      onClick={() => {
+                                        setSelectedInterview(interview);
+                                        setRescheduleModalOpen(true);
+                                      }}
+                                    >
+                                      <RefreshCw className="mr-2 h-4 w-4" />
+                                      Request Reschedule
+                                    </Button>
+                                  )}
                               </div>
                             </div>
                           </CardContent>
@@ -1227,7 +1442,9 @@ export default function CandidateInterviewsPage() {
                     className="mb-4 flex w-full items-center justify-between rounded-xl bg-white p-4 shadow-sm border border-secondary-200 hover:shadow-md transition-all"
                   >
                     <div className="flex items-center gap-2">
-                      <h2 className="text-lg font-semibold text-secondary-700">Past Interviews</h2>
+                      <h2 className="text-lg font-semibold text-secondary-700">
+                        Past Interviews
+                      </h2>
                       <Badge variant="secondary">{pastInterviews.length}</Badge>
                     </div>
                     {pastSectionExpanded ? (
@@ -1240,7 +1457,11 @@ export default function CandidateInterviewsPage() {
                   {pastSectionExpanded && (
                     <div className="space-y-4">
                       {pastInterviews.map((interview) => (
-                        <Card key={interview.id} variant="accent" className="transition-shadow hover:shadow-md opacity-80">
+                        <Card
+                          key={interview.id}
+                          variant="accent"
+                          className="transition-shadow hover:shadow-md opacity-80"
+                        >
                           <CardContent className="p-6">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                               <div className="flex-1">
@@ -1254,16 +1475,28 @@ export default function CandidateInterviewsPage() {
                                         className="h-full w-full object-cover grayscale"
                                       />
                                     ) : (
-                                      <span>{interview.companyName.charAt(0).toUpperCase()}</span>
+                                      <span>
+                                        {interview.companyName
+                                          .charAt(0)
+                                          .toUpperCase()}
+                                      </span>
                                     )}
                                   </div>
 
                                   <div className="flex-1">
                                     <div className="mb-2 flex items-center gap-2 flex-wrap">
-                                      {getStatusBadge(interview.displayStatus, interview.status)}
-                                      <Badge variant="secondary" className="gap-1">
+                                      {getStatusBadge(
+                                        interview.displayStatus,
+                                        interview.status
+                                      )}
+                                      <Badge
+                                        variant="secondary"
+                                        className="gap-1"
+                                      >
                                         {getTypeIcon(interview.type)}
-                                        <span className="capitalize">{interview.type}</span>
+                                        <span className="capitalize">
+                                          {interview.type}
+                                        </span>
                                       </Badge>
                                       <Badge
                                         variant="secondary"
@@ -1312,18 +1545,23 @@ export default function CandidateInterviewsPage() {
                                 <div className="mt-2 flex items-center gap-2 text-sm text-secondary-600">
                                   <User className="h-4 w-4 text-secondary-500" />
                                   <span>
-                                    {interview.interviewerName} - {interview.interviewerTitle}
+                                    {interview.interviewerName} -{" "}
+                                    {interview.interviewerTitle}
                                   </span>
                                 </div>
 
                                 {/* Application Status */}
                                 <div className="mt-3">
-                                  {getApplicationStatusBadge(interview.applicationStatus)}
+                                  {getApplicationStatusBadge(
+                                    interview.applicationStatus
+                                  )}
                                 </div>
 
                                 {/* Notes (cleaned of system markers) */}
                                 {(() => {
-                                  const cleanNotes = getCleanEmployerNotes(interview.notes);
+                                  const cleanNotes = getCleanEmployerNotes(
+                                    interview.notes
+                                  );
                                   return cleanNotes ? (
                                     <div className="mt-4 rounded-lg bg-yellow-50 p-3">
                                       <div className="mb-1 flex items-center gap-2">
@@ -1332,7 +1570,9 @@ export default function CandidateInterviewsPage() {
                                           Notes from Employer:
                                         </span>
                                       </div>
-                                      <p className="text-sm text-yellow-800">{cleanNotes}</p>
+                                      <p className="text-sm text-yellow-800">
+                                        {cleanNotes}
+                                      </p>
                                     </div>
                                   ) : null;
                                 })()}
@@ -1341,7 +1581,12 @@ export default function CandidateInterviewsPage() {
                               {/* Action Buttons */}
                               <div className="flex flex-col gap-2 lg:w-48">
                                 {interview.jobId && (
-                                  <Button variant="outline" size="sm" className="w-full" asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full"
+                                    asChild
+                                  >
                                     <Link href={`/jobs/${interview.jobId}`}>
                                       <Briefcase className="mr-2 h-4 w-4" />
                                       View Job
@@ -1352,7 +1597,9 @@ export default function CandidateInterviewsPage() {
                                   variant="outline"
                                   size="sm"
                                   className="w-full"
-                                  onClick={() => router.push("/candidate/messages")}
+                                  onClick={() =>
+                                    router.push("/candidate/messages")
+                                  }
                                 >
                                   <MessageSquare className="mr-2 h-4 w-4" />
                                   Follow Up
@@ -1368,22 +1615,23 @@ export default function CandidateInterviewsPage() {
               )}
 
               {/* Empty state when no active interviews */}
-              {sortedActiveInterviews.length === 0 && pastInterviews.length > 0 && (
-                <Card variant="accent">
-                  <CardContent className="p-12 text-center">
-                    <Calendar className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
-                    <h3 className="mb-2 text-xl font-bold text-secondary-900">
-                      No Active Interviews
-                    </h3>
-                    <p className="mb-6 text-secondary-600">
-                      You don't have any upcoming interviews at the moment.
-                    </p>
-                    <Button variant="primary" asChild>
-                      <Link href="/candidate/jobs">Browse Jobs</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
+              {sortedActiveInterviews.length === 0 &&
+                pastInterviews.length > 0 && (
+                  <Card variant="accent">
+                    <CardContent className="p-12 text-center">
+                      <Calendar className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
+                      <h3 className="mb-2 text-xl font-bold text-secondary-900">
+                        No Active Interviews
+                      </h3>
+                      <p className="mb-6 text-secondary-600">
+                        You don't have any upcoming interviews at the moment.
+                      </p>
+                      <Button variant="primary" asChild>
+                        <Link href="/jobs">Browse Jobs</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
             </div>
           )}
 
@@ -1401,7 +1649,9 @@ export default function CandidateInterviewsPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600" />
                     <div>
-                      <p className="font-semibold text-secondary-900">Research the Company</p>
+                      <p className="font-semibold text-secondary-900">
+                        Research the Company
+                      </p>
                       <p className="text-sm text-secondary-600">
                         Learn about their products, culture, and recent news
                       </p>
@@ -1410,7 +1660,9 @@ export default function CandidateInterviewsPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600" />
                     <div>
-                      <p className="font-semibold text-secondary-900">Review the Job Description</p>
+                      <p className="font-semibold text-secondary-900">
+                        Review the Job Description
+                      </p>
                       <p className="text-sm text-secondary-600">
                         Match your experience to key requirements
                       </p>
@@ -1419,7 +1671,9 @@ export default function CandidateInterviewsPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600" />
                     <div>
-                      <p className="font-semibold text-secondary-900">Prepare Questions</p>
+                      <p className="font-semibold text-secondary-900">
+                        Prepare Questions
+                      </p>
                       <p className="text-sm text-secondary-600">
                         Have thoughtful questions ready for the interviewer
                       </p>
@@ -1428,7 +1682,9 @@ export default function CandidateInterviewsPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600" />
                     <div>
-                      <p className="font-semibold text-secondary-900">Test Your Setup</p>
+                      <p className="font-semibold text-secondary-900">
+                        Test Your Setup
+                      </p>
                       <p className="text-sm text-secondary-600">
                         For video interviews, check camera, mic, and internet
                       </p>

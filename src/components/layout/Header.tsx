@@ -137,7 +137,12 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
 
                 {/* Show Admin Panel button for admins only */}
                 {session.user?.role === "ADMIN" && (
-                  <Button variant="outline" size="sm" asChild className="border-purple-600 text-purple-600 hover:bg-purple-50">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                  >
                     <Link href="/admin">
                       <Shield className="h-4 w-4 mr-1.5" />
                       Admin Panel
@@ -197,7 +202,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                         )}
                         {session.user?.role === "CANDIDATE" && (
                           <Link
-                            href="/candidate/jobs"
+                            href="/jobs"
                             className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
                             onClick={() => setUserMenuOpen(false)}
                           >
@@ -384,7 +389,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                         asChild
                       >
                         <Link
-                          href="/candidate/jobs"
+                          href="/jobs"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <Briefcase className="mr-2 h-4 w-4" />

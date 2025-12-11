@@ -37,7 +37,8 @@ export default function ResourcesPage() {
     {
       category: "guides",
       title: "Complete Guide to Acing Technical Interviews",
-      description: "Everything you need to know about preparing for technical interviews, from data structures to system design.",
+      description:
+        "Everything you need to know about preparing for technical interviews, from data structures to system design.",
       type: "Guide",
       readTime: "15 min read",
       icon: BookOpen,
@@ -47,7 +48,8 @@ export default function ResourcesPage() {
     {
       category: "guides",
       title: "How to Write a Resume That Gets You Hired",
-      description: "Expert tips on crafting a resume that stands out to recruiters and passes ATS systems.",
+      description:
+        "Expert tips on crafting a resume that stands out to recruiters and passes ATS systems.",
       type: "Guide",
       readTime: "10 min read",
       icon: FileText,
@@ -56,7 +58,8 @@ export default function ResourcesPage() {
     {
       category: "guides",
       title: "Salary Negotiation Tactics for Engineers",
-      description: "Learn how to negotiate a higher salary with confidence and data-backed strategies.",
+      description:
+        "Learn how to negotiate a higher salary with confidence and data-backed strategies.",
       type: "Guide",
       readTime: "12 min read",
       icon: TrendingUp,
@@ -65,7 +68,8 @@ export default function ResourcesPage() {
     {
       category: "guides",
       title: "Remote Work Best Practices for Tech Teams",
-      description: "How to excel in remote work environments and stay productive while working from home.",
+      description:
+        "How to excel in remote work environments and stay productive while working from home.",
       type: "Guide",
       readTime: "8 min read",
       icon: Users,
@@ -76,7 +80,8 @@ export default function ResourcesPage() {
     {
       category: "videos",
       title: "How to Take the Skills Assessment",
-      description: "A walkthrough of our skills assessment process and tips to maximize your score.",
+      description:
+        "A walkthrough of our skills assessment process and tips to maximize your score.",
       type: "Video",
       readTime: "8 min watch",
       icon: Video,
@@ -86,7 +91,8 @@ export default function ResourcesPage() {
     {
       category: "videos",
       title: "System Design Interview Masterclass",
-      description: "Learn how to approach system design questions with real examples from top companies.",
+      description:
+        "Learn how to approach system design questions with real examples from top companies.",
       type: "Video",
       readTime: "45 min watch",
       icon: Code,
@@ -95,7 +101,8 @@ export default function ResourcesPage() {
     {
       category: "videos",
       title: "Building a Strong LinkedIn Profile",
-      description: "Optimize your LinkedIn profile to attract recruiters and showcase your skills.",
+      description:
+        "Optimize your LinkedIn profile to attract recruiters and showcase your skills.",
       type: "Video",
       readTime: "12 min watch",
       icon: Users,
@@ -106,7 +113,8 @@ export default function ResourcesPage() {
     {
       category: "podcasts",
       title: "Career Growth in Tech: Strategies for 2025",
-      description: "Industry experts discuss the latest trends in tech hiring and career advancement.",
+      description:
+        "Industry experts discuss the latest trends in tech hiring and career advancement.",
       type: "Podcast",
       readTime: "35 min listen",
       icon: Headphones,
@@ -115,7 +123,8 @@ export default function ResourcesPage() {
     {
       category: "podcasts",
       title: "Inside the Mind of a Tech Recruiter",
-      description: "A recruiter shares what they look for in candidates and how to stand out.",
+      description:
+        "A recruiter shares what they look for in candidates and how to stand out.",
       type: "Podcast",
       readTime: "28 min listen",
       icon: Headphones,
@@ -124,7 +133,8 @@ export default function ResourcesPage() {
     {
       category: "podcasts",
       title: "From Bootcamp to Big Tech",
-      description: "Inspiring stories from developers who transitioned into top tech companies.",
+      description:
+        "Inspiring stories from developers who transitioned into top tech companies.",
       type: "Podcast",
       readTime: "42 min listen",
       icon: Headphones,
@@ -135,7 +145,8 @@ export default function ResourcesPage() {
     {
       category: "templates",
       title: "Software Engineer Resume Template",
-      description: "ATS-friendly resume template specifically designed for software engineers.",
+      description:
+        "ATS-friendly resume template specifically designed for software engineers.",
       type: "Template",
       readTime: "Download PDF",
       icon: Download,
@@ -145,7 +156,8 @@ export default function ResourcesPage() {
     {
       category: "templates",
       title: "Interview Preparation Checklist",
-      description: "A comprehensive checklist to prepare for any technical interview.",
+      description:
+        "A comprehensive checklist to prepare for any technical interview.",
       type: "Template",
       readTime: "Download PDF",
       icon: Download,
@@ -154,7 +166,8 @@ export default function ResourcesPage() {
     {
       category: "templates",
       title: "30-60-90 Day Plan for New Jobs",
-      description: "Template to help you succeed in your first 90 days at a new company.",
+      description:
+        "Template to help you succeed in your first 90 days at a new company.",
       type: "Template",
       readTime: "Download PDF",
       icon: Download,
@@ -163,7 +176,8 @@ export default function ResourcesPage() {
     {
       category: "templates",
       title: "Offer Negotiation Email Templates",
-      description: "Professional email templates for negotiating job offers and salary.",
+      description:
+        "Professional email templates for negotiating job offers and salary.",
       type: "Template",
       readTime: "Download PDF",
       icon: Download,
@@ -172,7 +186,8 @@ export default function ResourcesPage() {
   ];
 
   const filteredResources = resources.filter((resource) => {
-    const matchesCategory = activeCategory === "all" || resource.category === activeCategory;
+    const matchesCategory =
+      activeCategory === "all" || resource.category === activeCategory;
     const matchesSearch =
       searchQuery === "" ||
       resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -212,7 +227,8 @@ export default function ResourcesPage() {
             Career Resources
           </h1>
           <p className="mx-auto max-w-2xl text-xl text-secondary-600">
-            Free guides, templates, and tools to help you land your dream job and grow your career
+            Free guides, templates, and tools to help you land your dream job
+            and grow your career
           </p>
         </div>
 
@@ -225,7 +241,10 @@ export default function ResourcesPage() {
             {featuredResources.map((resource, idx) => {
               const Icon = resource.icon;
               return (
-                <Card key={idx} className="border-2 border-primary-200 transition-shadow hover:shadow-lg">
+                <Card
+                  key={idx}
+                  className="border-2 border-primary-200 transition-shadow hover:shadow-lg"
+                >
                   <CardContent className="p-6">
                     <div className="mb-4 flex items-start justify-between">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100">
@@ -364,10 +383,7 @@ export default function ResourcesPage() {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {upcomingWebinars.map((webinar, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-lg bg-white p-4 shadow-sm"
-                >
+                <div key={idx} className="rounded-lg bg-white p-4 shadow-sm">
                   <h3 className="mb-2 font-bold text-secondary-900">
                     {webinar.title}
                   </h3>
@@ -399,7 +415,8 @@ export default function ResourcesPage() {
                 For Candidates
               </h3>
               <p className="mb-6 text-secondary-600">
-                Take the next step in your career with our comprehensive resources and tools.
+                Take the next step in your career with our comprehensive
+                resources and tools.
               </p>
               <div className="space-y-3">
                 <Link
@@ -410,7 +427,7 @@ export default function ResourcesPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  href="/candidate/jobs"
+                  href="/jobs"
                   className="flex items-center justify-between rounded-lg bg-secondary-50 p-3 text-sm font-medium text-secondary-900 transition-colors hover:bg-secondary-100"
                 >
                   <span>Browse Jobs</span>
@@ -472,7 +489,8 @@ export default function ResourcesPage() {
               Stay Updated with Career Tips
             </h2>
             <p className="mb-6 text-lg opacity-90">
-              Get weekly career advice, industry trends, and job opportunities delivered to your inbox
+              Get weekly career advice, industry trends, and job opportunities
+              delivered to your inbox
             </p>
             <div className="mx-auto flex max-w-md gap-3">
               <Input
@@ -480,7 +498,10 @@ export default function ResourcesPage() {
                 placeholder="Enter your email"
                 className="bg-white text-secondary-900"
               />
-              <Button variant="secondary" className="whitespace-nowrap bg-white text-primary-600 hover:bg-primary-50">
+              <Button
+                variant="secondary"
+                className="whitespace-nowrap bg-white text-primary-600 hover:bg-primary-50"
+              >
                 Subscribe
               </Button>
             </div>

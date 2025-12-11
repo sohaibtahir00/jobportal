@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Briefcase, Filter, TrendingUp, Clock, CheckCircle, XCircle } from "lucide-react";
+import {
+  Briefcase,
+  Filter,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { ApplicationCard } from "@/components/applications/ApplicationCard";
 import { ApplicationDetailModal } from "@/components/applications/ApplicationDetailModal";
@@ -18,7 +25,8 @@ export default function ApplicationsPage() {
 
   const [filterTab, setFilterTab] = useState<FilterTab>("all");
   const [sortBy, setSortBy] = useState<SortOption>("recent");
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [selectedApplication, setSelectedApplication] =
+    useState<Application | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Set initial filter from URL parameter
@@ -43,24 +51,35 @@ export default function ApplicationsPage() {
 
     // Apply tab filter
     if (filterTab === "active") {
-      filtered = filtered.filter(app =>
-        ["PENDING", "REVIEWED", "SHORTLISTED", "INTERVIEW_SCHEDULED", "INTERVIEWED", "OFFERED"].includes(app.status)
+      filtered = filtered.filter((app) =>
+        [
+          "PENDING",
+          "REVIEWED",
+          "SHORTLISTED",
+          "INTERVIEW_SCHEDULED",
+          "INTERVIEWED",
+          "OFFERED",
+        ].includes(app.status)
       );
     } else if (filterTab === "archived") {
-      filtered = filtered.filter(app =>
+      filtered = filtered.filter((app) =>
         ["REJECTED", "WITHDRAWN", "ACCEPTED"].includes(app.status)
       );
     } else if (filterTab === "interview") {
-      filtered = filtered.filter(app =>
-        app.status === "INTERVIEW_SCHEDULED"
-      );
+      filtered = filtered.filter((app) => app.status === "INTERVIEW_SCHEDULED");
     }
 
     // Apply sorting
     if (sortBy === "recent") {
-      filtered.sort((a, b) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime());
+      filtered.sort(
+        (a, b) =>
+          new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime()
+      );
     } else if (sortBy === "oldest") {
-      filtered.sort((a, b) => new Date(a.appliedAt).getTime() - new Date(b.appliedAt).getTime());
+      filtered.sort(
+        (a, b) =>
+          new Date(a.appliedAt).getTime() - new Date(b.appliedAt).getTime()
+      );
     } else if (sortBy === "company") {
       filtered.sort((a, b) => {
         const companyA = a.job?.employer?.companyName || "";
@@ -76,15 +95,29 @@ export default function ApplicationsPage() {
 
   // Calculate stats
   const totalApplications = data?.applications?.length || 0;
-  const activeApplications = data?.applications?.filter(app =>
-    ["PENDING", "REVIEWED", "SHORTLISTED", "INTERVIEW_SCHEDULED", "INTERVIEWED", "OFFERED"].includes(app.status)
-  ).length || 0;
-  const interviewsScheduled = data?.applications?.filter(app =>
-    app.status === "INTERVIEW_SCHEDULED"
-  ).length || 0;
-  const responseRate = totalApplications > 0
-    ? Math.round(((data?.applications?.filter(app => app.status !== "PENDING").length || 0) / totalApplications) * 100)
-    : 0;
+  const activeApplications =
+    data?.applications?.filter((app) =>
+      [
+        "PENDING",
+        "REVIEWED",
+        "SHORTLISTED",
+        "INTERVIEW_SCHEDULED",
+        "INTERVIEWED",
+        "OFFERED",
+      ].includes(app.status)
+    ).length || 0;
+  const interviewsScheduled =
+    data?.applications?.filter((app) => app.status === "INTERVIEW_SCHEDULED")
+      .length || 0;
+  const responseRate =
+    totalApplications > 0
+      ? Math.round(
+          ((data?.applications?.filter((app) => app.status !== "PENDING")
+            .length || 0) /
+            totalApplications) *
+            100
+        )
+      : 0;
 
   const handleViewDetails = (application: Application) => {
     setSelectedApplication(application);
@@ -100,9 +133,15 @@ export default function ApplicationsPage() {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Applications</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            My Applications
+          </h1>
           <p className="text-gray-600">
-            You've applied to <span className="font-semibold text-primary-600">{totalApplications}</span> jobs
+            You've applied to{" "}
+            <span className="font-semibold text-primary-600">
+              {totalApplications}
+            </span>{" "}
+            jobs
           </p>
         </div>
 
@@ -112,8 +151,12 @@ export default function ApplicationsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-700 font-medium mb-1">Total Applications</p>
-                  <p className="text-3xl font-bold text-blue-900">{totalApplications}</p>
+                  <p className="text-sm text-blue-700 font-medium mb-1">
+                    Total Applications
+                  </p>
+                  <p className="text-3xl font-bold text-blue-900">
+                    {totalApplications}
+                  </p>
                 </div>
                 <Briefcase className="h-10 w-10 text-blue-600" />
               </div>
@@ -124,8 +167,12 @@ export default function ApplicationsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-green-700 font-medium mb-1">Active Applications</p>
-                  <p className="text-3xl font-bold text-green-900">{activeApplications}</p>
+                  <p className="text-sm text-green-700 font-medium mb-1">
+                    Active Applications
+                  </p>
+                  <p className="text-3xl font-bold text-green-900">
+                    {activeApplications}
+                  </p>
                 </div>
                 <TrendingUp className="h-10 w-10 text-green-600" />
               </div>
@@ -136,20 +183,31 @@ export default function ApplicationsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-purple-700 font-medium mb-1">Interviews Scheduled</p>
-                  <p className="text-3xl font-bold text-purple-900">{interviewsScheduled}</p>
+                  <p className="text-sm text-purple-700 font-medium mb-1">
+                    Interviews Scheduled
+                  </p>
+                  <p className="text-3xl font-bold text-purple-900">
+                    {interviewsScheduled}
+                  </p>
                 </div>
                 <Clock className="h-10 w-10 text-purple-600" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+          <Card
+            variant="accent"
+            className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200"
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-orange-700 font-medium mb-1">Response Rate</p>
-                  <p className="text-3xl font-bold text-orange-900">{responseRate}%</p>
+                  <p className="text-sm text-orange-700 font-medium mb-1">
+                    Response Rate
+                  </p>
+                  <p className="text-3xl font-bold text-orange-900">
+                    {responseRate}%
+                  </p>
                 </div>
                 <CheckCircle className="h-10 w-10 text-orange-600" />
               </div>
@@ -218,8 +276,12 @@ export default function ApplicationsPage() {
           <Card className="bg-red-50 border-red-200">
             <CardContent className="p-8 text-center">
               <XCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-red-900 mb-2">Failed to Load Applications</h3>
-              <p className="text-red-700 mb-4">There was an error loading your applications. Please try again.</p>
+              <h3 className="text-lg font-semibold text-red-900 mb-2">
+                Failed to Load Applications
+              </h3>
+              <p className="text-red-700 mb-4">
+                There was an error loading your applications. Please try again.
+              </p>
               <Button variant="primary" onClick={() => refetch()}>
                 Retry
               </Button>
@@ -243,7 +305,7 @@ export default function ApplicationsPage() {
               </p>
               {filterTab === "all" && (
                 <Button variant="primary" asChild>
-                  <a href="/candidate/jobs">Browse Jobs</a>
+                  <a href="/jobs">Browse Jobs</a>
                 </Button>
               )}
             </CardContent>

@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Heart, Trash2, AlertCircle, Briefcase, CheckCircle } from "lucide-react";
+import {
+  Heart,
+  Trash2,
+  AlertCircle,
+  Briefcase,
+  CheckCircle,
+} from "lucide-react";
 import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { SavedJobCard } from "@/components/saved-jobs/SavedJobCard";
 import { useSavedJobs, useClearAllSavedJobs } from "@/hooks/useSavedJobs";
@@ -42,9 +48,15 @@ export default function SavedJobsPage() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Saved Jobs</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Saved Jobs
+            </h1>
             <p className="text-gray-600">
-              You have <span className="font-semibold text-primary-600">{totalCount}</span> saved job
+              You have{" "}
+              <span className="font-semibold text-primary-600">
+                {totalCount}
+              </span>{" "}
+              saved job
               {totalCount !== 1 ? "s" : ""}
             </p>
           </div>
@@ -96,10 +108,12 @@ export default function SavedJobsPage() {
                 <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
                 <div>
                   <h3 className="font-semibold text-yellow-900 mb-1">
-                    {expiringJobs.length} saved job{expiringJobs.length !== 1 ? "s" : ""} expiring soon
+                    {expiringJobs.length} saved job
+                    {expiringJobs.length !== 1 ? "s" : ""} expiring soon
                   </h3>
                   <p className="text-sm text-yellow-800">
-                    Some of your saved jobs have approaching deadlines. Apply soon to not miss out!
+                    Some of your saved jobs have approaching deadlines. Apply
+                    soon to not miss out!
                   </p>
                 </div>
               </div>
@@ -119,8 +133,12 @@ export default function SavedJobsPage() {
           <Card className="bg-red-50 border-red-200">
             <CardContent className="p-8 text-center">
               <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-red-900 mb-2">Failed to Load Saved Jobs</h3>
-              <p className="text-red-700 mb-4">There was an error loading your saved jobs. Please try again.</p>
+              <h3 className="text-lg font-semibold text-red-900 mb-2">
+                Failed to Load Saved Jobs
+              </h3>
+              <p className="text-red-700 mb-4">
+                There was an error loading your saved jobs. Please try again.
+              </p>
               <Button variant="primary" onClick={() => refetch()}>
                 Retry
               </Button>
@@ -135,13 +153,15 @@ export default function SavedJobsPage() {
                   <Heart className="h-8 w-8 text-gray-400 absolute -top-2 -right-2" />
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">You haven't saved any jobs yet</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                You haven't saved any jobs yet
+              </h3>
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                Start saving jobs to easily find them later. Click the heart icon on any job to add it to your
-                saved list.
+                Start saving jobs to easily find them later. Click the heart
+                icon on any job to add it to your saved list.
               </p>
               <Button variant="primary" asChild>
-                <Link href="/candidate/jobs">Browse Jobs</Link>
+                <Link href="/jobs">Browse Jobs</Link>
               </Button>
             </CardContent>
           </Card>

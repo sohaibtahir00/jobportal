@@ -99,11 +99,18 @@ export default function CandidatePlacementsPage() {
           </Badge>
         );
       default:
-        return <Badge variant="secondary" size="sm">{status}</Badge>;
+        return (
+          <Badge variant="secondary" size="sm">
+            {status}
+          </Badge>
+        );
     }
   };
 
-  const calculateGuaranteeProgress = (startDate: string, guaranteeEndDate?: string) => {
+  const calculateGuaranteeProgress = (
+    startDate: string,
+    guaranteeEndDate?: string
+  ) => {
     if (!guaranteeEndDate) return 0;
 
     const start = new Date(startDate);
@@ -170,7 +177,9 @@ export default function CandidatePlacementsPage() {
       <div className="container mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-secondary-900">My Placements</h1>
+          <h1 className="mb-2 text-3xl font-bold text-secondary-900">
+            My Placements
+          </h1>
           <p className="text-secondary-600">
             Track your job placements and guarantee periods
           </p>
@@ -189,12 +198,24 @@ export default function CandidatePlacementsPage() {
                   placement.startDate,
                   placement.guaranteeEndDate
                 );
-                const daysRemaining = getDaysRemaining(placement.guaranteeEndDate);
-                const thirtyDayMilestone = getTimelineMilestone(placement.startDate, 30);
-                const ninetyDayMilestone = getTimelineMilestone(placement.startDate, 90);
+                const daysRemaining = getDaysRemaining(
+                  placement.guaranteeEndDate
+                );
+                const thirtyDayMilestone = getTimelineMilestone(
+                  placement.startDate,
+                  30
+                );
+                const ninetyDayMilestone = getTimelineMilestone(
+                  placement.startDate,
+                  90
+                );
 
                 return (
-                  <Card key={placement.id} variant="accent" className="border-2 border-primary-200">
+                  <Card
+                    key={placement.id}
+                    variant="accent"
+                    className="border-2 border-primary-200"
+                  >
                     <CardContent className="p-6">
                       {/* Header */}
                       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -207,14 +228,20 @@ export default function CandidatePlacementsPage() {
                               <h3 className="mb-1 text-xl font-bold text-secondary-900">
                                 {placement.jobTitle}
                               </h3>
-                              <p className="text-secondary-600">{placement.companyName}</p>
+                              <p className="text-secondary-600">
+                                {placement.companyName}
+                              </p>
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {getStatusBadge(placement.status)}
                             <Badge variant="secondary" size="sm">
                               <Calendar className="mr-1 h-3 w-3" />
-                              Started {format(new Date(placement.startDate), "MMM d, yyyy")}
+                              Started{" "}
+                              {format(
+                                new Date(placement.startDate),
+                                "MMM d, yyyy"
+                              )}
                             </Badge>
                             {placement.salary && (
                               <Badge variant="secondary" size="sm">
@@ -245,7 +272,9 @@ export default function CandidatePlacementsPage() {
                           </div>
                           <div className="mt-1 flex justify-between text-xs text-secondary-500">
                             <span>Start Date</span>
-                            <span>{placement.guaranteePeriodDays}-Day Guarantee</span>
+                            <span>
+                              {placement.guaranteePeriodDays}-Day Guarantee
+                            </span>
                           </div>
                         </div>
                       )}
@@ -267,9 +296,14 @@ export default function CandidatePlacementsPage() {
                                 <CheckCircle2 className="h-5 w-5" />
                               </div>
                               <div className="flex-1 pb-2">
-                                <p className="font-semibold text-secondary-900">Start Date</p>
+                                <p className="font-semibold text-secondary-900">
+                                  Start Date
+                                </p>
                                 <p className="text-sm text-secondary-600">
-                                  {format(new Date(placement.startDate), "MMMM d, yyyy")}
+                                  {format(
+                                    new Date(placement.startDate),
+                                    "MMMM d, yyyy"
+                                  )}
                                 </p>
                               </div>
                             </div>
@@ -336,9 +370,10 @@ export default function CandidatePlacementsPage() {
                           </span>
                         </div>
                         <p className="text-sm text-blue-800">
-                          You are covered under our {placement.guaranteePeriodDays}-day guarantee
-                          period. If you leave within this period, the employer can request a
-                          replacement candidate at no additional cost.
+                          You are covered under our{" "}
+                          {placement.guaranteePeriodDays}-day guarantee period.
+                          If you leave within this period, the employer can
+                          request a replacement candidate at no additional cost.
                         </p>
                       </div>
                     </CardContent>
@@ -352,7 +387,9 @@ export default function CandidatePlacementsPage() {
         {/* Past Placements */}
         {pastPlacements.length > 0 && (
           <div className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold text-secondary-900">Past Placements</h2>
+            <h2 className="mb-4 text-2xl font-bold text-secondary-900">
+              Past Placements
+            </h2>
             <Card variant="accent">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -379,17 +416,25 @@ export default function CandidatePlacementsPage() {
                         const endDate = placement.endDate
                           ? new Date(placement.endDate)
                           : new Date();
-                        const durationDays = differenceInDays(endDate, startDate);
+                        const durationDays = differenceInDays(
+                          endDate,
+                          startDate
+                        );
 
                         return (
-                          <tr key={placement.id} className="hover:bg-secondary-50">
+                          <tr
+                            key={placement.id}
+                            className="hover:bg-secondary-50"
+                          >
                             <td className="px-6 py-4">
                               <div className="font-medium text-secondary-900">
                                 {placement.jobTitle}
                               </div>
                             </td>
                             <td className="px-6 py-4">
-                              <div className="text-secondary-600">{placement.companyName}</div>
+                              <div className="text-secondary-600">
+                                {placement.companyName}
+                              </div>
                             </td>
                             <td className="px-6 py-4">
                               <div className="text-sm text-secondary-600">
@@ -402,7 +447,9 @@ export default function CandidatePlacementsPage() {
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4">{getStatusBadge(placement.status)}</td>
+                            <td className="px-6 py-4">
+                              {getStatusBadge(placement.status)}
+                            </td>
                           </tr>
                         );
                       })}
@@ -423,10 +470,11 @@ export default function CandidatePlacementsPage() {
                 No Placements Yet
               </h3>
               <p className="mb-6 text-secondary-600">
-                You don't have any job placements yet. Start applying for jobs to get hired!
+                You don't have any job placements yet. Start applying for jobs
+                to get hired!
               </p>
               <Button variant="primary" asChild>
-                <Link href="/candidate/jobs">
+                <Link href="/jobs">
                   <Briefcase className="mr-2 h-5 w-5" />
                   Browse Jobs
                 </Link>
@@ -442,7 +490,9 @@ export default function CandidatePlacementsPage() {
               <div className="flex items-center gap-3">
                 <AlertCircle className="h-6 w-6 text-red-600" />
                 <div>
-                  <p className="font-semibold text-red-900">Failed to load placements</p>
+                  <p className="font-semibold text-red-900">
+                    Failed to load placements
+                  </p>
                   <p className="text-sm text-red-700">{error}</p>
                 </div>
               </div>
