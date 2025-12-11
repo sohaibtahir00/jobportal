@@ -22,7 +22,8 @@ export default function AboutPage() {
     {
       icon: Code2,
       title: "Modern Tech Stack",
-      description: "Built with the latest web technologies for optimal performance",
+      description:
+        "Built with the latest web technologies for optimal performance",
     },
     {
       icon: Zap,
@@ -32,7 +33,8 @@ export default function AboutPage() {
     {
       icon: Github,
       title: "Open Development",
-      description: "Transparent development process with clean, maintainable code",
+      description:
+        "Transparent development process with clean, maintainable code",
     },
   ];
 
@@ -41,7 +43,11 @@ export default function AboutPage() {
       <div className="container">
         {/* Back Button */}
         <div className="mb-6">
-          <Button variant="ghost" asChild className="gap-2 hover:bg-primary-50 transition-all">
+          <Button
+            variant="ghost"
+            asChild
+            className="gap-2 hover:bg-primary-50 transition-all"
+          >
             <Link href="/">
               <ArrowLeft className="h-4 w-4" />
               Back to Home
@@ -73,7 +79,7 @@ export default function AboutPage() {
             </h2>
             <p className="mb-6 text-secondary-700">
               This is a demo job portal application built to showcase modern web
-              development practices and provide a template for job board
+              development practices and provide a template for SkillProof
               platforms. The application features a comprehensive set of
               functionality including job search, filtering, applications, and
               separate dashboards for candidates and employers.
@@ -118,7 +124,11 @@ export default function AboutPage() {
             </h3>
             <div className="mb-6 flex flex-wrap gap-2">
               {techStack.map((tech) => (
-                <Badge key={tech} variant="primary" className="bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-sm hover:shadow-md transition-all">
+                <Badge
+                  key={tech}
+                  variant="primary"
+                  className="bg-gradient-to-r from-primary-500 to-accent-500 text-white border-none shadow-sm hover:shadow-md transition-all"
+                >
                   {tech}
                 </Badge>
               ))}
@@ -141,7 +151,10 @@ export default function AboutPage() {
             {features.map((feature) => {
               const Icon = feature.icon;
               return (
-                <Card key={feature.title} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                <Card
+                  key={feature.title}
+                  className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl hover:-translate-y-1 transition-all"
+                >
                   <CardContent className="p-6 text-center">
                     <div className="mb-4 flex justify-center">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-accent-100 shadow-lg">
@@ -173,10 +186,18 @@ export default function AboutPage() {
               connections are planned for future implementation.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button variant="primary" asChild className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+              <Button
+                variant="primary"
+                asChild
+                className="bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
                 <Link href="/jobs">Browse Jobs</Link>
               </Button>
-              <Button variant="outline" asChild className="hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:border-primary-300 transition-all">
+              <Button
+                variant="outline"
+                asChild
+                className="hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:border-primary-300 transition-all"
+              >
                 <Link href="/">Back to Home</Link>
               </Button>
             </div>

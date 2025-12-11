@@ -156,17 +156,13 @@ export default function DashboardLayout({
             >
               <X className="h-6 w-6 text-secondary-600" />
             </button>
-            {/* Desktop: Collapse toggle only (no logo in sidebar) */}
+            {/* Desktop: Collapse toggle - always visible */}
             <button
               onClick={toggleSidebarCollapsed}
-              className={`hidden lg:flex items-center justify-center rounded-md transition-colors ${
-                sidebarCollapsed
-                  ? "h-10 w-10 bg-primary-100 text-primary-600 hover:bg-primary-200"
-                  : "h-8 w-8 text-secondary-500 hover:bg-secondary-100 hover:text-secondary-700"
-              }`}
+              className="hidden lg:flex items-center justify-center h-10 w-10 rounded-md bg-primary-100 text-primary-600 hover:bg-primary-200 transition-colors"
               aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-              <ChevronRight className={`transition-transform ${sidebarCollapsed ? "h-6 w-6" : "h-5 w-5 rotate-180"}`} />
+              <ChevronRight className={`h-6 w-6 transition-transform ${sidebarCollapsed ? "" : "rotate-180"}`} />
             </button>
           </div>
 
@@ -188,11 +184,6 @@ export default function DashboardLayout({
                   }`}
                   onClick={() => {
                     setSidebarOpen(false);
-                    // Auto-collapse sidebar on desktop when clicking a menu item
-                    if (window.innerWidth >= 1024 && !sidebarCollapsed) {
-                      setSidebarCollapsed(true);
-                      localStorage.setItem("sidebarCollapsed", "true");
-                    }
                   }}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
