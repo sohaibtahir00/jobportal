@@ -183,6 +183,11 @@ export default function DashboardLayout({
                   }`}
                   onClick={() => {
                     setSidebarOpen(false);
+                    // Auto-collapse sidebar on desktop when clicking a menu item
+                    if (window.innerWidth >= 1024 && !sidebarCollapsed) {
+                      setSidebarCollapsed(true);
+                      localStorage.setItem("sidebarCollapsed", "true");
+                    }
                   }}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
