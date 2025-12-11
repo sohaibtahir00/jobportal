@@ -822,7 +822,7 @@ export default function EmployerInterviewsPage() {
 
           {/* Stats */}
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -838,7 +838,7 @@ export default function EmployerInterviewsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -854,7 +854,7 @@ export default function EmployerInterviewsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -870,7 +870,7 @@ export default function EmployerInterviewsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -888,7 +888,7 @@ export default function EmployerInterviewsPage() {
           </div>
 
           {/* Filters and Search */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="space-y-4">
                 {/* Row 1: Status Filter */}
@@ -1111,7 +1111,7 @@ export default function EmployerInterviewsPage() {
 
           {/* Interviews List */}
           {filteredInterviews.length === 0 ? (
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-12 text-center">
                 <Video className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
                 <h3 className="mb-2 text-xl font-bold text-secondary-900">
@@ -1158,7 +1158,7 @@ export default function EmployerInterviewsPage() {
                       const currentRole = candidate?.workExperiences?.[0];
 
                       return (
-                        <Card key={interview.id}>
+                        <Card key={interview.id} variant="accent">
                           <CardContent className="p-6">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                               <div className="flex-1">
@@ -1779,7 +1779,7 @@ export default function EmployerInterviewsPage() {
                         const currentRole = candidate?.workExperiences?.[0];
 
                         return (
-                          <Card key={interview.id}>
+                          <Card key={interview.id} variant="accent">
                             <CardContent className="p-6">
                               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                 <div className="flex-1">
@@ -2342,7 +2342,7 @@ export default function EmployerInterviewsPage() {
 
               {/* Empty state when no active interviews */}
               {activeInterviews.length === 0 && (
-                <Card>
+                <Card variant="accent">
                   <CardContent className="p-12 text-center">
                     <Video className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
                     <h3 className="mb-2 text-xl font-bold text-secondary-900">

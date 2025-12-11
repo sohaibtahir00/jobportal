@@ -202,7 +202,7 @@ export default function CandidateProfilePage() {
           {/* Header */}
           <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Main Info */}
-            <Card className="lg:col-span-2">
+            <Card variant="accent" className="lg:col-span-2">
               <CardContent className="p-6">
                 <div className="mb-6 flex items-start justify-between">
                   <div className="flex items-start gap-4">
@@ -293,7 +293,7 @@ export default function CandidateProfilePage() {
 
             {/* Skills Score Card */}
             {candidateData.hasTakenTest && candidateData.testScore && (
-              <Card>
+              <Card variant="accent">
                 <CardContent className="p-6">
                   <h4 className="mb-3 font-semibold text-secondary-900">
                     Skills Assessment
@@ -315,7 +315,7 @@ export default function CandidateProfilePage() {
 
             {/* Applications to Your Jobs */}
             {candidateData.applications && candidateData.applications.length > 0 && (
-              <Card>
+              <Card variant="accent">
                 <CardContent className="p-6">
                   <h4 className="mb-3 font-semibold text-secondary-900">
                     Applications to Your Jobs
@@ -346,7 +346,7 @@ export default function CandidateProfilePage() {
 
           {/* Bio */}
           {candidateData.bio && (
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardContent className="p-6">
                 <h2 className="mb-4 text-xl font-bold text-secondary-900">About</h2>
                 <p className="text-secondary-700 whitespace-pre-line">
@@ -358,7 +358,7 @@ export default function CandidateProfilePage() {
 
           {/* Skills */}
           {candidateData.skills && candidateData.skills.length > 0 && (
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardContent className="p-6">
                 <h2 className="mb-4 text-xl font-bold text-secondary-900">
                   <Award className="inline mr-2 h-5 w-5" />
@@ -380,7 +380,7 @@ export default function CandidateProfilePage() {
 
           {/* Work Experience */}
           {candidateData.workExperiences && candidateData.workExperiences.length > 0 && (
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardContent className="p-6">
                 <h2 className="mb-4 text-xl font-bold text-secondary-900">
                   <Building className="inline mr-2 h-5 w-5" />
@@ -436,7 +436,7 @@ export default function CandidateProfilePage() {
 
           {/* Education */}
           {candidateData.educationEntries && candidateData.educationEntries.length > 0 && (
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardContent className="p-6">
                 <h2 className="mb-4 text-xl font-bold text-secondary-900">
                   <GraduationCap className="inline mr-2 h-5 w-5" />
@@ -468,7 +468,7 @@ export default function CandidateProfilePage() {
 
           {/* Interview History for Applications */}
           {candidateData.applications && candidateData.applications.some((app: any) => app.interviews?.length > 0) && (
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardContent className="p-6">
                 <h2 className="mb-4 text-xl font-bold text-secondary-900">
                   <Video className="inline mr-2 h-5 w-5" />

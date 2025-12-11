@@ -124,7 +124,7 @@ export default function EmployerPlacementsPage() {
 
         {/* Stats Cards */}
         <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -138,7 +138,7 @@ export default function EmployerPlacementsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -152,7 +152,7 @@ export default function EmployerPlacementsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -166,7 +166,7 @@ export default function EmployerPlacementsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -196,7 +196,7 @@ export default function EmployerPlacementsPage() {
         )}
 
         {/* Placements List */}
-        <Card>
+        <Card variant="accent">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold text-secondary-900 mb-6">
               All Placements

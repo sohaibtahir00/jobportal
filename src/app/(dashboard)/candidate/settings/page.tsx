@@ -335,7 +335,7 @@ export default function CandidateSettingsPage() {
           )}
 
           {/* Profile Settings */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <User className="h-6 w-6 text-primary-600" />
@@ -414,7 +414,7 @@ export default function CandidateSettingsPage() {
           </Card>
 
           {/* Password Settings */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <Lock className="h-6 w-6 text-primary-600" />
@@ -503,7 +503,7 @@ export default function CandidateSettingsPage() {
           </Card>
 
           {/* Notification Settings */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <Bell className="h-6 w-6 text-primary-600" />
@@ -672,7 +672,7 @@ export default function CandidateSettingsPage() {
           </Card>
 
           {/* Privacy Settings */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <Eye className="h-6 w-6 text-primary-600" />

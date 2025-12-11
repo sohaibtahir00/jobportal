@@ -307,7 +307,7 @@ export default function RecommendationsPage() {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card variant="accent">
         <CardContent className="p-4">
           <div className="flex flex-wrap items-center gap-4">
             {/* Sort */}
@@ -387,7 +387,7 @@ export default function RecommendationsPage() {
 
       {/* Results */}
       {sortedRecommendations.length === 0 ? (
-        <Card className="border-dashed border-2 border-secondary-300">
+        <Card variant="accent" className="border-dashed border-2 border-secondary-300">
           <CardContent className="p-12 text-center">
             <Briefcase className="h-16 w-16 text-secondary-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-secondary-900 mb-2">
@@ -461,6 +461,7 @@ function RecommendationsList({
       {recommendations.map((rec) => (
         <Card
           key={rec.job.id}
+          variant="accent"
           className="overflow-hidden hover:shadow-lg transition-shadow"
         >
           <CardContent className="p-0">

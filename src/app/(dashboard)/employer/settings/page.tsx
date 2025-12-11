@@ -672,7 +672,7 @@ export default function EmployerSettingsPage() {
           )}
 
           {/* Company Profile */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
@@ -844,7 +844,7 @@ export default function EmployerSettingsPage() {
           </Card>
 
           {/* Change Password */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warning-100">
@@ -958,7 +958,7 @@ export default function EmployerSettingsPage() {
           </Card>
 
           {/* Notification Preferences */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100">
@@ -1025,7 +1025,7 @@ export default function EmployerSettingsPage() {
           </Card>
 
           {/* Team Members */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -1175,7 +1175,7 @@ export default function EmployerSettingsPage() {
           )}
 
           {/* Video Conferencing Integrations */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
@@ -1305,7 +1305,7 @@ export default function EmployerSettingsPage() {
           </Card>
 
           {/* Google Calendar Integration */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
@@ -1381,7 +1381,7 @@ export default function EmployerSettingsPage() {
           </Card>
 
           {/* Billing Section */}
-          <Card className="mb-6" id="billing">
+          <Card variant="accent" className="mb-6" id="billing">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
@@ -1480,7 +1480,7 @@ export default function EmployerSettingsPage() {
           </Card>
 
           {/* Interview Templates */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">

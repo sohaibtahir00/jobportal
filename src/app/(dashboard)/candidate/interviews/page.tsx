@@ -727,7 +727,7 @@ export default function CandidateInterviewsPage() {
 
           {/* Enhanced Stats Cards */}
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -741,7 +741,7 @@ export default function CandidateInterviewsPage() {
               </CardContent>
             </Card>
 
-            <Card className={actionRequiredCount > 0 ? "border-warning-200 bg-warning-50" : ""}>
+            <Card variant="accent" className={actionRequiredCount > 0 ? "border-warning-200 bg-warning-50" : ""}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -755,7 +755,7 @@ export default function CandidateInterviewsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -767,7 +767,7 @@ export default function CandidateInterviewsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -781,7 +781,7 @@ export default function CandidateInterviewsPage() {
           </div>
 
           {/* Enhanced Filters */}
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <div className="space-y-4">
                 {/* Row 1: Status Filter Buttons */}
@@ -923,7 +923,7 @@ export default function CandidateInterviewsPage() {
 
           {/* Interview Lists */}
           {filteredInterviews.length === 0 ? (
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-12 text-center">
                 <Calendar className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
                 <h3 className="mb-2 text-xl font-bold text-secondary-900">No interviews found</h3>
@@ -959,6 +959,7 @@ export default function CandidateInterviewsPage() {
                       return (
                         <Card
                           key={interview.id}
+                          variant="accent"
                           className={`transition-shadow hover:shadow-md ${
                             interview.displayStatus === "action-required"
                               ? "border-2 border-warning-200 bg-warning-50"
@@ -1239,7 +1240,7 @@ export default function CandidateInterviewsPage() {
                   {pastSectionExpanded && (
                     <div className="space-y-4">
                       {pastInterviews.map((interview) => (
-                        <Card key={interview.id} className="transition-shadow hover:shadow-md opacity-80">
+                        <Card key={interview.id} variant="accent" className="transition-shadow hover:shadow-md opacity-80">
                           <CardContent className="p-6">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                               <div className="flex-1">
@@ -1368,7 +1369,7 @@ export default function CandidateInterviewsPage() {
 
               {/* Empty state when no active interviews */}
               {sortedActiveInterviews.length === 0 && pastInterviews.length > 0 && (
-                <Card>
+                <Card variant="accent">
                   <CardContent className="p-12 text-center">
                     <Calendar className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
                     <h3 className="mb-2 text-xl font-bold text-secondary-900">

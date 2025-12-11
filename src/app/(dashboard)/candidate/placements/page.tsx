@@ -194,7 +194,7 @@ export default function CandidatePlacementsPage() {
                 const ninetyDayMilestone = getTimelineMilestone(placement.startDate, 90);
 
                 return (
-                  <Card key={placement.id} className="border-2 border-primary-200">
+                  <Card key={placement.id} variant="accent" className="border-2 border-primary-200">
                     <CardContent className="p-6">
                       {/* Header */}
                       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -353,7 +353,7 @@ export default function CandidatePlacementsPage() {
         {pastPlacements.length > 0 && (
           <div className="mb-8">
             <h2 className="mb-4 text-2xl font-bold text-secondary-900">Past Placements</h2>
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -416,7 +416,7 @@ export default function CandidatePlacementsPage() {
 
         {/* Empty State */}
         {placements.length === 0 && !error && (
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-12 text-center">
               <Briefcase className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
               <h3 className="mb-2 text-xl font-bold text-secondary-900">

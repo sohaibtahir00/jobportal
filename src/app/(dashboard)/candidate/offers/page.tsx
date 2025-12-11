@@ -247,7 +247,7 @@ export default function CandidateOffersPage() {
 
         {/* Stats Cards */}
         <div className="mb-8 grid gap-6 md:grid-cols-4">
-          <Card className={filter === "all" ? "ring-2 ring-primary-500" : ""}>
+          <Card variant="accent" className={filter === "all" ? "ring-2 ring-primary-500" : ""}>
             <CardContent className="p-6">
               <button
                 onClick={() => setFilter("all")}
@@ -266,7 +266,7 @@ export default function CandidateOffersPage() {
             </CardContent>
           </Card>
 
-          <Card className={filter === "pending" ? "ring-2 ring-yellow-500" : ""}>
+          <Card variant="accent" className={filter === "pending" ? "ring-2 ring-yellow-500" : ""}>
             <CardContent className="p-6">
               <button
                 onClick={() => setFilter("pending")}
@@ -285,7 +285,7 @@ export default function CandidateOffersPage() {
             </CardContent>
           </Card>
 
-          <Card className={filter === "accepted" ? "ring-2 ring-green-500" : ""}>
+          <Card variant="accent" className={filter === "accepted" ? "ring-2 ring-green-500" : ""}>
             <CardContent className="p-6">
               <button
                 onClick={() => setFilter("accepted")}
@@ -304,7 +304,7 @@ export default function CandidateOffersPage() {
             </CardContent>
           </Card>
 
-          <Card className={filter === "declined" ? "ring-2 ring-secondary-500" : ""}>
+          <Card variant="accent" className={filter === "declined" ? "ring-2 ring-secondary-500" : ""}>
             <CardContent className="p-6">
               <button
                 onClick={() => setFilter("declined")}
@@ -338,7 +338,7 @@ export default function CandidateOffersPage() {
 
         {/* Offers List */}
         {filteredOffers.length === 0 ? (
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-12 text-center">
               <Gift className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
               <h3 className="mb-2 text-lg font-semibold text-secondary-900">
@@ -361,6 +361,7 @@ export default function CandidateOffersPage() {
               return (
                 <Card
                   key={offer.id}
+                  variant="accent"
                   className={isPending ? "border-l-4 border-l-yellow-500" : ""}
                 >
                   <CardContent className="p-6">
@@ -541,7 +542,7 @@ export default function CandidateOffersPage() {
       {/* Decline Modal */}
       {showDeclineModal && selectedOffer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card className="w-full max-w-md">
+          <Card variant="accent" className="w-full max-w-md">
             <CardContent className="p-6">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-secondary-900">Decline Offer</h3>

@@ -407,7 +407,7 @@ export default function ServiceAgreementPage() {
         </div>
 
         {/* Agreement Text Card */}
-        <Card className="mb-6 border-2 border-secondary-200">
+        <Card variant="accent" className="mb-6 border-2 border-secondary-200">
           <CardHeader className="bg-secondary-50 border-b">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
@@ -442,7 +442,7 @@ export default function ServiceAgreementPage() {
         </Card>
 
         {/* Signature Form */}
-        <Card className="mb-6">
+        <Card variant="accent" className="mb-6">
           <CardHeader>
             <CardTitle className="text-lg">Your Information</CardTitle>
             <CardDescription>

@@ -158,7 +158,7 @@ export default function ApplicationsPage() {
         </div>
 
         {/* Filters and Sort */}
-        <Card className="mb-6">
+        <Card variant="accent" className="mb-6">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               {/* Filter Tabs */}
@@ -226,7 +226,7 @@ export default function ApplicationsPage() {
             </CardContent>
           </Card>
         ) : filteredApplications.length === 0 ? (
-          <Card className="bg-white">
+          <Card variant="accent" className="bg-white">
             <CardContent className="p-12 text-center">
               <Briefcase className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">

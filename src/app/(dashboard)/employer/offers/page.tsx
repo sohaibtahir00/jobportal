@@ -190,7 +190,7 @@ export default function EmployerOffersPage() {
 
         {/* Stats Cards */}
         <div className="mb-8 grid gap-6 md:grid-cols-4">
-          <Card className={filter === "all" ? "ring-2 ring-primary-500" : ""}>
+          <Card variant="accent" className={filter === "all" ? "ring-2 ring-primary-500" : ""}>
             <CardContent className="p-6">
               <button
                 onClick={() => setFilter("all")}
@@ -209,7 +209,7 @@ export default function EmployerOffersPage() {
             </CardContent>
           </Card>
 
-          <Card className={filter === "pending" ? "ring-2 ring-yellow-500" : ""}>
+          <Card variant="accent" className={filter === "pending" ? "ring-2 ring-yellow-500" : ""}>
             <CardContent className="p-6">
               <button
                 onClick={() => setFilter("pending")}
@@ -228,7 +228,7 @@ export default function EmployerOffersPage() {
             </CardContent>
           </Card>
 
-          <Card className={filter === "accepted" ? "ring-2 ring-green-500" : ""}>
+          <Card variant="accent" className={filter === "accepted" ? "ring-2 ring-green-500" : ""}>
             <CardContent className="p-6">
               <button
                 onClick={() => setFilter("accepted")}
@@ -247,7 +247,7 @@ export default function EmployerOffersPage() {
             </CardContent>
           </Card>
 
-          <Card className={filter === "declined" ? "ring-2 ring-secondary-500" : ""}>
+          <Card variant="accent" className={filter === "declined" ? "ring-2 ring-secondary-500" : ""}>
             <CardContent className="p-6">
               <button
                 onClick={() => setFilter("declined")}
@@ -281,7 +281,7 @@ export default function EmployerOffersPage() {
 
         {/* Offers List */}
         {filteredOffers.length === 0 ? (
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-12 text-center">
               <Gift className="mx-auto mb-4 h-16 w-16 text-secondary-300" />
               <h3 className="mb-2 text-lg font-semibold text-secondary-900">
@@ -301,7 +301,7 @@ export default function EmployerOffersPage() {
               const isPending = offer.status === "PENDING" && daysLeft >= 0;
 
               return (
-                <Card key={offer.id}>
+                <Card key={offer.id} variant="accent">
                   <CardContent className="p-6">
                     <div className="flex flex-col gap-6">
                       <div className="flex items-start justify-between">

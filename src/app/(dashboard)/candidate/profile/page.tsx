@@ -737,7 +737,7 @@ export default function CandidateProfilePage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Profile Header with Photo */}
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 {/* Profile Photo */}
@@ -856,7 +856,7 @@ export default function CandidateProfilePage() {
           )}
 
           {/* Basic Information */}
-          <Card>
+          <Card variant="accent">
             <CardHeader className="border-b border-gray-200">
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
@@ -986,7 +986,7 @@ export default function CandidateProfilePage() {
           </Card>
 
           {/* Professional Links */}
-          <Card>
+          <Card variant="accent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <LinkIcon className="h-5 w-5" />
@@ -1100,7 +1100,7 @@ export default function CandidateProfilePage() {
           </Card>
 
           {/* Resume Section */}
-          <Card>
+          <Card variant="accent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
@@ -1171,7 +1171,7 @@ export default function CandidateProfilePage() {
           </Card>
 
           {/* Skills */}
-          <Card>
+          <Card variant="accent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Code className="h-5 w-5" />
@@ -1228,7 +1228,7 @@ export default function CandidateProfilePage() {
           </Card>
 
           {/* Work Experience */}
-          <Card>
+          <Card variant="accent">
             <CardHeader className="border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -1331,7 +1331,7 @@ export default function CandidateProfilePage() {
           </Card>
 
           {/* Education */}
-          <Card>
+          <Card variant="accent">
             <CardHeader className="border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -1424,7 +1424,7 @@ export default function CandidateProfilePage() {
           </Card>
 
           {/* Job Preferences */}
-          <Card>
+          <Card variant="accent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5" />

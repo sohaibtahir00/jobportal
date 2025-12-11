@@ -202,7 +202,7 @@ export default function EmployerInvoicesPage() {
 
         {/* Stats Cards */}
         <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -216,7 +216,7 @@ export default function EmployerInvoicesPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -230,7 +230,7 @@ export default function EmployerInvoicesPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -244,7 +244,7 @@ export default function EmployerInvoicesPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -274,7 +274,7 @@ export default function EmployerInvoicesPage() {
         )}
 
         {/* Placements/Invoices List */}
-        <Card>
+        <Card variant="accent">
           <CardContent className="p-6">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-secondary-900">All Invoices</h2>

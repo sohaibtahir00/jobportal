@@ -179,7 +179,7 @@ export default function PlacementDetailPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12">
         <div className="container">
-          <Card className="max-w-2xl mx-auto">
+          <Card variant="accent" className="max-w-2xl mx-auto">
             <CardContent className="p-12 text-center">
               <FileText className="w-16 h-16 text-red-600 mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-secondary-900 mb-2">
@@ -229,7 +229,7 @@ export default function PlacementDetailPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Candidate Information */}
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-primary-100 rounded-lg">
@@ -288,7 +288,7 @@ export default function PlacementDetailPage() {
             </Card>
 
             {/* Job Information */}
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-blue-100 rounded-lg">
@@ -327,7 +327,7 @@ export default function PlacementDetailPage() {
             </Card>
 
             {/* Timeline */}
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-accent-100 rounded-lg">
@@ -403,7 +403,7 @@ export default function PlacementDetailPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Financial Details */}
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-green-100 rounded-lg">
@@ -444,7 +444,7 @@ export default function PlacementDetailPage() {
 
             {/* Guarantee Period Info */}
             {placement.guaranteeEndDate && (
-              <Card>
+              <Card variant="accent">
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-secondary-900 mb-4">
                     Guarantee Period
@@ -488,7 +488,7 @@ export default function PlacementDetailPage() {
             )}
 
             {/* Actions */}
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <h3 className="font-semibold text-secondary-900 mb-4">
                   Actions

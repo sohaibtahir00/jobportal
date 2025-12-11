@@ -127,7 +127,7 @@ export default function SavedJobsPage() {
             </CardContent>
           </Card>
         ) : savedJobs.length === 0 ? (
-          <Card className="bg-white">
+          <Card variant="accent" className="bg-white">
             <CardContent className="p-12 text-center">
               <div className="flex items-center justify-center mb-4">
                 <div className="relative">

@@ -53,7 +53,8 @@ function formatRelativeTime(date: string | Date): string {
   if (diffInSeconds < 60) return "just now";
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  if (diffInSeconds < 604800)
+    return `${Math.floor(diffInSeconds / 86400)}d ago`;
   return past.toLocaleDateString();
 }
 
@@ -138,8 +139,17 @@ const getBannerStyle = (percentage: number) => {
 
 export default function CandidateDashboardPage() {
   const { data: session } = useSession();
-  const { profile, profileCompletion, isLoading: profileLoading, refetch: refetchProfile } = useCandidateProfile();
-  const { data: dashboardData, isLoading: dashboardLoading, refetch: refetchDashboard } = useCandidateDashboard();
+  const {
+    profile,
+    profileCompletion,
+    isLoading: profileLoading,
+    refetch: refetchProfile,
+  } = useCandidateProfile();
+  const {
+    data: dashboardData,
+    isLoading: dashboardLoading,
+    refetch: refetchDashboard,
+  } = useCandidateDashboard();
   const { showToast } = useToast();
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -185,8 +195,16 @@ export default function CandidateDashboardPage() {
     const fileName = file.name.toLowerCase();
 
     // Validate file type
-    if (!fileName.endsWith('.pdf') && !fileName.endsWith('.docx') && !fileName.endsWith('.doc')) {
-      showToast("error", "Invalid File", "Please upload a PDF or Word document");
+    if (
+      !fileName.endsWith(".pdf") &&
+      !fileName.endsWith(".docx") &&
+      !fileName.endsWith(".doc")
+    ) {
+      showToast(
+        "error",
+        "Invalid File",
+        "Please upload a PDF or Word document"
+      );
       return;
     }
 
@@ -201,7 +219,7 @@ export default function CandidateDashboardPage() {
     try {
       // Extract text based on file type
       let extractedText: string;
-      if (fileName.endsWith('.pdf')) {
+      if (fileName.endsWith(".pdf")) {
         extractedText = await extractTextFromPDF(file);
       } else {
         extractedText = await extractTextFromDOCX(file);
@@ -270,7 +288,7 @@ export default function CandidateDashboardPage() {
         }
 
         // Upload the resume file using the helper function (sets proper headers)
-        const uploadResult = await uploadFile(file, 'resume');
+        const uploadResult = await uploadFile(file, "resume");
 
         // Save the resume URL to the profile (like onboarding does)
         if (uploadResult.url) {
@@ -279,7 +297,11 @@ export default function CandidateDashboardPage() {
           });
         }
 
-        showToast("success", "Profile Updated", "Your profile has been updated from resume!");
+        showToast(
+          "success",
+          "Profile Updated",
+          "Your profile has been updated from resume!"
+        );
 
         // Refresh dashboard and profile data
         refetchProfile();
@@ -289,11 +311,16 @@ export default function CandidateDashboardPage() {
       }
     } catch (error: any) {
       console.error("Resume parsing error:", error);
-      showToast("error", "Import Failed", error.message || "Failed to parse resume. Please try again or edit manually.");
+      showToast(
+        "error",
+        "Import Failed",
+        error.message ||
+          "Failed to parse resume. Please try again or edit manually."
+      );
     } finally {
       setIsParsingResume(false);
       // Reset file input
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
@@ -301,12 +328,12 @@ export default function CandidateDashboardPage() {
   useEffect(() => {
     const fetchProfileViewsCount = async () => {
       try {
-        const response = await api.get('/api/profile-views?limit=1');
+        const response = await api.get("/api/profile-views?limit=1");
         if (response.data.stats) {
           setProfileViewsCount(response.data.stats.totalViews);
         }
       } catch (error) {
-        console.error('Failed to fetch profile views count:', error);
+        console.error("Failed to fetch profile views count:", error);
       }
     };
 
@@ -341,7 +368,8 @@ export default function CandidateDashboardPage() {
   const isProfileIncomplete = (profileCompletionData?.percentage || 0) < 80;
   const hasSkillsAssessment = testInfo?.hasTaken || false;
   const bannerStyle = getBannerStyle(profileCompletionData?.percentage || 0);
-  const completedFieldsCount = 12 - (profileCompletionData?.missingFields?.length || 0);
+  const completedFieldsCount =
+    12 - (profileCompletionData?.missingFields?.length || 0);
 
   // Calculate job counts (placeholder for now)
   const publicJobsCount = recommendedJobs.length;
@@ -431,7 +459,7 @@ export default function CandidateDashboardPage() {
                   size="lg"
                   className="bg-white hover:bg-gray-50 text-primary-700 font-semibold shadow-lg"
                 >
-                  <Link href="/candidate/jobs">Browse Jobs</Link>
+                  <Link href="/jobs">Browse Jobs</Link>
                 </Button>
               </div>
             </div>
@@ -447,7 +475,9 @@ export default function CandidateDashboardPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <Card className={`relative border-0 bg-gradient-to-r ${bannerStyle.bg} shadow-lg border-l-4 ${bannerStyle.border}`}>
+            <Card
+              className={`relative border-0 bg-gradient-to-r ${bannerStyle.bg} shadow-lg border-l-4 ${bannerStyle.border}`}
+            >
               {/* Dismiss button */}
               <button
                 onClick={handleDismissBanner}
@@ -461,11 +491,17 @@ export default function CandidateDashboardPage() {
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className={`flex h-12 w-12 items-center justify-center rounded-full ${bannerStyle.iconBg}`}>
+                      <div
+                        className={`flex h-12 w-12 items-center justify-center rounded-full ${bannerStyle.iconBg}`}
+                      >
                         {(profileCompletionData?.percentage || 0) < 30 ? (
-                          <AlertTriangle className={`h-6 w-6 ${bannerStyle.iconColor}`} />
+                          <AlertTriangle
+                            className={`h-6 w-6 ${bannerStyle.iconColor}`}
+                          />
                         ) : (
-                          <Target className={`h-6 w-6 ${bannerStyle.iconColor}`} />
+                          <Target
+                            className={`h-6 w-6 ${bannerStyle.iconColor}`}
+                          />
                         )}
                       </div>
                       <div>
@@ -473,7 +509,9 @@ export default function CandidateDashboardPage() {
                           Complete Your Profile
                         </h3>
                         <p className="text-sm text-secondary-600">
-                          {profileCompletionData.percentage}% complete ({completedFieldsCount}/12 fields) • {bannerStyle.message}
+                          {profileCompletionData.percentage}% complete (
+                          {completedFieldsCount}/12 fields) •{" "}
+                          {bannerStyle.message}
                         </p>
                       </div>
                     </div>
@@ -485,24 +523,30 @@ export default function CandidateDashboardPage() {
                     />
 
                     {/* Missing fields */}
-                    {profileCompletionData.missingFields && profileCompletionData.missingFields.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs text-secondary-500">Missing:</span>
-                        {profileCompletionData.missingFields.slice(0, 4).map((field: string) => (
-                          <span
-                            key={field}
-                            className={`px-2 py-0.5 ${bannerStyle.tagBg} ${bannerStyle.tagText} text-xs rounded-full`}
-                          >
-                            {formatFieldName(field)}
-                          </span>
-                        ))}
-                        {profileCompletionData.missingFields.length > 4 && (
+                    {profileCompletionData.missingFields &&
+                      profileCompletionData.missingFields.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="text-xs text-secondary-500">
-                            +{profileCompletionData.missingFields.length - 4} more
+                            Missing:
                           </span>
-                        )}
-                      </div>
-                    )}
+                          {profileCompletionData.missingFields
+                            .slice(0, 4)
+                            .map((field: string) => (
+                              <span
+                                key={field}
+                                className={`px-2 py-0.5 ${bannerStyle.tagBg} ${bannerStyle.tagText} text-xs rounded-full`}
+                              >
+                                {formatFieldName(field)}
+                              </span>
+                            ))}
+                          {profileCompletionData.missingFields.length > 4 && (
+                            <span className="text-xs text-secondary-500">
+                              +{profileCompletionData.missingFields.length - 4}{" "}
+                              more
+                            </span>
+                          )}
+                        </div>
+                      )}
                   </div>
 
                   {/* Action buttons */}
@@ -575,8 +619,9 @@ export default function CandidateDashboardPage() {
                       ⚠️ Take Skills Assessment to Unlock Benefits
                     </h2>
                     <p className="text-secondary-600 mb-6">
-                      Complete our comprehensive skills assessment to unlock exclusive job
-                      opportunities and increase your visibility to top employers.
+                      Complete our comprehensive skills assessment to unlock
+                      exclusive job opportunities and increase your visibility
+                      to top employers.
                     </p>
 
                     {/* Benefits Grid */}
@@ -668,7 +713,9 @@ export default function CandidateDashboardPage() {
                     <div className="grid gap-4 sm:grid-cols-3 mb-6">
                       {/* Score */}
                       <div className="rounded-lg bg-white/80 p-4 shadow-sm border border-green-100">
-                        <p className="text-sm text-secondary-600 mb-1">Overall Score</p>
+                        <p className="text-sm text-secondary-600 mb-1">
+                          Overall Score
+                        </p>
                         <p className="text-3xl font-bold text-green-700">
                           {testInfo?.score || 0}/100
                         </p>
@@ -679,9 +726,15 @@ export default function CandidateDashboardPage() {
 
                       {/* Tier */}
                       <div className="rounded-lg bg-white/80 p-4 shadow-sm border border-green-100">
-                        <p className="text-sm text-secondary-600 mb-1">Performance Tier</p>
-                        <p className="text-xl font-bold" style={{ color: testInfo?.tier?.color || "#000" }}>
-                          {testInfo?.tier?.emoji || ""} {testInfo?.tier?.name || "N/A"}
+                        <p className="text-sm text-secondary-600 mb-1">
+                          Performance Tier
+                        </p>
+                        <p
+                          className="text-xl font-bold"
+                          style={{ color: testInfo?.tier?.color || "#000" }}
+                        >
+                          {testInfo?.tier?.emoji || ""}{" "}
+                          {testInfo?.tier?.name || "N/A"}
                         </p>
                         <div className="flex items-center gap-1 mt-2">
                           {Array.from({ length: 5 }).map((_, i) => {
@@ -707,12 +760,20 @@ export default function CandidateDashboardPage() {
 
                       {/* Date */}
                       <div className="rounded-lg bg-white/80 p-4 shadow-sm border border-green-100">
-                        <p className="text-sm text-secondary-600 mb-1">Test Date</p>
+                        <p className="text-sm text-secondary-600 mb-1">
+                          Test Date
+                        </p>
                         <p className="text-sm font-semibold text-secondary-900">
-                          {testInfo?.lastTestDate ? new Date(testInfo.lastTestDate).toLocaleDateString() : "N/A"}
+                          {testInfo?.lastTestDate
+                            ? new Date(
+                                testInfo.lastTestDate
+                              ).toLocaleDateString()
+                            : "N/A"}
                         </p>
                         <p className="text-xs text-secondary-500 mt-1">
-                          {testInfo?.lastTestDate ? formatRelativeTime(testInfo.lastTestDate) : ""}
+                          {testInfo?.lastTestDate
+                            ? formatRelativeTime(testInfo.lastTestDate)
+                            : ""}
                         </p>
                       </div>
                     </div>
@@ -748,7 +809,8 @@ export default function CandidateDashboardPage() {
 
                     {testInfo?.nextTier && (
                       <p className="text-sm text-secondary-600 mt-4">
-                        💡 You can retake the assessment in 30 days to improve your tier
+                        💡 You can retake the assessment in 30 days to improve
+                        your tier
                       </p>
                     )}
                   </div>
@@ -784,7 +846,9 @@ export default function CandidateDashboardPage() {
                           <span className="font-semibold text-secondary-900">
                             {publicJobsCount} public jobs
                           </span>{" "}
-                          <span className="text-secondary-600">available based on your skills</span>
+                          <span className="text-secondary-600">
+                            available based on your skills
+                          </span>
                         </p>
                       </div>
                       {!hasSkillsAssessment && (
@@ -807,7 +871,9 @@ export default function CandidateDashboardPage() {
                             <span className="font-semibold text-green-700">
                               {exclusiveJobsCount} exclusive jobs
                             </span>{" "}
-                            <span className="text-secondary-600">available to you!</span>
+                            <span className="text-secondary-600">
+                              available to you!
+                            </span>
                           </p>
                         </div>
                       )}
@@ -842,7 +908,10 @@ export default function CandidateDashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
               >
-                <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary-200 cursor-pointer">
+                <Card
+                  variant="accent"
+                  className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary-200 cursor-pointer"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div
@@ -851,7 +920,9 @@ export default function CandidateDashboardPage() {
                         <Icon className="h-6 w-6 text-white" />
                       </div>
                     </div>
-                    <p className="text-sm font-medium text-secondary-600 mb-1">{stat.label}</p>
+                    <p className="text-sm font-medium text-secondary-600 mb-1">
+                      {stat.label}
+                    </p>
                     <p className="text-3xl font-bold text-secondary-900">
                       <CountUp end={stat.value} duration={2} />
                     </p>
@@ -879,7 +950,7 @@ export default function CandidateDashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
           >
-            <Card className="shadow-lg">
+            <Card variant="accent" className="shadow-lg">
               <CardContent className="p-6">
                 <h3 className="text-xl font-bold text-secondary-900 mb-4">
                   Application Status Overview
@@ -889,28 +960,39 @@ export default function CandidateDashboardPage() {
                   <div className="rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
-                      <p className="text-sm font-medium text-secondary-700">Pending Review</p>
+                      <p className="text-sm font-medium text-secondary-700">
+                        Pending Review
+                      </p>
                     </div>
-                    <p className="text-3xl font-bold text-yellow-700">{stats.pending || 0}</p>
+                    <p className="text-3xl font-bold text-yellow-700">
+                      {stats.pending || 0}
+                    </p>
                   </div>
 
                   {/* Shortlisted */}
                   <div className="rounded-lg border-2 border-purple-200 bg-purple-50 p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="h-3 w-3 rounded-full bg-purple-500"></div>
-                      <p className="text-sm font-medium text-secondary-700">Shortlisted</p>
+                      <p className="text-sm font-medium text-secondary-700">
+                        Shortlisted
+                      </p>
                     </div>
-                    <p className="text-3xl font-bold text-purple-700">{stats.shortlisted || 0}</p>
+                    <p className="text-3xl font-bold text-purple-700">
+                      {stats.shortlisted || 0}
+                    </p>
                   </div>
 
                   {/* Interviews */}
                   <div className="rounded-lg border-2 border-blue-200 bg-blue-50 p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="h-3 w-3 rounded-full bg-blue-500"></div>
-                      <p className="text-sm font-medium text-secondary-700">Interviews</p>
+                      <p className="text-sm font-medium text-secondary-700">
+                        Interviews
+                      </p>
                     </div>
                     <p className="text-3xl font-bold text-blue-700">
-                      {(stats.interviewScheduled || 0) + (stats.interviewed || 0)}
+                      {(stats.interviewScheduled || 0) +
+                        (stats.interviewed || 0)}
                     </p>
                   </div>
 
@@ -918,9 +1000,13 @@ export default function CandidateDashboardPage() {
                   <div className="rounded-lg border-2 border-green-200 bg-green-50 p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                      <p className="text-sm font-medium text-secondary-700">Offers</p>
+                      <p className="text-sm font-medium text-secondary-700">
+                        Offers
+                      </p>
                     </div>
-                    <p className="text-3xl font-bold text-green-700">{stats.offered || 0}</p>
+                    <p className="text-3xl font-bold text-green-700">
+                      {stats.offered || 0}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -938,10 +1024,12 @@ export default function CandidateDashboardPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.9 }}
           >
-            <Card className="shadow-lg h-full">
+            <Card variant="accent" className="shadow-lg h-full">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-secondary-900">Recent Activity</h3>
+                  <h3 className="text-xl font-bold text-secondary-900">
+                    Recent Activity
+                  </h3>
                   <Link
                     href="/candidate/applications"
                     className="text-sm text-primary-600 hover:text-primary-700 font-medium"
@@ -972,7 +1060,9 @@ export default function CandidateDashboardPage() {
                           <p className="text-sm font-semibold text-secondary-900 truncate">
                             Applied to {app.jobTitle}
                           </p>
-                          <p className="text-xs text-secondary-600 truncate">{app.companyName}</p>
+                          <p className="text-xs text-secondary-600 truncate">
+                            {app.companyName}
+                          </p>
                           <div className="flex items-center gap-2 mt-2">
                             <Badge
                               variant="outline"
@@ -999,7 +1089,7 @@ export default function CandidateDashboardPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.9 }}
           >
-            <Card className="shadow-lg h-full">
+            <Card variant="accent" className="shadow-lg h-full">
               <CardContent className="p-6">
                 <RecommendedJobsCompact />
               </CardContent>
@@ -1020,11 +1110,13 @@ function RecommendedJobsCompact() {
   useEffect(() => {
     const fetchRecommendations = async () => {
       try {
-        const response = await api.get('/api/candidates/recommendations?limit=4');
+        const response = await api.get(
+          "/api/candidates/recommendations?limit=4"
+        );
         setData(response.data);
       } catch (err: any) {
-        console.error('Failed to fetch recommendations:', err);
-        setError(err.response?.data?.error || 'Failed to load recommendations');
+        console.error("Failed to fetch recommendations:", err);
+        setError(err.response?.data?.error || "Failed to load recommendations");
       } finally {
         setIsLoading(false);
       }
@@ -1038,10 +1130,15 @@ function RecommendedJobsCompact() {
       <div className="space-y-3">
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="h-5 w-5 text-primary-600" />
-          <h3 className="text-xl font-bold text-secondary-900">Recommended Jobs</h3>
+          <h3 className="text-xl font-bold text-secondary-900">
+            Recommended Jobs
+          </h3>
         </div>
         {[1, 2, 3].map((i) => (
-          <div key={i} className="animate-pulse p-4 rounded-lg bg-secondary-100 h-24" />
+          <div
+            key={i}
+            className="animate-pulse p-4 rounded-lg bg-secondary-100 h-24"
+          />
         ))}
       </div>
     );
@@ -1053,7 +1150,9 @@ function RecommendedJobsCompact() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary-600" />
-            <h3 className="text-xl font-bold text-secondary-900">Recommended Jobs</h3>
+            <h3 className="text-xl font-bold text-secondary-900">
+              Recommended Jobs
+            </h3>
           </div>
           <Link
             href="/candidate/recommendations"
@@ -1066,7 +1165,8 @@ function RecommendedJobsCompact() {
           <Briefcase className="h-12 w-12 text-secondary-300 mx-auto mb-3" />
           <p className="text-secondary-600 mb-2">No recommendations yet</p>
           <p className="text-xs text-secondary-500 mb-4">
-            Complete your profile and add skills to get personalized job recommendations
+            Complete your profile and add skills to get personalized job
+            recommendations
           </p>
           <Button asChild size="sm">
             <Link href="/candidate/profile">Complete Profile</Link>
@@ -1081,7 +1181,9 @@ function RecommendedJobsCompact() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary-600" />
-          <h3 className="text-xl font-bold text-secondary-900">Recommended Jobs</h3>
+          <h3 className="text-xl font-bold text-secondary-900">
+            Recommended Jobs
+          </h3>
           {data.highMatchCount > 0 && (
             <Badge variant="success" size="sm">
               {data.highMatchCount} great matches
@@ -1107,7 +1209,13 @@ function RecommendedJobsCompact() {
                 {rec.job.title}
               </h4>
               <Badge
-                variant={rec.matchScore >= 80 ? "success" : rec.matchScore >= 60 ? "warning" : "secondary"}
+                variant={
+                  rec.matchScore >= 80
+                    ? "success"
+                    : rec.matchScore >= 60
+                    ? "warning"
+                    : "secondary"
+                }
                 size="sm"
                 className="ml-2 flex-shrink-0"
               >
@@ -1115,17 +1223,17 @@ function RecommendedJobsCompact() {
               </Badge>
             </div>
             <p className="text-sm text-secondary-600 truncate mb-2">
-              {rec.job.employer?.companyName || 'Company'}
+              {rec.job.employer?.companyName || "Company"}
             </p>
             <div className="flex items-center gap-3 flex-wrap text-xs text-secondary-500">
               <span className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                {rec.job.remote ? 'Remote' : rec.job.location}
+                {rec.job.remote ? "Remote" : rec.job.location}
               </span>
               {rec.job.salaryMin && rec.job.salaryMax && (
                 <span className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3" />
-                  ${Math.floor(rec.job.salaryMin / 1000)}k-$
+                  <DollarSign className="h-3 w-3" />$
+                  {Math.floor(rec.job.salaryMin / 1000)}k-$
                   {Math.floor(rec.job.salaryMax / 1000)}k
                 </span>
               )}

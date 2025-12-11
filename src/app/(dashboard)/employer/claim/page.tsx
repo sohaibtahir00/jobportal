@@ -167,7 +167,7 @@ export default function EmployerClaimPage() {
       {/* CLAIMED JOBS SECTION */}
       {/* ===================================================================== */}
       {isLoadingClaimed ? (
-        <Card className="mb-8">
+        <Card variant="accent" className="mb-8">
           <CardContent className="p-12 text-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto" />
             <p className="text-secondary-600 mt-4">Loading claimed jobs...</p>
@@ -175,7 +175,7 @@ export default function EmployerClaimPage() {
         </Card>
       ) : claimedJobs.length > 0 ? (
         <div className="mb-12">
-          <Card>
+          <Card variant="accent">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -315,7 +315,7 @@ export default function EmployerClaimPage() {
       {/* ===================================================================== */}
       {/* CLAIM NEW JOB SECTION */}
       {/* ===================================================================== */}
-      <Card>
+      <Card variant="accent">
         <CardHeader>
           <CardTitle>
             {claimedJobs.length > 0 ? "Claim More Jobs" : "Claim Your Jobs"}

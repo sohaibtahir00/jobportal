@@ -315,7 +315,7 @@ export default function EmployerMessagesPage() {
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Conversations List */}
-            <Card className="lg:col-span-1">
+            <Card variant="accent" className="lg:col-span-1">
               <CardContent className="p-0">
                 {/* Search & Filters */}
                 <div className="border-b border-secondary-200 p-4">
@@ -433,7 +433,7 @@ export default function EmployerMessagesPage() {
             </Card>
 
             {/* Active Conversation */}
-            <Card className="lg:col-span-2">
+            <Card variant="accent" className="lg:col-span-2">
               <CardContent className="p-0">
                 {activeConversation ? (
                   <>

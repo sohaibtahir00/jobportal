@@ -855,7 +855,7 @@ export default function ApplicantDetailPage() {
           {/* Header */}
           <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Main Info */}
-            <Card className="lg:col-span-2">
+            <Card variant="accent" className="lg:col-span-2">
               <CardContent className="p-6">
                 <div className="mb-6 flex items-start justify-between">
                   <div>
@@ -922,7 +922,7 @@ export default function ApplicantDetailPage() {
             </Card>
 
             {/* Quick Actions */}
-            <Card>
+            <Card variant="accent">
               <CardContent className="p-6">
                 <h3 className="mb-4 font-bold text-secondary-900">Actions</h3>
                 <div className="space-y-3">
@@ -1084,7 +1084,7 @@ export default function ApplicantDetailPage() {
           </div>
 
           {/* Skills Assessment Results */}
-          <Card className="mb-6 border-2 border-success-200">
+          <Card variant="accent" className="mb-6 border-2 border-success-200">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center justify-between">
                 <div>
@@ -1152,7 +1152,7 @@ export default function ApplicantDetailPage() {
           {/* Work Experience - Full Details */}
           {applicantData.workExperience &&
             applicantData.workExperience.length > 0 && (
-              <Card className="mb-6">
+              <Card variant="accent" className="mb-6">
                 <CardContent className="p-6">
                   <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold text-secondary-900">
                     <Briefcase className="h-6 w-6" />
@@ -1197,7 +1197,7 @@ export default function ApplicantDetailPage() {
           {/* Education - Full Details */}
           {applicantData.educationEntries &&
             applicantData.educationEntries.length > 0 && (
-              <Card className="mb-6">
+              <Card variant="accent" className="mb-6">
                 <CardContent className="p-6">
                   <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-secondary-900">
                     🎓 Education
@@ -1235,7 +1235,7 @@ export default function ApplicantDetailPage() {
             applicantData.availability !== null ||
             applicantData.startDateAvailability ||
             applicantData.remotePreference) && (
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardContent className="p-6">
                 <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-secondary-900">
                   <DollarSign className="h-5 w-5" />
@@ -1313,7 +1313,7 @@ export default function ApplicantDetailPage() {
 
           {/* Bio */}
           {applicantData.bio && (
-            <Card className="mb-6">
+            <Card variant="accent" className="mb-6">
               <CardContent className="p-6">
                 <h2 className="mb-4 text-xl font-semibold text-secondary-900">
                   About
@@ -1329,7 +1329,7 @@ export default function ApplicantDetailPage() {
           {interviewRounds &&
             interviewRounds.length > 0 &&
             interviews.length > 0 && (
-              <Card className="mb-6">
+              <Card variant="accent" className="mb-6">
                 <CardContent className="p-6">
                   <h2 className="mb-4 text-2xl font-bold text-secondary-900">
                     Interview Process
@@ -1524,7 +1524,7 @@ export default function ApplicantDetailPage() {
               </Card>
             )}
 
-          <Card className="mb-6">
+          <Card variant="accent" className="mb-6">
             <CardContent className="p-6">
               <h2 className="mb-4 text-2xl font-bold text-secondary-900">
                 Interview History
@@ -1662,7 +1662,7 @@ export default function ApplicantDetailPage() {
           </Card>
 
           {/* Cover Letter */}
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-6">
               <h2 className="mb-4 text-2xl font-bold text-secondary-900">
                 Cover Letter

@@ -422,7 +422,7 @@ export default function EmployerApplicantsPage() {
       {/* Stats Summary */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 rounded-lg">
@@ -438,7 +438,7 @@ export default function EmployerApplicantsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-green-100 rounded-lg">
@@ -455,7 +455,7 @@ export default function EmployerApplicantsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 rounded-lg">
@@ -471,7 +471,7 @@ export default function EmployerApplicantsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-yellow-100 rounded-lg">
@@ -490,7 +490,7 @@ export default function EmployerApplicantsPage() {
       )}
 
       {/* Filters & Bulk Actions */}
-      <Card className="mb-6">
+      <Card variant="accent" className="mb-6">
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             {/* Job Filter */}
@@ -630,6 +630,7 @@ export default function EmployerApplicantsPage() {
             return (
               <Card
                 key={app.id}
+                variant="accent"
                 className={`${isSelected ? "ring-2 ring-primary-500" : ""}`}
               >
                 <CardContent className="p-6">

@@ -368,7 +368,7 @@ export default function EmployerSearchPage() {
       <div className="container py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-4 text-center">
               <Users className="mx-auto mb-2 h-6 w-6 text-primary-600" />
               <div className="text-2xl font-bold text-secondary-900">
@@ -377,7 +377,7 @@ export default function EmployerSearchPage() {
               <div className="text-xs text-secondary-600">Matches Found</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-4 text-center">
               <Star className="mx-auto mb-2 h-6 w-6 text-yellow-600" />
               <div className="text-2xl font-bold text-secondary-900">
@@ -386,7 +386,7 @@ export default function EmployerSearchPage() {
               <div className="text-xs text-secondary-600">Elite Candidates</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-4 text-center">
               <TrendingUp className="mx-auto mb-2 h-6 w-6 text-success-600" />
               <div className="text-2xl font-bold text-secondary-900">
@@ -395,7 +395,7 @@ export default function EmployerSearchPage() {
               <div className="text-xs text-secondary-600">Available Now</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card variant="accent">
             <CardContent className="p-4 text-center">
               <Award className="mx-auto mb-2 h-6 w-6 text-accent-600" />
               <div className="text-2xl font-bold text-secondary-900">
@@ -412,7 +412,7 @@ export default function EmployerSearchPage() {
         </div>
 
         {/* Horizontal Filters Card */}
-        <Card className="mb-6">
+        <Card variant="accent" className="mb-6">
           <CardContent className="p-6">
             {/* Row 1: Main Filters */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
@@ -586,7 +586,7 @@ export default function EmployerSearchPage() {
             {/* Candidate Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {paginatedCandidates.map((candidate) => (
-                <Card key={candidate.id} className="transition-all hover:shadow-lg hover:-translate-y-1">
+                <Card key={candidate.id} variant="accent" className="transition-all hover:shadow-lg hover:-translate-y-1">
                   <CardContent className="p-6">
                     {/* Header with Masked Name and Score */}
                     <div className="flex items-start justify-between mb-3">

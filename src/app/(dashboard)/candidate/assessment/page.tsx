@@ -208,7 +208,7 @@ export default function CandidateAssessmentPage() {
           </Card>
 
           {/* Benefits */}
-          <Card className="mb-8">
+          <Card variant="accent" className="mb-8">
             <CardContent className="p-6">
               <h3 className="mb-4 text-xl font-bold text-secondary-900">
                 Why Take the Assessment?
@@ -350,7 +350,7 @@ export default function CandidateAssessmentPage() {
         </div>
 
         {/* Retake Section */}
-        <Card className="mb-8">
+        <Card variant="accent" className="mb-8">
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
@@ -392,7 +392,7 @@ export default function CandidateAssessmentPage() {
         </Card>
 
         {/* Prep Resources for Retake */}
-        <Card>
+        <Card variant="accent">
           <CardContent className="p-6">
             <h3 className="mb-4 text-xl font-bold text-secondary-900">
               Improve Your Skills

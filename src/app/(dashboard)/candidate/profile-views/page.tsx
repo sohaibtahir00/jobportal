@@ -207,7 +207,7 @@ export default function ProfileViewsPage() {
 
         {/* Profile Views List */}
         {views.length === 0 ? (
-          <Card className="bg-white shadow-lg">
+          <Card variant="accent" className="bg-white shadow-lg">
             <CardContent className="p-12 text-center">
               <Eye className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
@@ -227,7 +227,7 @@ export default function ProfileViewsPage() {
         ) : (
           <div className="space-y-4">
             {views.map((view) => (
-              <Card key={view.id} className="bg-white hover:shadow-md transition-shadow">
+              <Card key={view.id} variant="accent" className="bg-white hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
