@@ -2,33 +2,28 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import {
   LayoutDashboard,
   Briefcase,
   FileText,
   MessageSquare,
   Settings,
-  LogOut,
   Menu,
   X,
   Users,
   Receipt,
-  BarChart3,
   Loader2,
   Star,
   Calendar,
-  UserPlus,
-  Search,
   CheckCircle2,
   Bookmark,
   Video,
   Gift,
   Sparkles,
-  ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Footer } from "@/components/layout";
 import { NotificationsDropdown } from "@/components/layout/NotificationsDropdown";
@@ -149,13 +144,11 @@ export default function DashboardLayout({
         <div className="flex h-full flex-col overflow-y-auto overflow-x-hidden">
           {/* Logo & Toggle Button */}
           <div className={`flex h-16 items-center border-b border-secondary-200 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"}`}>
-            <Link href="/" className="flex items-center">
-              {sidebarCollapsed ? (
-                <span className="text-lg font-bold text-primary-600">SP</span>
-              ) : (
+            {!sidebarCollapsed && (
+              <Link href="/" className="flex items-center">
                 <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
-              )}
-            </Link>
+              </Link>
+            )}
             {/* Mobile close button */}
             <button
               onClick={() => setSidebarOpen(false)}
@@ -164,17 +157,17 @@ export default function DashboardLayout({
             >
               <X className="h-6 w-6 text-secondary-600" />
             </button>
-            {/* Desktop collapse toggle */}
+            {/* Desktop collapse toggle - prominent expand button when collapsed */}
             <button
               onClick={toggleSidebarCollapsed}
-              className={`hidden lg:flex items-center justify-center h-8 w-8 rounded-md text-secondary-500 hover:bg-secondary-100 hover:text-secondary-700 transition-colors ${sidebarCollapsed ? "absolute right-2" : ""}`}
+              className={`hidden lg:flex items-center justify-center rounded-md transition-colors ${
+                sidebarCollapsed
+                  ? "h-10 w-10 bg-primary-100 text-primary-600 hover:bg-primary-200"
+                  : "h-8 w-8 text-secondary-500 hover:bg-secondary-100 hover:text-secondary-700"
+              }`}
               aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-              {sidebarCollapsed ? (
-                <ChevronRight className="h-5 w-5" />
-              ) : (
-                <ChevronLeft className="h-5 w-5" />
-              )}
+              <ChevronRight className={`transition-transform ${sidebarCollapsed ? "h-6 w-6" : "h-5 w-5 rotate-180"}`} />
             </button>
           </div>
 
@@ -220,7 +213,14 @@ export default function DashboardLayout({
                       ? "bg-primary-50 text-primary-600"
                       : "text-secondary-700 hover:bg-secondary-50"
                   }`}
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    // Auto-collapse sidebar on desktop when clicking a menu item
+                    if (window.innerWidth >= 1024 && !sidebarCollapsed) {
+                      setSidebarCollapsed(true);
+                      localStorage.setItem("sidebarCollapsed", "true");
+                    }
+                  }}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
                   <Icon className="h-5 w-5 flex-shrink-0" />
@@ -235,26 +235,6 @@ export default function DashboardLayout({
               );
             })}
           </nav>
-
-          {/* Logout */}
-          <div className={`border-t border-secondary-200 ${sidebarCollapsed ? "p-2" : "p-3"}`}>
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className={`group relative flex w-full items-center rounded-lg py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 ${
-                sidebarCollapsed ? "justify-center px-2" : "space-x-3 px-3"
-              }`}
-              title={sidebarCollapsed ? "Log Out" : undefined}
-            >
-              <LogOut className="h-5 w-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>Log Out</span>}
-              {/* Tooltip for collapsed state */}
-              {sidebarCollapsed && (
-                <span className="absolute left-full ml-2 px-2 py-1 text-xs font-medium text-white bg-secondary-800 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity whitespace-nowrap z-50">
-                  Log Out
-                </span>
-              )}
-            </button>
-          </div>
         </div>
       </aside>
 
@@ -262,13 +242,21 @@ export default function DashboardLayout({
       <div className={`transition-all duration-300 ${sidebarCollapsed ? "lg:pl-[70px]" : "lg:pl-64"}`}>
         {/* Top Bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-secondary-200 bg-white px-4 shadow-sm lg:px-8">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden"
-            aria-label="Open sidebar"
-          >
-            <Menu className="h-6 w-6 text-secondary-600" />
-          </button>
+          <div className="flex items-center">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden"
+              aria-label="Open sidebar"
+            >
+              <Menu className="h-6 w-6 text-secondary-600" />
+            </button>
+            {/* Show logo in header when sidebar is collapsed */}
+            {sidebarCollapsed && (
+              <Link href="/" className="hidden lg:flex items-center ml-2">
+                <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
+              </Link>
+            )}
+          </div>
 
           <div className="flex-1 lg:hidden" />
 
