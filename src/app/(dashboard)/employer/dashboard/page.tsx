@@ -124,7 +124,12 @@ const formatFieldName = (field: string): string => {
 // Calculate employer profile completeness (basic company info only)
 const calculateProfileCompleteness = (employer: any) => {
   if (!employer) {
-    return { percentage: 0, missingFields: [], completedFields: 0, totalFields: 8 };
+    return {
+      percentage: 0,
+      missingFields: [],
+      completedFields: 0,
+      totalFields: 8,
+    };
   }
 
   // Only basic company profile fields - NOT interview setup items
@@ -151,13 +156,21 @@ const calculateProfileCompleteness = (employer: any) => {
 };
 
 // Calculate interview setup completeness (separate from profile)
-const calculateSetupCompleteness = (employer: any, teamMembersCount: number) => {
+const calculateSetupCompleteness = (
+  employer: any,
+  teamMembersCount: number
+) => {
   const hasTeamMembers = teamMembersCount >= 1;
   const hasVideoConferencing = !!employer?.videoConferencingConnected;
   const hasCalendar = !!employer?.googleCalendarConnected;
   const hasPaymentMethod = !!employer?.stripeCustomerId;
 
-  const completedSteps = [hasTeamMembers, hasVideoConferencing, hasCalendar, hasPaymentMethod].filter(Boolean).length;
+  const completedSteps = [
+    hasTeamMembers,
+    hasVideoConferencing,
+    hasCalendar,
+    hasPaymentMethod,
+  ].filter(Boolean).length;
 
   return {
     hasTeamMembers,
@@ -219,7 +232,12 @@ const getBannerStyle = (percentage: number) => {
 
 export default function EmployerDashboardPage() {
   const { data: session } = useSession();
-  const { data, isLoading, error, refetch: refetchDashboard } = useEmployerDashboard();
+  const {
+    data,
+    isLoading,
+    error,
+    refetch: refetchDashboard,
+  } = useEmployerDashboard();
   const { showToast } = useToast();
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -237,7 +255,9 @@ export default function EmployerDashboardPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const dismissed = localStorage.getItem("employerProfileBannerDismissed");
-      const dismissedAt = localStorage.getItem("employerProfileBannerDismissedAt");
+      const dismissedAt = localStorage.getItem(
+        "employerProfileBannerDismissedAt"
+      );
 
       if (dismissed && dismissedAt) {
         const dismissedTime = new Date(dismissedAt).getTime();
@@ -257,7 +277,10 @@ export default function EmployerDashboardPage() {
   const handleDismissBanner = () => {
     setProfileBannerDismissed(true);
     localStorage.setItem("employerProfileBannerDismissed", "true");
-    localStorage.setItem("employerProfileBannerDismissedAt", new Date().toISOString());
+    localStorage.setItem(
+      "employerProfileBannerDismissedAt",
+      new Date().toISOString()
+    );
   };
 
   // Handle website import
@@ -266,8 +289,8 @@ export default function EmployerDashboardPage() {
 
     // Basic URL validation and normalization
     let url = websiteUrl.trim();
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://' + url;
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
     }
 
     // Validate URL format
@@ -298,7 +321,11 @@ export default function EmployerDashboardPage() {
           companyLogo: parsedData.logo || undefined,
         });
 
-        showToast("success", "Company Info Imported", "Your company profile has been updated!");
+        showToast(
+          "success",
+          "Company Info Imported",
+          "Your company profile has been updated!"
+        );
         setWebsiteUrl("");
 
         // Refresh dashboard data
@@ -308,7 +335,13 @@ export default function EmployerDashboardPage() {
       }
     } catch (error: any) {
       console.error("Website import error:", error);
-      showToast("error", "Import Failed", error.response?.data?.error || error.message || "Failed to import from website. Please try again or edit manually.");
+      showToast(
+        "error",
+        "Import Failed",
+        error.response?.data?.error ||
+          error.message ||
+          "Failed to import from website. Please try again or edit manually."
+      );
     } finally {
       setIsImportingWebsite(false);
     }
@@ -322,7 +355,10 @@ export default function EmployerDashboardPage() {
   // Calculate setup/interview readiness (separate from profile)
   // Note: These fields may not exist yet in the API response, so we use safe defaults
   const employerData = data?.employer as any;
-  const setupData = calculateSetupCompleteness(employerData, employerData?.teamMembersCount || 0);
+  const setupData = calculateSetupCompleteness(
+    employerData,
+    employerData?.teamMembersCount || 0
+  );
   const showSetupCard = setupData.completedSteps < setupData.totalSteps;
 
   const showProfileBanner = isProfileIncomplete && !profileBannerDismissed;
@@ -486,7 +522,9 @@ export default function EmployerDashboardPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <Card className={`relative border-0 bg-gradient-to-r ${bannerStyle.bg} shadow-lg border-l-4 ${bannerStyle.border}`}>
+            <Card
+              className={`relative border-0 bg-gradient-to-r ${bannerStyle.bg} shadow-lg border-l-4 ${bannerStyle.border}`}
+            >
               {/* Dismiss button */}
               <button
                 onClick={handleDismissBanner}
@@ -500,11 +538,17 @@ export default function EmployerDashboardPage() {
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className={`flex h-12 w-12 items-center justify-center rounded-full ${bannerStyle.iconBg}`}>
+                      <div
+                        className={`flex h-12 w-12 items-center justify-center rounded-full ${bannerStyle.iconBg}`}
+                      >
                         {profileCompletionData.percentage < 30 ? (
-                          <AlertTriangle className={`h-6 w-6 ${bannerStyle.iconColor}`} />
+                          <AlertTriangle
+                            className={`h-6 w-6 ${bannerStyle.iconColor}`}
+                          />
                         ) : (
-                          <Building2 className={`h-6 w-6 ${bannerStyle.iconColor}`} />
+                          <Building2
+                            className={`h-6 w-6 ${bannerStyle.iconColor}`}
+                          />
                         )}
                       </div>
                       <div>
@@ -512,7 +556,10 @@ export default function EmployerDashboardPage() {
                           Complete Your Company Profile
                         </h3>
                         <p className="text-sm text-secondary-600">
-                          {profileCompletionData.percentage}% complete ({profileCompletionData.completedFields}/{profileCompletionData.totalFields} fields) • {bannerStyle.message}
+                          {profileCompletionData.percentage}% complete (
+                          {profileCompletionData.completedFields}/
+                          {profileCompletionData.totalFields} fields) •{" "}
+                          {bannerStyle.message}
                         </p>
                       </div>
                     </div>
@@ -526,18 +573,23 @@ export default function EmployerDashboardPage() {
                     {/* Missing fields */}
                     {profileCompletionData.missingFields.length > 0 && (
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs text-secondary-500">Missing:</span>
-                        {profileCompletionData.missingFields.slice(0, 4).map((field: string) => (
-                          <span
-                            key={field}
-                            className={`px-2 py-0.5 ${bannerStyle.tagBg} ${bannerStyle.tagText} text-xs rounded-full`}
-                          >
-                            {formatFieldName(field)}
-                          </span>
-                        ))}
+                        <span className="text-xs text-secondary-500">
+                          Missing:
+                        </span>
+                        {profileCompletionData.missingFields
+                          .slice(0, 4)
+                          .map((field: string) => (
+                            <span
+                              key={field}
+                              className={`px-2 py-0.5 ${bannerStyle.tagBg} ${bannerStyle.tagText} text-xs rounded-full`}
+                            >
+                              {formatFieldName(field)}
+                            </span>
+                          ))}
                         {profileCompletionData.missingFields.length > 4 && (
                           <span className="text-xs text-secondary-500">
-                            +{profileCompletionData.missingFields.length - 4} more
+                            +{profileCompletionData.missingFields.length - 4}{" "}
+                            more
                           </span>
                         )}
                       </div>
@@ -559,7 +611,9 @@ export default function EmployerDashboardPage() {
 
                 {/* Website Import Section */}
                 <div className="flex flex-col sm:flex-row gap-2 items-center pt-4 mt-4 border-t border-orange-200/50">
-                  <span className="text-sm text-secondary-600 whitespace-nowrap">Quick import:</span>
+                  <span className="text-sm text-secondary-600 whitespace-nowrap">
+                    Quick import:
+                  </span>
                   <div className="flex flex-1 gap-2 w-full sm:w-auto">
                     <input
                       type="url"
@@ -567,7 +621,7 @@ export default function EmployerDashboardPage() {
                       value={websiteUrl}
                       onChange={(e) => setWebsiteUrl(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && websiteUrl) {
+                        if (e.key === "Enter" && websiteUrl) {
                           e.preventDefault();
                           handleWebsiteImport();
                         }
@@ -617,71 +671,117 @@ export default function EmployerDashboardPage() {
                       <Briefcase className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-secondary-900">Get Ready to Hire</h3>
-                      <p className="text-sm text-secondary-600">Complete these steps to start interviewing candidates</p>
+                      <h3 className="text-lg font-bold text-secondary-900">
+                        Get Ready to Hire
+                      </h3>
+                      <p className="text-sm text-secondary-600">
+                        Complete these steps to start interviewing candidates
+                      </p>
                     </div>
                   </div>
-                  <span className="text-sm text-secondary-500">{setupData.completedSteps}/{setupData.totalSteps} complete</span>
+                  <span className="text-sm text-secondary-500">
+                    {setupData.completedSteps}/{setupData.totalSteps} complete
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {/* Team Members */}
                   <Link href="/employer/settings" className="block">
-                    <div className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${setupData.hasTeamMembers ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                    <div
+                      className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${
+                        setupData.hasTeamMembers
+                          ? "bg-green-50 border-green-200"
+                          : "bg-white border-gray-200"
+                      }`}
+                    >
                       <div className="flex items-center gap-2 mb-1">
                         {setupData.hasTeamMembers ? (
                           <CheckCircle className="h-4 w-4 text-green-600" />
                         ) : (
                           <Circle className="h-4 w-4 text-gray-300" />
                         )}
-                        <span className="text-sm font-medium">Team Members</span>
+                        <span className="text-sm font-medium">
+                          Team Members
+                        </span>
                       </div>
-                      <p className="text-xs text-secondary-500">Add your hiring team</p>
+                      <p className="text-xs text-secondary-500">
+                        Add your hiring team
+                      </p>
                     </div>
                   </Link>
 
                   {/* Video Conferencing */}
                   <Link href="/employer/settings" className="block">
-                    <div className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${setupData.hasVideoConferencing ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                    <div
+                      className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${
+                        setupData.hasVideoConferencing
+                          ? "bg-green-50 border-green-200"
+                          : "bg-white border-gray-200"
+                      }`}
+                    >
                       <div className="flex items-center gap-2 mb-1">
                         {setupData.hasVideoConferencing ? (
                           <CheckCircle className="h-4 w-4 text-green-600" />
                         ) : (
                           <Circle className="h-4 w-4 text-gray-300" />
                         )}
-                        <span className="text-sm font-medium">Video Conferencing</span>
+                        <span className="text-sm font-medium">
+                          Video Conferencing
+                        </span>
                       </div>
-                      <p className="text-xs text-secondary-500">Connect Zoom or Meet</p>
+                      <p className="text-xs text-secondary-500">
+                        Connect Zoom or Meet
+                      </p>
                     </div>
                   </Link>
 
                   {/* Calendar */}
                   <Link href="/employer/settings" className="block">
-                    <div className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${setupData.hasCalendar ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                    <div
+                      className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${
+                        setupData.hasCalendar
+                          ? "bg-green-50 border-green-200"
+                          : "bg-white border-gray-200"
+                      }`}
+                    >
                       <div className="flex items-center gap-2 mb-1">
                         {setupData.hasCalendar ? (
                           <CheckCircle className="h-4 w-4 text-green-600" />
                         ) : (
                           <Circle className="h-4 w-4 text-gray-300" />
                         )}
-                        <span className="text-sm font-medium">Calendar Sync</span>
+                        <span className="text-sm font-medium">
+                          Calendar Sync
+                        </span>
                       </div>
-                      <p className="text-xs text-secondary-500">Connect Google Calendar</p>
+                      <p className="text-xs text-secondary-500">
+                        Connect Google Calendar
+                      </p>
                     </div>
                   </Link>
 
                   {/* Payment Method */}
                   <Link href="/employer/settings#billing" className="block">
-                    <div className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${setupData.hasPaymentMethod ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                    <div
+                      className={`p-3 rounded-lg border transition-colors hover:border-primary-300 ${
+                        setupData.hasPaymentMethod
+                          ? "bg-green-50 border-green-200"
+                          : "bg-white border-gray-200"
+                      }`}
+                    >
                       <div className="flex items-center gap-2 mb-1">
                         {setupData.hasPaymentMethod ? (
                           <CheckCircle className="h-4 w-4 text-green-600" />
                         ) : (
                           <Circle className="h-4 w-4 text-gray-300" />
                         )}
-                        <span className="text-sm font-medium">Payment Method</span>
+                        <span className="text-sm font-medium">
+                          Payment Method
+                        </span>
                       </div>
-                      <p className="text-xs text-secondary-500">Add billing details</p>
+                      <p className="text-xs text-secondary-500">
+                        Add billing details
+                      </p>
                     </div>
                   </Link>
                 </div>
@@ -711,7 +811,10 @@ export default function EmployerDashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
               >
-                <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary-200 cursor-pointer h-full">
+                <Card
+                  variant="accent"
+                  className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary-200 cursor-pointer h-full"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div
@@ -759,7 +862,10 @@ export default function EmployerDashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card variant="accent" className="border-2 border-primary-100 shadow-lg">
+          <Card
+            variant="accent"
+            className="border-2 border-primary-100 shadow-lg"
+          >
             <CardContent className="p-6">
               <h3 className="text-xl font-bold text-secondary-900 mb-4">
                 Quick Actions
