@@ -25,6 +25,8 @@ import {
   Video,
   Gift,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -82,6 +84,22 @@ export default function DashboardLayout({
   const router = useRouter();
   const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Load collapsed state from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem("sidebarCollapsed");
+    if (stored !== null) {
+      setSidebarCollapsed(stored === "true");
+    }
+  }, []);
+
+  // Persist collapsed state to localStorage
+  const toggleSidebarCollapsed = () => {
+    const newState = !sidebarCollapsed;
+    setSidebarCollapsed(newState);
+    localStorage.setItem("sidebarCollapsed", String(newState));
+  };
 
   // Detect role from pathname or session
   const isEmployer = pathname.startsWith("/employer");
@@ -124,16 +142,21 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 transform bg-white shadow-lg transition-all duration-300 ease-in-out lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } ${sidebarCollapsed ? "lg:w-[70px]" : "lg:w-64"} w-64`}
       >
-        <div className="flex h-full flex-col overflow-y-auto">
-          {/* Logo & Close Button */}
-          <div className="flex h-16 items-center justify-between border-b border-secondary-200 px-6">
+        <div className="flex h-full flex-col overflow-y-auto overflow-x-hidden">
+          {/* Logo & Toggle Button */}
+          <div className={`flex h-16 items-center border-b border-secondary-200 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"}`}>
             <Link href="/" className="flex items-center">
-              <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
+              {sidebarCollapsed ? (
+                <span className="text-lg font-bold text-primary-600">SP</span>
+              ) : (
+                <img src="/logo.png" alt="SkillProof" className="h-8 w-auto" />
+              )}
             </Link>
+            {/* Mobile close button */}
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden"
@@ -141,12 +164,24 @@ export default function DashboardLayout({
             >
               <X className="h-6 w-6 text-secondary-600" />
             </button>
+            {/* Desktop collapse toggle */}
+            <button
+              onClick={toggleSidebarCollapsed}
+              className={`hidden lg:flex items-center justify-center h-8 w-8 rounded-md text-secondary-500 hover:bg-secondary-100 hover:text-secondary-700 transition-colors ${sidebarCollapsed ? "absolute right-2" : ""}`}
+              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {sidebarCollapsed ? (
+                <ChevronRight className="h-5 w-5" />
+              ) : (
+                <ChevronLeft className="h-5 w-5" />
+              )}
+            </button>
           </div>
 
           {/* User Info */}
-          <div className="border-b border-secondary-200 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600">
+          <div className={`border-b border-secondary-200 ${sidebarCollapsed ? "p-3" : "p-6"}`}>
+            <div className={`flex items-center ${sidebarCollapsed ? "justify-center" : "space-x-3"}`}>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600 flex-shrink-0">
                 <span className="text-sm font-semibold">
                   {session.user?.name
                     ? session.user.name
@@ -156,19 +191,21 @@ export default function DashboardLayout({
                     : session.user?.email?.[0].toUpperCase()}
                 </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="truncate text-sm font-medium text-secondary-900">
-                  {session.user?.name || "User"}
-                </p>
-                <p className="truncate text-xs text-secondary-500">
-                  {session.user?.email}
-                </p>
-              </div>
+              {!sidebarCollapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-sm font-medium text-secondary-900">
+                    {session.user?.name || "User"}
+                  </p>
+                  <p className="truncate text-xs text-secondary-500">
+                    {session.user?.email}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 px-3 py-4">
+          <nav className={`flex-1 space-y-1 py-4 ${sidebarCollapsed ? "px-2" : "px-3"}`}>
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -176,35 +213,53 @@ export default function DashboardLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`group relative flex items-center rounded-lg py-2 text-sm font-medium transition-colors ${
+                    sidebarCollapsed ? "justify-center px-2" : "space-x-3 px-3"
+                  } ${
                     isActive
                       ? "bg-primary-50 text-primary-600"
                       : "text-secondary-700 hover:bg-secondary-50"
                   }`}
                   onClick={() => setSidebarOpen(false)}
+                  title={sidebarCollapsed ? item.label : undefined}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.label}</span>
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  {!sidebarCollapsed && <span>{item.label}</span>}
+                  {/* Tooltip for collapsed state */}
+                  {sidebarCollapsed && (
+                    <span className="absolute left-full ml-2 px-2 py-1 text-xs font-medium text-white bg-secondary-800 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity whitespace-nowrap z-50">
+                      {item.label}
+                    </span>
+                  )}
                 </Link>
               );
             })}
           </nav>
 
           {/* Logout */}
-          <div className="border-t border-secondary-200 p-3">
+          <div className={`border-t border-secondary-200 ${sidebarCollapsed ? "p-2" : "p-3"}`}>
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="flex w-full items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+              className={`group relative flex w-full items-center rounded-lg py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 ${
+                sidebarCollapsed ? "justify-center px-2" : "space-x-3 px-3"
+              }`}
+              title={sidebarCollapsed ? "Log Out" : undefined}
             >
-              <LogOut className="h-5 w-5" />
-              <span>Log Out</span>
+              <LogOut className="h-5 w-5 flex-shrink-0" />
+              {!sidebarCollapsed && <span>Log Out</span>}
+              {/* Tooltip for collapsed state */}
+              {sidebarCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 text-xs font-medium text-white bg-secondary-800 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity whitespace-nowrap z-50">
+                  Log Out
+                </span>
+              )}
             </button>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <div className="lg:pl-64">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? "lg:pl-[70px]" : "lg:pl-64"}`}>
         {/* Top Bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-secondary-200 bg-white px-4 shadow-sm lg:px-8">
           <button

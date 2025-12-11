@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Briefcase, Menu, X, User, LogOut, Shield, Search } from "lucide-react";
+import { Briefcase, Menu, X, User, LogOut, Shield, Search, Settings, Receipt, LayoutDashboard, FileText, Award } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
@@ -22,7 +22,22 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
 
   const isCandidate = session?.user?.role === "CANDIDATE";
   const isEmployer = session?.user?.role === "EMPLOYER";
-  const isOnJobsPage = pathname === "/jobs";
+  const isAdmin = session?.user?.role === "ADMIN";
+
+  // Determine logo link based on login state
+  const logoHref = React.useMemo(() => {
+    if (isCandidate) return "/candidate/dashboard";
+    if (isEmployer) return "/employer/dashboard";
+    return "/";
+  }, [isCandidate, isEmployer]);
+
+  // Helper to check if a nav item is active
+  const isNavActive = (href: string) => {
+    if (href === "/candidate/dashboard" || href === "/employer/dashboard") {
+      return pathname === href || pathname === "/candidate" || pathname === "/employer";
+    }
+    return pathname === href || pathname.startsWith(href + "/");
+  };
 
   // Handle scroll effect
   React.useEffect(() => {
@@ -61,18 +76,27 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
 
   // Build navigation based on user role
   const navigation = React.useMemo(() => {
-    // Employer: show only "Find Candidates"
-    if (isEmployer) {
-      return [{ name: "Find Candidates", href: "/employer/search" }];
-    }
-    // Candidate: show only "Find Jobs"
+    // Candidate navigation
     if (isCandidate) {
-      return [{ name: "Find Jobs", href: "/jobs" }];
+      return [
+        { name: "Dashboard", href: "/candidate/dashboard", icon: LayoutDashboard },
+        { name: "Browse Jobs", href: "/jobs", icon: Briefcase },
+        { name: "Skills Assessment", href: "/candidate/assessment", icon: Award },
+        { name: "My Applications", href: "/candidate/applications", icon: FileText },
+      ];
     }
-    // Not logged in: show both "Find Jobs" and "For Employers"
+    // Employer navigation
+    if (isEmployer) {
+      return [
+        { name: "Dashboard", href: "/employer/dashboard", icon: LayoutDashboard },
+        { name: "Find Candidates", href: "/employer/search", icon: Search },
+        { name: "My Jobs", href: "/employer/jobs", icon: Briefcase },
+      ];
+    }
+    // Not logged in: show both "Browse Jobs" and "For Employers"
     return [
-      { name: "Find Jobs", href: "/jobs" },
-      { name: "For Employers", href: "/employers" },
+      { name: "Browse Jobs", href: "/jobs", icon: Briefcase },
+      { name: "For Employers", href: "/employers", icon: null },
     ];
   }, [isCandidate, isEmployer]);
 
@@ -90,7 +114,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link
-            href="/"
+            href={logoHref}
             className="flex items-center transition-opacity hover:opacity-80"
           >
             <Image
@@ -104,22 +128,26 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden items-center gap-8 md:flex">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="flex items-center gap-1.5 text-sm font-medium text-secondary-600 transition-colors hover:text-primary-600"
-              >
-                {item.name === "Find Jobs" && isCandidate && (
-                  <Briefcase className="h-4 w-4" />
-                )}
-                {item.name === "Find Candidates" && isEmployer && (
-                  <Search className="h-4 w-4" />
-                )}
-                {item.name}
-              </Link>
-            ))}
+          <nav className="hidden items-center gap-6 md:flex">
+            {navigation.map((item) => {
+              const isActive = isNavActive(item.href);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-1.5 text-sm font-medium transition-colors",
+                    isActive
+                      ? "text-primary-600"
+                      : "text-secondary-600 hover:text-primary-600"
+                  )}
+                >
+                  {Icon && <Icon className="h-4 w-4" />}
+                  {item.name}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Desktop Actions */}
@@ -136,7 +164,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                 )}
 
                 {/* Show Admin Panel button for admins only */}
-                {session.user?.role === "ADMIN" && (
+                {isAdmin && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -148,16 +176,6 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                       Admin Panel
                     </Link>
                   </Button>
-                )}
-
-                {/* Dashboard Link - shown for candidates on /jobs page */}
-                {isCandidate && isOnJobsPage && (
-                  <Link
-                    href="/candidate/dashboard"
-                    className="text-sm font-medium text-secondary-600 transition-colors hover:text-primary-600"
-                  >
-                    Dashboard
-                  </Link>
                 )}
 
                 {/* User Menu */}
@@ -180,61 +198,47 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                         onClick={() => setUserMenuOpen(false)}
                       />
                       <div className="absolute right-0 z-20 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5">
-                        <Link
-                          href={
-                            session.user?.role === "CANDIDATE"
-                              ? "/candidate/dashboard"
-                              : "/employer/dashboard"
-                          }
-                          className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          Dashboard
-                        </Link>
+                        {/* Candidate Dropdown */}
                         {session.user?.role === "CANDIDATE" && (
-                          <Link
-                            href="/candidate/profile"
-                            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
-                            onClick={() => setUserMenuOpen(false)}
-                          >
-                            My Profile
-                          </Link>
+                          <>
+                            <Link
+                              href="/candidate/profile"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                              onClick={() => setUserMenuOpen(false)}
+                            >
+                              <User className="h-4 w-4" />
+                              My Profile
+                            </Link>
+                            <Link
+                              href="/candidate/settings"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                              onClick={() => setUserMenuOpen(false)}
+                            >
+                              <Settings className="h-4 w-4" />
+                              Settings
+                            </Link>
+                          </>
                         )}
-                        {session.user?.role === "CANDIDATE" && (
-                          <Link
-                            href="/jobs"
-                            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
-                            onClick={() => setUserMenuOpen(false)}
-                          >
-                            Browse Jobs
-                          </Link>
-                        )}
+                        {/* Employer Dropdown */}
                         {session.user?.role === "EMPLOYER" && (
-                          <Link
-                            href="/employer/applicants"
-                            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
-                            onClick={() => setUserMenuOpen(false)}
-                          >
-                            Applicants
-                          </Link>
-                        )}
-                        {session.user?.role === "EMPLOYER" && (
-                          <Link
-                            href="/employer/interviews"
-                            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
-                            onClick={() => setUserMenuOpen(false)}
-                          >
-                            Interviews
-                          </Link>
-                        )}
-                        {session.user?.role === "EMPLOYER" && (
-                          <Link
-                            href="/employer/claim"
-                            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
-                            onClick={() => setUserMenuOpen(false)}
-                          >
-                            Claim Jobs
-                          </Link>
+                          <>
+                            <Link
+                              href="/employer/settings"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                              onClick={() => setUserMenuOpen(false)}
+                            >
+                              <Settings className="h-4 w-4" />
+                              Company Settings
+                            </Link>
+                            <Link
+                              href="/employer/invoices"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                              onClick={() => setUserMenuOpen(false)}
+                            >
+                              <Receipt className="h-4 w-4" />
+                              Invoices
+                            </Link>
+                          </>
                         )}
                         <hr className="my-1 border-secondary-200" />
                         <button
@@ -283,22 +287,26 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
       {mobileMenuOpen && (
         <div className="fixed inset-0 top-16 z-50 bg-white md:hidden">
           <nav className="container flex flex-col space-y-1 py-6">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 rounded-md px-4 py-3 text-base font-medium text-secondary-900 transition-colors hover:bg-secondary-100"
-              >
-                {item.name === "Find Jobs" && isCandidate && (
-                  <Briefcase className="h-5 w-5" />
-                )}
-                {item.name === "Find Candidates" && isEmployer && (
-                  <Search className="h-5 w-5" />
-                )}
-                {item.name}
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              const isActive = isNavActive(item.href);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-2 rounded-md px-4 py-3 text-base font-medium transition-colors",
+                    isActive
+                      ? "bg-primary-50 text-primary-600"
+                      : "text-secondary-900 hover:bg-secondary-100"
+                  )}
+                >
+                  {Icon && <Icon className="h-5 w-5" />}
+                  {item.name}
+                </Link>
+              );
+            })}
 
             <div className="my-4 border-t border-secondary-200" />
 
@@ -316,7 +324,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                   </div>
 
                   {/* Post Job for Employers */}
-                  {session.user?.role === "EMPLOYER" && (
+                  {isEmployer && (
                     <Button
                       variant="primary"
                       className="w-full justify-center"
@@ -332,7 +340,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                   )}
 
                   {/* Admin Panel for Admins */}
-                  {session.user?.role === "ADMIN" && (
+                  {isAdmin && (
                     <Button
                       variant="outline"
                       className="w-full justify-center border-purple-600 text-purple-600 hover:bg-purple-50"
@@ -348,27 +356,8 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                     </Button>
                   )}
 
-                  {/* Dashboard Link */}
-                  <Button
-                    variant="outline"
-                    className="w-full justify-center"
-                    asChild
-                  >
-                    <Link
-                      href={
-                        session.user?.role === "CANDIDATE"
-                          ? "/candidate/dashboard"
-                          : "/employer/dashboard"
-                      }
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <User className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </Link>
-                  </Button>
-
-                  {/* Profile and Browse Jobs for Candidates */}
-                  {session.user?.role === "CANDIDATE" && (
+                  {/* Account Actions for Candidates */}
+                  {isCandidate && (
                     <>
                       <Button
                         variant="outline"
@@ -389,18 +378,18 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                         asChild
                       >
                         <Link
-                          href="/jobs"
+                          href="/candidate/settings"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <Briefcase className="mr-2 h-4 w-4" />
-                          Browse Jobs
+                          <Settings className="mr-2 h-4 w-4" />
+                          Settings
                         </Link>
                       </Button>
                     </>
                   )}
 
-                  {/* Applicants and Claim Jobs for Employers */}
-                  {session.user?.role === "EMPLOYER" && (
+                  {/* Account Actions for Employers */}
+                  {isEmployer && (
                     <>
                       <Button
                         variant="outline"
@@ -408,11 +397,11 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                         asChild
                       >
                         <Link
-                          href="/employer/applicants"
+                          href="/employer/settings"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <User className="mr-2 h-4 w-4" />
-                          Applicants
+                          <Settings className="mr-2 h-4 w-4" />
+                          Company Settings
                         </Link>
                       </Button>
                       <Button
@@ -421,11 +410,11 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                         asChild
                       >
                         <Link
-                          href="/employer/claim"
+                          href="/employer/invoices"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <Briefcase className="mr-2 h-4 w-4" />
-                          Claim Jobs
+                          <Receipt className="mr-2 h-4 w-4" />
+                          Invoices
                         </Link>
                       </Button>
                     </>
