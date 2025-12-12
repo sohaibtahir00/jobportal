@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
-import { Calendar, Building2, MapPin, Award, AlertCircle, Trash2 } from "lucide-react";
+import { Calendar, Building2, MapPin, Award, AlertCircle, Trash2, Home, Building, Laptop } from "lucide-react";
 import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { useWithdrawApplication } from "@/hooks/useApplications";
 import type { Application } from "@/types";
@@ -63,6 +63,24 @@ export function ApplicationCard({ application, onViewDetails, onWithdrawSuccess 
   const jobStatus = application.job?.status;
   const isJobInactive = jobStatus && !["ACTIVE", "DRAFT"].includes(jobStatus);
   const jobStatusBadge = jobStatus ? getJobStatusBadge(jobStatus) : null;
+
+  // Helper function to get remote type display
+  const getRemoteTypeDisplay = () => {
+    const job = application.job as any;
+    const remoteType = job?.remoteType;
+    const isRemote = job?.remote;
+
+    if (remoteType === "REMOTE" || isRemote === true) {
+      return { label: "Remote", icon: Home, color: "text-green-600" };
+    } else if (remoteType === "HYBRID") {
+      return { label: "Hybrid", icon: Laptop, color: "text-blue-600" };
+    } else if (remoteType === "ONSITE") {
+      return { label: "On-site", icon: Building, color: "text-orange-600" };
+    }
+    return null;
+  };
+
+  const remoteTypeDisplay = getRemoteTypeDisplay();
 
   // Helper function to format date
   const formatDate = (dateString: string) => {
@@ -140,11 +158,24 @@ export function ApplicationCard({ application, onViewDetails, onWithdrawSuccess 
             </div>
 
             {/* Job Info */}
-            <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                <span>{application.job?.location || "Location not specified"}</span>
+            <div className="space-y-1 mb-4 text-sm text-gray-600">
+              {/* Location and Remote Type */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{application.job?.location || "Location not specified"}</span>
+                </div>
+                {remoteTypeDisplay && (
+                  <>
+                    <span className="text-gray-400">•</span>
+                    <div className={`flex items-center gap-1 ${remoteTypeDisplay.color}`}>
+                      <remoteTypeDisplay.icon className="h-4 w-4" />
+                      <span>{remoteTypeDisplay.label}</span>
+                    </div>
+                  </>
+                )}
               </div>
+              {/* Applied Date */}
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 <span>Applied {formatDate(application.appliedAt)}</span>
@@ -162,6 +193,12 @@ export function ApplicationCard({ application, onViewDetails, onWithdrawSuccess 
               {application.job?.type && (
                 <Badge variant="outline" size="sm" className="capitalize">
                   {application.job.type.replace(/_/g, " ").toLowerCase()}
+                </Badge>
+              )}
+              {remoteTypeDisplay && (
+                <Badge variant="outline" size="sm" className={`flex items-center gap-1 ${remoteTypeDisplay.color}`}>
+                  <remoteTypeDisplay.icon className="h-3 w-3" />
+                  {remoteTypeDisplay.label}
                 </Badge>
               )}
             </div>

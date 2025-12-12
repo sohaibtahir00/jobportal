@@ -225,6 +225,7 @@ export interface Job {
   status: JobStatus;             // UPPERCASE enum, default: DRAFT
   location: string;              // Required
   remote: boolean;               // CRITICAL: Boolean, NOT "remote" | "hybrid" | "onsite"
+  remoteType: string | null;     // "REMOTE" | "HYBRID" | "ONSITE"
   salaryMin: number | null;      // In dollars (check usage - may be cents)
   salaryMax: number | null;
   experienceLevel: ExperienceLevel; // UPPERCASE enum, required
