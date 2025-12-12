@@ -14,13 +14,25 @@ import {
   AlertTriangle,
   Eye,
   Bug,
-  Users,
   Target,
+  MapPin,
+  Building2,
 } from "lucide-react";
 import { Card, CardContent, Badge, Button, Input } from "@/components/ui";
+import { useJobs } from "@/hooks/useJobs";
 
 export default function CybersecurityJobsPage() {
   const [email, setEmail] = useState("");
+
+  // Fetch real jobs from API filtered by Cybersecurity niche
+  const { data: jobsData, isLoading } = useJobs({
+    niche: "Cybersecurity",
+    limit: 6,
+    page: 1,
+  });
+
+  const jobs = jobsData?.jobs || [];
+  const totalJobs = jobsData?.pagination?.totalCount || 0;
 
   const stats = [
     {
@@ -37,7 +49,7 @@ export default function CybersecurityJobsPage() {
     },
     {
       icon: Briefcase,
-      value: "380+",
+      value: totalJobs > 0 ? `${totalJobs}+` : "380+",
       label: "Open Positions",
       color: "text-primary-600",
     },
@@ -73,36 +85,6 @@ export default function CybersecurityJobsPage() {
       count: 72,
       avgSalary: "$130k - $180k",
       topSkills: ["SIEM", "Forensics", "Threat Hunting"],
-    },
-  ];
-
-  const featuredJobs = [
-    {
-      title: "Senior Application Security Engineer",
-      company: "SecureTech Corp",
-      location: "Remote",
-      salary: "$160k - $210k",
-      type: "Full-time",
-      verified: 22,
-      tags: ["OWASP", "Penetration Testing", "Python"],
-    },
-    {
-      title: "Cloud Security Architect",
-      company: "CloudDefense Inc",
-      location: "Seattle, WA (Hybrid)",
-      salary: "$180k - $240k",
-      type: "Full-time",
-      verified: 16,
-      tags: ["AWS", "Zero Trust", "Kubernetes"],
-    },
-    {
-      title: "Principal Security Researcher",
-      company: "CyberShield Labs",
-      location: "Austin, TX",
-      salary: "$190k - $260k",
-      type: "Full-time",
-      verified: 19,
-      tags: ["Malware Analysis", "Reverse Engineering", "Threat Intelligence"],
     },
   ];
 
@@ -163,10 +145,21 @@ export default function CybersecurityJobsPage() {
     { name: "Security Compliance", icon: Target, count: 76 },
   ];
 
+  // Format salary for display
+  const formatSalary = (min?: number | null, max?: number | null) => {
+    if (!min && !max) return "Competitive";
+    if (min && max) {
+      return `$${Math.round(min / 1000)}k - $${Math.round(max / 1000)}k`;
+    }
+    if (min) return `$${Math.round(min / 1000)}k+`;
+    if (max) return `Up to $${Math.round(max / 1000)}k`;
+    return "Competitive";
+  };
+
   return (
     <div className="min-h-screen bg-secondary-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-red-600 via-primary-600 to-accent-600 py-20 text-white">
+      <div className="bg-gradient-to-br from-primary-600 via-accent-600 to-primary-700 py-20 text-white">
         <div className="container">
           <div className="mx-auto max-w-4xl text-center">
             <div className="mb-6 flex justify-center">
@@ -187,8 +180,8 @@ export default function CybersecurityJobsPage() {
                 className="bg-white text-primary-600 hover:bg-primary-50"
                 asChild
               >
-                <Link href="/jobs?category=cybersecurity">
-                  Browse 380+ Security Jobs
+                <Link href="/jobs?niche=cybersecurity">
+                  Browse {totalJobs > 0 ? `${totalJobs}+` : "380+"} Security Jobs
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -245,8 +238,8 @@ export default function CybersecurityJobsPage() {
               return (
                 <Card key={idx} className="transition-shadow hover:shadow-md cursor-pointer">
                   <CardContent className="p-6 text-center">
-                    <div className="mb-3 flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-red-100">
-                      <Icon className="h-6 w-6 text-red-600" />
+                    <div className="mb-3 flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-primary-100">
+                      <Icon className="h-6 w-6 text-primary-600" />
                     </div>
                     <h3 className="mb-2 font-bold text-secondary-900">
                       {spec.name}
@@ -301,7 +294,7 @@ export default function CybersecurityJobsPage() {
                     className="w-full"
                     asChild
                   >
-                    <Link href={`/jobs?role=${encodeURIComponent(role.title)}`}>
+                    <Link href={`/jobs?search=${encodeURIComponent(role.title)}&niche=cybersecurity`}>
                       View Jobs
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
@@ -313,7 +306,7 @@ export default function CybersecurityJobsPage() {
         </div>
       </div>
 
-      {/* Featured Jobs */}
+      {/* Featured Jobs - Real Data */}
       <div className="py-16">
         <div className="container">
           <div className="mb-12 text-center">
@@ -321,57 +314,90 @@ export default function CybersecurityJobsPage() {
               Featured Security Opportunities
             </h2>
             <p className="text-secondary-600">
-              Handpicked roles from top security companies
+              Latest roles from top security companies
             </p>
           </div>
 
-          <div className="space-y-4">
-            {featuredJobs.map((job, idx) => (
-              <Card key={idx} className="transition-shadow hover:shadow-md">
-                <CardContent className="p-6">
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div className="flex-1">
-                      <div className="mb-2 flex items-center gap-3">
-                        <h3 className="text-xl font-bold text-secondary-900">
-                          {job.title}
-                        </h3>
-                        <Badge variant="success" size="sm">
-                          <CheckCircle2 className="mr-1 h-3 w-3" />
-                          {job.verified} verified
-                        </Badge>
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-6">
+                    <div className="h-6 bg-secondary-200 rounded w-1/3 mb-3"></div>
+                    <div className="h-4 bg-secondary-200 rounded w-1/4 mb-4"></div>
+                    <div className="flex gap-2">
+                      <div className="h-6 bg-secondary-200 rounded w-16"></div>
+                      <div className="h-6 bg-secondary-200 rounded w-16"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : jobs.length > 0 ? (
+            <div className="space-y-4">
+              {jobs.map((job) => (
+                <Card key={job.id} className="transition-shadow hover:shadow-md">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                      <div className="flex-1">
+                        <div className="mb-2 flex items-center gap-3">
+                          <h3 className="text-xl font-bold text-secondary-900">
+                            {job.title}
+                          </h3>
+                          {job.isClaimed && (
+                            <Badge variant="success" size="sm">
+                              <CheckCircle2 className="mr-1 h-3 w-3" />
+                              Verified
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="mb-3 text-secondary-600 flex items-center gap-4">
+                          <span className="flex items-center gap-1">
+                            <Building2 className="h-4 w-4" />
+                            {job.employer?.companyName || "Company"}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            {job.location}
+                          </span>
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {job.skills?.slice(0, 4).map((skill, tagIdx) => (
+                            <Badge key={tagIdx} variant="secondary" size="sm">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                      <p className="mb-3 text-secondary-600">
-                        {job.company} • {job.location}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {job.tags.map((tag, tagIdx) => (
-                          <Badge key={tagIdx} variant="secondary" size="sm">
-                            {tag}
-                          </Badge>
-                        ))}
+                      <div className="flex flex-col gap-3 md:items-end">
+                        <div className="text-xl font-bold text-primary-600">
+                          {formatSalary(job.salaryMin, job.salaryMax)}
+                        </div>
+                        <Button variant="primary" asChild>
+                          <Link href={`/jobs/${job.id}`}>
+                            View Details
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-3 md:items-end">
-                      <div className="text-xl font-bold text-primary-600">
-                        {job.salary}
-                      </div>
-                      <Button variant="primary" asChild>
-                        <Link href={`/jobs/${idx + 1}`}>
-                          View Details
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-secondary-600 mb-4">No Cybersecurity jobs available at the moment.</p>
+              <Button variant="outline" asChild>
+                <Link href="/jobs">Browse All Jobs</Link>
+              </Button>
+            </div>
+          )}
 
           <div className="mt-8 text-center">
             <Button variant="outline" size="lg" asChild>
-              <Link href="/jobs?category=cybersecurity">
-                View All 380+ Security Jobs
+              <Link href="/jobs?niche=cybersecurity">
+                View All {totalJobs > 0 ? `${totalJobs}+` : "380+"} Security Jobs
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -380,7 +406,7 @@ export default function CybersecurityJobsPage() {
       </div>
 
       {/* Required Skills */}
-      <div className="bg-gradient-to-br from-red-50 to-primary-50 py-16">
+      <div className="bg-gradient-to-br from-primary-50 to-accent-50 py-16">
         <div className="container">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-secondary-900">
@@ -395,8 +421,8 @@ export default function CybersecurityJobsPage() {
             {requiredSkills.map((item, idx) => (
               <Card key={idx} className="text-center">
                 <CardContent className="p-4">
-                  <div className="mb-2 flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-red-100">
-                    <Lock className="h-6 w-6 text-red-600" />
+                  <div className="mb-2 flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-primary-100">
+                    <Lock className="h-6 w-6 text-primary-600" />
                   </div>
                   <h3 className="mb-1 font-bold text-secondary-900">
                     {item.skill}
@@ -459,8 +485,8 @@ export default function CybersecurityJobsPage() {
               return (
                 <Card key={idx}>
                   <CardContent className="p-6">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-                      <Icon className="h-6 w-6 text-red-600" />
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-100">
+                      <Icon className="h-6 w-6 text-primary-600" />
                     </div>
                     <h3 className="mb-2 text-xl font-bold text-secondary-900">
                       {item.title}
@@ -502,7 +528,7 @@ export default function CybersecurityJobsPage() {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-gradient-to-br from-red-600 via-primary-600 to-accent-600 py-16 text-white">
+      <div className="bg-gradient-to-br from-primary-600 to-accent-600 py-16 text-white">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold">
