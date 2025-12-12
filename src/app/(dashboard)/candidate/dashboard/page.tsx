@@ -830,7 +830,7 @@ export default function CandidateDashboardPage() {
         >
           <Card
             variant="accent"
-            className="shadow-2xl border-2 border-primary-100"
+            className="border-2 border-primary-100"
           >
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -953,7 +953,7 @@ export default function CandidateDashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
           >
-            <Card variant="accent" className="shadow-2xl">
+            <Card variant="accent">
               <CardContent className="p-6">
                 <h3 className="text-xl font-bold text-secondary-900 mb-4">
                   Application Status Overview
@@ -1027,7 +1027,7 @@ export default function CandidateDashboardPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.9 }}
           >
-            <Card variant="accent" className="shadow-2xl h-full">
+            <Card variant="accent" className="h-full">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-secondary-900">
@@ -1092,7 +1092,7 @@ export default function CandidateDashboardPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.9 }}
           >
-            <Card variant="accent" className="shadow-2xl h-full">
+            <Card variant="accent" className="h-full">
               <CardContent className="p-6">
                 <RecommendedJobsCompact />
               </CardContent>

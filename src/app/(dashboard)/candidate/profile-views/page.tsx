@@ -207,7 +207,7 @@ export default function ProfileViewsPage() {
 
         {/* Profile Views List */}
         {views.length === 0 ? (
-          <Card variant="accent" className="bg-white shadow-lg">
+          <Card variant="accent" className="bg-white">
             <CardContent className="p-12 text-center">
               <Eye className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">

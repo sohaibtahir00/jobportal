@@ -88,7 +88,7 @@ export default function ExclusiveJobsPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12">
         <div className="container">
           <div className="max-w-3xl mx-auto">
-            <Card variant="accent" className="shadow-xl">
+            <Card variant="accent">
               <CardContent className="p-12 text-center">
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-primary-600 to-accent-600 mb-6">
                   <Lock className="w-10 h-10 text-white" />
@@ -165,7 +165,7 @@ export default function ExclusiveJobsPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12">
         <div className="container">
           <div className="max-w-2xl mx-auto">
-            <Card variant="accent" className="shadow-xl">
+            <Card variant="accent">
               <CardContent className="p-12 text-center">
                 <AlertCircle className="w-16 h-16 text-red-600 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-secondary-900 mb-2">
