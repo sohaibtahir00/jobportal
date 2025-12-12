@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   Facebook,
@@ -7,8 +10,10 @@ import {
   Instagram,
   Github,
   Mail,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui";
 
 export interface FooterProps {
   className?: string;
@@ -16,6 +21,37 @@ export interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ className }) => {
   const currentYear = new Date().getFullYear();
+  const { showToast } = useToast();
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/newsletter`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to subscribe");
+      }
+
+      showToast("success", "Subscribed!", "You're now subscribed to our newsletter.");
+      setEmail("");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to subscribe. Please try again.";
+      showToast("error", "Subscription failed", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const footerLinks = {
     forCandidates: [
@@ -139,7 +175,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               <h3 className="mb-3 text-sm font-semibold text-secondary-900">
                 Subscribe to our Newsletter
               </h3>
-              <div className="flex gap-2">
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
                 <div className="relative flex-1">
                   <label htmlFor="footer-newsletter-email" className="sr-only">
                     Email address for newsletter subscription
@@ -148,14 +184,29 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                   <input
                     id="footer-newsletter-email"
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
-                    className="h-10 w-full rounded-md border border-secondary-300 bg-white pl-10 pr-3 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
+                    disabled={isLoading}
+                    required
+                    className="h-10 w-full rounded-md border border-secondary-300 bg-white pl-10 pr-3 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20 disabled:opacity-50"
                   />
                 </div>
-                <button className="h-10 rounded-md bg-gradient-to-r from-primary-600 to-accent-600 px-4 text-sm font-medium text-white transition-colors hover:from-primary-700 hover:to-accent-700">
-                  Subscribe
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="h-10 rounded-md bg-gradient-to-r from-primary-600 to-accent-600 px-4 text-sm font-medium text-white transition-colors hover:from-primary-700 hover:to-accent-700 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>...</span>
+                    </>
+                  ) : (
+                    "Subscribe"
+                  )}
                 </button>
-              </div>
+              </form>
             </div>
           </div>
 
