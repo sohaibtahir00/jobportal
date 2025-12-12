@@ -54,8 +54,19 @@ export default function Home() {
     setIsNewsletterLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/newsletter`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to subscribe");
+      }
 
       showToast(
         "success",
@@ -64,10 +75,11 @@ export default function Home() {
       );
       setEmail(""); // Clear email after successful submission
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "There was a problem subscribing you to our newsletter. Please try again.";
       showToast(
         "error",
         "Subscription failed",
-        "There was a problem subscribing you to our newsletter. Please try again."
+        errorMessage
       );
     } finally {
       setIsNewsletterLoading(false);

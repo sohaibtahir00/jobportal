@@ -90,11 +90,23 @@ function JobsContent() {
     salaryMax: 300000,
   });
 
+  // Map URL niche values to filter niche values
+  const mapNicheFromUrl = (urlNiche: string): string | null => {
+    const mapping: Record<string, string> = {
+      "ai-ml": "AI/ML",
+      "healthcare": "Healthcare IT",
+      "fintech": "FinTech",
+      "cybersecurity": "Cybersecurity",
+    };
+    return mapping[urlNiche.toLowerCase()] || null;
+  };
+
   // Initialize search from URL parameters
   useEffect(() => {
     const search = searchParams.get("search");
     const location = searchParams.get("location");
     const employer = searchParams.get("employerId");
+    const niche = searchParams.get("niche");
 
     if (search) {
       setSearchQuery(search);
@@ -109,6 +121,16 @@ function JobsContent() {
 
     if (employer) {
       setEmployerId(employer);
+    }
+
+    if (niche) {
+      const mappedNiche = mapNicheFromUrl(niche);
+      if (mappedNiche) {
+        setFilters(prev => ({
+          ...prev,
+          niches: [mappedNiche],
+        }));
+      }
     }
   }, [searchParams]);
 
