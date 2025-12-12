@@ -56,7 +56,7 @@ export default function CandidateAssessmentPage() {
       try {
         // First get the candidate profile to get candidateId
         const profileResponse = await api.get("/api/candidates/profile");
-        const profile = profileResponse.data;
+        const profile = profileResponse.data.candidate;
 
         if (!profile?.id) {
           setError("Candidate profile not found. Please complete your profile first.");
