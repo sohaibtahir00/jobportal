@@ -16,7 +16,14 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent, Input, ConfirmationModal } from "@/components/ui";
+import {
+  Button,
+  Badge,
+  Card,
+  CardContent,
+  Input,
+  ConfirmationModal,
+} from "@/components/ui";
 import { api } from "@/lib/api";
 
 export default function CandidateSettingsPage() {
@@ -31,7 +38,8 @@ export default function CandidateSettingsPage() {
 
   // Delete account modal state
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
-  const [deleteAccountConfirmModal, setDeleteAccountConfirmModal] = useState(false);
+  const [deleteAccountConfirmModal, setDeleteAccountConfirmModal] =
+    useState(false);
 
   // Form state
   const [profileData, setProfileData] = useState({
@@ -97,21 +105,29 @@ export default function CandidateSettingsPage() {
 
         if (settingsData.settings) {
           setNotificationSettings({
-            emailNotifications: settingsData.settings.emailNotifications ?? true,
+            emailNotifications:
+              settingsData.settings.emailNotifications ?? true,
             jobAlerts: settingsData.settings.notifyJobAlerts ?? true,
-            applicationUpdates: settingsData.settings.notifyApplicationUpdates ?? true,
+            applicationUpdates:
+              settingsData.settings.notifyApplicationUpdates ?? true,
             messages: settingsData.settings.notifyMessages ?? true,
-            interviewReminders: settingsData.settings.notifyInterviewReminders ?? true,
-            placementUpdates: settingsData.settings.notifyPlacementUpdates ?? true,
+            interviewReminders:
+              settingsData.settings.notifyInterviewReminders ?? true,
+            placementUpdates:
+              settingsData.settings.notifyPlacementUpdates ?? true,
             weeklyDigest: settingsData.settings.notifyWeeklyDigest ?? false,
-            marketingEmails: settingsData.settings.notifyMarketingEmails ?? false,
+            marketingEmails:
+              settingsData.settings.notifyMarketingEmails ?? false,
           });
 
           setPrivacySettings({
-            profileVisibility: settingsData.settings.profileVisibility ? "public" : "private",
+            profileVisibility: settingsData.settings.profileVisibility
+              ? "public"
+              : "private",
             showEmail: profileData.candidate.showEmail ?? false,
             showPhone: profileData.candidate.showPhone ?? false,
-            allowRecruiterContact: settingsData.settings.allowRecruiterContact ?? true,
+            allowRecruiterContact:
+              settingsData.settings.allowRecruiterContact ?? true,
           });
         }
 
@@ -157,7 +173,10 @@ export default function CandidateSettingsPage() {
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Failed to update profile:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to update profile. Please try again.");
+      setErrorMessage(
+        err.response?.data?.error ||
+          "Failed to update profile. Please try again."
+      );
       setIsSaving(false);
     }
   };
@@ -196,7 +215,10 @@ export default function CandidateSettingsPage() {
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Failed to update password:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to update password. Please try again.");
+      setErrorMessage(
+        err.response?.data?.error ||
+          "Failed to update password. Please try again."
+      );
       setIsSaving(false);
     }
   };
@@ -225,7 +247,9 @@ export default function CandidateSettingsPage() {
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Failed to update preferences:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to update preferences.");
+      setErrorMessage(
+        err.response?.data?.error || "Failed to update preferences."
+      );
       setIsSaving(false);
     }
   };
@@ -255,7 +279,9 @@ export default function CandidateSettingsPage() {
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Failed to update privacy settings:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to update privacy settings.");
+      setErrorMessage(
+        err.response?.data?.error || "Failed to update privacy settings."
+      );
       setIsSaving(false);
     }
   };
@@ -311,8 +337,12 @@ export default function CandidateSettingsPage() {
         <div className="mx-auto max-w-4xl">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="mb-2 text-3xl font-bold text-secondary-900">Settings</h1>
-            <p className="text-secondary-600">Manage your account settings and preferences</p>
+            <h1 className="mb-2 text-3xl font-bold text-secondary-900">
+              Settings
+            </h1>
+            <p className="text-secondary-600">
+              Manage your account settings and preferences
+            </p>
           </div>
 
           {/* Success/Error Messages */}
@@ -339,25 +369,35 @@ export default function CandidateSettingsPage() {
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <User className="h-6 w-6 text-primary-600" />
-                <h2 className="text-xl font-bold text-secondary-900">Profile Information</h2>
+                <h2 className="text-xl font-bold text-secondary-900">
+                  Profile Information
+                </h2>
               </div>
 
               <form onSubmit={handleProfileSubmit}>
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="name" className="mb-2 block text-sm font-medium text-secondary-700">
+                    <label
+                      htmlFor="name"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
                       Full Name
                     </label>
                     <Input
                       id="name"
                       value={profileData.name}
-                      onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                      onChange={(e) =>
+                        setProfileData({ ...profileData, name: e.target.value })
+                      }
                       required
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="mb-2 block text-sm font-medium text-secondary-700">
+                    <label
+                      htmlFor="email"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
                       Email Address
                     </label>
                     <Input
@@ -373,30 +413,51 @@ export default function CandidateSettingsPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="phone" className="mb-2 block text-sm font-medium text-secondary-700">
+                    <label
+                      htmlFor="phone"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
                       Phone Number
                     </label>
                     <Input
                       id="phone"
                       type="tel"
                       value={profileData.phone}
-                      onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                      onChange={(e) =>
+                        setProfileData({
+                          ...profileData,
+                          phone: e.target.value,
+                        })
+                      }
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="location" className="mb-2 block text-sm font-medium text-secondary-700">
+                    <label
+                      htmlFor="location"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
                       Location
                     </label>
                     <Input
                       id="location"
                       value={profileData.location}
-                      onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
+                      onChange={(e) =>
+                        setProfileData({
+                          ...profileData,
+                          location: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
 
-                <Button type="submit" variant="primary" className="mt-6" disabled={isSaving}>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="mt-6"
+                  disabled={isSaving}
+                >
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -418,13 +479,18 @@ export default function CandidateSettingsPage() {
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <Lock className="h-6 w-6 text-primary-600" />
-                <h2 className="text-xl font-bold text-secondary-900">Change Password</h2>
+                <h2 className="text-xl font-bold text-secondary-900">
+                  Change Password
+                </h2>
               </div>
 
               <form onSubmit={handlePasswordSubmit}>
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="currentPassword" className="mb-2 block text-sm font-medium text-secondary-700">
+                    <label
+                      htmlFor="currentPassword"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
                       Current Password
                     </label>
                     <div className="relative">
@@ -433,22 +499,34 @@ export default function CandidateSettingsPage() {
                         type={showCurrentPassword ? "text" : "password"}
                         value={passwordData.currentPassword}
                         onChange={(e) =>
-                          setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                          setPasswordData({
+                            ...passwordData,
+                            currentPassword: e.target.value,
+                          })
                         }
                         required
                       />
                       <button
                         type="button"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        onClick={() =>
+                          setShowCurrentPassword(!showCurrentPassword)
+                        }
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-600"
                       >
-                        {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showCurrentPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
                       </button>
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="newPassword" className="mb-2 block text-sm font-medium text-secondary-700">
+                    <label
+                      htmlFor="newPassword"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
                       New Password
                     </label>
                     <div className="relative">
@@ -457,7 +535,10 @@ export default function CandidateSettingsPage() {
                         type={showNewPassword ? "text" : "password"}
                         value={passwordData.newPassword}
                         onChange={(e) =>
-                          setPasswordData({ ...passwordData, newPassword: e.target.value })
+                          setPasswordData({
+                            ...passwordData,
+                            newPassword: e.target.value,
+                          })
                         }
                         required
                       />
@@ -466,14 +547,23 @@ export default function CandidateSettingsPage() {
                         onClick={() => setShowNewPassword(!showNewPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-600"
                       >
-                        {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showNewPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
                       </button>
                     </div>
-                    <p className="mt-1 text-xs text-secondary-500">Must be at least 8 characters</p>
+                    <p className="mt-1 text-xs text-secondary-500">
+                      Must be at least 8 characters
+                    </p>
                   </div>
 
                   <div>
-                    <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-secondary-700">
+                    <label
+                      htmlFor="confirmPassword"
+                      className="mb-2 block text-sm font-medium text-secondary-700"
+                    >
                       Confirm New Password
                     </label>
                     <Input
@@ -481,14 +571,22 @@ export default function CandidateSettingsPage() {
                       type="password"
                       value={passwordData.confirmPassword}
                       onChange={(e) =>
-                        setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                        setPasswordData({
+                          ...passwordData,
+                          confirmPassword: e.target.value,
+                        })
                       }
                       required
                     />
                   </div>
                 </div>
 
-                <Button type="submit" variant="primary" className="mt-6" disabled={isSaving}>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="mt-6"
+                  disabled={isSaving}
+                >
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -507,15 +605,21 @@ export default function CandidateSettingsPage() {
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <Bell className="h-6 w-6 text-primary-600" />
-                <h2 className="text-xl font-bold text-secondary-900">Notification Preferences</h2>
+                <h2 className="text-xl font-bold text-secondary-900">
+                  Notification Preferences
+                </h2>
               </div>
 
               <form onSubmit={handleNotificationSubmit}>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-secondary-900">Email Notifications</p>
-                      <p className="text-sm text-secondary-600">Receive email updates</p>
+                      <p className="font-medium text-secondary-900">
+                        Email Notifications
+                      </p>
+                      <p className="text-sm text-secondary-600">
+                        Receive email updates
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -532,8 +636,12 @@ export default function CandidateSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-secondary-900">Job Alerts</p>
-                      <p className="text-sm text-secondary-600">Get notified about new matching jobs</p>
+                      <p className="font-medium text-secondary-900">
+                        Job Alerts
+                      </p>
+                      <p className="text-sm text-secondary-600">
+                        Get notified about new matching jobs
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -550,8 +658,12 @@ export default function CandidateSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-secondary-900">Application Updates</p>
-                      <p className="text-sm text-secondary-600">Status changes on your applications</p>
+                      <p className="font-medium text-secondary-900">
+                        Application Updates
+                      </p>
+                      <p className="text-sm text-secondary-600">
+                        Status changes on your applications
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -569,7 +681,9 @@ export default function CandidateSettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-secondary-900">Messages</p>
-                      <p className="text-sm text-secondary-600">New messages from employers</p>
+                      <p className="text-sm text-secondary-600">
+                        New messages from employers
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -586,8 +700,12 @@ export default function CandidateSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-secondary-900">Interview Reminders</p>
-                      <p className="text-sm text-secondary-600">Reminders for upcoming interviews</p>
+                      <p className="font-medium text-secondary-900">
+                        Interview Reminders
+                      </p>
+                      <p className="text-sm text-secondary-600">
+                        Reminders for upcoming interviews
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -604,8 +722,12 @@ export default function CandidateSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-secondary-900">Placement Updates</p>
-                      <p className="text-sm text-secondary-600">Updates about your placements</p>
+                      <p className="font-medium text-secondary-900">
+                        Placement Updates
+                      </p>
+                      <p className="text-sm text-secondary-600">
+                        Updates about your placements
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -622,8 +744,12 @@ export default function CandidateSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-secondary-900">Weekly Digest</p>
-                      <p className="text-sm text-secondary-600">Weekly summary of activity</p>
+                      <p className="font-medium text-secondary-900">
+                        Weekly Digest
+                      </p>
+                      <p className="text-sm text-secondary-600">
+                        Weekly summary of activity
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -640,8 +766,12 @@ export default function CandidateSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-secondary-900">Marketing Emails</p>
-                      <p className="text-sm text-secondary-600">Tips, resources, and updates</p>
+                      <p className="font-medium text-secondary-900">
+                        Marketing Emails
+                      </p>
+                      <p className="text-sm text-secondary-600">
+                        Tips, resources, and updates
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -657,7 +787,12 @@ export default function CandidateSettingsPage() {
                   </div>
                 </div>
 
-                <Button type="submit" variant="primary" className="mt-6" disabled={isSaving}>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="mt-6"
+                  disabled={isSaving}
+                >
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -676,7 +811,9 @@ export default function CandidateSettingsPage() {
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <Eye className="h-6 w-6 text-primary-600" />
-                <h2 className="text-xl font-bold text-secondary-900">Privacy Settings</h2>
+                <h2 className="text-xl font-bold text-secondary-900">
+                  Privacy Settings
+                </h2>
               </div>
 
               <form onSubmit={handlePrivacySubmit}>
@@ -695,15 +832,23 @@ export default function CandidateSettingsPage() {
                       }
                       className="w-full rounded-lg border border-secondary-300 px-4 py-2 focus:border-primary-600 focus:outline-none"
                     >
-                      <option value="public">Public - Visible to all employers</option>
-                      <option value="private">Private - Only visible when you apply</option>
+                      <option value="public">
+                        Public - Visible to all employers
+                      </option>
+                      <option value="private">
+                        Private - Only visible when you apply
+                      </option>
                     </select>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-secondary-900">Show Email</p>
-                      <p className="text-sm text-secondary-600">Display email on public profile</p>
+                      <p className="font-medium text-secondary-900">
+                        Show Email
+                      </p>
+                      <p className="text-sm text-secondary-600">
+                        Display email on public profile
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -720,8 +865,12 @@ export default function CandidateSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-secondary-900">Show Phone</p>
-                      <p className="text-sm text-secondary-600">Display phone on public profile</p>
+                      <p className="font-medium text-secondary-900">
+                        Show Phone
+                      </p>
+                      <p className="text-sm text-secondary-600">
+                        Display phone on public profile
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -738,8 +887,12 @@ export default function CandidateSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-secondary-900">Allow Recruiter Contact</p>
-                      <p className="text-sm text-secondary-600">Let employers reach out directly</p>
+                      <p className="font-medium text-secondary-900">
+                        Allow Recruiter Contact
+                      </p>
+                      <p className="text-sm text-secondary-600">
+                        Let employers reach out directly
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -755,7 +908,12 @@ export default function CandidateSettingsPage() {
                   </div>
                 </div>
 
-                <Button type="submit" variant="primary" className="mt-6" disabled={isSaving}>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="mt-6"
+                  disabled={isSaving}
+                >
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -772,9 +930,12 @@ export default function CandidateSettingsPage() {
           {/* Danger Zone */}
           <Card className="border-2 border-red-200">
             <CardContent className="p-6">
-              <h2 className="mb-4 text-xl font-bold text-red-600">Danger Zone</h2>
+              <h2 className="mb-4 text-xl font-bold text-red-600">
+                Danger Zone
+              </h2>
               <p className="mb-4 text-sm text-secondary-600">
-                Once you delete your account, there is no going back. Please be certain.
+                Once you delete your account, there is no going back. Please be
+                certain.
               </p>
               <Button
                 variant="outline"

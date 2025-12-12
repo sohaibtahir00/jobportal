@@ -27,7 +27,15 @@ import {
   CreditCard,
 } from "lucide-react";
 import Link from "next/link";
-import { Button, Badge, Card, CardContent, Input, ConfirmationModal, useToast } from "@/components/ui";
+import {
+  Button,
+  Badge,
+  Card,
+  CardContent,
+  Input,
+  ConfirmationModal,
+  useToast,
+} from "@/components/ui";
 import { api } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -44,12 +52,21 @@ export default function EmployerSettingsPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
 
   // Confirmation modal states
-  const [deleteMemberModal, setDeleteMemberModal] = useState<{ isOpen: boolean; memberId: string | null; memberName: string }>({ isOpen: false, memberId: null, memberName: "" });
+  const [deleteMemberModal, setDeleteMemberModal] = useState<{
+    isOpen: boolean;
+    memberId: string | null;
+    memberName: string;
+  }>({ isOpen: false, memberId: null, memberName: "" });
   const [disconnectVideoModal, setDisconnectVideoModal] = useState(false);
   const [disconnectCalendarModal, setDisconnectCalendarModal] = useState(false);
-  const [deleteTemplateModal, setDeleteTemplateModal] = useState<{ isOpen: boolean; templateId: string | null; templateName: string }>({ isOpen: false, templateId: null, templateName: "" });
+  const [deleteTemplateModal, setDeleteTemplateModal] = useState<{
+    isOpen: boolean;
+    templateId: string | null;
+    templateName: string;
+  }>({ isOpen: false, templateId: null, templateName: "" });
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
-  const [deleteAccountConfirmModal, setDeleteAccountConfirmModal] = useState(false);
+  const [deleteAccountConfirmModal, setDeleteAccountConfirmModal] =
+    useState(false);
 
   // Form state
   const [profileData, setProfileData] = useState({
@@ -147,12 +164,17 @@ export default function EmployerSettingsPage() {
 
         if (settingsData.settings) {
           setNotificationSettings({
-            emailNotifications: settingsData.settings.emailNotifications ?? true,
-            newApplications: settingsData.settings.notifyNewApplications ?? true,
-            interviewReminders: settingsData.settings.notifyInterviewReminders ?? true,
+            emailNotifications:
+              settingsData.settings.emailNotifications ?? true,
+            newApplications:
+              settingsData.settings.notifyNewApplications ?? true,
+            interviewReminders:
+              settingsData.settings.notifyInterviewReminders ?? true,
             messages: settingsData.settings.notifyMessages ?? true,
-            placementUpdates: settingsData.settings.notifyPlacementUpdates ?? true,
-            marketingEmails: settingsData.settings.notifyMarketingEmails ?? false,
+            placementUpdates:
+              settingsData.settings.notifyPlacementUpdates ?? true,
+            marketingEmails:
+              settingsData.settings.notifyMarketingEmails ?? false,
           });
         }
 
@@ -165,7 +187,9 @@ export default function EmployerSettingsPage() {
 
         // Load video integration
         try {
-          const videoResponse = await api.get("/api/employer/integrations/video");
+          const videoResponse = await api.get(
+            "/api/employer/integrations/video"
+          );
           setVideoIntegration(videoResponse.data.integration);
         } catch (err) {
           // No integration yet, that's fine
@@ -174,7 +198,9 @@ export default function EmployerSettingsPage() {
 
         // Load Google Calendar integration
         try {
-          const calendarResponse = await api.get("/api/employer/integrations/google-calendar/status");
+          const calendarResponse = await api.get(
+            "/api/employer/integrations/google-calendar/status"
+          );
           if (calendarResponse.data.connected) {
             setCalendarIntegration({
               connected: true,
@@ -190,7 +216,9 @@ export default function EmployerSettingsPage() {
 
         // Load interview templates
         try {
-          const templatesResponse = await api.get("/api/employer/interview-templates");
+          const templatesResponse = await api.get(
+            "/api/employer/interview-templates"
+          );
           setTemplates(templatesResponse.data.templates || []);
         } catch (err) {
           console.error("Failed to load templates:", err);
@@ -254,7 +282,7 @@ export default function EmployerSettingsPage() {
       });
 
       // Invalidate the employer dashboard query to trigger refresh
-      queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ["employer-dashboard"] });
 
       setSuccessMessage("Profile updated successfully!");
       setIsSaving(false);
@@ -327,7 +355,9 @@ export default function EmployerSettingsPage() {
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Failed to update preferences:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to update preferences");
+      setErrorMessage(
+        err.response?.data?.error || "Failed to update preferences"
+      );
       setIsSaving(false);
     }
   };
@@ -348,7 +378,7 @@ export default function EmployerSettingsPage() {
       setShowAddMember(false);
       setSuccessMessage("Team member added successfully!");
       // Invalidate the employer dashboard query to update banner
-      queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ["employer-dashboard"] });
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Failed to add team member:", err);
@@ -365,12 +395,20 @@ export default function EmployerSettingsPage() {
     try {
       await api.delete(`/api/employer/team-members?id=${id}`);
       setTeamMembers(teamMembers.filter((m) => m.id !== id));
-      showToast("success", "Member Removed", "Team member removed successfully!");
+      showToast(
+        "success",
+        "Member Removed",
+        "Team member removed successfully!"
+      );
       // Invalidate the employer dashboard query to update banner
-      queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ["employer-dashboard"] });
     } catch (err: any) {
       console.error("Failed to delete team member:", err);
-      showToast("error", "Error", err.response?.data?.error || "Failed to delete team member");
+      showToast(
+        "error",
+        "Error",
+        err.response?.data?.error || "Failed to delete team member"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -386,7 +424,9 @@ export default function EmployerSettingsPage() {
     }
 
     const redirectUri = `${backendUrl}/api/employer/integrations/zoom/callback`;
-    const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${employerId}`;
+    const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}&state=${employerId}`;
     window.location.href = authUrl;
   };
 
@@ -402,7 +442,11 @@ export default function EmployerSettingsPage() {
     const redirectUri = `${backendUrl}/api/employer/integrations/google-meet/callback`;
     const scope =
       "https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email";
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${employerId}&access_type=offline&prompt=consent`;
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}&scope=${encodeURIComponent(
+      scope
+    )}&state=${employerId}&access_type=offline&prompt=consent`;
     window.location.href = authUrl;
   };
 
@@ -413,12 +457,20 @@ export default function EmployerSettingsPage() {
     try {
       await api.delete("/api/employer/integrations/video");
       setVideoIntegration(null);
-      showToast("success", "Disconnected", "Video integration disconnected successfully!");
+      showToast(
+        "success",
+        "Disconnected",
+        "Video integration disconnected successfully!"
+      );
       // Invalidate the employer dashboard query to update banner
-      queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ["employer-dashboard"] });
     } catch (err: any) {
       console.error("Failed to disconnect video integration:", err);
-      showToast("error", "Error", err.response?.data?.error || "Failed to disconnect integration");
+      showToast(
+        "error",
+        "Error",
+        err.response?.data?.error || "Failed to disconnect integration"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -431,12 +483,20 @@ export default function EmployerSettingsPage() {
     try {
       await api.delete("/api/employer/integrations/google-calendar/disconnect");
       setCalendarIntegration(null);
-      showToast("success", "Disconnected", "Google Calendar disconnected successfully!");
+      showToast(
+        "success",
+        "Disconnected",
+        "Google Calendar disconnected successfully!"
+      );
       // Invalidate the employer dashboard query to update banner
-      queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ["employer-dashboard"] });
     } catch (err: any) {
       console.error("Failed to disconnect Google Calendar:", err);
-      showToast("error", "Error", err.response?.data?.error || "Failed to disconnect calendar");
+      showToast(
+        "error",
+        "Error",
+        err.response?.data?.error || "Failed to disconnect calendar"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -519,10 +579,18 @@ export default function EmployerSettingsPage() {
     try {
       await api.delete(`/api/employer/interview-templates/${templateId}`);
       setTemplates(templates.filter((t) => t.id !== templateId));
-      showToast("success", "Template Deleted", "Template deleted successfully!");
+      showToast(
+        "success",
+        "Template Deleted",
+        "Template deleted successfully!"
+      );
     } catch (err: any) {
       console.error("Failed to delete template:", err);
-      showToast("error", "Error", err.response?.data?.error || "Failed to delete template");
+      showToast(
+        "error",
+        "Error",
+        err.response?.data?.error || "Failed to delete template"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -587,7 +655,11 @@ export default function EmployerSettingsPage() {
       router.push("/");
     } catch (err: any) {
       console.error("Failed to delete account:", err);
-      showToast("error", "Error", err.response?.data?.error || "Failed to delete account");
+      showToast(
+        "error",
+        "Error",
+        err.response?.data?.error || "Failed to delete account"
+      );
       setIsSaving(false);
     }
   };
@@ -615,13 +687,22 @@ export default function EmployerSettingsPage() {
       if (response.data.customerId) {
         setHasStripeCustomer(true);
         setStripeCustomerId(response.data.customerId);
-        showToast("success", "Billing Set Up", "Your billing account has been set up successfully!");
+        showToast(
+          "success",
+          "Billing Set Up",
+          "Your billing account has been set up successfully!"
+        );
         // Invalidate the employer dashboard query to update banner
-        queryClient.invalidateQueries({ queryKey: ['employer-dashboard'] });
+        queryClient.invalidateQueries({ queryKey: ["employer-dashboard"] });
       }
     } catch (err: any) {
       console.error("Failed to set up billing:", err);
-      showToast("error", "Error", err.response?.data?.error || "Failed to set up billing. Please try again.");
+      showToast(
+        "error",
+        "Error",
+        err.response?.data?.error ||
+          "Failed to set up billing. Please try again."
+      );
     } finally {
       setIsSettingUpBilling(false);
     }
@@ -714,7 +795,10 @@ export default function EmployerSettingsPage() {
                       type="email"
                       value={profileData.email}
                       onChange={(e) =>
-                        setProfileData({ ...profileData, email: e.target.value })
+                        setProfileData({
+                          ...profileData,
+                          email: e.target.value,
+                        })
                       }
                       placeholder="company@example.com"
                     />
@@ -727,7 +811,10 @@ export default function EmployerSettingsPage() {
                     <Input
                       value={profileData.phone}
                       onChange={(e) =>
-                        setProfileData({ ...profileData, phone: e.target.value })
+                        setProfileData({
+                          ...profileData,
+                          phone: e.target.value,
+                        })
                       }
                       placeholder="+1 (555) 123-4567"
                     />
@@ -879,7 +966,9 @@ export default function EmployerSettingsPage() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
                     >
                       {showCurrentPassword ? (
@@ -1053,7 +1142,8 @@ export default function EmployerSettingsPage() {
               {teamMembers.length === 0 ? (
                 <div className="rounded-lg border-2 border-dashed border-secondary-200 bg-secondary-50 p-8 text-center">
                   <p className="text-secondary-600">
-                    No team members added yet. Add team members who will conduct interviews.
+                    No team members added yet. Add team members who will conduct
+                    interviews.
                   </p>
                 </div>
               ) : (
@@ -1064,15 +1154,27 @@ export default function EmployerSettingsPage() {
                       className="flex items-center justify-between rounded-lg border border-secondary-200 p-4"
                     >
                       <div>
-                        <h3 className="font-semibold text-secondary-900">{member.name}</h3>
-                        <p className="text-sm text-secondary-600">{member.email}</p>
+                        <h3 className="font-semibold text-secondary-900">
+                          {member.name}
+                        </h3>
+                        <p className="text-sm text-secondary-600">
+                          {member.email}
+                        </p>
                         {member.title && (
-                          <p className="text-sm text-secondary-500">{member.title}</p>
+                          <p className="text-sm text-secondary-500">
+                            {member.title}
+                          </p>
                         )}
                       </div>
                       <Button
                         variant="outline"
-                        onClick={() => setDeleteMemberModal({ isOpen: true, memberId: member.id, memberName: member.name })}
+                        onClick={() =>
+                          setDeleteMemberModal({
+                            isOpen: true,
+                            memberId: member.id,
+                            memberName: member.name,
+                          })
+                        }
                         disabled={isSaving}
                         className="border-error-300 text-error-600 hover:bg-error-50"
                       >
@@ -1091,7 +1193,9 @@ export default function EmployerSettingsPage() {
               <Card className="w-full max-w-md">
                 <CardContent className="p-6">
                   <div className="mb-6 flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-secondary-900">Add Team Member</h3>
+                    <h3 className="text-lg font-bold text-secondary-900">
+                      Add Team Member
+                    </h3>
                     <button
                       onClick={() => {
                         setShowAddMember(false);
@@ -1111,7 +1215,9 @@ export default function EmployerSettingsPage() {
                       </label>
                       <Input
                         value={newMember.name}
-                        onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                        onChange={(e) =>
+                          setNewMember({ ...newMember, name: e.target.value })
+                        }
                         placeholder="John Doe"
                         disabled={isSaving}
                       />
@@ -1123,7 +1229,9 @@ export default function EmployerSettingsPage() {
                       <Input
                         type="email"
                         value={newMember.email}
-                        onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                        onChange={(e) =>
+                          setNewMember({ ...newMember, email: e.target.value })
+                        }
                         placeholder="john@company.com"
                         disabled={isSaving}
                       />
@@ -1134,7 +1242,9 @@ export default function EmployerSettingsPage() {
                       </label>
                       <Input
                         value={newMember.title}
-                        onChange={(e) => setNewMember({ ...newMember, title: e.target.value })}
+                        onChange={(e) =>
+                          setNewMember({ ...newMember, title: e.target.value })
+                        }
                         placeholder="Engineering Manager"
                         disabled={isSaving}
                       />
@@ -1186,7 +1296,8 @@ export default function EmployerSettingsPage() {
                     Video Conferencing
                   </h2>
                   <p className="text-sm text-secondary-600">
-                    Connect your video conferencing accounts to auto-generate meeting links
+                    Connect your video conferencing accounts to auto-generate
+                    meeting links
                   </p>
                 </div>
               </div>
@@ -1205,7 +1316,9 @@ export default function EmployerSettingsPage() {
                           ✓ Connected as {videoIntegration.email}
                         </p>
                       ) : (
-                        <p className="text-sm text-secondary-500">Not connected</p>
+                        <p className="text-sm text-secondary-500">
+                          Not connected
+                        </p>
                       )}
                     </div>
                   </div>
@@ -1232,7 +1345,8 @@ export default function EmployerSettingsPage() {
                       onClick={connectZoom}
                       disabled={
                         isSaving ||
-                        (videoIntegration && videoIntegration.platform !== "ZOOM")
+                        (videoIntegration &&
+                          videoIntegration.platform !== "ZOOM")
                       }
                     >
                       <ExternalLink className="mr-2 h-4 w-4" />
@@ -1250,13 +1364,17 @@ export default function EmployerSettingsPage() {
                       <Video className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-secondary-900">Google Meet</h3>
+                      <h3 className="font-semibold text-secondary-900">
+                        Google Meet
+                      </h3>
                       {videoIntegration?.platform === "GOOGLE_MEET" ? (
                         <p className="text-sm text-success-600">
                           ✓ Connected as {videoIntegration.email}
                         </p>
                       ) : (
-                        <p className="text-sm text-secondary-500">Not connected</p>
+                        <p className="text-sm text-secondary-500">
+                          Not connected
+                        </p>
                       )}
                     </div>
                   </div>
@@ -1296,9 +1414,9 @@ export default function EmployerSettingsPage() {
 
               <div className="mt-4 rounded-lg bg-blue-50 border border-blue-200 p-4">
                 <p className="text-sm text-blue-800">
-                  💡 <strong>Tip:</strong> Connect Zoom or Google Meet to automatically generate
-                  meeting links when scheduling interviews. You can only connect one platform at a
-                  time.
+                  💡 <strong>Tip:</strong> Connect Zoom or Google Meet to
+                  automatically generate meeting links when scheduling
+                  interviews. You can only connect one platform at a time.
                 </p>
               </div>
             </CardContent>
@@ -1316,7 +1434,8 @@ export default function EmployerSettingsPage() {
                     Google Calendar Integration
                   </h2>
                   <p className="text-sm text-secondary-600">
-                    Sync your calendar to prevent double-booking when scheduling interviews
+                    Sync your calendar to prevent double-booking when scheduling
+                    interviews
                   </p>
                 </div>
               </div>
@@ -1328,13 +1447,17 @@ export default function EmployerSettingsPage() {
                       <Calendar className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-secondary-900">Google Calendar</h3>
+                      <h3 className="font-semibold text-secondary-900">
+                        Google Calendar
+                      </h3>
                       {calendarIntegration?.connected ? (
                         <p className="text-sm text-success-600">
                           ✓ Connected as {calendarIntegration.email}
                         </p>
                       ) : (
-                        <p className="text-sm text-secondary-500">Not connected</p>
+                        <p className="text-sm text-secondary-500">
+                          Not connected
+                        </p>
                       )}
                     </div>
                   </div>
@@ -1360,7 +1483,8 @@ export default function EmployerSettingsPage() {
                       variant="primary"
                       onClick={() => {
                         // Use frontend proxy route which adds auth headers
-                        window.location.href = '/api/employer/integrations/google-calendar/oauth';
+                        window.location.href =
+                          "/api/employer/integrations/google-calendar/oauth";
                       }}
                       disabled={isSaving}
                     >
@@ -1373,8 +1497,9 @@ export default function EmployerSettingsPage() {
 
               <div className="mt-4 rounded-lg bg-blue-50 border border-blue-200 p-4">
                 <p className="text-sm text-blue-800">
-                  💡 <strong>Tip:</strong> When you connect Google Calendar, your busy times will automatically
-                  show when setting interview availability, helping you avoid scheduling conflicts.
+                  💡 <strong>Tip:</strong> When you connect Google Calendar,
+                  your busy times will automatically show when setting interview
+                  availability, helping you avoid scheduling conflicts.
                 </p>
               </div>
             </CardContent>
@@ -1406,25 +1531,36 @@ export default function EmployerSettingsPage() {
                   {/* Stripe Customer Status */}
                   <div className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className={`h-3 w-3 rounded-full ${hasStripeCustomer ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                      <div
+                        className={`h-3 w-3 rounded-full ${
+                          hasStripeCustomer ? "bg-green-500" : "bg-yellow-500"
+                        }`}
+                      />
                       <div>
-                        <p className="font-medium text-secondary-900">Billing Account Status</p>
+                        <p className="font-medium text-secondary-900">
+                          Billing Account Status
+                        </p>
                         <p className="text-sm text-secondary-600">
                           {hasStripeCustomer
-                            ? `Connected (ID: ...${stripeCustomerId?.slice(-6)})`
-                            : 'Not set up yet'}
+                            ? `Connected (ID: ...${stripeCustomerId?.slice(
+                                -6
+                              )})`
+                            : "Not set up yet"}
                         </p>
                       </div>
                     </div>
                     {!hasStripeCustomer && (
-                      <Button onClick={handleSetupBilling} disabled={isSettingUpBilling}>
+                      <Button
+                        onClick={handleSetupBilling}
+                        disabled={isSettingUpBilling}
+                      >
                         {isSettingUpBilling ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                             Setting up...
                           </>
                         ) : (
-                          'Set Up Billing'
+                          "Set Up Billing"
                         )}
                       </Button>
                     )}
@@ -1433,25 +1569,37 @@ export default function EmployerSettingsPage() {
                   {/* Payment Method */}
                   {hasStripeCustomer && (
                     <div className="space-y-3">
-                      <h4 className="font-medium text-secondary-900">Payment Method</h4>
+                      <h4 className="font-medium text-secondary-900">
+                        Payment Method
+                      </h4>
                       {paymentMethod ? (
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex items-center gap-3">
                             <CreditCard className="h-5 w-5 text-secondary-500" />
                             <div>
                               <p className="font-medium text-secondary-900">
-                                {paymentMethod.brand.charAt(0).toUpperCase() + paymentMethod.brand.slice(1)} •••• {paymentMethod.last4}
+                                {paymentMethod.brand.charAt(0).toUpperCase() +
+                                  paymentMethod.brand.slice(1)}{" "}
+                                •••• {paymentMethod.last4}
                               </p>
                               <p className="text-sm text-secondary-600">
-                                Expires {paymentMethod.expMonth.toString().padStart(2, '0')}/{paymentMethod.expYear}
+                                Expires{" "}
+                                {paymentMethod.expMonth
+                                  .toString()
+                                  .padStart(2, "0")}
+                                /{paymentMethod.expYear}
                               </p>
                             </div>
                           </div>
                         </div>
                       ) : (
                         <div className="flex items-center justify-between p-4 border border-dashed rounded-lg">
-                          <p className="text-secondary-600">No payment method on file</p>
-                          <p className="text-sm text-secondary-500">Payment methods are added during checkout</p>
+                          <p className="text-secondary-600">
+                            No payment method on file
+                          </p>
+                          <p className="text-sm text-secondary-500">
+                            Payment methods are added during checkout
+                          </p>
                         </div>
                       )}
                     </div>
@@ -1459,7 +1607,11 @@ export default function EmployerSettingsPage() {
 
                   {/* Invoices Link */}
                   <div className="pt-4 border-t">
-                    <Button variant="outline" asChild className="w-full sm:w-auto">
+                    <Button
+                      variant="outline"
+                      asChild
+                      className="w-full sm:w-auto"
+                    >
                       <Link href="/employer/invoices">
                         <FileText className="h-4 w-4 mr-2" />
                         View Invoices & Payment History
@@ -1470,8 +1622,9 @@ export default function EmployerSettingsPage() {
                   {/* Info Box */}
                   <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
                     <p className="text-sm text-blue-800">
-                      💡 <strong>Tip:</strong> Your billing account will be automatically set up when you make your first payment.
-                      You can also set it up now to streamline the checkout process.
+                      💡 <strong>Tip:</strong> Your billing account will be
+                      automatically set up when you make your first payment. You
+                      can also set it up now to streamline the checkout process.
                     </p>
                   </div>
                 </div>
@@ -1562,7 +1715,13 @@ export default function EmployerSettingsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setDeleteTemplateModal({ isOpen: true, templateId: template.id, templateName: template.name })}
+                            onClick={() =>
+                              setDeleteTemplateModal({
+                                isOpen: true,
+                                templateId: template.id,
+                                templateName: template.name,
+                              })
+                            }
                             disabled={isSaving}
                             className="border-error-300 text-error-600 hover:bg-error-50"
                           >
@@ -1909,14 +2068,14 @@ export default function EmployerSettingsPage() {
           </Card>
 
           {/* Danger Zone */}
-          <Card className="border-2 border-error-200">
+          <Card className="border-2 border-red-200">
             <CardContent className="p-6">
               <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-error-100">
                   <Trash2 className="h-5 w-5 text-error-600" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-error-900">
+                  <h2 className="mb-4 text-xl font-bold text-red-600">
                     Danger Zone
                   </h2>
                   <p className="text-sm text-error-700">
@@ -1929,7 +2088,7 @@ export default function EmployerSettingsPage() {
                 <h3 className="mb-2 font-bold text-error-900">
                   Delete Account
                 </h3>
-                <p className="mb-4 text-sm text-error-700">
+                <p className="mb-4 text-sm text-secondary-600">
                   Once you delete your account, there is no going back. All your
                   job postings, applicant data, and account information will be
                   permanently deleted.
@@ -1938,7 +2097,7 @@ export default function EmployerSettingsPage() {
                   variant="outline"
                   onClick={() => setDeleteAccountModal(true)}
                   disabled={isSaving}
-                  className="border-error-600 text-error-600 hover:bg-error-50"
+                  className="border-red-300 text-red-600 hover:bg-red-50"
                 >
                   {isSaving ? (
                     <>
@@ -1961,10 +2120,21 @@ export default function EmployerSettingsPage() {
       {/* Delete Team Member Confirmation Modal */}
       <ConfirmationModal
         isOpen={deleteMemberModal.isOpen}
-        onClose={() => setDeleteMemberModal({ isOpen: false, memberId: null, memberName: "" })}
-        onConfirm={() => { if (deleteMemberModal.memberId) handleDeleteMember(deleteMemberModal.memberId); }}
+        onClose={() =>
+          setDeleteMemberModal({
+            isOpen: false,
+            memberId: null,
+            memberName: "",
+          })
+        }
+        onConfirm={() => {
+          if (deleteMemberModal.memberId)
+            handleDeleteMember(deleteMemberModal.memberId);
+        }}
         title="Remove Team Member"
-        message={`Are you sure you want to remove ${deleteMemberModal.memberName || "this team member"}? They will no longer have access to your company's account.`}
+        message={`Are you sure you want to remove ${
+          deleteMemberModal.memberName || "this team member"
+        }? They will no longer have access to your company's account.`}
         confirmText="Remove"
         cancelText="Cancel"
         variant="danger"
@@ -1997,10 +2167,21 @@ export default function EmployerSettingsPage() {
       {/* Delete Template Confirmation Modal */}
       <ConfirmationModal
         isOpen={deleteTemplateModal.isOpen}
-        onClose={() => setDeleteTemplateModal({ isOpen: false, templateId: null, templateName: "" })}
-        onConfirm={() => { if (deleteTemplateModal.templateId) handleDeleteTemplate(deleteTemplateModal.templateId); }}
+        onClose={() =>
+          setDeleteTemplateModal({
+            isOpen: false,
+            templateId: null,
+            templateName: "",
+          })
+        }
+        onConfirm={() => {
+          if (deleteTemplateModal.templateId)
+            handleDeleteTemplate(deleteTemplateModal.templateId);
+        }}
         title="Delete Template"
-        message={`Are you sure you want to delete the template "${deleteTemplateModal.templateName || "this template"}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete the template "${
+          deleteTemplateModal.templateName || "this template"
+        }"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"
@@ -2010,7 +2191,10 @@ export default function EmployerSettingsPage() {
       <ConfirmationModal
         isOpen={deleteAccountModal}
         onClose={() => setDeleteAccountModal(false)}
-        onConfirm={() => { setDeleteAccountModal(false); setDeleteAccountConfirmModal(true); }}
+        onConfirm={() => {
+          setDeleteAccountModal(false);
+          setDeleteAccountConfirmModal(true);
+        }}
         title="Delete Account"
         message="Are you sure you want to delete your account? This action cannot be undone."
         confirmText="Continue"
