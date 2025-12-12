@@ -24,6 +24,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Footer } from "@/components/layout";
 
@@ -79,6 +80,15 @@ export default function DashboardLayout({
   const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Detect desktop on mount and window resize
+  useEffect(() => {
+    const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
+    checkDesktop();
+    window.addEventListener("resize", checkDesktop);
+    return () => window.removeEventListener("resize", checkDesktop);
+  }, []);
 
   // Load collapsed state from localStorage on mount
   useEffect(() => {
@@ -127,18 +137,28 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-secondary-50">
       {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-secondary-900/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-40 bg-secondary-900/50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Sidebar */}
-      <aside
-        className={`fixed left-0 z-30 transform bg-white shadow-lg transition-all duration-300 ease-in-out lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0 inset-y-0" : "-translate-x-full inset-y-0"
-        } lg:top-16 lg:bottom-0 ${sidebarCollapsed ? "lg:w-[70px]" : "lg:w-64"} w-64`}
+      <motion.aside
+        initial={false}
+        animate={{
+          width: isDesktop ? (sidebarCollapsed ? 70 : 256) : 256,
+          x: isDesktop ? 0 : (sidebarOpen ? 0 : -256),
+        }}
+        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        className="fixed left-0 z-30 bg-white shadow-lg lg:top-16 lg:bottom-0 inset-y-0 lg:inset-y-auto"
       >
         <div className="flex h-full flex-col overflow-y-auto overflow-x-hidden">
           {/* Toggle Button Row */}
@@ -204,10 +224,17 @@ export default function DashboardLayout({
             })}
           </nav>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarCollapsed ? "lg:pl-[70px]" : "lg:pl-64"}`}>
+      <motion.div
+        initial={false}
+        animate={{
+          paddingLeft: isDesktop ? (sidebarCollapsed ? 70 : 256) : 0,
+        }}
+        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        className="min-h-screen"
+      >
         {/* Mobile menu button - fixed position on mobile only */}
         <button
           onClick={() => setSidebarOpen(true)}
@@ -224,7 +251,7 @@ export default function DashboardLayout({
 
         {/* Footer */}
         <Footer />
-      </div>
+      </motion.div>
     </div>
   );
 }
