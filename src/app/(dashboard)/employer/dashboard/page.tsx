@@ -492,7 +492,7 @@ export default function EmployerDashboardPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-gradient-to-r from-primary-600 to-blue-700 rounded-2xl shadow-2xl overflow-hidden"
+          className="bg-gradient-to-r from-primary-600 to-accent-600 rounded-2xl shadow-2xl overflow-hidden"
         >
           <div className="px-6 py-8 lg:px-10 lg:py-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
