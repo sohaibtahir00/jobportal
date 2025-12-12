@@ -103,32 +103,47 @@ export default function CybersecurityJobsPage() {
     {
       icon: Shield,
       title: "Background-Verified Talent",
-      description: "All cybersecurity professionals undergo thorough background checks and security clearance verification.",
+      description:
+        "All cybersecurity professionals undergo thorough background checks and security clearance verification.",
     },
     {
       icon: Award,
       title: "Certified Professionals",
-      description: "Access candidates with CISSP, CEH, OSCP, and other industry-recognized security certifications.",
+      description:
+        "Access candidates with CISSP, CEH, OSCP, and other industry-recognized security certifications.",
     },
     {
       icon: Eye,
       title: "Penetration Testing Experts",
-      description: "Find ethical hackers and pen testers with proven experience in vulnerability assessment and exploitation.",
+      description:
+        "Find ethical hackers and pen testers with proven experience in vulnerability assessment and exploitation.",
     },
     {
       icon: Lock,
       title: "Compliance Specialists",
-      description: "Hire experts familiar with SOC2, ISO 27001, GDPR, HIPAA, and other security frameworks.",
+      description:
+        "Hire experts familiar with SOC2, ISO 27001, GDPR, HIPAA, and other security frameworks.",
     },
   ];
 
   const companies = [
-    "CrowdStrike", "Palo Alto Networks", "Cloudflare", "Okta", "Fortinet",
-    "Zscaler", "Wiz", "Snyk", "Tenable", "Rapid7",
+    "CrowdStrike",
+    "Palo Alto Networks",
+    "Cloudflare",
+    "Okta",
+    "Fortinet",
+    "Zscaler",
+    "Wiz",
+    "Snyk",
+    "Tenable",
+    "Rapid7",
   ];
 
   const certifications = [
-    { name: "CISSP", description: "Certified Information Systems Security Professional" },
+    {
+      name: "CISSP",
+      description: "Certified Information Systems Security Professional",
+    },
     { name: "CEH", description: "Certified Ethical Hacker" },
     { name: "OSCP", description: "Offensive Security Certified Professional" },
     { name: "CISM", description: "Certified Information Security Manager" },
@@ -171,7 +186,9 @@ export default function CybersecurityJobsPage() {
               Cybersecurity Jobs
             </h1>
             <p className="mb-8 text-xl opacity-95">
-              Protect organizations from cyber threats. Connect with top companies hiring security engineers, pen testers, and security architects.
+              Protect organizations from cyber threats. Connect with top
+              companies hiring security engineers, pen testers, and security
+              architects.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Button
@@ -181,7 +198,8 @@ export default function CybersecurityJobsPage() {
                 asChild
               >
                 <Link href="/jobs?niche=cybersecurity">
-                  Browse {totalJobs > 0 ? `${totalJobs}+` : "380+"} Security Jobs
+                  Browse {totalJobs > 0 ? `${totalJobs}+` : "380+"} Security
+                  Jobs
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -191,9 +209,7 @@ export default function CybersecurityJobsPage() {
                 className="border-white text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="/skills-assessment">
-                  Get Verified
-                </Link>
+                <Link href="/skills-assessment">Get Verified</Link>
               </Button>
             </div>
           </div>
@@ -236,7 +252,10 @@ export default function CybersecurityJobsPage() {
             {specializations.map((spec, idx) => {
               const Icon = spec.icon;
               return (
-                <Card key={idx} className="transition-shadow hover:shadow-md cursor-pointer">
+                <Card
+                  key={idx}
+                  className="transition-shadow hover:shadow-md cursor-pointer"
+                >
                   <CardContent className="p-6 text-center">
                     <div className="mb-3 flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-primary-100">
                       <Icon className="h-6 w-6 text-primary-600" />
@@ -289,12 +308,12 @@ export default function CybersecurityJobsPage() {
                       </Badge>
                     ))}
                   </div>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    asChild
-                  >
-                    <Link href={`/jobs?search=${encodeURIComponent(role.title)}&niche=cybersecurity`}>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link
+                      href={`/jobs?search=${encodeURIComponent(
+                        role.title
+                      )}&niche=cybersecurity`}
+                    >
                       View Jobs
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
@@ -336,7 +355,10 @@ export default function CybersecurityJobsPage() {
           ) : jobs.length > 0 ? (
             <div className="space-y-4">
               {jobs.map((job) => (
-                <Card key={job.id} className="transition-shadow hover:shadow-md">
+                <Card
+                  key={job.id}
+                  className="transition-shadow hover:shadow-md"
+                >
                   <CardContent className="p-6">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                       <div className="flex-1">
@@ -387,7 +409,9 @@ export default function CybersecurityJobsPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-secondary-600 mb-4">No Cybersecurity jobs available at the moment.</p>
+              <p className="text-secondary-600 mb-4">
+                No Cybersecurity jobs available at the moment.
+              </p>
               <Button variant="outline" asChild>
                 <Link href="/jobs">Browse All Jobs</Link>
               </Button>
@@ -397,7 +421,8 @@ export default function CybersecurityJobsPage() {
           <div className="mt-8 text-center">
             <Button variant="outline" size="lg" asChild>
               <Link href="/jobs?niche=cybersecurity">
-                View All {totalJobs > 0 ? `${totalJobs}+` : "380+"} Security Jobs
+                View All {totalJobs > 0 ? `${totalJobs}+` : "380+"} Security
+                Jobs
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -427,9 +452,7 @@ export default function CybersecurityJobsPage() {
                   <h3 className="mb-1 font-bold text-secondary-900">
                     {item.skill}
                   </h3>
-                  <p className="text-sm text-secondary-600">
-                    {item.jobs} jobs
-                  </p>
+                  <p className="text-sm text-secondary-600">{item.jobs} jobs</p>
                 </CardContent>
               </Card>
             ))}
@@ -457,9 +480,13 @@ export default function CybersecurityJobsPage() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success-100">
                       <Award className="h-5 w-5 text-success-600" />
                     </div>
-                    <h3 className="font-bold text-secondary-900">{cert.name}</h3>
+                    <h3 className="font-bold text-secondary-900">
+                      {cert.name}
+                    </h3>
                   </div>
-                  <p className="text-sm text-secondary-600">{cert.description}</p>
+                  <p className="text-sm text-secondary-600">
+                    {cert.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -535,17 +562,11 @@ export default function CybersecurityJobsPage() {
               Start Your Cybersecurity Career Today
             </h2>
             <p className="mb-8 text-xl opacity-95">
-              Join 9,800+ verified security professionals protecting the digital world
+              Join 9,800+ verified security professionals protecting the digital
+              world
             </p>
 
-            <div className="mx-auto mb-8 flex max-w-md gap-3">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                className="bg-white text-secondary-900"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+            <div className="mx-auto mb-8 max-w-md gap-3">
               <Button
                 variant="secondary"
                 className="whitespace-nowrap bg-white text-primary-600 hover:bg-primary-50"

@@ -97,28 +97,40 @@ export default function HealthcareITJobsPage() {
     {
       icon: Shield,
       title: "HIPAA-Verified Roles",
-      description: "All healthcare IT positions are vetted for HIPAA compliance and security requirements.",
+      description:
+        "All healthcare IT positions are vetted for HIPAA compliance and security requirements.",
     },
     {
       icon: Award,
       title: "Healthcare-Specific Assessment",
-      description: "Candidates complete specialized tests covering FHIR, HL7, and healthcare data standards.",
+      description:
+        "Candidates complete specialized tests covering FHIR, HL7, and healthcare data standards.",
     },
     {
       icon: Activity,
       title: "Clinical System Experts",
-      description: "Access engineers experienced with Epic, Cerner, and other major EHR platforms.",
+      description:
+        "Access engineers experienced with Epic, Cerner, and other major EHR platforms.",
     },
     {
       icon: Cloud,
       title: "Modern Health Tech Stack",
-      description: "Find roles using cutting-edge cloud, AI, and data technologies in healthcare.",
+      description:
+        "Find roles using cutting-edge cloud, AI, and data technologies in healthcare.",
     },
   ];
 
   const companies = [
-    "Epic Systems", "Cerner", "Optum", "CVS Health", "UnitedHealth Group",
-    "Teladoc", "Oscar Health", "Zocdoc", "Flatiron Health", "athenahealth",
+    "Epic Systems",
+    "Cerner",
+    "Optum",
+    "CVS Health",
+    "UnitedHealth Group",
+    "Teladoc",
+    "Oscar Health",
+    "Zocdoc",
+    "Flatiron Health",
+    "athenahealth",
   ];
 
   const certifications = [
@@ -156,7 +168,8 @@ export default function HealthcareITJobsPage() {
               Healthcare IT Jobs
             </h1>
             <p className="mb-8 text-xl opacity-95">
-              Connect with leading healthcare technology companies. All candidates verified for HIPAA compliance and healthcare standards.
+              Connect with leading healthcare technology companies. All
+              candidates verified for HIPAA compliance and healthcare standards.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Button
@@ -166,7 +179,8 @@ export default function HealthcareITJobsPage() {
                 asChild
               >
                 <Link href="/jobs?niche=healthcare">
-                  Browse {totalJobs > 0 ? `${totalJobs}+` : "320+"} Healthcare IT Jobs
+                  Browse {totalJobs > 0 ? `${totalJobs}+` : "320+"} Healthcare
+                  IT Jobs
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -176,9 +190,7 @@ export default function HealthcareITJobsPage() {
                 className="border-white text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="/skills-assessment">
-                  Get Verified
-                </Link>
+                <Link href="/skills-assessment">Get Verified</Link>
               </Button>
             </div>
           </div>
@@ -229,7 +241,9 @@ export default function HealthcareITJobsPage() {
                       {role.count} open positions
                     </p>
                   </div>
-                  <Badge variant="primary" className="mb-4">{role.avgSalary}</Badge>
+                  <Badge variant="primary" className="mb-4">
+                    {role.avgSalary}
+                  </Badge>
                   <div className="mb-4 flex flex-wrap gap-2">
                     {role.topSkills.map((skill, skillIdx) => (
                       <Badge key={skillIdx} variant="secondary" size="sm">
@@ -237,12 +251,12 @@ export default function HealthcareITJobsPage() {
                       </Badge>
                     ))}
                   </div>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    asChild
-                  >
-                    <Link href={`/jobs?search=${encodeURIComponent(role.title)}&niche=healthcare`}>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link
+                      href={`/jobs?search=${encodeURIComponent(
+                        role.title
+                      )}&niche=healthcare`}
+                    >
                       View Jobs
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
@@ -284,7 +298,10 @@ export default function HealthcareITJobsPage() {
           ) : jobs.length > 0 ? (
             <div className="space-y-4">
               {jobs.map((job) => (
-                <Card key={job.id} className="transition-shadow hover:shadow-md">
+                <Card
+                  key={job.id}
+                  className="transition-shadow hover:shadow-md"
+                >
                   <CardContent className="p-6">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                       <div className="flex-1">
@@ -335,7 +352,9 @@ export default function HealthcareITJobsPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-secondary-600 mb-4">No Healthcare IT jobs available at the moment.</p>
+              <p className="text-secondary-600 mb-4">
+                No Healthcare IT jobs available at the moment.
+              </p>
               <Button variant="outline" asChild>
                 <Link href="/jobs">Browse All Jobs</Link>
               </Button>
@@ -345,7 +364,8 @@ export default function HealthcareITJobsPage() {
           <div className="mt-8 text-center">
             <Button variant="outline" size="lg" asChild>
               <Link href="/jobs?niche=healthcare">
-                View All {totalJobs > 0 ? `${totalJobs}+` : "320+"} Healthcare IT Jobs
+                View All {totalJobs > 0 ? `${totalJobs}+` : "320+"} Healthcare
+                IT Jobs
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -375,9 +395,7 @@ export default function HealthcareITJobsPage() {
                   <h3 className="mb-1 font-bold text-secondary-900">
                     {item.skill}
                   </h3>
-                  <p className="text-sm text-secondary-600">
-                    {item.jobs} jobs
-                  </p>
+                  <p className="text-sm text-secondary-600">{item.jobs} jobs</p>
                 </CardContent>
               </Card>
             ))}
@@ -479,17 +497,11 @@ export default function HealthcareITJobsPage() {
               Start Your Healthcare IT Career Today
             </h2>
             <p className="mb-8 text-xl opacity-95">
-              Join 8,500+ verified healthcare IT professionals transforming healthcare through technology
+              Join 8,500+ verified healthcare IT professionals transforming
+              healthcare through technology
             </p>
 
-            <div className="mx-auto mb-8 flex max-w-md gap-3">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                className="bg-white text-secondary-900"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+            <div className="mx-auto mb-8 max-w-md gap-3">
               <Button
                 variant="secondary"
                 className="whitespace-nowrap bg-white text-primary-600 hover:bg-primary-50"

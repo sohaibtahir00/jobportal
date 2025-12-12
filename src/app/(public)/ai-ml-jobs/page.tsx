@@ -103,28 +103,40 @@ export default function AIMLJobsPage() {
     {
       icon: Award,
       title: "Skills-Verified Candidates",
-      description: "All ML engineers complete our specialized AI/ML assessment covering algorithms, model training, and deployment.",
+      description:
+        "All ML engineers complete our specialized AI/ML assessment covering algorithms, model training, and deployment.",
     },
     {
       icon: Zap,
       title: "Fast Matching",
-      description: "Our AI-powered matching connects you with relevant opportunities based on your ML expertise.",
+      description:
+        "Our AI-powered matching connects you with relevant opportunities based on your ML expertise.",
     },
     {
       icon: Target,
       title: "Exclusive AI/ML Roles",
-      description: "Access 250+ AI/ML positions not posted anywhere else, from startups to FAANG companies.",
+      description:
+        "Access 250+ AI/ML positions not posted anywhere else, from startups to FAANG companies.",
     },
     {
       icon: BarChart,
       title: "Salary Transparency",
-      description: "See real salary ranges upfront. AI/ML engineers on our platform earn 18% above market average.",
+      description:
+        "See real salary ranges upfront. AI/ML engineers on our platform earn 18% above market average.",
     },
   ];
 
   const companies = [
-    "OpenAI", "Google DeepMind", "Meta AI", "Anthropic", "Hugging Face",
-    "Cohere", "Stability AI", "Scale AI", "Databricks", "Weights & Biases",
+    "OpenAI",
+    "Google DeepMind",
+    "Meta AI",
+    "Anthropic",
+    "Hugging Face",
+    "Cohere",
+    "Stability AI",
+    "Scale AI",
+    "Databricks",
+    "Weights & Biases",
   ];
 
   // Format salary for display
@@ -153,7 +165,8 @@ export default function AIMLJobsPage() {
               AI & Machine Learning Jobs
             </h1>
             <p className="mb-8 text-xl opacity-95">
-              Connect with top AI/ML opportunities at leading companies. All candidates verified with specialized ML assessments.
+              Connect with top AI/ML opportunities at leading companies. All
+              candidates verified with specialized ML assessments.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Button
@@ -173,9 +186,7 @@ export default function AIMLJobsPage() {
                 className="border-white text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="/skills-assessment">
-                  Take ML Assessment
-                </Link>
+                <Link href="/skills-assessment">Take ML Assessment</Link>
               </Button>
             </div>
           </div>
@@ -236,12 +247,12 @@ export default function AIMLJobsPage() {
                       </Badge>
                     ))}
                   </div>
-                  <Button
-                    variant="outline"
-                    className="mt-4 w-full"
-                    asChild
-                  >
-                    <Link href={`/jobs?search=${encodeURIComponent(role.title)}&niche=ai-ml`}>
+                  <Button variant="outline" className="mt-4 w-full" asChild>
+                    <Link
+                      href={`/jobs?search=${encodeURIComponent(
+                        role.title
+                      )}&niche=ai-ml`}
+                    >
                       View Jobs
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
@@ -283,7 +294,10 @@ export default function AIMLJobsPage() {
           ) : jobs.length > 0 ? (
             <div className="space-y-4">
               {jobs.map((job) => (
-                <Card key={job.id} className="transition-shadow hover:shadow-md">
+                <Card
+                  key={job.id}
+                  className="transition-shadow hover:shadow-md"
+                >
                   <CardContent className="p-6">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                       <div className="flex-1">
@@ -334,7 +348,9 @@ export default function AIMLJobsPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-secondary-600 mb-4">No AI/ML jobs available at the moment.</p>
+              <p className="text-secondary-600 mb-4">
+                No AI/ML jobs available at the moment.
+              </p>
               <Button variant="outline" asChild>
                 <Link href="/jobs">Browse All Jobs</Link>
               </Button>
@@ -374,9 +390,7 @@ export default function AIMLJobsPage() {
                   <h3 className="mb-1 font-bold text-secondary-900">
                     {item.skill}
                   </h3>
-                  <p className="text-sm text-secondary-600">
-                    {item.jobs} jobs
-                  </p>
+                  <p className="text-sm text-secondary-600">{item.jobs} jobs</p>
                 </CardContent>
               </Card>
             ))}
@@ -452,17 +466,11 @@ export default function AIMLJobsPage() {
               Start Your AI/ML Career Today
             </h2>
             <p className="mb-8 text-xl opacity-95">
-              Join 12,000+ verified ML engineers and get access to exclusive opportunities
+              Join 12,000+ verified ML engineers and get access to exclusive
+              opportunities
             </p>
 
-            <div className="mx-auto mb-8 flex max-w-md gap-3">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                className="bg-white text-secondary-900"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+            <div className="mx-auto mb-8 max-w-md gap-3">
               <Button
                 variant="secondary"
                 className="whitespace-nowrap bg-white text-primary-600 hover:bg-primary-50"

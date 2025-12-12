@@ -102,28 +102,40 @@ export default function FintechJobsPage() {
     {
       icon: Shield,
       title: "Security-First Candidates",
-      description: "All fintech engineers are background-checked and vetted for security clearance requirements.",
+      description:
+        "All fintech engineers are background-checked and vetted for security clearance requirements.",
     },
     {
       icon: Zap,
       title: "Payment Systems Expertise",
-      description: "Access developers experienced with Stripe, Plaid, payment gateways, and PCI-DSS compliance.",
+      description:
+        "Access developers experienced with Stripe, Plaid, payment gateways, and PCI-DSS compliance.",
     },
     {
       icon: BarChart,
       title: "Blockchain & Web3 Talent",
-      description: "Find specialized blockchain developers and smart contract engineers for crypto projects.",
+      description:
+        "Find specialized blockchain developers and smart contract engineers for crypto projects.",
     },
     {
       icon: Lock,
       title: "Compliance Ready",
-      description: "Candidates understand SOC2, PCI-DSS, KYC/AML, and other financial regulations.",
+      description:
+        "Candidates understand SOC2, PCI-DSS, KYC/AML, and other financial regulations.",
     },
   ];
 
   const companies = [
-    "Stripe", "Plaid", "Robinhood", "Coinbase", "Square",
-    "Ripple", "Chime", "Affirm", "Revolut", "Brex",
+    "Stripe",
+    "Plaid",
+    "Robinhood",
+    "Coinbase",
+    "Square",
+    "Ripple",
+    "Chime",
+    "Affirm",
+    "Revolut",
+    "Brex",
   ];
 
   const categories = [
@@ -161,7 +173,8 @@ export default function FintechJobsPage() {
               Fintech Jobs
             </h1>
             <p className="mb-8 text-xl opacity-95">
-              Join the future of finance. Connect with top fintech companies hiring payment engineers, blockchain developers, and more.
+              Join the future of finance. Connect with top fintech companies
+              hiring payment engineers, blockchain developers, and more.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Button
@@ -181,9 +194,7 @@ export default function FintechJobsPage() {
                 className="border-white text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="/skills-assessment">
-                  Get Verified
-                </Link>
+                <Link href="/skills-assessment">Get Verified</Link>
               </Button>
             </div>
           </div>
@@ -224,7 +235,10 @@ export default function FintechJobsPage() {
 
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             {categories.map((category, idx) => (
-              <Card key={idx} className="transition-shadow hover:shadow-md cursor-pointer">
+              <Card
+                key={idx}
+                className="transition-shadow hover:shadow-md cursor-pointer"
+              >
                 <CardContent className="p-6 text-center">
                   <h3 className="mb-2 text-lg font-bold text-secondary-900">
                     {category.name}
@@ -273,12 +287,12 @@ export default function FintechJobsPage() {
                       </Badge>
                     ))}
                   </div>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    asChild
-                  >
-                    <Link href={`/jobs?search=${encodeURIComponent(role.title)}&niche=fintech`}>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link
+                      href={`/jobs?search=${encodeURIComponent(
+                        role.title
+                      )}&niche=fintech`}
+                    >
                       View Jobs
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
@@ -320,7 +334,10 @@ export default function FintechJobsPage() {
           ) : jobs.length > 0 ? (
             <div className="space-y-4">
               {jobs.map((job) => (
-                <Card key={job.id} className="transition-shadow hover:shadow-md">
+                <Card
+                  key={job.id}
+                  className="transition-shadow hover:shadow-md"
+                >
                   <CardContent className="p-6">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                       <div className="flex-1">
@@ -371,7 +388,9 @@ export default function FintechJobsPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-secondary-600 mb-4">No Fintech jobs available at the moment.</p>
+              <p className="text-secondary-600 mb-4">
+                No Fintech jobs available at the moment.
+              </p>
               <Button variant="outline" asChild>
                 <Link href="/jobs">Browse All Jobs</Link>
               </Button>
@@ -411,9 +430,7 @@ export default function FintechJobsPage() {
                   <h3 className="mb-1 font-bold text-secondary-900">
                     {item.skill}
                   </h3>
-                  <p className="text-sm text-secondary-600">
-                    {item.jobs} jobs
-                  </p>
+                  <p className="text-sm text-secondary-600">{item.jobs} jobs</p>
                 </CardContent>
               </Card>
             ))}
@@ -489,17 +506,11 @@ export default function FintechJobsPage() {
               Launch Your Fintech Career Today
             </h2>
             <p className="mb-8 text-xl opacity-95">
-              Join 15,000+ verified fintech engineers building the future of finance
+              Join 15,000+ verified fintech engineers building the future of
+              finance
             </p>
 
-            <div className="mx-auto mb-8 flex max-w-md gap-3">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                className="bg-white text-secondary-900"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+            <div className="mx-auto mb-8 max-w-md gap-3">
               <Button
                 variant="secondary"
                 className="whitespace-nowrap bg-white text-primary-600 hover:bg-primary-50"
