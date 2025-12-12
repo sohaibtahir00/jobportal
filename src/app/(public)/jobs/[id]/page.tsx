@@ -495,7 +495,8 @@ export default function JobDetailPage() {
                         <MapPin className="h-4 w-4" />
                         <span>{job.location}</span>
                       </div>
-                      <span className="text-secondary-400">•</span>
+                    </div>
+                    <div className="flex flex-wrap gap-3 text-sm text-secondary-600 mt-2">
                       <div className="flex items-center gap-1">
                         <Briefcase className="h-4 w-4" />
                         <span>{job.type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())}</span>
@@ -516,10 +517,12 @@ export default function JobDetailPage() {
                       ? (job as any).remoteType.replace(/_/g, '-').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())
                       : (job.remote ? 'Remote' : 'On-site')}
                   </Badge>
-                  <Badge variant="outline">{job.niche}</Badge>
                   <Badge variant="secondary">
                     {job.experienceLevel.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())}
                   </Badge>
+                  {job.niche && (
+                    <Badge variant="outline">{job.niche}</Badge>
+                  )}
                 </div>
 
                 {/* Salary */}
