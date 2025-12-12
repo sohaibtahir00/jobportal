@@ -96,7 +96,7 @@ export function ApplicationCard({ application, onViewDetails, onWithdrawSuccess 
   const hasTestResults = application.testResults && application.testResults.length > 0;
 
   return (
-    <Card className="transition-all hover:shadow-lg">
+    <Card variant="accent" className="transition-all hover:shadow-lg">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Company Logo */}

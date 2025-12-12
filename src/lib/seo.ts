@@ -41,16 +41,19 @@ export function generateJobPostingJsonLd(job: Job) {
         addressCountry: "US",
       },
     },
-    baseSalary: job.salaryMin && job.salaryMax ? {
-      "@type": "MonetaryAmount",
-      currency: "USD",
-      value: {
-        "@type": "QuantitativeValue",
-        minValue: job.salaryMin,
-        maxValue: job.salaryMax,
-        unitText: "YEAR",
-      },
-    } : undefined,
+    baseSalary:
+      job.salaryMin && job.salaryMax
+        ? {
+            "@type": "MonetaryAmount",
+            currency: "USD",
+            value: {
+              "@type": "QuantitativeValue",
+              minValue: job.salaryMin,
+              maxValue: job.salaryMax,
+              unitText: "YEAR",
+            },
+          }
+        : undefined,
     responsibilities: job.responsibilities,
     skills: job.skills?.join(", "),
     qualifications: job.requirements,
@@ -96,7 +99,7 @@ export function generateOrganizationJsonLd() {
     url: "https://aiml-jobs.com",
     logo: "https://aiml-jobs.com/logo.png",
     description:
-      "Leading job board for AI, Machine Learning, Data Science, and tech professionals",
+      "Leading SkillProof for AI, Machine Learning, Data Science, and tech professionals",
     sameAs: [
       "https://twitter.com/aiml_jobs",
       "https://linkedin.com/company/aiml-jobs",
@@ -136,7 +139,9 @@ export function generateWebsiteSearchJsonLd() {
 /**
  * Generate JSON-LD breadcrumb list
  */
-export function generateBreadcrumbJsonLd(items: { name: string; url: string }[]) {
+export function generateBreadcrumbJsonLd(
+  items: { name: string; url: string }[]
+) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
