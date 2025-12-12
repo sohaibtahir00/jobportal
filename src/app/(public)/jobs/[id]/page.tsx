@@ -207,11 +207,14 @@ export default function JobDetailPage() {
                     <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span className="truncate max-w-[200px] sm:max-w-none">{job.location}</span>
                   </span>
-                  <span>•</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm sm:text-base text-white/90 mt-1">
                   <span className="flex items-center gap-1">
                     <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" />
                     {job.type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())}
                   </span>
+                  <span>•</span>
+                  <span>Posted {new Date(job.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
               </div>
             </div>
@@ -508,8 +511,10 @@ export default function JobDetailPage() {
 
                 {/* Badges */}
                 <div className="mb-6 flex flex-wrap gap-2">
-                  <Badge variant={job.remote ? "success" : "secondary"}>
-                    {job.remote ? 'Remote' : 'On-site'}
+                  <Badge variant={(job as any).remoteType === 'REMOTE' || job.remote ? "success" : (job as any).remoteType === 'HYBRID' ? "primary" : "secondary"}>
+                    {(job as any).remoteType
+                      ? (job as any).remoteType.replace(/_/g, '-').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())
+                      : (job.remote ? 'Remote' : 'On-site')}
                   </Badge>
                   <Badge variant="outline">{job.niche}</Badge>
                   <Badge variant="secondary">
@@ -623,7 +628,7 @@ export default function JobDetailPage() {
                     .map((item: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-3 text-secondary-700">
                         <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary-500" />
-                        <span>{item.trim().replace(/^[-•\d.]+\s*/, '')}</span>
+                        <span>{item.trim().replace(/^[-•]+\s*/, '').replace(/^\d+\.\s+/, '')}</span>
                       </li>
                     ))}
                 </ul>
@@ -659,7 +664,7 @@ export default function JobDetailPage() {
                       .map((item: string, idx: number) => (
                         <li key={idx} className="flex items-start gap-3 text-secondary-700">
                           <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary-500" />
-                          <span>{item.trim().replace(/^[-•\d.]+\s*/, '')}</span>
+                          <span>{item.trim().replace(/^[-•]+\s*/, '').replace(/^\d+\.\s+/, '')}</span>
                         </li>
                       ));
                   })()}
@@ -732,7 +737,7 @@ export default function JobDetailPage() {
                         .map((item: string, idx: number) => (
                           <li key={idx} className="flex items-start gap-3 text-secondary-700">
                             <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-green-500" />
-                            <span>{item.trim().replace(/^[-•\d.]+\s*/, '').replace(/^and\s+/i, '')}</span>
+                            <span>{item.trim().replace(/^[-•]+\s*/, '').replace(/^\d+\.\s+/, '').replace(/^and\s+/i, '')}</span>
                           </li>
                         ));
                     })()}
