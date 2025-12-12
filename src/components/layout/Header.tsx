@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Briefcase, Menu, X, User, LogOut, Shield, Search, Settings, Receipt, LayoutDashboard, FileText, Award, Building2, Info } from "lucide-react";
+import { Briefcase, Menu, X, User, LogOut, Shield, Search, Settings, Receipt, LayoutDashboard, FileText, Award, Building2, Users } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
@@ -98,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
     return [
       { name: "Browse Jobs", href: "/jobs", icon: Briefcase },
       { name: "For Employers", href: "/employers", icon: Building2 },
-      { name: "About Us", href: "/about", icon: Info },
+      { name: "About Us", href: "/about", icon: Users },
     ];
   }, [isCandidate, isEmployer]);
 
