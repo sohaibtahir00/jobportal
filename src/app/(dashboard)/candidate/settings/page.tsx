@@ -621,17 +621,20 @@ export default function CandidateSettingsPage() {
                         Receive email updates
                       </p>
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.emailNotifications}
-                      onChange={(e) =>
-                        setNotificationSettings({
-                          ...notificationSettings,
-                          emailNotifications: e.target.checked,
-                        })
-                      }
-                      className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
-                    />
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.emailNotifications}
+                        onChange={(e) =>
+                          setNotificationSettings({
+                            ...notificationSettings,
+                            emailNotifications: e.target.checked,
+                          })
+                        }
+                        className="peer sr-only"
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
+                    </label>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -643,17 +646,20 @@ export default function CandidateSettingsPage() {
                         Get notified about new matching jobs
                       </p>
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.jobAlerts}
-                      onChange={(e) =>
-                        setNotificationSettings({
-                          ...notificationSettings,
-                          jobAlerts: e.target.checked,
-                        })
-                      }
-                      className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
-                    />
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.jobAlerts}
+                        onChange={(e) =>
+                          setNotificationSettings({
+                            ...notificationSettings,
+                            jobAlerts: e.target.checked,
+                          })
+                        }
+                        className="peer sr-only"
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
+                    </label>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -665,17 +671,20 @@ export default function CandidateSettingsPage() {
                         Status changes on your applications
                       </p>
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.applicationUpdates}
-                      onChange={(e) =>
-                        setNotificationSettings({
-                          ...notificationSettings,
-                          applicationUpdates: e.target.checked,
-                        })
-                      }
-                      className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
-                    />
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.applicationUpdates}
+                        onChange={(e) =>
+                          setNotificationSettings({
+                            ...notificationSettings,
+                            applicationUpdates: e.target.checked,
+                          })
+                        }
+                        className="peer sr-only"
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
+                    </label>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -685,17 +694,20 @@ export default function CandidateSettingsPage() {
                         New messages from employers
                       </p>
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.messages}
-                      onChange={(e) =>
-                        setNotificationSettings({
-                          ...notificationSettings,
-                          messages: e.target.checked,
-                        })
-                      }
-                      className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
-                    />
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.messages}
+                        onChange={(e) =>
+                          setNotificationSettings({
+                            ...notificationSettings,
+                            messages: e.target.checked,
+                          })
+                        }
+                        className="peer sr-only"
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
+                    </label>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -707,17 +719,20 @@ export default function CandidateSettingsPage() {
                         Reminders for upcoming interviews
                       </p>
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.interviewReminders}
-                      onChange={(e) =>
-                        setNotificationSettings({
-                          ...notificationSettings,
-                          interviewReminders: e.target.checked,
-                        })
-                      }
-                      className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
-                    />
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.interviewReminders}
+                        onChange={(e) =>
+                          setNotificationSettings({
+                            ...notificationSettings,
+                            interviewReminders: e.target.checked,
+                          })
+                        }
+                        className="peer sr-only"
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
+                    </label>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -729,17 +744,20 @@ export default function CandidateSettingsPage() {
                         Updates about your placements
                       </p>
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.placementUpdates}
-                      onChange={(e) =>
-                        setNotificationSettings({
-                          ...notificationSettings,
-                          placementUpdates: e.target.checked,
-                        })
-                      }
-                      className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
-                    />
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.placementUpdates}
+                        onChange={(e) =>
+                          setNotificationSettings({
+                            ...notificationSettings,
+                            placementUpdates: e.target.checked,
+                          })
+                        }
+                        className="peer sr-only"
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
+                    </label>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -751,17 +769,20 @@ export default function CandidateSettingsPage() {
                         Weekly summary of activity
                       </p>
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.weeklyDigest}
-                      onChange={(e) =>
-                        setNotificationSettings({
-                          ...notificationSettings,
-                          weeklyDigest: e.target.checked,
-                        })
-                      }
-                      className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
-                    />
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.weeklyDigest}
+                        onChange={(e) =>
+                          setNotificationSettings({
+                            ...notificationSettings,
+                            weeklyDigest: e.target.checked,
+                          })
+                        }
+                        className="peer sr-only"
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
+                    </label>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -773,17 +794,20 @@ export default function CandidateSettingsPage() {
                         Tips, resources, and updates
                       </p>
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.marketingEmails}
-                      onChange={(e) =>
-                        setNotificationSettings({
-                          ...notificationSettings,
-                          marketingEmails: e.target.checked,
-                        })
-                      }
-                      className="h-4 w-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
-                    />
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.marketingEmails}
+                        onChange={(e) =>
+                          setNotificationSettings({
+                            ...notificationSettings,
+                            marketingEmails: e.target.checked,
+                          })
+                        }
+                        className="peer sr-only"
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
+                    </label>
                   </div>
                 </div>
 
