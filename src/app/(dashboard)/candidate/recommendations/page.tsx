@@ -21,6 +21,7 @@ import {
   Building2,
   ChevronDown,
   ChevronUp,
+  Check,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, Skeleton } from "@/components/ui";
 import { MatchScoreCard, MatchBreakdown } from "@/components/jobs";
@@ -51,6 +52,7 @@ interface RecommendedJob {
       verified: boolean;
     };
   };
+  hasApplied: boolean;
   matchScore: number;
   matchBreakdown: MatchBreakdown;
   reasons: string[];
@@ -640,6 +642,12 @@ function RecommendationsList({
 
                 {/* Actions */}
                 <div className="flex items-center gap-3">
+                  {rec.hasApplied && (
+                    <Badge variant="success" className="flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      Applied
+                    </Badge>
+                  )}
                   <Button asChild>
                     <Link href={`/jobs/${rec.job.id}`}>
                       View Job
