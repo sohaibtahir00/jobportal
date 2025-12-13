@@ -206,28 +206,44 @@ export function SettingsProgress({ sections, onSectionClick, className }: Settin
         Manage your company profile and account preferences
       </p>
 
-      {/* Incomplete sections notice */}
+      {/* Incomplete sections notice - Modern card design */}
       {incompleteSections.length > 0 && (
-        <div className="mt-4 p-3 bg-warning-50 border border-warning-200 rounded-lg">
-          <p className="text-sm text-warning-800">
-            <span className="font-medium">Complete your profile:</span>{" "}
-            {incompleteSections.map((section, index) => (
-              <span key={section.id}>
-                {onSectionClick ? (
-                  <button
-                    type="button"
-                    onClick={() => onSectionClick(section.id)}
-                    className="text-warning-700 underline hover:text-warning-900 font-medium"
-                  >
-                    {section.name}
-                  </button>
-                ) : (
-                  <span className="font-medium">{section.name}</span>
-                )}
-                {index < incompleteSections.length - 1 && ", "}
-              </span>
-            ))}
-          </p>
+        <div className="mt-4 p-4 bg-gradient-to-r from-secondary-50 to-secondary-100/50 border border-secondary-200 rounded-xl">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100">
+                <AlertCircle className="h-4 w-4 text-primary-600" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-secondary-900 mb-2">
+                Complete setup to unlock all features
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {incompleteSections.map((section) => (
+                  onSectionClick ? (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => onSectionClick(section.id)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-white border border-secondary-200 text-secondary-700 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 transition-colors shadow-sm"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                      {section.name}
+                    </button>
+                  ) : (
+                    <span
+                      key={section.id}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-white border border-secondary-200 text-secondary-700 shadow-sm"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                      {section.name}
+                    </span>
+                  )
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

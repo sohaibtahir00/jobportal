@@ -153,7 +153,8 @@ export default function EmployerSettingsPage() {
       profileData.location &&
       profileData.industry;
 
-    const notificationsComplete = Object.values(notificationSettings).some(Boolean);
+    // Notifications are complete if user has made a choice (either some enabled OR explicitly all disabled)
+    const notificationsComplete = true; // Always complete since user can choose to disable all
 
     const teamComplete = teamMembers.length > 0;
 
@@ -892,14 +893,13 @@ export default function EmployerSettingsPage() {
                     </label>
                     <Input
                       value={profileData.companyName}
-                      onChange={(e) =>
-                        setProfileData({
-                          ...profileData,
-                          companyName: e.target.value,
-                        })
-                      }
+                      disabled
+                      className="bg-secondary-50 cursor-not-allowed"
                       placeholder="Your company name"
                     />
+                    <p className="mt-1 text-xs text-secondary-500">
+                      Company name cannot be changed after registration
+                    </p>
                   </div>
 
                   <div>
@@ -1570,31 +1570,73 @@ export default function EmployerSettingsPage() {
               onToggle={() => toggleSection("notifications")}
             >
               <div className="space-y-4">
-                {Object.entries(notificationSettings).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-secondary-900">
-                        {key
-                          .replace(/([A-Z])/g, " $1")
-                          .replace(/^./, (str) => str.toUpperCase())}
-                      </p>
-                    </div>
-                    <label className="relative inline-flex cursor-pointer items-center">
-                      <input
-                        type="checkbox"
-                        checked={value}
-                        onChange={(e) =>
-                          setNotificationSettings({
-                            ...notificationSettings,
-                            [key]: e.target.checked,
-                          })
-                        }
-                        className="peer sr-only"
-                      />
-                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
-                    </label>
+                {/* Disable All Notifications Toggle */}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-secondary-50 to-secondary-100/50 border border-secondary-200">
+                  <div>
+                    <p className="font-semibold text-secondary-900">Disable All Notifications</p>
+                    <p className="text-sm text-secondary-500">Turn off all notification types at once</p>
                   </div>
-                ))}
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      checked={!Object.values(notificationSettings).some(Boolean)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          // Disable all notifications
+                          setNotificationSettings({
+                            emailNotifications: false,
+                            newApplications: false,
+                            interviewReminders: false,
+                            messages: false,
+                            placementUpdates: false,
+                            marketingEmails: false,
+                          });
+                        } else {
+                          // Re-enable default notifications
+                          setNotificationSettings({
+                            emailNotifications: true,
+                            newApplications: true,
+                            interviewReminders: true,
+                            messages: true,
+                            placementUpdates: true,
+                            marketingEmails: false,
+                          });
+                        }
+                      }}
+                      className="peer sr-only"
+                    />
+                    <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-error-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-error-500/20"></div>
+                  </label>
+                </div>
+
+                <div className="border-t border-secondary-200 pt-4">
+                  <p className="text-xs font-medium text-secondary-500 uppercase tracking-wider mb-4">Individual Preferences</p>
+                  {Object.entries(notificationSettings).map(([key, value]) => (
+                    <div key={key} className="flex items-center justify-between py-3">
+                      <div>
+                        <p className="font-medium text-secondary-900">
+                          {key
+                            .replace(/([A-Z])/g, " $1")
+                            .replace(/^./, (str) => str.toUpperCase())}
+                        </p>
+                      </div>
+                      <label className="relative inline-flex cursor-pointer items-center">
+                        <input
+                          type="checkbox"
+                          checked={value}
+                          onChange={(e) =>
+                            setNotificationSettings({
+                              ...notificationSettings,
+                              [key]: e.target.checked,
+                            })
+                          }
+                          className="peer sr-only"
+                        />
+                        <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="mt-6 flex justify-end">
