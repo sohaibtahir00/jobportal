@@ -34,6 +34,7 @@ export default function CandidateProfilePage() {
   const [error, setError] = useState("");
   const [candidateData, setCandidateData] = useState<any>(null);
   const [isBioExpanded, setIsBioExpanded] = useState(false);
+  const [isSkillsExpanded, setIsSkillsExpanded] = useState(false);
 
   // Callback when introduction is requested
   const handleIntroductionRequested = () => {
@@ -229,7 +230,7 @@ export default function CandidateProfilePage() {
                         {candidateData.user?.name || "Unknown Candidate"}
                       </h1>
                       <p className="mb-4 text-lg text-secondary-600">
-                        {candidateData.currentTitle || "No title specified"}
+                        {candidateData.currentRole || candidateData.currentTitle || "No title specified"}
                       </p>
 
                       <div className="flex flex-wrap gap-3 text-sm text-secondary-600">
@@ -303,7 +304,7 @@ export default function CandidateProfilePage() {
                   <div className={`mt-4 ${candidateData.bio ? '' : 'pt-4 border-t border-secondary-200'}`}>
                     <h3 className="text-sm font-semibold text-secondary-700 mb-2">Top Skills</h3>
                     <div className="flex flex-wrap gap-2">
-                      {candidateData.skills.slice(0, 6).map((skill: string, idx: number) => (
+                      {(isSkillsExpanded ? candidateData.skills : candidateData.skills.slice(0, 6)).map((skill: string, idx: number) => (
                         <span
                           key={idx}
                           className="inline-flex items-center rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700 border border-primary-200"
@@ -312,9 +313,20 @@ export default function CandidateProfilePage() {
                         </span>
                       ))}
                       {candidateData.skills.length > 6 && (
-                        <span className="inline-flex items-center rounded-full bg-secondary-100 px-2.5 py-1 text-xs font-medium text-secondary-600">
-                          +{candidateData.skills.length - 6} more
-                        </span>
+                        <button
+                          onClick={() => setIsSkillsExpanded(!isSkillsExpanded)}
+                          className="inline-flex items-center gap-1 rounded-full bg-secondary-100 px-2.5 py-1 text-xs font-medium text-primary-600 hover:bg-secondary-200 hover:text-primary-700 transition-colors"
+                        >
+                          {isSkillsExpanded ? (
+                            <>
+                              Show less <ChevronUp className="h-3 w-3" />
+                            </>
+                          ) : (
+                            <>
+                              +{candidateData.skills.length - 6} more <ChevronDown className="h-3 w-3" />
+                            </>
+                          )}
+                        </button>
                       )}
                     </div>
                   </div>
