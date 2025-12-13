@@ -642,7 +642,8 @@ export default function CandidateProfilePage() {
         setPhotoUrl(result.url);
         // Auto-save photo to database immediately
         await api.patch("/api/candidates/profile", { photo: result.url });
-        showToast("success", "Photo Uploaded", "Your profile photo has been updated.");
+        showToast("success", "Photo Uploaded", "Your profile photo has been saved.");
+        refetch(); // Refresh profile data to confirm save
       }
       queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
     } catch (error) {
