@@ -1198,7 +1198,7 @@ export default function EmployerSettingsPage() {
                             })
                           }
                           disabled={isSaving}
-                          className="border-error-200 text-error-500 hover:bg-error-50 hover:border-error-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="border-error-200 text-error-500 hover:bg-error-50 hover:border-error-300"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -1209,10 +1209,9 @@ export default function EmployerSettingsPage() {
                   {/* Add Member Button - Below the list */}
                   <div className="mt-4 flex justify-center">
                     <Button
-                      variant="outline"
+                      variant="primary"
                       onClick={() => setShowAddMember(true)}
                       disabled={isSaving}
-                      className="hover:border-accent-300 hover:bg-accent-50"
                     >
                       <Plus className="mr-2 h-4 w-4" />
                       Add Team Member
@@ -2199,7 +2198,7 @@ export default function EmployerSettingsPage() {
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-secondary-700">
-                  Job Title <span className="text-secondary-400 font-normal">(Optional)</span>
+                  Job Title <span className="text-error-600">*</span>
                 </label>
                 <Input
                   variant="modern"
@@ -2230,7 +2229,7 @@ export default function EmployerSettingsPage() {
                 <Button
                   variant="primary"
                   onClick={handleAddMember}
-                  disabled={isSaving || !newMember.name || !newMember.email}
+                  disabled={isSaving || !newMember.name || !newMember.email || !newMember.title}
                   className="flex-1"
                 >
                   {isSaving ? (
