@@ -640,6 +640,8 @@ export default function CandidateProfilePage() {
         showToast("success", "Resume Uploaded", "Your resume has been uploaded successfully.");
       } else {
         setPhotoUrl(result.url);
+        // Auto-save photo to database immediately
+        await api.patch("/api/candidates/profile", { photo: result.url });
         showToast("success", "Photo Uploaded", "Your profile photo has been updated.");
       }
       queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
