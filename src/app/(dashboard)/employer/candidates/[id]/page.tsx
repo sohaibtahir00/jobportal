@@ -208,9 +208,9 @@ export default function CandidateProfilePage() {
                   <div className="flex items-start gap-4">
                     {/* Avatar */}
                     <div className="relative h-20 w-20 flex-shrink-0 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-2xl overflow-hidden">
-                      {candidateData.user?.image ? (
+                      {candidateData.photo || candidateData.user?.image ? (
                         <img
-                          src={candidateData.user.image}
+                          src={candidateData.photo || candidateData.user?.image}
                           alt={candidateData.user?.name || "Candidate"}
                           className="h-full w-full object-cover"
                         />

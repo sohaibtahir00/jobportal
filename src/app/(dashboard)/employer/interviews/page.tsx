@@ -1147,7 +1147,7 @@ export default function EmployerInterviewsPage() {
                       const candidate = interview.application?.candidate;
                       const candidateName =
                         candidate?.user?.name || "Unknown Candidate";
-                      const candidateImage = candidate?.user?.image;
+                      const candidateImage = candidate?.photo || candidate?.user?.image;
                       const jobTitle =
                         interview.application?.job?.title || "Unknown Position";
                       const candidateLocation = candidate?.location;
@@ -1767,7 +1767,7 @@ export default function EmployerInterviewsPage() {
                         const candidate = interview.application?.candidate;
                         const candidateName =
                           candidate?.user?.name || "Unknown Candidate";
-                        const candidateImage = candidate?.user?.image;
+                        const candidateImage = candidate?.photo || candidate?.user?.image;
                         const jobTitle =
                           interview.application?.job?.title ||
                           "Unknown Position";

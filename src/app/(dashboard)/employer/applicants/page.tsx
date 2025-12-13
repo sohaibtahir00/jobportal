@@ -658,9 +658,9 @@ export default function EmployerApplicantsPage() {
 
                     {/* Photo */}
                     <div className="flex-shrink-0">
-                      {app.candidate.user.image ? (
+                      {(app.candidate as any).photo || app.candidate.user.image ? (
                         <img
-                          src={app.candidate.user.image}
+                          src={(app.candidate as any).photo || app.candidate.user.image}
                           alt={app.candidate.user.firstName || "Candidate"}
                           className="w-16 h-16 rounded-full object-cover"
                         />
