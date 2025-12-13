@@ -122,7 +122,12 @@ export default function CandidateSettingsPage() {
 
   // Section status calculations
   const sectionStatuses = useMemo(() => {
-    const profileComplete = profileData.name && profileData.email;
+    // Profile is complete when name, email, phone, and location are all filled
+    const profileComplete =
+      profileData.name &&
+      profileData.email &&
+      profileData.phone &&
+      profileData.location;
     const notificationsComplete = true; // Always complete as defaults are set
     const privacyComplete = true; // Always complete as defaults are set
 
