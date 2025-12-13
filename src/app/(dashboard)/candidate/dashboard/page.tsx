@@ -89,51 +89,21 @@ const formatFieldName = (field: string): string => {
   return fieldLabels[field] || field;
 };
 
-// Get banner styling based on completion percentage
-const getBannerStyle = (percentage: number) => {
-  if (percentage < 30) {
-    return {
-      bg: "from-white to-red-50/30",
-      border: "border-red-400",
-      iconBg: "bg-red-100",
-      iconColor: "text-red-600",
-      button: "bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700",
-      progressBg: "bg-red-100",
-      progressColor: "[&>div]:bg-red-500",
-      tagBg: "bg-secondary-100",
-      tagText: "text-secondary-700",
-      dismissColor: "text-secondary-400 hover:text-secondary-600",
-      message: "Your profile needs attention - complete it to start applying",
-    };
-  } else if (percentage < 70) {
-    return {
-      bg: "from-white to-primary-50/30",
-      border: "border-primary-300",
-      iconBg: "bg-primary-100",
-      iconColor: "text-primary-600",
-      button: "bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700",
-      progressBg: "bg-primary-100",
-      progressColor: "[&>div]:bg-primary-500",
-      tagBg: "bg-secondary-100",
-      tagText: "text-secondary-700",
-      dismissColor: "text-secondary-400 hover:text-secondary-600",
-      message: "Add missing information to boost your visibility",
-    };
-  } else {
-    return {
-      bg: "from-white to-green-50/30",
-      border: "border-green-400",
-      iconBg: "bg-green-100",
-      iconColor: "text-green-600",
-      button: "bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700",
-      progressBg: "bg-green-100",
-      progressColor: "[&>div]:bg-green-500",
-      tagBg: "bg-secondary-100",
-      tagText: "text-secondary-700",
-      dismissColor: "text-secondary-400 hover:text-secondary-600",
-      message: "Almost there! Just a few more fields to complete",
-    };
-  }
+// Get banner styling (consistent blue theme)
+const getBannerStyle = () => {
+  return {
+    bg: "from-white to-primary-50/30",
+    border: "border-primary-300",
+    iconBg: "bg-primary-100",
+    iconColor: "text-primary-600",
+    button: "bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700",
+    progressBg: "bg-primary-100",
+    progressColor: "[&>div]:bg-primary-500",
+    tagBg: "bg-secondary-100",
+    tagText: "text-secondary-700",
+    dismissColor: "text-secondary-400 hover:text-secondary-600",
+    message: "Add missing information to apply for jobs",
+  };
 };
 
 // ============================================================================
@@ -370,7 +340,7 @@ export default function CandidateDashboardPage() {
 
   const isProfileIncomplete = (profileCompletionData?.percentage || 0) < 80;
   const hasSkillsAssessment = testInfo?.hasTaken || false;
-  const bannerStyle = getBannerStyle(profileCompletionData?.percentage || 0);
+  const bannerStyle = getBannerStyle();
   const completedFieldsCount =
     12 - (profileCompletionData?.missingFields?.length || 0);
 
@@ -553,20 +523,19 @@ export default function CandidateDashboardPage() {
                   </div>
 
                   {/* Action buttons */}
-                  <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                  <div className="flex flex-col sm:flex-row gap-3 shrink-0">
                     {/* Resume Upload Button */}
                     <div className="relative">
                       <input
                         type="file"
                         accept=".pdf,.doc,.docx"
                         onChange={handleResumeUpload}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         disabled={isParsingResume}
                       />
                       <Button
-                        variant="outline"
                         size="lg"
-                        className="pointer-events-none border-2 bg-white/80"
+                        className="pointer-events-none bg-white hover:bg-gray-50 text-primary-700 font-semibold shadow-lg border-2 border-primary-200"
                         disabled={isParsingResume}
                       >
                         {isParsingResume ? (
@@ -587,7 +556,7 @@ export default function CandidateDashboardPage() {
                     <Button
                       asChild
                       size="lg"
-                      className={`${bannerStyle.button} text-white`}
+                      className={`${bannerStyle.button} text-white shadow-lg`}
                     >
                       <Link href="/candidate/profile">
                         <Edit className="h-4 w-4 mr-2" />
