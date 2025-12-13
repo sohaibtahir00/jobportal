@@ -128,6 +128,7 @@ export default function CandidateSettingsPage() {
 
     return {
       profile: profileComplete ? "complete" : "incomplete",
+      password: "complete", // Always complete since it's optional
       notifications: notificationsComplete ? "complete" : "incomplete",
       privacy: privacyComplete ? "complete" : "incomplete",
     } as Record<string, SectionStatus>;
