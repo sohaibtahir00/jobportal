@@ -944,6 +944,7 @@ export default function CandidateProfilePage() {
                   onSave={handlePhotoSave}
                   onRemove={handlePhotoRemove}
                   disabled={uploading}
+                  userName={session?.user?.name || ""}
                 />
 
                 {/* Name and Email */}

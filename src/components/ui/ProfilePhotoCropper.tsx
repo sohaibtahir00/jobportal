@@ -12,6 +12,8 @@ interface ProfilePhotoCropperProps {
   onRemove?: () => Promise<void>;
   disabled?: boolean;
   size?: "sm" | "md" | "lg";
+  /** User's name for showing initials in empty state */
+  userName?: string;
 }
 
 // Helper function to create cropped image
@@ -76,6 +78,7 @@ export function ProfilePhotoCropper({
   onRemove,
   disabled = false,
   size = "lg",
+  userName,
 }: ProfilePhotoCropperProps) {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -150,88 +153,84 @@ export function ProfilePhotoCropper({
     setRotation(0);
   };
 
+  // Get user initial for empty state
+  const userInitial = userName?.charAt(0).toUpperCase() || "U";
+
   return (
     <>
-      {/* Photo Display & Upload Button */}
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative group">
-          {currentPhotoUrl ? (
-            <img
-              src={currentPhotoUrl}
-              alt="Profile"
-              className={cn(
-                sizeClasses[size],
-                "rounded-full object-cover border-4 border-white shadow-lg"
-              )}
-            />
-          ) : (
-            <div
-              className={cn(
-                sizeClasses[size],
-                "rounded-full bg-gradient-to-br from-secondary-100 to-secondary-200 flex items-center justify-center border-4 border-white shadow-lg"
-              )}
-            >
-              <Camera className="h-8 w-8 text-secondary-400" />
-            </div>
-          )}
-
-          {/* Hover overlay */}
-          <label
+      {/* Photo Display with compact actions */}
+      <div className="relative group">
+        {/* Main photo/avatar circle */}
+        {currentPhotoUrl ? (
+          <img
+            src={currentPhotoUrl}
+            alt="Profile"
             className={cn(
-              "absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer",
-              disabled && "cursor-not-allowed"
+              sizeClasses[size],
+              "rounded-full object-cover border-4 border-white shadow-lg"
+            )}
+          />
+        ) : (
+          <div
+            className={cn(
+              sizeClasses[size],
+              "rounded-full bg-gradient-to-br from-primary-500 to-blue-600 flex items-center justify-center text-white text-4xl font-bold border-4 border-white shadow-lg"
             )}
           >
-            <Upload className="h-6 w-6 text-white" />
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/jpg,image/webp"
-              onChange={handleFileSelect}
-              disabled={disabled}
-              className="hidden"
-            />
-          </label>
-        </div>
+            {userInitial}
+          </div>
+        )}
 
-        {/* Action buttons */}
-        <div className="flex gap-2">
-          <label>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={disabled}
-              className="cursor-pointer"
-              asChild
-            >
-              <span>
-                <Upload className="h-4 w-4 mr-2" />
-                {currentPhotoUrl ? "Change Photo" : "Upload Photo"}
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/jpg,image/webp"
-                  onChange={handleFileSelect}
-                  disabled={disabled}
-                  className="hidden"
-                />
-              </span>
-            </Button>
-          </label>
-
-          {currentPhotoUrl && onRemove && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleRemove}
-              disabled={disabled || isRemoving}
-              className="text-danger-600 hover:text-danger-700 hover:bg-danger-50"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isRemoving ? "Removing..." : "Remove"}
-            </Button>
+        {/* Upload overlay on hover */}
+        <label
+          className={cn(
+            "absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer",
+            disabled && "cursor-not-allowed opacity-0"
           )}
-        </div>
+        >
+          <Camera className="h-6 w-6 text-white" />
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/jpg,image/webp"
+            onChange={handleFileSelect}
+            disabled={disabled}
+            className="hidden"
+          />
+        </label>
+
+        {/* Small camera button at bottom-right */}
+        <label
+          className={cn(
+            "absolute bottom-0 right-0 bg-primary-600 rounded-full p-2 cursor-pointer hover:bg-primary-700 shadow-lg transition-colors",
+            disabled && "cursor-not-allowed opacity-50"
+          )}
+        >
+          <Camera className="h-4 w-4 text-white" />
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/jpg,image/webp"
+            onChange={handleFileSelect}
+            disabled={disabled}
+            className="hidden"
+          />
+        </label>
+
+        {/* Remove button - only show when photo exists */}
+        {currentPhotoUrl && onRemove && (
+          <button
+            type="button"
+            onClick={handleRemove}
+            disabled={disabled || isRemoving}
+            className={cn(
+              "absolute top-0 right-0 bg-white rounded-full p-1.5 shadow-md hover:bg-danger-50 transition-colors opacity-0 group-hover:opacity-100",
+              "border border-secondary-200 hover:border-danger-300",
+              (disabled || isRemoving) && "cursor-not-allowed opacity-50"
+            )}
+            title="Remove photo"
+          >
+            <Trash2 className="h-3.5 w-3.5 text-danger-600" />
+          </button>
+        )}
       </div>
 
       {/* Crop Modal */}
