@@ -152,15 +152,20 @@ export function CollapsibleSection({
 export interface SettingsProgressProps {
   sections: {
     id: string;
+    name: string;
     status: SectionStatus;
   }[];
+  onSectionClick?: (sectionId: string) => void;
   className?: string;
 }
 
-export function SettingsProgress({ sections, className }: SettingsProgressProps) {
+export function SettingsProgress({ sections, onSectionClick, className }: SettingsProgressProps) {
   const completedCount = sections.filter((s) => s.status === "complete").length;
   const totalCount = sections.length;
   const percentage = Math.round((completedCount / totalCount) * 100);
+
+  // Get incomplete sections (status is "incomplete", not "warning" since warnings are optional)
+  const incompleteSections = sections.filter((s) => s.status === "incomplete");
 
   return (
     <div className={cn("mb-6", className)}>
@@ -200,6 +205,31 @@ export function SettingsProgress({ sections, className }: SettingsProgressProps)
       <p className="text-sm text-secondary-500 mt-2">
         Manage your company profile and account preferences
       </p>
+
+      {/* Incomplete sections notice */}
+      {incompleteSections.length > 0 && (
+        <div className="mt-4 p-3 bg-warning-50 border border-warning-200 rounded-lg">
+          <p className="text-sm text-warning-800">
+            <span className="font-medium">Complete your profile:</span>{" "}
+            {incompleteSections.map((section, index) => (
+              <span key={section.id}>
+                {onSectionClick ? (
+                  <button
+                    type="button"
+                    onClick={() => onSectionClick(section.id)}
+                    className="text-warning-700 underline hover:text-warning-900 font-medium"
+                  >
+                    {section.name}
+                  </button>
+                ) : (
+                  <span className="font-medium">{section.name}</span>
+                )}
+                {index < incompleteSections.length - 1 && ", "}
+              </span>
+            ))}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

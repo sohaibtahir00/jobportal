@@ -353,19 +353,6 @@ export default function EmployerSettingsPage() {
     }
   }, [status, session]);
 
-  // Auto-expand first incomplete section after loading
-  useEffect(() => {
-    if (!isLoading && expandedSections.size === 0) {
-      // Find the first incomplete section
-      const sectionIds = ["company", "notifications", "team", "video", "calendar", "billing", "templates"];
-      const firstIncomplete = sectionIds.find((id) => sectionStatuses[id] === "incomplete");
-
-      if (firstIncomplete) {
-        setExpandedSections(new Set([firstIncomplete]));
-      }
-    }
-  }, [isLoading, sectionStatuses]);
-
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -837,23 +824,35 @@ export default function EmployerSettingsPage() {
     return null;
   }
 
-  // Section configuration for progress tracking
+  // Section configuration for progress tracking (new order: Company, Team, Video, Calendar, Billing, Templates, Notifications, Password)
   const sections = [
-    { id: "company", status: sectionStatuses.company },
-    { id: "notifications", status: sectionStatuses.notifications },
-    { id: "team", status: sectionStatuses.team },
-    { id: "video", status: sectionStatuses.video },
-    { id: "calendar", status: sectionStatuses.calendar },
-    { id: "billing", status: sectionStatuses.billing },
-    { id: "templates", status: sectionStatuses.templates },
+    { id: "company", name: "Company Profile", status: sectionStatuses.company },
+    { id: "team", name: "Team Members", status: sectionStatuses.team },
+    { id: "video", name: "Video Conferencing", status: sectionStatuses.video },
+    { id: "calendar", name: "Google Calendar", status: sectionStatuses.calendar },
+    { id: "billing", name: "Billing & Payments", status: sectionStatuses.billing },
+    { id: "templates", name: "Interview Templates", status: sectionStatuses.templates },
+    { id: "notifications", name: "Notification Preferences", status: sectionStatuses.notifications },
   ];
+
+  // Handler to expand a section when clicked from the incomplete list
+  const handleSectionClick = (sectionId: string) => {
+    setExpandedSections(new Set([sectionId]));
+    // Scroll to the section
+    setTimeout(() => {
+      const element = document.getElementById(`section-content-${sectionId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 100);
+  };
 
   return (
     <div className="min-h-screen bg-secondary-50 py-8">
       <div className="container">
         <div className="mx-auto max-w-4xl">
           {/* Progress Header */}
-          <SettingsProgress sections={sections} />
+          <SettingsProgress sections={sections} onSectionClick={handleSectionClick} />
 
           {/* Success/Error Messages */}
           {successMessage && (
@@ -1043,179 +1042,6 @@ export default function EmployerSettingsPage() {
                   </Button>
                 </div>
               </form>
-            </CollapsibleSection>
-
-            {/* Change Password */}
-            <CollapsibleSection
-              id="password"
-              icon={<Lock className="h-5 w-5" />}
-              iconBgColor="bg-warning-100"
-              iconColor="text-warning-600"
-              title="Change Password"
-              description="Update your password to keep your account secure"
-              summary={getSummary("password")}
-              status={sectionStatuses.password}
-              isExpanded={expandedSections.has("password")}
-              onToggle={() => toggleSection("password")}
-            >
-              <form onSubmit={handlePasswordChange} className="space-y-4">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-secondary-700">
-                    Current Password
-                  </label>
-                  <div className="relative">
-                    <Input
-                      type={showCurrentPassword ? "text" : "password"}
-                      value={passwordData.currentPassword}
-                      onChange={(e) =>
-                        setPasswordData({
-                          ...passwordData,
-                          currentPassword: e.target.value,
-                        })
-                      }
-                      placeholder="Enter current password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowCurrentPassword(!showCurrentPassword)
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
-                    >
-                      {showCurrentPassword ? (
-                        <EyeOff className="h-5 w-5" />
-                      ) : (
-                        <Eye className="h-5 w-5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-secondary-700">
-                    New Password
-                  </label>
-                  <div className="relative">
-                    <Input
-                      type={showNewPassword ? "text" : "password"}
-                      value={passwordData.newPassword}
-                      onChange={(e) =>
-                        setPasswordData({
-                          ...passwordData,
-                          newPassword: e.target.value,
-                        })
-                      }
-                      placeholder="Enter new password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
-                    >
-                      {showNewPassword ? (
-                        <EyeOff className="h-5 w-5" />
-                      ) : (
-                        <Eye className="h-5 w-5" />
-                      )}
-                    </button>
-                  </div>
-                  <p className="mt-1 text-xs text-secondary-500">
-                    Must be at least 8 characters
-                  </p>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-secondary-700">
-                    Confirm New Password
-                  </label>
-                  <Input
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={(e) =>
-                      setPasswordData({
-                        ...passwordData,
-                        confirmPassword: e.target.value,
-                      })
-                    }
-                    placeholder="Confirm new password"
-                  />
-                </div>
-
-                <div className="flex justify-end">
-                  <Button type="submit" variant="primary" disabled={isSaving}>
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Changing...
-                      </>
-                    ) : (
-                      "Change Password"
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CollapsibleSection>
-
-            {/* Notification Preferences */}
-            <CollapsibleSection
-              id="notifications"
-              icon={<Bell className="h-5 w-5" />}
-              iconBgColor="bg-accent-100"
-              iconColor="text-accent-600"
-              title="Notification Preferences"
-              description="Choose what updates you want to receive"
-              summary={getSummary("notifications")}
-              status={sectionStatuses.notifications}
-              isExpanded={expandedSections.has("notifications")}
-              onToggle={() => toggleSection("notifications")}
-            >
-              <div className="space-y-4">
-                {Object.entries(notificationSettings).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-secondary-900">
-                        {key
-                          .replace(/([A-Z])/g, " $1")
-                          .replace(/^./, (str) => str.toUpperCase())}
-                      </p>
-                    </div>
-                    <label className="relative inline-flex cursor-pointer items-center">
-                      <input
-                        type="checkbox"
-                        checked={value}
-                        onChange={(e) =>
-                          setNotificationSettings({
-                            ...notificationSettings,
-                            [key]: e.target.checked,
-                          })
-                        }
-                        className="peer sr-only"
-                      />
-                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
-                    </label>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 flex justify-end">
-                <Button
-                  variant="primary"
-                  onClick={handleNotificationUpdate}
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Preferences
-                    </>
-                  )}
-                </Button>
-              </div>
             </CollapsibleSection>
 
             {/* Team Members */}
@@ -1728,6 +1554,179 @@ export default function EmployerSettingsPage() {
                   </div>
                 )}
               </div>
+            </CollapsibleSection>
+
+            {/* Notification Preferences */}
+            <CollapsibleSection
+              id="notifications"
+              icon={<Bell className="h-5 w-5" />}
+              iconBgColor="bg-accent-100"
+              iconColor="text-accent-600"
+              title="Notification Preferences"
+              description="Choose what updates you want to receive"
+              summary={getSummary("notifications")}
+              status={sectionStatuses.notifications}
+              isExpanded={expandedSections.has("notifications")}
+              onToggle={() => toggleSection("notifications")}
+            >
+              <div className="space-y-4">
+                {Object.entries(notificationSettings).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-secondary-900">
+                        {key
+                          .replace(/([A-Z])/g, " $1")
+                          .replace(/^./, (str) => str.toUpperCase())}
+                      </p>
+                    </div>
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={value}
+                        onChange={(e) =>
+                          setNotificationSettings({
+                            ...notificationSettings,
+                            [key]: e.target.checked,
+                          })
+                        }
+                        className="peer sr-only"
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
+                    </label>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <Button
+                  variant="primary"
+                  onClick={handleNotificationUpdate}
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Preferences
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CollapsibleSection>
+
+            {/* Change Password */}
+            <CollapsibleSection
+              id="password"
+              icon={<Lock className="h-5 w-5" />}
+              iconBgColor="bg-warning-100"
+              iconColor="text-warning-600"
+              title="Change Password"
+              description="Update your password to keep your account secure"
+              summary={getSummary("password")}
+              status={sectionStatuses.password}
+              isExpanded={expandedSections.has("password")}
+              onToggle={() => toggleSection("password")}
+            >
+              <form onSubmit={handlePasswordChange} className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-secondary-700">
+                    Current Password
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type={showCurrentPassword ? "text" : "password"}
+                      value={passwordData.currentPassword}
+                      onChange={(e) =>
+                        setPasswordData({
+                          ...passwordData,
+                          currentPassword: e.target.value,
+                        })
+                      }
+                      placeholder="Enter current password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
+                    >
+                      {showCurrentPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-secondary-700">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type={showNewPassword ? "text" : "password"}
+                      value={passwordData.newPassword}
+                      onChange={(e) =>
+                        setPasswordData({
+                          ...passwordData,
+                          newPassword: e.target.value,
+                        })
+                      }
+                      placeholder="Enter new password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
+                    >
+                      {showNewPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-secondary-500">
+                    Must be at least 8 characters
+                  </p>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-secondary-700">
+                    Confirm New Password
+                  </label>
+                  <Input
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) =>
+                      setPasswordData({
+                        ...passwordData,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    placeholder="Confirm new password"
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <Button type="submit" variant="primary" disabled={isSaving}>
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Changing...
+                      </>
+                    ) : (
+                      "Change Password"
+                    )}
+                  </Button>
+                </div>
+              </form>
             </CollapsibleSection>
 
             {/* Danger Zone - Always visible, not collapsible */}
