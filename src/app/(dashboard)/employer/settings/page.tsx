@@ -14,7 +14,6 @@ import {
   Trash2,
   Loader2,
   AlertCircle,
-  CheckCircle2,
   Upload,
   X,
   Video,
@@ -59,8 +58,6 @@ export default function EmployerSettingsPage() {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
@@ -394,7 +391,7 @@ export default function EmployerSettingsPage() {
         setIsLoading(false);
       } catch (err: any) {
         console.error("Failed to load settings:", err);
-        setErrorMessage(err.response?.data?.error || "Failed to load settings");
+        showToast("error", "Load Failed", err.response?.data?.error || "Failed to load settings");
         setIsLoading(false);
       }
     };
@@ -407,8 +404,6 @@ export default function EmployerSettingsPage() {
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setErrorMessage("");
-    setSuccessMessage("");
 
     try {
       // Update employer profile
@@ -436,13 +431,11 @@ export default function EmployerSettingsPage() {
       // Invalidate the employer dashboard query to trigger refresh
       queryClient.invalidateQueries({ queryKey: ["employer-dashboard"] });
 
-      setSuccessMessage("Profile updated successfully!");
+      showToast("success", "Profile Updated", "Your company profile has been updated successfully");
       setIsSaving(false);
-
-      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Failed to update profile:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to update profile");
+      showToast("error", "Update Failed", err.response?.data?.error || "Failed to update profile");
       setIsSaving(false);
     }
   };
@@ -494,8 +487,6 @@ export default function EmployerSettingsPage() {
 
   const handleNotificationUpdate = async () => {
     setIsSaving(true);
-    setErrorMessage("");
-    setSuccessMessage("");
 
     try {
       await api.patch("/api/settings", {
@@ -507,40 +498,34 @@ export default function EmployerSettingsPage() {
         notifyMarketingEmails: notificationSettings.marketingEmails,
       });
 
-      setSuccessMessage("Notification preferences updated!");
+      showToast("success", "Preferences Saved", "Your notification preferences have been updated");
       setIsSaving(false);
-
-      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Failed to update preferences:", err);
-      setErrorMessage(
-        err.response?.data?.error || "Failed to update preferences"
-      );
+      showToast("error", "Update Failed", err.response?.data?.error || "Failed to update preferences");
       setIsSaving(false);
     }
   };
 
   const handleAddMember = async () => {
     if (!newMember.name || !newMember.email) {
-      setErrorMessage("Name and email are required");
+      showToast("error", "Missing Fields", "Name and email are required");
       return;
     }
 
     setIsSaving(true);
-    setErrorMessage("");
 
     try {
       const response = await api.post("/api/employer/team-members", newMember);
       setTeamMembers([response.data.member, ...teamMembers]);
       setNewMember({ name: "", email: "", title: "" });
       setShowAddMember(false);
-      setSuccessMessage("Team member added successfully!");
+      showToast("success", "Member Added", "Team member added successfully");
       // Invalidate the employer dashboard query to update banner
       queryClient.invalidateQueries({ queryKey: ["employer-dashboard"] });
-      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Failed to add team member:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to add team member");
+      showToast("error", "Failed to Add", err.response?.data?.error || "Failed to add team member");
     } finally {
       setIsSaving(false);
     }
@@ -548,7 +533,6 @@ export default function EmployerSettingsPage() {
 
   const handleDeleteMember = async (id: string) => {
     setIsSaving(true);
-    setErrorMessage("");
 
     try {
       await api.delete(`/api/employer/team-members?id=${id}`);
@@ -577,7 +561,7 @@ export default function EmployerSettingsPage() {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
     if (!backendUrl) {
-      setErrorMessage("Backend URL not configured. Please contact support.");
+      showToast("error", "Configuration Error", "Backend URL not configured. Please contact support.");
       return;
     }
 
@@ -593,7 +577,7 @@ export default function EmployerSettingsPage() {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
     if (!backendUrl) {
-      setErrorMessage("Backend URL not configured. Please contact support.");
+      showToast("error", "Configuration Error", "Backend URL not configured. Please contact support.");
       return;
     }
 
@@ -610,7 +594,6 @@ export default function EmployerSettingsPage() {
 
   const disconnectVideo = async () => {
     setIsSaving(true);
-    setErrorMessage("");
 
     try {
       await api.delete("/api/employer/integrations/video");
@@ -636,7 +619,6 @@ export default function EmployerSettingsPage() {
 
   const disconnectCalendar = async () => {
     setIsSaving(true);
-    setErrorMessage("");
 
     try {
       await api.delete("/api/employer/integrations/google-calendar/disconnect");
@@ -663,17 +645,16 @@ export default function EmployerSettingsPage() {
   // Interview template functions
   const handleCreateTemplate = async () => {
     if (!newTemplate.name.trim()) {
-      setErrorMessage("Template name is required");
+      showToast("error", "Missing Name", "Template name is required");
       return;
     }
 
     if (newTemplate.rounds.some((r) => !r.name.trim() || !r.duration)) {
-      setErrorMessage("All rounds must have a name and duration");
+      showToast("error", "Incomplete Rounds", "All rounds must have a name and duration");
       return;
     }
 
     setIsSaving(true);
-    setErrorMessage("");
 
     try {
       const response = await api.post("/api/employer/interview-templates", {
@@ -688,11 +669,10 @@ export default function EmployerSettingsPage() {
         rounds: [{ name: "", duration: 30, description: "" }],
       });
       setShowCreateTemplate(false);
-      setSuccessMessage("Template created successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      showToast("success", "Template Created", "Interview template created successfully");
     } catch (err: any) {
       console.error("Failed to create template:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to create template");
+      showToast("error", "Creation Failed", err.response?.data?.error || "Failed to create template");
     } finally {
       setIsSaving(false);
     }
@@ -702,7 +682,6 @@ export default function EmployerSettingsPage() {
     if (!editingTemplate) return;
 
     setIsSaving(true);
-    setErrorMessage("");
 
     try {
       const response = await api.put(
@@ -720,11 +699,10 @@ export default function EmployerSettingsPage() {
         )
       );
       setEditingTemplate(null);
-      setSuccessMessage("Template updated successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      showToast("success", "Template Updated", "Interview template updated successfully");
     } catch (err: any) {
       console.error("Failed to update template:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to update template");
+      showToast("error", "Update Failed", err.response?.data?.error || "Failed to update template");
     } finally {
       setIsSaving(false);
     }
@@ -732,7 +710,6 @@ export default function EmployerSettingsPage() {
 
   const handleDeleteTemplate = async (templateId: string) => {
     setIsSaving(true);
-    setErrorMessage("");
 
     try {
       await api.delete(`/api/employer/interview-templates/${templateId}`);
@@ -756,7 +733,6 @@ export default function EmployerSettingsPage() {
 
   const handleSetDefaultTemplate = async (templateId: string) => {
     setIsSaving(true);
-    setErrorMessage("");
 
     try {
       const response = await api.put(
@@ -772,13 +748,10 @@ export default function EmployerSettingsPage() {
         }))
       );
 
-      setSuccessMessage("Default template set successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      showToast("success", "Default Set", "Default template set successfully");
     } catch (err: any) {
       console.error("Failed to set default template:", err);
-      setErrorMessage(
-        err.response?.data?.error || "Failed to set default template"
-      );
+      showToast("error", "Failed", err.response?.data?.error || "Failed to set default template");
     } finally {
       setIsSaving(false);
     }
@@ -803,7 +776,6 @@ export default function EmployerSettingsPage() {
 
   const handleAccountDeletion = async () => {
     setIsSaving(true);
-    setErrorMessage("");
 
     try {
       await api.delete("/api/settings");
@@ -839,7 +811,6 @@ export default function EmployerSettingsPage() {
   // Set up billing (create Stripe customer)
   const handleSetupBilling = async () => {
     setIsSettingUpBilling(true);
-    setErrorMessage("");
     try {
       const response = await api.post("/api/stripe/create-customer");
       if (response.data.customerId) {
@@ -910,21 +881,6 @@ export default function EmployerSettingsPage() {
         <div className="mx-auto max-w-4xl">
           {/* Progress Header */}
           <SettingsProgress sections={sections} onSectionClick={handleSectionClick} />
-
-          {/* Success/Error Messages */}
-          {successMessage && (
-            <div className="mb-6 flex items-center gap-3 rounded-lg bg-success-50 border border-success-200 p-4">
-              <CheckCircle2 className="h-5 w-5 text-success-600" />
-              <p className="text-sm text-success-700">{successMessage}</p>
-            </div>
-          )}
-
-          {errorMessage && (
-            <div className="mb-6 flex items-center gap-3 rounded-lg bg-error-50 border border-error-200 p-4">
-              <AlertCircle className="h-5 w-5 text-error-600" />
-              <p className="text-sm text-error-700">{errorMessage}</p>
-            </div>
-          )}
 
           {/* Collapsible Sections */}
           <div className="space-y-4">
