@@ -754,6 +754,16 @@ export default function CandidateProfilePage() {
           portfolio: data.portfolio || null,
         });
 
+        // Delete existing work experience and education before creating new ones
+        // This prevents duplicates when re-importing from resume
+        try {
+          await api.delete("/api/candidates/work-experience");
+          await api.delete("/api/candidates/education");
+        } catch (deleteError) {
+          console.error("Error clearing existing records:", deleteError);
+          // Continue anyway - the new records will still be created
+        }
+
         for (const exp of workExperienceData) {
           if (exp.companyName && exp.jobTitle && exp.startDate) {
             try {
