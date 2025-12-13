@@ -1098,34 +1098,49 @@ export default function EmployerSettingsPage() {
               </div>
 
               {teamMembers.length === 0 ? (
-                <div className="rounded-lg border-2 border-dashed border-secondary-200 bg-secondary-50 p-8 text-center">
-                  <p className="text-secondary-600">
-                    No team members added yet. Add team members who will conduct
-                    interviews.
+                <div className="rounded-2xl border-2 border-dashed border-secondary-200 bg-gradient-to-br from-secondary-50 to-secondary-100/50 p-10 text-center">
+                  <div className="mx-auto w-16 h-16 rounded-2xl bg-primary-100 flex items-center justify-center mb-4">
+                    <Users className="h-8 w-8 text-primary-600" />
+                  </div>
+                  <h3 className="font-semibold text-secondary-900 mb-2">No team members yet</h3>
+                  <p className="text-secondary-600 text-sm max-w-sm mx-auto">
+                    Add team members who will conduct interviews. They&apos;ll be available when scheduling interview rounds.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {teamMembers.map((member) => (
+                  {teamMembers.map((member, index) => (
                     <div
                       key={member.id}
-                      className="flex items-center justify-between rounded-lg border border-secondary-200 p-4"
+                      className="group flex items-center justify-between rounded-xl border border-secondary-200 bg-gradient-to-r from-white to-secondary-50/50 p-4 hover:border-accent-300 hover:shadow-md transition-all duration-200"
                     >
-                      <div>
-                        <h3 className="font-semibold text-secondary-900">
-                          {member.name}
-                        </h3>
-                        <p className="text-sm text-secondary-600">
-                          {member.email}
-                        </p>
-                        {member.title && (
-                          <p className="text-sm text-secondary-500">
-                            {member.title}
-                          </p>
-                        )}
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-100 to-accent-100 text-primary-600 font-semibold text-lg shadow-sm">
+                          {member.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-secondary-900">
+                            {member.name}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Mail className="h-3.5 w-3.5 text-secondary-400" />
+                            <p className="text-sm text-secondary-600">
+                              {member.email}
+                            </p>
+                          </div>
+                          {member.title && (
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <Briefcase className="h-3.5 w-3.5 text-secondary-400" />
+                              <p className="text-sm text-secondary-500">
+                                {member.title}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <Button
                         variant="outline"
+                        size="sm"
                         onClick={() =>
                           setDeleteMemberModal({
                             isOpen: true,
@@ -1134,7 +1149,7 @@ export default function EmployerSettingsPage() {
                           })
                         }
                         disabled={isSaving}
-                        className="border-error-300 text-error-600 hover:bg-error-50"
+                        className="border-error-200 text-error-500 hover:bg-error-50 hover:border-error-300 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -1158,122 +1173,161 @@ export default function EmployerSettingsPage() {
               onToggle={() => toggleSection("video")}
               variant="accent"
             >
-              {/* Zoom Integration */}
-              <div className="mb-4 rounded-lg border border-secondary-200 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-                      <Video className="h-6 w-6 text-blue-600" />
+              <div className="space-y-4">
+                {/* Zoom Integration */}
+                <div className={`rounded-xl border-2 p-5 transition-all duration-200 ${
+                  videoIntegration?.platform === "ZOOM"
+                    ? "border-blue-300 bg-gradient-to-r from-blue-50 to-blue-100/50 shadow-sm"
+                    : "border-secondary-200 bg-gradient-to-r from-white to-secondary-50/30 hover:border-secondary-300"
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`flex h-14 w-14 items-center justify-center rounded-xl shadow-sm ${
+                        videoIntegration?.platform === "ZOOM"
+                          ? "bg-blue-500"
+                          : "bg-gradient-to-br from-blue-100 to-blue-200"
+                      }`}>
+                        <Video className={`h-7 w-7 ${videoIntegration?.platform === "ZOOM" ? "text-white" : "text-blue-600"}`} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-secondary-900">Zoom</h3>
+                          {videoIntegration?.platform === "ZOOM" && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-700">
+                              <span className="w-1.5 h-1.5 rounded-full bg-success-500"></span>
+                              Connected
+                            </span>
+                          )}
+                        </div>
+                        {videoIntegration?.platform === "ZOOM" ? (
+                          <p className="text-sm text-secondary-600 mt-0.5">
+                            {videoIntegration.email}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-secondary-500 mt-0.5">
+                            Connect to auto-generate meeting links
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-secondary-900">Zoom</h3>
-                      {videoIntegration?.platform === "ZOOM" ? (
-                        <p className="text-sm text-success-600">
-                          Connected as {videoIntegration.email}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-secondary-500">
-                          Not connected
-                        </p>
-                      )}
-                    </div>
-                  </div>
 
-                  {videoIntegration?.platform === "ZOOM" ? (
-                    <Button
-                      variant="outline"
-                      onClick={() => setDisconnectVideoModal(true)}
-                      disabled={isSaving}
-                      className="border-error-300 text-error-600 hover:bg-error-50"
-                    >
-                      {isSaving ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Disconnecting...
-                        </>
-                      ) : (
-                        "Disconnect"
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="primary"
-                      onClick={connectZoom}
-                      disabled={
-                        isSaving ||
-                        (videoIntegration &&
-                          videoIntegration.platform !== "ZOOM")
-                      }
-                    >
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Connect Zoom
-                    </Button>
-                  )}
+                    {videoIntegration?.platform === "ZOOM" ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDisconnectVideoModal(true)}
+                        disabled={isSaving}
+                        className="border-error-200 text-error-600 hover:bg-error-50 hover:border-error-300"
+                      >
+                        {isSaving ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Disconnect"
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        onClick={connectZoom}
+                        disabled={
+                          isSaving ||
+                          (videoIntegration &&
+                            videoIntegration.platform !== "ZOOM")
+                        }
+                        className="shadow-sm"
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Connect
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Google Meet Integration */}
+                <div className={`rounded-xl border-2 p-5 transition-all duration-200 ${
+                  videoIntegration?.platform === "GOOGLE_MEET"
+                    ? "border-green-300 bg-gradient-to-r from-green-50 to-green-100/50 shadow-sm"
+                    : "border-secondary-200 bg-gradient-to-r from-white to-secondary-50/30 hover:border-secondary-300"
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`flex h-14 w-14 items-center justify-center rounded-xl shadow-sm ${
+                        videoIntegration?.platform === "GOOGLE_MEET"
+                          ? "bg-green-500"
+                          : "bg-gradient-to-br from-green-100 to-green-200"
+                      }`}>
+                        <Video className={`h-7 w-7 ${videoIntegration?.platform === "GOOGLE_MEET" ? "text-white" : "text-green-600"}`} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-secondary-900">Google Meet</h3>
+                          {videoIntegration?.platform === "GOOGLE_MEET" && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-700">
+                              <span className="w-1.5 h-1.5 rounded-full bg-success-500"></span>
+                              Connected
+                            </span>
+                          )}
+                        </div>
+                        {videoIntegration?.platform === "GOOGLE_MEET" ? (
+                          <p className="text-sm text-secondary-600 mt-0.5">
+                            {videoIntegration.email}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-secondary-500 mt-0.5">
+                            Connect to auto-generate meeting links
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {videoIntegration?.platform === "GOOGLE_MEET" ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDisconnectVideoModal(true)}
+                        disabled={isSaving}
+                        className="border-error-200 text-error-600 hover:bg-error-50 hover:border-error-300"
+                      >
+                        {isSaving ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Disconnect"
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        onClick={connectGoogleMeet}
+                        disabled={
+                          isSaving ||
+                          (videoIntegration &&
+                            videoIntegration.platform !== "GOOGLE_MEET")
+                        }
+                        className="shadow-sm"
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Connect
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Google Meet Integration */}
-              <div className="rounded-lg border border-secondary-200 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
-                      <Video className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-secondary-900">
-                        Google Meet
-                      </h3>
-                      {videoIntegration?.platform === "GOOGLE_MEET" ? (
-                        <p className="text-sm text-success-600">
-                          Connected as {videoIntegration.email}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-secondary-500">
-                          Not connected
-                        </p>
-                      )}
+              {/* Info Box */}
+              <div className="mt-5 rounded-xl bg-gradient-to-r from-accent-50 to-primary-50 border border-accent-200/60 p-4">
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-100">
+                      <Video className="h-4 w-4 text-accent-600" />
                     </div>
                   </div>
-
-                  {videoIntegration?.platform === "GOOGLE_MEET" ? (
-                    <Button
-                      variant="outline"
-                      onClick={() => setDisconnectVideoModal(true)}
-                      disabled={isSaving}
-                      className="border-error-300 text-error-600 hover:bg-error-50"
-                    >
-                      {isSaving ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Disconnecting...
-                        </>
-                      ) : (
-                        "Disconnect"
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="primary"
-                      onClick={connectGoogleMeet}
-                      disabled={
-                        isSaving ||
-                        (videoIntegration &&
-                          videoIntegration.platform !== "GOOGLE_MEET")
-                      }
-                    >
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Connect Google Meet
-                    </Button>
-                  )}
+                  <div>
+                    <p className="text-sm font-medium text-secondary-900 mb-1">Auto-generate meeting links</p>
+                    <p className="text-sm text-secondary-600">
+                      Connect Zoom or Google Meet to automatically create meeting links when scheduling interviews. Only one platform can be connected at a time.
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="mt-4 rounded-lg bg-blue-50 border border-blue-200 p-4">
-                <p className="text-sm text-blue-800">
-                  Connect Zoom or Google Meet to
-                  automatically generate meeting links when scheduling
-                  interviews. You can only connect one platform at a time.
-                </p>
               </div>
             </CollapsibleSection>
 
@@ -1291,23 +1345,39 @@ export default function EmployerSettingsPage() {
               onToggle={() => toggleSection("calendar")}
               variant="accent"
             >
-              <div className="rounded-lg border border-secondary-200 p-4">
+              <div className={`rounded-xl border-2 p-5 transition-all duration-200 ${
+                calendarIntegration?.connected
+                  ? "border-blue-300 bg-gradient-to-r from-blue-50 to-blue-100/50 shadow-sm"
+                  : "border-secondary-200 bg-gradient-to-r from-white to-secondary-50/30 hover:border-secondary-300"
+              }`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-                      <Calendar className="h-6 w-6 text-blue-600" />
+                    <div className={`flex h-14 w-14 items-center justify-center rounded-xl shadow-sm ${
+                      calendarIntegration?.connected
+                        ? "bg-gradient-to-br from-blue-500 to-blue-600"
+                        : "bg-gradient-to-br from-blue-100 to-blue-200"
+                    }`}>
+                      <Calendar className={`h-7 w-7 ${calendarIntegration?.connected ? "text-white" : "text-blue-600"}`} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-secondary-900">
-                        Google Calendar
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-secondary-900">
+                          Google Calendar
+                        </h3>
+                        {calendarIntegration?.connected && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-success-500"></span>
+                            Connected
+                          </span>
+                        )}
+                      </div>
                       {calendarIntegration?.connected ? (
-                        <p className="text-sm text-success-600">
-                          Connected as {calendarIntegration.email}
+                        <p className="text-sm text-secondary-600 mt-0.5">
+                          {calendarIntegration.email}
                         </p>
                       ) : (
-                        <p className="text-sm text-secondary-500">
-                          Not connected
+                        <p className="text-sm text-secondary-500 mt-0.5">
+                          Sync your calendar to prevent double-booking
                         </p>
                       )}
                     </div>
@@ -1316,15 +1386,13 @@ export default function EmployerSettingsPage() {
                   {calendarIntegration?.connected ? (
                     <Button
                       variant="outline"
+                      size="sm"
                       onClick={() => setDisconnectCalendarModal(true)}
                       disabled={isSaving}
-                      className="border-error-300 text-error-600 hover:bg-error-50"
+                      className="border-error-200 text-error-600 hover:bg-error-50 hover:border-error-300"
                     >
                       {isSaving ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Disconnecting...
-                        </>
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         "Disconnect"
                       )}
@@ -1338,20 +1406,30 @@ export default function EmployerSettingsPage() {
                           "/api/employer/integrations/google-calendar/oauth";
                       }}
                       disabled={isSaving}
+                      className="shadow-sm"
                     >
                       <ExternalLink className="mr-2 h-4 w-4" />
-                      Connect Google Calendar
+                      Connect
                     </Button>
                   )}
                 </div>
               </div>
 
-              <div className="mt-4 rounded-lg bg-blue-50 border border-blue-200 p-4">
-                <p className="text-sm text-blue-800">
-                  When you connect Google Calendar,
-                  your busy times will automatically show when setting interview
-                  availability, helping you avoid scheduling conflicts.
-                </p>
+              {/* Info Box */}
+              <div className="mt-5 rounded-xl bg-gradient-to-r from-accent-50 to-primary-50 border border-accent-200/60 p-4">
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-100">
+                      <Calendar className="h-4 w-4 text-accent-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-secondary-900 mb-1">Avoid scheduling conflicts</p>
+                    <p className="text-sm text-secondary-600">
+                      When connected, your busy times will automatically show when setting interview availability, helping you avoid double-booking.
+                    </p>
+                  </div>
+                </div>
               </div>
             </CollapsibleSection>
 
@@ -1370,66 +1448,89 @@ export default function EmployerSettingsPage() {
               variant="accent"
             >
               {billingLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <Loader2 className="h-10 w-10 animate-spin text-primary-600 mx-auto mb-3" />
+                    <p className="text-sm text-secondary-500">Loading billing information...</p>
+                  </div>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {/* Stripe Customer Status */}
-                  <div className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`h-3 w-3 rounded-full ${
-                          hasStripeCustomer ? "bg-green-500" : "bg-yellow-500"
-                        }`}
-                      />
-                      <div>
-                        <p className="font-medium text-secondary-900">
-                          Billing Account Status
-                        </p>
-                        <p className="text-sm text-secondary-600">
-                          {hasStripeCustomer
-                            ? `Connected (ID: ...${stripeCustomerId?.slice(
-                                -6
-                              )})`
-                            : "Not set up yet"}
-                        </p>
+                  <div className={`rounded-xl border-2 p-5 transition-all duration-200 ${
+                    hasStripeCustomer
+                      ? "border-green-300 bg-gradient-to-r from-green-50 to-green-100/50"
+                      : "border-warning-300 bg-gradient-to-r from-warning-50 to-warning-100/50"
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={`flex h-14 w-14 items-center justify-center rounded-xl shadow-sm ${
+                          hasStripeCustomer
+                            ? "bg-gradient-to-br from-green-500 to-green-600"
+                            : "bg-gradient-to-br from-warning-400 to-warning-500"
+                        }`}>
+                          <CreditCard className="h-7 w-7 text-white" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-secondary-900">
+                              Billing Account
+                            </p>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                              hasStripeCustomer
+                                ? "bg-success-100 text-success-700"
+                                : "bg-warning-100 text-warning-700"
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                hasStripeCustomer ? "bg-success-500" : "bg-warning-500"
+                              }`}></span>
+                              {hasStripeCustomer ? "Active" : "Not Set Up"}
+                            </span>
+                          </div>
+                          <p className="text-sm text-secondary-600 mt-0.5">
+                            {hasStripeCustomer
+                              ? `Customer ID: •••${stripeCustomerId?.slice(-6)}`
+                              : "Set up billing to streamline payments"}
+                          </p>
+                        </div>
                       </div>
+                      {!hasStripeCustomer && (
+                        <Button
+                          variant="primary"
+                          onClick={handleSetupBilling}
+                          disabled={isSettingUpBilling}
+                          className="shadow-sm"
+                        >
+                          {isSettingUpBilling ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Setting up...
+                            </>
+                          ) : (
+                            "Set Up Billing"
+                          )}
+                        </Button>
+                      )}
                     </div>
-                    {!hasStripeCustomer && (
-                      <Button
-                        onClick={handleSetupBilling}
-                        disabled={isSettingUpBilling}
-                      >
-                        {isSettingUpBilling ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Setting up...
-                          </>
-                        ) : (
-                          "Set Up Billing"
-                        )}
-                      </Button>
-                    )}
                   </div>
 
                   {/* Payment Method */}
                   {hasStripeCustomer && (
                     <div className="space-y-3">
-                      <h4 className="font-medium text-secondary-900">
-                        Payment Method
-                      </h4>
+                      <p className="text-xs font-medium text-secondary-500 uppercase tracking-wider">Payment Method</p>
                       {paymentMethod ? (
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <CreditCard className="h-5 w-5 text-secondary-500" />
+                        <div className="rounded-xl border-2 border-secondary-200 bg-gradient-to-r from-white to-secondary-50/30 p-5">
+                          <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-secondary-100 to-secondary-200">
+                              <CreditCard className="h-6 w-6 text-secondary-600" />
+                            </div>
                             <div>
-                              <p className="font-medium text-secondary-900">
+                              <p className="font-semibold text-secondary-900">
                                 {paymentMethod.brand.charAt(0).toUpperCase() +
                                   paymentMethod.brand.slice(1)}{" "}
-                                {paymentMethod.last4}
+                                •••• {paymentMethod.last4}
                               </p>
-                              <p className="text-sm text-secondary-600">
+                              <p className="text-sm text-secondary-500 mt-0.5">
                                 Expires{" "}
                                 {paymentMethod.expMonth
                                   .toString()
@@ -1440,8 +1541,11 @@ export default function EmployerSettingsPage() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-between p-4 border border-dashed rounded-lg">
-                          <p className="text-secondary-600">
+                        <div className="rounded-xl border-2 border-dashed border-secondary-200 bg-gradient-to-br from-secondary-50 to-secondary-100/50 p-6 text-center">
+                          <div className="mx-auto w-12 h-12 rounded-xl bg-secondary-100 flex items-center justify-center mb-3">
+                            <CreditCard className="h-6 w-6 text-secondary-400" />
+                          </div>
+                          <p className="font-medium text-secondary-700 mb-1">
                             No payment method on file
                           </p>
                           <p className="text-sm text-secondary-500">
@@ -1453,11 +1557,11 @@ export default function EmployerSettingsPage() {
                   )}
 
                   {/* Invoices Link */}
-                  <div className="pt-4 border-t">
+                  <div className="pt-4 border-t border-secondary-200">
                     <Button
                       variant="outline"
                       asChild
-                      className="w-full sm:w-auto"
+                      className="w-full sm:w-auto hover:border-accent-300 hover:bg-accent-50"
                     >
                       <Link href="/employer/invoices">
                         <FileText className="h-4 w-4 mr-2" />
@@ -1467,12 +1571,20 @@ export default function EmployerSettingsPage() {
                   </div>
 
                   {/* Info Box */}
-                  <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
-                    <p className="text-sm text-blue-800">
-                      Your billing account will be
-                      automatically set up when you make your first payment. You
-                      can also set it up now to streamline the checkout process.
-                    </p>
+                  <div className="rounded-xl bg-gradient-to-r from-accent-50 to-primary-50 border border-accent-200/60 p-4">
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-100">
+                          <CreditCard className="h-4 w-4 text-accent-600" />
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-secondary-900 mb-1">Automatic billing setup</p>
+                        <p className="text-sm text-secondary-600">
+                          Your billing account will be automatically set up when you make your first payment. You can also set it up now to streamline the checkout process.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1508,32 +1620,51 @@ export default function EmployerSettingsPage() {
                 {templates.map((template) => (
                   <div
                     key={template.id}
-                    className="rounded-lg border border-secondary-200 p-4"
+                    className={`group rounded-xl border-2 p-5 transition-all duration-200 ${
+                      template.isDefault
+                        ? "border-accent-300 bg-gradient-to-r from-accent-50/50 to-primary-50/30"
+                        : "border-secondary-200 bg-gradient-to-r from-white to-secondary-50/30 hover:border-secondary-300 hover:shadow-sm"
+                    }`}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-secondary-900">
-                            {template.name}
-                          </h3>
-                          {template.isDefault && (
-                            <Badge variant="success">Default</Badge>
-                          )}
-                          {template.isBuiltIn && (
-                            <Badge variant="secondary">Built-in</Badge>
-                          )}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-4 flex-1 min-w-0">
+                        <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl shadow-sm ${
+                          template.isDefault
+                            ? "bg-gradient-to-br from-accent-500 to-primary-500"
+                            : template.isBuiltIn
+                            ? "bg-gradient-to-br from-secondary-200 to-secondary-300"
+                            : "bg-gradient-to-br from-primary-100 to-accent-100"
+                        }`}>
+                          <FileText className={`h-6 w-6 ${template.isDefault ? "text-white" : template.isBuiltIn ? "text-secondary-600" : "text-primary-600"}`} />
                         </div>
-                        <p className="mt-1 text-sm text-secondary-600">
-                          {template.rounds.length} round
-                          {template.rounds.length !== 1 ? "s" : ""}:{" "}
-                          {template.rounds
-                            .map((r: any) => `${r.name} (${r.duration} min)`)
-                            .join(", ")}
-                        </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-secondary-900">
+                              {template.name}
+                            </h3>
+                            {template.isDefault && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-accent-100 text-accent-700">
+                                <Star className="h-3 w-3" />
+                                Default
+                              </span>
+                            )}
+                            {template.isBuiltIn && (
+                              <Badge variant="secondary">Built-in</Badge>
+                            )}
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {template.rounds.map((r: any, idx: number) => (
+                              <span key={idx} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary-100 text-secondary-700">
+                                <span className="w-1.5 h-1.5 rounded-full bg-secondary-400"></span>
+                                {r.name} ({r.duration} min)
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
 
                       {!template.isBuiltIn && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                           {!template.isDefault && (
                             <Button
                               variant="outline"
@@ -1542,9 +1673,10 @@ export default function EmployerSettingsPage() {
                                 handleSetDefaultTemplate(template.id)
                               }
                               disabled={isSaving}
+                              className="hover:border-accent-300 hover:bg-accent-50"
                             >
                               <Star className="mr-1 h-3 w-3" />
-                              Set Default
+                              Default
                             </Button>
                           )}
                           <Button
@@ -1552,9 +1684,9 @@ export default function EmployerSettingsPage() {
                             size="sm"
                             onClick={() => setEditingTemplate(template)}
                             disabled={isSaving}
+                            className="hover:border-accent-300 hover:bg-accent-50"
                           >
-                            <Edit className="mr-1 h-3 w-3" />
-                            Edit
+                            <Edit className="h-3 w-3" />
                           </Button>
                           <Button
                             variant="outline"
@@ -1567,10 +1699,9 @@ export default function EmployerSettingsPage() {
                               })
                             }
                             disabled={isSaving}
-                            className="border-error-300 text-error-600 hover:bg-error-50"
+                            className="border-error-200 text-error-500 hover:bg-error-50 hover:border-error-300"
                           >
-                            <Trash2 className="mr-1 h-3 w-3" />
-                            Delete
+                            <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
                       )}
@@ -1579,11 +1710,13 @@ export default function EmployerSettingsPage() {
                 ))}
 
                 {templates.length === 0 && (
-                  <div className="rounded-lg border-2 border-dashed border-secondary-200 p-8 text-center">
-                    <FileText className="mx-auto h-12 w-12 text-secondary-400" />
-                    <p className="mt-2 text-sm text-secondary-600">
-                      No custom templates yet. Create your first template to get
-                      started.
+                  <div className="rounded-2xl border-2 border-dashed border-secondary-200 bg-gradient-to-br from-secondary-50 to-secondary-100/50 p-10 text-center">
+                    <div className="mx-auto w-16 h-16 rounded-2xl bg-primary-100 flex items-center justify-center mb-4">
+                      <FileText className="h-8 w-8 text-primary-600" />
+                    </div>
+                    <h3 className="font-semibold text-secondary-900 mb-2">No templates yet</h3>
+                    <p className="text-secondary-600 text-sm max-w-sm mx-auto">
+                      Create custom interview templates to standardize your hiring process across all positions.
                     </p>
                   </div>
                 )}
