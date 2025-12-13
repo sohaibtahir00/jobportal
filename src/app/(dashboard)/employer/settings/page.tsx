@@ -26,6 +26,12 @@ import {
   Calendar,
   CreditCard,
   Users,
+  Phone,
+  MapPin,
+  Globe,
+  Briefcase,
+  FileImage,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -886,8 +892,8 @@ export default function EmployerSettingsPage() {
               onToggle={() => toggleSection("company")}
               variant="accent"
             >
-              <form onSubmit={handleProfileUpdate} className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <form onSubmit={handleProfileUpdate} className="space-y-5">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                   <div>
                     <label className="mb-2 block text-sm font-medium text-secondary-700">
                       Company Name
@@ -895,10 +901,12 @@ export default function EmployerSettingsPage() {
                     <Input
                       value={profileData.companyName}
                       disabled
-                      className="bg-secondary-50 cursor-not-allowed"
+                      variant="modern"
+                      leftIcon={<Building2 className="h-5 w-5" />}
+                      className="bg-secondary-100/50 cursor-not-allowed"
                       placeholder="Your company name"
                     />
-                    <p className="mt-1 text-xs text-secondary-500">
+                    <p className="mt-1.5 text-xs text-secondary-500">
                       Company name cannot be changed after registration
                     </p>
                   </div>
@@ -909,6 +917,8 @@ export default function EmployerSettingsPage() {
                     </label>
                     <Input
                       type="email"
+                      variant="modern"
+                      leftIcon={<Mail className="h-5 w-5" />}
                       value={profileData.email}
                       onChange={(e) =>
                         setProfileData({
@@ -925,6 +935,8 @@ export default function EmployerSettingsPage() {
                       Phone
                     </label>
                     <Input
+                      variant="modern"
+                      leftIcon={<Phone className="h-5 w-5" />}
                       value={profileData.phone}
                       onChange={(e) =>
                         setProfileData({
@@ -941,6 +953,8 @@ export default function EmployerSettingsPage() {
                       Website
                     </label>
                     <Input
+                      variant="modern"
+                      leftIcon={<Globe className="h-5 w-5" />}
                       value={profileData.website}
                       onChange={(e) =>
                         setProfileData({
@@ -957,6 +971,8 @@ export default function EmployerSettingsPage() {
                       Location
                     </label>
                     <Input
+                      variant="modern"
+                      leftIcon={<MapPin className="h-5 w-5" />}
                       value={profileData.location}
                       onChange={(e) =>
                         setProfileData({
@@ -972,24 +988,29 @@ export default function EmployerSettingsPage() {
                     <label className="mb-2 block text-sm font-medium text-secondary-700">
                       Company Size
                     </label>
-                    <select
-                      value={profileData.companySize}
-                      onChange={(e) =>
-                        setProfileData({
-                          ...profileData,
-                          companySize: e.target.value,
-                        })
-                      }
-                      className="w-full rounded-lg border border-secondary-300 px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-                    >
-                      <option value="">Select size</option>
-                      <option value="1-10">1-10 employees</option>
-                      <option value="11-50">11-50 employees</option>
-                      <option value="51-200">51-200 employees</option>
-                      <option value="201-500">201-500 employees</option>
-                      <option value="501-1000">501-1000 employees</option>
-                      <option value="1000+">1000+ employees</option>
-                    </select>
+                    <div className="relative group">
+                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-secondary-400 transition-colors duration-200 group-focus-within:text-accent-500">
+                        <Users className="h-5 w-5" />
+                      </div>
+                      <select
+                        value={profileData.companySize}
+                        onChange={(e) =>
+                          setProfileData({
+                            ...profileData,
+                            companySize: e.target.value,
+                          })
+                        }
+                        className="h-12 w-full rounded-xl border border-secondary-200 bg-secondary-50/50 pl-12 pr-4 py-3 text-sm transition-all duration-200 hover:bg-white hover:border-secondary-300 focus:outline-none focus:bg-white focus:border-accent-400 focus:ring-2 focus:ring-accent-500/20"
+                      >
+                        <option value="">Select size</option>
+                        <option value="1-10">1-10 employees</option>
+                        <option value="11-50">11-50 employees</option>
+                        <option value="51-200">51-200 employees</option>
+                        <option value="201-500">201-500 employees</option>
+                        <option value="501-1000">501-1000 employees</option>
+                        <option value="1000+">1000+ employees</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="md:col-span-2">
@@ -997,6 +1018,8 @@ export default function EmployerSettingsPage() {
                       Industry
                     </label>
                     <Input
+                      variant="modern"
+                      leftIcon={<Briefcase className="h-5 w-5" />}
                       value={profileData.industry}
                       onChange={(e) =>
                         setProfileData({
@@ -1012,18 +1035,23 @@ export default function EmployerSettingsPage() {
                     <label className="mb-2 block text-sm font-medium text-secondary-700">
                       Company Description
                     </label>
-                    <textarea
-                      value={profileData.description}
-                      onChange={(e) =>
-                        setProfileData({
-                          ...profileData,
-                          description: e.target.value,
-                        })
-                      }
-                      rows={4}
-                      className="w-full rounded-lg border border-secondary-300 px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-                      placeholder="Brief description of your company..."
-                    />
+                    <div className="relative group">
+                      <div className="pointer-events-none absolute top-4 left-4 text-secondary-400 transition-colors duration-200 group-focus-within:text-accent-500">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <textarea
+                        value={profileData.description}
+                        onChange={(e) =>
+                          setProfileData({
+                            ...profileData,
+                            description: e.target.value,
+                          })
+                        }
+                        rows={4}
+                        className="w-full rounded-xl border border-secondary-200 bg-secondary-50/50 pl-12 pr-4 py-3 text-sm transition-all duration-200 hover:bg-white hover:border-secondary-300 focus:outline-none focus:bg-white focus:border-accent-400 focus:ring-2 focus:ring-accent-500/20"
+                        placeholder="Brief description of your company..."
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -1681,14 +1709,16 @@ export default function EmployerSettingsPage() {
               isExpanded={expandedSections.has("password")}
               onToggle={() => toggleSection("password")}
             >
-              <form onSubmit={handlePasswordChange} className="space-y-4">
+              <form onSubmit={handlePasswordChange} className="space-y-5">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-secondary-700">
                     Current Password
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
                     <Input
                       type={showCurrentPassword ? "text" : "password"}
+                      variant="modern"
+                      leftIcon={<Lock className="h-5 w-5" />}
                       value={passwordData.currentPassword}
                       onChange={(e) =>
                         setPasswordData({
@@ -1697,13 +1727,14 @@ export default function EmployerSettingsPage() {
                         })
                       }
                       placeholder="Enter current password"
+                      className="pr-12"
                     />
                     <button
                       type="button"
                       onClick={() =>
                         setShowCurrentPassword(!showCurrentPassword)
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-accent-500 transition-colors"
                     >
                       {showCurrentPassword ? (
                         <EyeOff className="h-5 w-5" />
@@ -1718,9 +1749,11 @@ export default function EmployerSettingsPage() {
                   <label className="mb-2 block text-sm font-medium text-secondary-700">
                     New Password
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
                     <Input
                       type={showNewPassword ? "text" : "password"}
+                      variant="modern"
+                      leftIcon={<Lock className="h-5 w-5" />}
                       value={passwordData.newPassword}
                       onChange={(e) =>
                         setPasswordData({
@@ -1729,11 +1762,12 @@ export default function EmployerSettingsPage() {
                         })
                       }
                       placeholder="Enter new password"
+                      className="pr-12"
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-accent-500 transition-colors"
                     >
                       {showNewPassword ? (
                         <EyeOff className="h-5 w-5" />
@@ -1742,7 +1776,7 @@ export default function EmployerSettingsPage() {
                       )}
                     </button>
                   </div>
-                  <p className="mt-1 text-xs text-secondary-500">
+                  <p className="mt-1.5 text-xs text-secondary-500">
                     Must be at least 8 characters
                   </p>
                 </div>
@@ -1753,6 +1787,8 @@ export default function EmployerSettingsPage() {
                   </label>
                   <Input
                     type="password"
+                    variant="modern"
+                    leftIcon={<Lock className="h-5 w-5" />}
                     value={passwordData.confirmPassword}
                     onChange={(e) =>
                       setPasswordData({
