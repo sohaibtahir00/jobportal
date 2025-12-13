@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -25,6 +25,7 @@ import {
   Star,
   Calendar,
   CreditCard,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -35,6 +36,9 @@ import {
   Input,
   ConfirmationModal,
   useToast,
+  CollapsibleSection,
+  SettingsProgress,
+  SectionStatus,
 } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
@@ -50,6 +54,9 @@ export default function EmployerSettingsPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+
+  // Expanded sections state
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   // Confirmation modal states
   const [deleteMemberModal, setDeleteMemberModal] = useState<{
@@ -137,6 +144,100 @@ export default function EmployerSettingsPage() {
     brand: string;
   } | null>(null);
   const [billingLoading, setBillingLoading] = useState(true);
+
+  // Calculate section statuses
+  const sectionStatuses = useMemo(() => {
+    const companyProfileComplete =
+      profileData.companyName &&
+      profileData.email &&
+      profileData.location &&
+      profileData.industry;
+
+    const notificationsComplete = Object.values(notificationSettings).some(Boolean);
+
+    const teamComplete = teamMembers.length > 0;
+
+    const videoComplete = !!videoIntegration;
+
+    const calendarComplete = !!calendarIntegration?.connected;
+
+    const billingComplete = hasStripeCustomer;
+
+    const templatesComplete = templates.length > 0;
+
+    return {
+      company: companyProfileComplete ? "complete" : "incomplete",
+      password: "complete", // Always complete since it's optional
+      notifications: notificationsComplete ? "complete" : "warning",
+      team: teamComplete ? "complete" : "warning",
+      video: videoComplete ? "complete" : "warning",
+      calendar: calendarComplete ? "complete" : "warning",
+      billing: billingComplete ? "complete" : "warning",
+      templates: templatesComplete ? "complete" : "warning",
+    } as Record<string, SectionStatus>;
+  }, [
+    profileData,
+    notificationSettings,
+    teamMembers,
+    videoIntegration,
+    calendarIntegration,
+    hasStripeCustomer,
+    templates,
+  ]);
+
+  // Get summary text for each section
+  const getSummary = (section: string): string => {
+    switch (section) {
+      case "company":
+        if (profileData.companyName && profileData.location) {
+          return `${profileData.companyName} • ${profileData.location}`;
+        }
+        return "Company details not set";
+      case "password":
+        return "Password is set";
+      case "notifications":
+        const enabledCount = Object.values(notificationSettings).filter(Boolean).length;
+        return `${enabledCount} of ${Object.keys(notificationSettings).length} notifications enabled`;
+      case "team":
+        if (teamMembers.length === 0) return "No team members added";
+        return `${teamMembers.length} team member${teamMembers.length !== 1 ? "s" : ""}`;
+      case "video":
+        if (videoIntegration?.platform) {
+          return `${videoIntegration.platform === "ZOOM" ? "Zoom" : "Google Meet"} connected`;
+        }
+        return "Not connected";
+      case "calendar":
+        if (calendarIntegration?.connected) {
+          return `Connected as ${calendarIntegration.email}`;
+        }
+        return "Not connected";
+      case "billing":
+        if (hasStripeCustomer) {
+          return paymentMethod
+            ? `${paymentMethod.brand} •••• ${paymentMethod.last4}`
+            : "Account set up";
+        }
+        return "Not set up";
+      case "templates":
+        if (templates.length === 0) return "No templates created";
+        return `${templates.length} template${templates.length !== 1 ? "s" : ""}`;
+      default:
+        return "";
+    }
+  };
+
+  // Toggle section expansion
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
+  };
 
   // Load settings
   useEffect(() => {
@@ -251,6 +352,19 @@ export default function EmployerSettingsPage() {
       loadSettings();
     }
   }, [status, session]);
+
+  // Auto-expand first incomplete section after loading
+  useEffect(() => {
+    if (!isLoading && expandedSections.size === 0) {
+      // Find the first incomplete section
+      const sectionIds = ["company", "notifications", "team", "video", "calendar", "billing", "templates"];
+      const firstIncomplete = sectionIds.find((id) => sectionStatuses[id] === "incomplete");
+
+      if (firstIncomplete) {
+        setExpandedSections(new Set([firstIncomplete]));
+      }
+    }
+  }, [isLoading, sectionStatuses]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -723,19 +837,23 @@ export default function EmployerSettingsPage() {
     return null;
   }
 
+  // Section configuration for progress tracking
+  const sections = [
+    { id: "company", status: sectionStatuses.company },
+    { id: "notifications", status: sectionStatuses.notifications },
+    { id: "team", status: sectionStatuses.team },
+    { id: "video", status: sectionStatuses.video },
+    { id: "calendar", status: sectionStatuses.calendar },
+    { id: "billing", status: sectionStatuses.billing },
+    { id: "templates", status: sectionStatuses.templates },
+  ];
+
   return (
     <div className="min-h-screen bg-secondary-50 py-8">
       <div className="container">
         <div className="mx-auto max-w-4xl">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="mb-2 text-3xl font-bold text-secondary-900">
-              Company Settings
-            </h1>
-            <p className="text-secondary-600">
-              Manage your company profile and account preferences
-            </p>
-          </div>
+          {/* Progress Header */}
+          <SettingsProgress sections={sections} />
 
           {/* Success/Error Messages */}
           {successMessage && (
@@ -752,23 +870,21 @@ export default function EmployerSettingsPage() {
             </div>
           )}
 
-          {/* Company Profile */}
-          <Card variant="accent" className="mb-6">
-            <CardContent className="p-6">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
-                  <Building2 className="h-5 w-5 text-primary-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-secondary-900">
-                    Company Profile
-                  </h2>
-                  <p className="text-sm text-secondary-600">
-                    Update your company information
-                  </p>
-                </div>
-              </div>
-
+          {/* Collapsible Sections */}
+          <div className="space-y-4">
+            {/* Company Profile */}
+            <CollapsibleSection
+              id="company"
+              icon={<Building2 className="h-5 w-5" />}
+              iconBgColor="bg-primary-100"
+              iconColor="text-primary-600"
+              title="Company Profile"
+              description="Update your company information"
+              summary={getSummary("company")}
+              status={sectionStatuses.company}
+              isExpanded={expandedSections.has("company")}
+              onToggle={() => toggleSection("company")}
+            >
               <form onSubmit={handleProfileUpdate} className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
@@ -927,26 +1043,21 @@ export default function EmployerSettingsPage() {
                   </Button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
+            </CollapsibleSection>
 
-          {/* Change Password */}
-          <Card variant="accent" className="mb-6">
-            <CardContent className="p-6">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warning-100">
-                  <Lock className="h-5 w-5 text-warning-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-secondary-900">
-                    Change Password
-                  </h2>
-                  <p className="text-sm text-secondary-600">
-                    Update your password to keep your account secure
-                  </p>
-                </div>
-              </div>
-
+            {/* Change Password */}
+            <CollapsibleSection
+              id="password"
+              icon={<Lock className="h-5 w-5" />}
+              iconBgColor="bg-warning-100"
+              iconColor="text-warning-600"
+              title="Change Password"
+              description="Update your password to keep your account secure"
+              summary={getSummary("password")}
+              status={sectionStatuses.password}
+              isExpanded={expandedSections.has("password")}
+              onToggle={() => toggleSection("password")}
+            >
               <form onSubmit={handlePasswordChange} className="space-y-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-secondary-700">
@@ -1043,26 +1154,21 @@ export default function EmployerSettingsPage() {
                   </Button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
+            </CollapsibleSection>
 
-          {/* Notification Preferences */}
-          <Card variant="accent" className="mb-6">
-            <CardContent className="p-6">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100">
-                  <Bell className="h-5 w-5 text-accent-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-secondary-900">
-                    Notification Preferences
-                  </h2>
-                  <p className="text-sm text-secondary-600">
-                    Choose what updates you want to receive
-                  </p>
-                </div>
-              </div>
-
+            {/* Notification Preferences */}
+            <CollapsibleSection
+              id="notifications"
+              icon={<Bell className="h-5 w-5" />}
+              iconBgColor="bg-accent-100"
+              iconColor="text-accent-600"
+              title="Notification Preferences"
+              description="Choose what updates you want to receive"
+              summary={getSummary("notifications")}
+              status={sectionStatuses.notifications}
+              isExpanded={expandedSections.has("notifications")}
+              onToggle={() => toggleSection("notifications")}
+            >
               <div className="space-y-4">
                 {Object.entries(notificationSettings).map(([key, value]) => (
                   <div key={key} className="flex items-center justify-between">
@@ -1110,26 +1216,22 @@ export default function EmployerSettingsPage() {
                   )}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </CollapsibleSection>
 
-          {/* Team Members */}
-          <Card variant="accent" className="mb-6">
-            <CardContent className="p-6">
-              <div className="mb-6 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
-                    <Building2 className="h-5 w-5 text-primary-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-secondary-900">
-                      Team Members
-                    </h2>
-                    <p className="text-sm text-secondary-600">
-                      Manage team members who conduct interviews
-                    </p>
-                  </div>
-                </div>
+            {/* Team Members */}
+            <CollapsibleSection
+              id="team"
+              icon={<Users className="h-5 w-5" />}
+              iconBgColor="bg-primary-100"
+              iconColor="text-primary-600"
+              title="Team Members"
+              description="Manage team members who conduct interviews"
+              summary={getSummary("team")}
+              status={sectionStatuses.team}
+              isExpanded={expandedSections.has("team")}
+              onToggle={() => toggleSection("team")}
+            >
+              <div className="mb-4 flex justify-end">
                 <Button
                   variant="primary"
                   onClick={() => setShowAddMember(true)}
@@ -1184,124 +1286,21 @@ export default function EmployerSettingsPage() {
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </CollapsibleSection>
 
-          {/* Add Member Modal */}
-          {showAddMember && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-              <Card className="w-full max-w-md">
-                <CardContent className="p-6">
-                  <div className="mb-6 flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-secondary-900">
-                      Add Team Member
-                    </h3>
-                    <button
-                      onClick={() => {
-                        setShowAddMember(false);
-                        setNewMember({ name: "", email: "", title: "" });
-                      }}
-                      className="rounded-lg p-2 hover:bg-secondary-100"
-                      disabled={isSaving}
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-secondary-700">
-                        Name <span className="text-error-600">*</span>
-                      </label>
-                      <Input
-                        value={newMember.name}
-                        onChange={(e) =>
-                          setNewMember({ ...newMember, name: e.target.value })
-                        }
-                        placeholder="John Doe"
-                        disabled={isSaving}
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-secondary-700">
-                        Email <span className="text-error-600">*</span>
-                      </label>
-                      <Input
-                        type="email"
-                        value={newMember.email}
-                        onChange={(e) =>
-                          setNewMember({ ...newMember, email: e.target.value })
-                        }
-                        placeholder="john@company.com"
-                        disabled={isSaving}
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-secondary-700">
-                        Title (Optional)
-                      </label>
-                      <Input
-                        value={newMember.title}
-                        onChange={(e) =>
-                          setNewMember({ ...newMember, title: e.target.value })
-                        }
-                        placeholder="Engineering Manager"
-                        disabled={isSaving}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setShowAddMember(false);
-                        setNewMember({ name: "", email: "", title: "" });
-                      }}
-                      disabled={isSaving}
-                      className="flex-1"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="primary"
-                      onClick={handleAddMember}
-                      disabled={isSaving || !newMember.name || !newMember.email}
-                      className="flex-1"
-                    >
-                      {isSaving ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Adding...
-                        </>
-                      ) : (
-                        "Add Member"
-                      )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Video Conferencing Integrations */}
-          <Card variant="accent" className="mb-6">
-            <CardContent className="p-6">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
-                  <Video className="h-5 w-5 text-primary-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-secondary-900">
-                    Video Conferencing
-                  </h2>
-                  <p className="text-sm text-secondary-600">
-                    Connect your video conferencing accounts to auto-generate
-                    meeting links
-                  </p>
-                </div>
-              </div>
-
+            {/* Video Conferencing */}
+            <CollapsibleSection
+              id="video"
+              icon={<Video className="h-5 w-5" />}
+              iconBgColor="bg-primary-100"
+              iconColor="text-primary-600"
+              title="Video Conferencing"
+              description="Connect your video conferencing accounts to auto-generate meeting links"
+              summary={getSummary("video")}
+              status={sectionStatuses.video}
+              isExpanded={expandedSections.has("video")}
+              onToggle={() => toggleSection("video")}
+            >
               {/* Zoom Integration */}
               <div className="mb-4 rounded-lg border border-secondary-200 p-4">
                 <div className="flex items-center justify-between">
@@ -1313,7 +1312,7 @@ export default function EmployerSettingsPage() {
                       <h3 className="font-semibold text-secondary-900">Zoom</h3>
                       {videoIntegration?.platform === "ZOOM" ? (
                         <p className="text-sm text-success-600">
-                          ✓ Connected as {videoIntegration.email}
+                          Connected as {videoIntegration.email}
                         </p>
                       ) : (
                         <p className="text-sm text-secondary-500">
@@ -1369,7 +1368,7 @@ export default function EmployerSettingsPage() {
                       </h3>
                       {videoIntegration?.platform === "GOOGLE_MEET" ? (
                         <p className="text-sm text-success-600">
-                          ✓ Connected as {videoIntegration.email}
+                          Connected as {videoIntegration.email}
                         </p>
                       ) : (
                         <p className="text-sm text-secondary-500">
@@ -1414,32 +1413,26 @@ export default function EmployerSettingsPage() {
 
               <div className="mt-4 rounded-lg bg-blue-50 border border-blue-200 p-4">
                 <p className="text-sm text-blue-800">
-                  💡 <strong>Tip:</strong> Connect Zoom or Google Meet to
+                  Connect Zoom or Google Meet to
                   automatically generate meeting links when scheduling
                   interviews. You can only connect one platform at a time.
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </CollapsibleSection>
 
-          {/* Google Calendar Integration */}
-          <Card variant="accent" className="mb-6">
-            <CardContent className="p-6">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
-                  <Calendar className="h-5 w-5 text-primary-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-secondary-900">
-                    Google Calendar Integration
-                  </h2>
-                  <p className="text-sm text-secondary-600">
-                    Sync your calendar to prevent double-booking when scheduling
-                    interviews
-                  </p>
-                </div>
-              </div>
-
+            {/* Google Calendar */}
+            <CollapsibleSection
+              id="calendar"
+              icon={<Calendar className="h-5 w-5" />}
+              iconBgColor="bg-primary-100"
+              iconColor="text-primary-600"
+              title="Google Calendar Integration"
+              description="Sync your calendar to prevent double-booking when scheduling interviews"
+              summary={getSummary("calendar")}
+              status={sectionStatuses.calendar}
+              isExpanded={expandedSections.has("calendar")}
+              onToggle={() => toggleSection("calendar")}
+            >
               <div className="rounded-lg border border-secondary-200 p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -1452,7 +1445,7 @@ export default function EmployerSettingsPage() {
                       </h3>
                       {calendarIntegration?.connected ? (
                         <p className="text-sm text-success-600">
-                          ✓ Connected as {calendarIntegration.email}
+                          Connected as {calendarIntegration.email}
                         </p>
                       ) : (
                         <p className="text-sm text-secondary-500">
@@ -1497,31 +1490,26 @@ export default function EmployerSettingsPage() {
 
               <div className="mt-4 rounded-lg bg-blue-50 border border-blue-200 p-4">
                 <p className="text-sm text-blue-800">
-                  💡 <strong>Tip:</strong> When you connect Google Calendar,
+                  When you connect Google Calendar,
                   your busy times will automatically show when setting interview
                   availability, helping you avoid scheduling conflicts.
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </CollapsibleSection>
 
-          {/* Billing Section */}
-          <Card variant="accent" className="mb-6" id="billing">
-            <CardContent className="p-6">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-                  <CreditCard className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-secondary-900">
-                    Billing & Payments
-                  </h2>
-                  <p className="text-sm text-secondary-600">
-                    Manage your payment methods and billing information
-                  </p>
-                </div>
-              </div>
-
+            {/* Billing */}
+            <CollapsibleSection
+              id="billing"
+              icon={<CreditCard className="h-5 w-5" />}
+              iconBgColor="bg-green-100"
+              iconColor="text-green-600"
+              title="Billing & Payments"
+              description="Manage your payment methods and billing information"
+              summary={getSummary("billing")}
+              status={sectionStatuses.billing}
+              isExpanded={expandedSections.has("billing")}
+              onToggle={() => toggleSection("billing")}
+            >
               {billingLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
@@ -1580,7 +1568,7 @@ export default function EmployerSettingsPage() {
                               <p className="font-medium text-secondary-900">
                                 {paymentMethod.brand.charAt(0).toUpperCase() +
                                   paymentMethod.brand.slice(1)}{" "}
-                                •••• {paymentMethod.last4}
+                                {paymentMethod.last4}
                               </p>
                               <p className="text-sm text-secondary-600">
                                 Expires{" "}
@@ -1622,33 +1610,29 @@ export default function EmployerSettingsPage() {
                   {/* Info Box */}
                   <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
                     <p className="text-sm text-blue-800">
-                      💡 <strong>Tip:</strong> Your billing account will be
+                      Your billing account will be
                       automatically set up when you make your first payment. You
                       can also set it up now to streamline the checkout process.
                     </p>
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </CollapsibleSection>
 
-          {/* Interview Templates */}
-          <Card variant="accent" className="mb-6">
-            <CardContent className="p-6">
-              <div className="mb-6 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100">
-                    <FileText className="h-5 w-5 text-primary-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-secondary-900">
-                      Interview Templates
-                    </h2>
-                    <p className="text-sm text-secondary-600">
-                      Manage custom interview templates for your hiring process
-                    </p>
-                  </div>
-                </div>
+            {/* Interview Templates */}
+            <CollapsibleSection
+              id="templates"
+              icon={<FileText className="h-5 w-5" />}
+              iconBgColor="bg-primary-100"
+              iconColor="text-primary-600"
+              title="Interview Templates"
+              description="Manage custom interview templates for your hiring process"
+              summary={getSummary("templates")}
+              status={sectionStatuses.templates}
+              isExpanded={expandedSections.has("templates")}
+              onToggle={() => toggleSection("templates")}
+            >
+              <div className="mb-4 flex justify-end">
                 <Button
                   variant="primary"
                   onClick={() => setShowCreateTemplate(true)}
@@ -1744,378 +1728,475 @@ export default function EmployerSettingsPage() {
                   </div>
                 )}
               </div>
+            </CollapsibleSection>
 
-              {/* Create Template Modal */}
-              {showCreateTemplate && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="mx-4 w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-                    <div className="mb-4 flex items-center justify-between">
-                      <h3 className="text-lg font-bold text-secondary-900">
-                        Create Interview Template
-                      </h3>
-                      <button
-                        onClick={() => setShowCreateTemplate(false)}
-                        className="text-secondary-400 hover:text-secondary-600"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-secondary-700">
-                          Template Name
-                        </label>
-                        <Input
-                          value={newTemplate.name}
-                          onChange={(e) =>
-                            setNewTemplate({
-                              ...newTemplate,
-                              name: e.target.value,
-                            })
-                          }
-                          placeholder="e.g., Engineering 3-Round"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="mb-2 flex items-center justify-between">
-                          <label className="text-sm font-medium text-secondary-700">
-                            Interview Rounds
-                          </label>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={addRoundToNewTemplate}
-                          >
-                            <Plus className="mr-1 h-3 w-3" />
-                            Add Round
-                          </Button>
-                        </div>
-
-                        <div className="space-y-3">
-                          {newTemplate.rounds.map((round, index) => (
-                            <div
-                              key={index}
-                              className="rounded-lg border border-secondary-200 p-3"
-                            >
-                              <div className="mb-2 flex items-center justify-between">
-                                <span className="text-sm font-medium text-secondary-700">
-                                  Round {index + 1}
-                                </span>
-                                {newTemplate.rounds.length > 1 && (
-                                  <button
-                                    onClick={() =>
-                                      removeRoundFromNewTemplate(index)
-                                    }
-                                    className="text-error-600 hover:text-error-700"
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </button>
-                                )}
-                              </div>
-
-                              <div className="grid gap-2">
-                                <Input
-                                  value={round.name}
-                                  onChange={(e) => {
-                                    const updatedRounds = [
-                                      ...newTemplate.rounds,
-                                    ];
-                                    updatedRounds[index].name = e.target.value;
-                                    setNewTemplate({
-                                      ...newTemplate,
-                                      rounds: updatedRounds,
-                                    });
-                                  }}
-                                  placeholder="Round name (e.g., Phone Screen)"
-                                />
-                                <div className="grid grid-cols-2 gap-2">
-                                  <Input
-                                    type="number"
-                                    value={round.duration}
-                                    onChange={(e) => {
-                                      const updatedRounds = [
-                                        ...newTemplate.rounds,
-                                      ];
-                                      updatedRounds[index].duration =
-                                        parseInt(e.target.value) || 30;
-                                      setNewTemplate({
-                                        ...newTemplate,
-                                        rounds: updatedRounds,
-                                      });
-                                    }}
-                                    placeholder="Duration (minutes)"
-                                  />
-                                  <Input
-                                    value={round.description}
-                                    onChange={(e) => {
-                                      const updatedRounds = [
-                                        ...newTemplate.rounds,
-                                      ];
-                                      updatedRounds[index].description =
-                                        e.target.value;
-                                      setNewTemplate({
-                                        ...newTemplate,
-                                        rounds: updatedRounds,
-                                      });
-                                    }}
-                                    placeholder="Description (optional)"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 flex justify-end gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowCreateTemplate(false)}
-                        disabled={isSaving}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        variant="primary"
-                        onClick={handleCreateTemplate}
-                        disabled={isSaving}
-                      >
-                        {isSaving ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Creating...
-                          </>
-                        ) : (
-                          "Create Template"
-                        )}
-                      </Button>
-                    </div>
+            {/* Danger Zone - Always visible, not collapsible */}
+            <Card className="border-2 border-red-200">
+              <CardContent className="p-6">
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-error-100">
+                    <Trash2 className="h-5 w-5 text-error-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-red-600">
+                      Danger Zone
+                    </h2>
+                    <p className="text-sm text-error-700">
+                      Irreversible and destructive actions
+                    </p>
                   </div>
                 </div>
-              )}
 
-              {/* Edit Template Modal */}
-              {editingTemplate && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="mx-4 w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-                    <div className="mb-4 flex items-center justify-between">
-                      <h3 className="text-lg font-bold text-secondary-900">
-                        Edit Interview Template
-                      </h3>
-                      <button
-                        onClick={() => setEditingTemplate(null)}
-                        className="text-secondary-400 hover:text-secondary-600"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-secondary-700">
-                          Template Name
-                        </label>
-                        <Input
-                          value={editingTemplate.name}
-                          onChange={(e) =>
-                            setEditingTemplate({
-                              ...editingTemplate,
-                              name: e.target.value,
-                            })
-                          }
-                          placeholder="e.g., Engineering 3-Round"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="mb-2 flex items-center justify-between">
-                          <label className="text-sm font-medium text-secondary-700">
-                            Interview Rounds
-                          </label>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              setEditingTemplate({
-                                ...editingTemplate,
-                                rounds: [
-                                  ...editingTemplate.rounds,
-                                  { name: "", duration: 30, description: "" },
-                                ],
-                              })
-                            }
-                          >
-                            <Plus className="mr-1 h-3 w-3" />
-                            Add Round
-                          </Button>
-                        </div>
-
-                        <div className="space-y-3">
-                          {editingTemplate.rounds.map(
-                            (round: any, index: number) => (
-                              <div
-                                key={index}
-                                className="rounded-lg border border-secondary-200 p-3"
-                              >
-                                <div className="mb-2 flex items-center justify-between">
-                                  <span className="text-sm font-medium text-secondary-700">
-                                    Round {index + 1}
-                                  </span>
-                                  {editingTemplate.rounds.length > 1 && (
-                                    <button
-                                      onClick={() =>
-                                        setEditingTemplate({
-                                          ...editingTemplate,
-                                          rounds: editingTemplate.rounds.filter(
-                                            (_: any, i: number) => i !== index
-                                          ),
-                                        })
-                                      }
-                                      className="text-error-600 hover:text-error-700"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </button>
-                                  )}
-                                </div>
-
-                                <div className="grid gap-2">
-                                  <Input
-                                    value={round.name}
-                                    onChange={(e) => {
-                                      const updatedRounds = [
-                                        ...editingTemplate.rounds,
-                                      ];
-                                      updatedRounds[index].name =
-                                        e.target.value;
-                                      setEditingTemplate({
-                                        ...editingTemplate,
-                                        rounds: updatedRounds,
-                                      });
-                                    }}
-                                    placeholder="Round name (e.g., Phone Screen)"
-                                  />
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <Input
-                                      type="number"
-                                      value={round.duration}
-                                      onChange={(e) => {
-                                        const updatedRounds = [
-                                          ...editingTemplate.rounds,
-                                        ];
-                                        updatedRounds[index].duration =
-                                          parseInt(e.target.value) || 30;
-                                        setEditingTemplate({
-                                          ...editingTemplate,
-                                          rounds: updatedRounds,
-                                        });
-                                      }}
-                                      placeholder="Duration (minutes)"
-                                    />
-                                    <Input
-                                      value={round.description}
-                                      onChange={(e) => {
-                                        const updatedRounds = [
-                                          ...editingTemplate.rounds,
-                                        ];
-                                        updatedRounds[index].description =
-                                          e.target.value;
-                                        setEditingTemplate({
-                                          ...editingTemplate,
-                                          rounds: updatedRounds,
-                                        });
-                                      }}
-                                      placeholder="Description (optional)"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 flex justify-end gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => setEditingTemplate(null)}
-                        disabled={isSaving}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        variant="primary"
-                        onClick={handleUpdateTemplate}
-                        disabled={isSaving}
-                      >
-                        {isSaving ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Updating...
-                          </>
-                        ) : (
-                          "Update Template"
-                        )}
-                      </Button>
-                    </div>
-                  </div>
+                <div className="rounded-lg bg-error-50 p-4">
+                  <h3 className="mb-2 font-bold text-error-900">
+                    Delete Account
+                  </h3>
+                  <p className="mb-4 text-sm text-secondary-600">
+                    Once you delete your account, there is no going back. All your
+                    job postings, applicant data, and account information will be
+                    permanently deleted.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => setDeleteAccountModal(true)}
+                    disabled={isSaving}
+                    className="border-red-300 text-red-600 hover:bg-red-50"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete Account
+                      </>
+                    )}
+                  </Button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
 
-          {/* Danger Zone */}
-          <Card className="border-2 border-red-200">
+      {/* Add Member Modal */}
+      {showAddMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="w-full max-w-md">
             <CardContent className="p-6">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-error-100">
-                  <Trash2 className="h-5 w-5 text-error-600" />
+              <div className="mb-6 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-secondary-900">
+                  Add Team Member
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowAddMember(false);
+                    setNewMember({ name: "", email: "", title: "" });
+                  }}
+                  className="rounded-lg p-2 hover:bg-secondary-100"
+                  disabled={isSaving}
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-secondary-700">
+                    Name <span className="text-error-600">*</span>
+                  </label>
+                  <Input
+                    value={newMember.name}
+                    onChange={(e) =>
+                      setNewMember({ ...newMember, name: e.target.value })
+                    }
+                    placeholder="John Doe"
+                    disabled={isSaving}
+                  />
                 </div>
                 <div>
-                  <h2 className="mb-4 text-xl font-bold text-red-600">
-                    Danger Zone
-                  </h2>
-                  <p className="text-sm text-error-700">
-                    Irreversible and destructive actions
-                  </p>
+                  <label className="mb-2 block text-sm font-medium text-secondary-700">
+                    Email <span className="text-error-600">*</span>
+                  </label>
+                  <Input
+                    type="email"
+                    value={newMember.email}
+                    onChange={(e) =>
+                      setNewMember({ ...newMember, email: e.target.value })
+                    }
+                    placeholder="john@company.com"
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-secondary-700">
+                    Title (Optional)
+                  </label>
+                  <Input
+                    value={newMember.title}
+                    onChange={(e) =>
+                      setNewMember({ ...newMember, title: e.target.value })
+                    }
+                    placeholder="Engineering Manager"
+                    disabled={isSaving}
+                  />
                 </div>
               </div>
 
-              <div className="rounded-lg bg-error-50 p-4">
-                <h3 className="mb-2 font-bold text-error-900">
-                  Delete Account
-                </h3>
-                <p className="mb-4 text-sm text-secondary-600">
-                  Once you delete your account, there is no going back. All your
-                  job postings, applicant data, and account information will be
-                  permanently deleted.
-                </p>
+              <div className="mt-6 flex gap-3">
                 <Button
                   variant="outline"
-                  onClick={() => setDeleteAccountModal(true)}
+                  onClick={() => {
+                    setShowAddMember(false);
+                    setNewMember({ name: "", email: "", title: "" });
+                  }}
                   disabled={isSaving}
-                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleAddMember}
+                  disabled={isSaving || !newMember.name || !newMember.email}
+                  className="flex-1"
                 >
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Deleting...
+                      Adding...
                     </>
                   ) : (
-                    <>
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Account
-                    </>
+                    "Add Member"
                   )}
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
-      </div>
+      )}
+
+      {/* Create Template Modal */}
+      {showCreateTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="mx-4 w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-secondary-900">
+                Create Interview Template
+              </h3>
+              <button
+                onClick={() => setShowCreateTemplate(false)}
+                className="text-secondary-400 hover:text-secondary-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-secondary-700">
+                  Template Name
+                </label>
+                <Input
+                  value={newTemplate.name}
+                  onChange={(e) =>
+                    setNewTemplate({
+                      ...newTemplate,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., Engineering 3-Round"
+                />
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="text-sm font-medium text-secondary-700">
+                    Interview Rounds
+                  </label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addRoundToNewTemplate}
+                  >
+                    <Plus className="mr-1 h-3 w-3" />
+                    Add Round
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {newTemplate.rounds.map((round, index) => (
+                    <div
+                      key={index}
+                      className="rounded-lg border border-secondary-200 p-3"
+                    >
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-sm font-medium text-secondary-700">
+                          Round {index + 1}
+                        </span>
+                        {newTemplate.rounds.length > 1 && (
+                          <button
+                            onClick={() =>
+                              removeRoundFromNewTemplate(index)
+                            }
+                            className="text-error-600 hover:text-error-700"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Input
+                          value={round.name}
+                          onChange={(e) => {
+                            const updatedRounds = [
+                              ...newTemplate.rounds,
+                            ];
+                            updatedRounds[index].name = e.target.value;
+                            setNewTemplate({
+                              ...newTemplate,
+                              rounds: updatedRounds,
+                            });
+                          }}
+                          placeholder="Round name (e.g., Phone Screen)"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input
+                            type="number"
+                            value={round.duration}
+                            onChange={(e) => {
+                              const updatedRounds = [
+                                ...newTemplate.rounds,
+                              ];
+                              updatedRounds[index].duration =
+                                parseInt(e.target.value) || 30;
+                              setNewTemplate({
+                                ...newTemplate,
+                                rounds: updatedRounds,
+                              });
+                            }}
+                            placeholder="Duration (minutes)"
+                          />
+                          <Input
+                            value={round.description}
+                            onChange={(e) => {
+                              const updatedRounds = [
+                                ...newTemplate.rounds,
+                              ];
+                              updatedRounds[index].description =
+                                e.target.value;
+                              setNewTemplate({
+                                ...newTemplate,
+                                rounds: updatedRounds,
+                              });
+                            }}
+                            placeholder="Description (optional)"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateTemplate(false)}
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleCreateTemplate}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Template"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Template Modal */}
+      {editingTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="mx-4 w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-secondary-900">
+                Edit Interview Template
+              </h3>
+              <button
+                onClick={() => setEditingTemplate(null)}
+                className="text-secondary-400 hover:text-secondary-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-secondary-700">
+                  Template Name
+                </label>
+                <Input
+                  value={editingTemplate.name}
+                  onChange={(e) =>
+                    setEditingTemplate({
+                      ...editingTemplate,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., Engineering 3-Round"
+                />
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="text-sm font-medium text-secondary-700">
+                    Interview Rounds
+                  </label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setEditingTemplate({
+                        ...editingTemplate,
+                        rounds: [
+                          ...editingTemplate.rounds,
+                          { name: "", duration: 30, description: "" },
+                        ],
+                      })
+                    }
+                  >
+                    <Plus className="mr-1 h-3 w-3" />
+                    Add Round
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {editingTemplate.rounds.map(
+                    (round: any, index: number) => (
+                      <div
+                        key={index}
+                        className="rounded-lg border border-secondary-200 p-3"
+                      >
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="text-sm font-medium text-secondary-700">
+                            Round {index + 1}
+                          </span>
+                          {editingTemplate.rounds.length > 1 && (
+                            <button
+                              onClick={() =>
+                                setEditingTemplate({
+                                  ...editingTemplate,
+                                  rounds: editingTemplate.rounds.filter(
+                                    (_: any, i: number) => i !== index
+                                  ),
+                                })
+                              }
+                              className="text-error-600 hover:text-error-700"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Input
+                            value={round.name}
+                            onChange={(e) => {
+                              const updatedRounds = [
+                                ...editingTemplate.rounds,
+                              ];
+                              updatedRounds[index].name =
+                                e.target.value;
+                              setEditingTemplate({
+                                ...editingTemplate,
+                                rounds: updatedRounds,
+                              });
+                            }}
+                            placeholder="Round name (e.g., Phone Screen)"
+                          />
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input
+                              type="number"
+                              value={round.duration}
+                              onChange={(e) => {
+                                const updatedRounds = [
+                                  ...editingTemplate.rounds,
+                                ];
+                                updatedRounds[index].duration =
+                                  parseInt(e.target.value) || 30;
+                                setEditingTemplate({
+                                  ...editingTemplate,
+                                  rounds: updatedRounds,
+                                });
+                              }}
+                              placeholder="Duration (minutes)"
+                            />
+                            <Input
+                              value={round.description}
+                              onChange={(e) => {
+                                const updatedRounds = [
+                                  ...editingTemplate.rounds,
+                                ];
+                                updatedRounds[index].description =
+                                  e.target.value;
+                                setEditingTemplate({
+                                  ...editingTemplate,
+                                  rounds: updatedRounds,
+                                });
+                              }}
+                              placeholder="Description (optional)"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setEditingTemplate(null)}
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleUpdateTemplate}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Template"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Team Member Confirmation Modal */}
       <ConfirmationModal
