@@ -20,6 +20,7 @@ import {
   Input,
   SectionStatus,
 } from "@/components/ui";
+import { ProfilePhotoCropper } from "@/components/ui/ProfilePhotoCropper";
 import {
   Loader2,
   User,
@@ -663,6 +664,47 @@ export default function CandidateProfilePage() {
     }
   };
 
+  // Handle cropped photo save
+  const handlePhotoSave = async (croppedBlob: Blob) => {
+    setUploading(true);
+    try {
+      // Convert blob to File for upload
+      const file = new File([croppedBlob], "profile-photo.jpg", { type: "image/jpeg" });
+      const result = await uploadFile(file, "photo");
+      console.log("[Profile] Cropped photo uploaded:", result.url);
+
+      setPhotoUrl(result.url);
+
+      // Save to database
+      await api.patch("/api/candidates/profile", { photo: result.url });
+      showToast("success", "Photo Saved", "Your profile photo has been saved.");
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
+    } catch (error: any) {
+      console.error("[Profile] Photo save failed:", error);
+      showToast("error", "Save Failed", error?.response?.data?.error || "Failed to save profile photo.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Handle photo removal
+  const handlePhotoRemove = async () => {
+    setUploading(true);
+    try {
+      await api.patch("/api/candidates/profile", { photo: null });
+      setPhotoUrl(null);
+      showToast("success", "Photo Removed", "Your profile photo has been removed.");
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
+    } catch (error: any) {
+      console.error("[Profile] Photo remove failed:", error);
+      showToast("error", "Remove Failed", error?.response?.data?.error || "Failed to remove profile photo.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // Handle resume import with AI parsing
   const handleResumeImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -896,28 +938,13 @@ export default function CandidateProfilePage() {
           <Card variant="accent" className="mb-4">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                {/* Profile Photo */}
-                <div className="relative">
-                  <div className="h-32 w-32 rounded-full bg-gradient-to-br from-primary-500 to-blue-600 flex items-center justify-center text-white text-4xl font-bold shadow-lg">
-                    {photoUrl ? (
-                      <img src={photoUrl} alt="Profile" className="h-32 w-32 rounded-full object-cover" />
-                    ) : (
-                      session?.user?.name?.charAt(0).toUpperCase() || "U"
-                    )}
-                  </div>
-                  <label className="absolute bottom-0 right-0 bg-primary-600 rounded-full p-2 cursor-pointer hover:bg-primary-700 shadow-lg">
-                    <Camera className="h-4 w-4 text-white" />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, 'photo');
-                      }}
-                    />
-                  </label>
-                </div>
+                {/* Profile Photo with Cropper */}
+                <ProfilePhotoCropper
+                  currentPhotoUrl={photoUrl}
+                  onSave={handlePhotoSave}
+                  onRemove={handlePhotoRemove}
+                  disabled={uploading}
+                />
 
                 {/* Name and Email */}
                 <div className="flex-1">
