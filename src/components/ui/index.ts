@@ -86,4 +86,4 @@ export { InputModal } from "./InputModal";
 export type { InputModalProps, InputModalVariant } from "./InputModal";
 
 export { CollapsibleSection, SettingsProgress } from "./CollapsibleSection";
-export type { CollapsibleSectionProps, SettingsProgressProps, SectionStatus } from "./CollapsibleSection";
+export type { CollapsibleSectionProps, SettingsProgressProps, SectionStatus, SectionVariant } from "./CollapsibleSection";

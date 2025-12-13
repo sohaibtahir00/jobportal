@@ -884,6 +884,7 @@ export default function EmployerSettingsPage() {
               status={sectionStatuses.company}
               isExpanded={expandedSections.has("company")}
               onToggle={() => toggleSection("company")}
+              variant="accent"
             >
               <form onSubmit={handleProfileUpdate} className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -1056,6 +1057,7 @@ export default function EmployerSettingsPage() {
               status={sectionStatuses.team}
               isExpanded={expandedSections.has("team")}
               onToggle={() => toggleSection("team")}
+              variant="accent"
             >
               <div className="mb-4 flex justify-end">
                 <Button
@@ -1126,6 +1128,7 @@ export default function EmployerSettingsPage() {
               status={sectionStatuses.video}
               isExpanded={expandedSections.has("video")}
               onToggle={() => toggleSection("video")}
+              variant="accent"
             >
               {/* Zoom Integration */}
               <div className="mb-4 rounded-lg border border-secondary-200 p-4">
@@ -1258,6 +1261,7 @@ export default function EmployerSettingsPage() {
               status={sectionStatuses.calendar}
               isExpanded={expandedSections.has("calendar")}
               onToggle={() => toggleSection("calendar")}
+              variant="accent"
             >
               <div className="rounded-lg border border-secondary-200 p-4">
                 <div className="flex items-center justify-between">
@@ -1335,6 +1339,7 @@ export default function EmployerSettingsPage() {
               status={sectionStatuses.billing}
               isExpanded={expandedSections.has("billing")}
               onToggle={() => toggleSection("billing")}
+              variant="accent"
             >
               {billingLoading ? (
                 <div className="flex items-center justify-center py-8">
@@ -1456,6 +1461,7 @@ export default function EmployerSettingsPage() {
               summary={getSummary("templates")}
               status={sectionStatuses.templates}
               isExpanded={expandedSections.has("templates")}
+              variant="accent"
               onToggle={() => toggleSection("templates")}
             >
               <div className="mb-4 flex justify-end">
@@ -1566,6 +1572,7 @@ export default function EmployerSettingsPage() {
               description="Choose what updates you want to receive"
               summary={getSummary("notifications")}
               status={sectionStatuses.notifications}
+              variant="accent"
               isExpanded={expandedSections.has("notifications")}
               onToggle={() => toggleSection("notifications")}
             >
@@ -1669,6 +1676,7 @@ export default function EmployerSettingsPage() {
               title="Change Password"
               description="Update your password to keep your account secure"
               summary={getSummary("password")}
+              variant="accent"
               status={sectionStatuses.password}
               isExpanded={expandedSections.has("password")}
               onToggle={() => toggleSection("password")}
@@ -1771,53 +1779,62 @@ export default function EmployerSettingsPage() {
               </form>
             </CollapsibleSection>
 
-            {/* Danger Zone - Always visible, not collapsible */}
-            <Card className="border-2 border-red-200">
-              <CardContent className="p-6">
-                <div className="mb-6 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-error-100">
+            {/* Danger Zone - Enhanced modern design */}
+            <div className="overflow-hidden rounded-2xl border-2 border-error-200/60 bg-gradient-to-br from-white via-white to-error-50/30 shadow-sm">
+              <div className="p-5">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-error-100 shadow-sm">
                     <Trash2 className="h-5 w-5 text-error-600" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-red-600">
+                    <h2 className="text-base font-semibold text-error-700">
                       Danger Zone
                     </h2>
-                    <p className="text-sm text-error-700">
+                    <p className="text-sm text-error-600/80">
                       Irreversible and destructive actions
                     </p>
                   </div>
                 </div>
+              </div>
 
-                <div className="rounded-lg bg-error-50 p-4">
-                  <h3 className="mb-2 font-bold text-error-900">
-                    Delete Account
-                  </h3>
-                  <p className="mb-4 text-sm text-secondary-600">
-                    Once you delete your account, there is no going back. All your
-                    job postings, applicant data, and account information will be
-                    permanently deleted.
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={() => setDeleteAccountModal(true)}
-                    disabled={isSaving}
-                    className="border-red-300 text-red-600 hover:bg-red-50"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Deleting...
-                      </>
-                    ) : (
-                      <>
-                        <Trash2 className="mr-2 h-4 w-4" />
+              <div className="border-t border-error-100/60 p-6">
+                <div className="rounded-xl bg-gradient-to-r from-error-50 to-error-100/50 border border-error-200/50 p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-error-100 border border-error-200/50">
+                      <AlertCircle className="h-5 w-5 text-error-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-base font-semibold text-error-900 mb-1">
                         Delete Account
-                      </>
-                    )}
-                  </Button>
+                      </h3>
+                      <p className="text-sm text-error-700/80 mb-4">
+                        Once you delete your account, there is no going back. All your
+                        job postings, applicant data, and account information will be
+                        permanently deleted.
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={() => setDeleteAccountModal(true)}
+                        disabled={isSaving}
+                        className="border-error-300 text-error-600 hover:bg-error-50 hover:border-error-400 transition-colors"
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Account
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       </div>

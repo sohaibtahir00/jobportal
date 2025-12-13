@@ -5,6 +5,7 @@ import { ChevronDown, Check, AlertCircle, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type SectionStatus = "complete" | "incomplete" | "warning";
+export type SectionVariant = "default" | "accent";
 
 export interface CollapsibleSectionProps {
   /** Unique identifier for the section */
@@ -33,6 +34,8 @@ export interface CollapsibleSectionProps {
   children: ReactNode;
   /** Additional className for the container */
   className?: string;
+  /** Visual variant of the section */
+  variant?: SectionVariant;
 }
 
 const statusIcons = {
@@ -61,6 +64,7 @@ export function CollapsibleSection({
   onToggle,
   children,
   className,
+  variant = "default",
 }: CollapsibleSectionProps) {
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
 
@@ -75,11 +79,30 @@ export function CollapsibleSection({
     onToggle?.(newExpanded);
   };
 
+  // Variant-specific styles
+  const variantStyles = {
+    default: {
+      container: "border-secondary-200 bg-white",
+      expandedRing: "ring-2 ring-primary-500/20",
+      header: "hover:bg-secondary-50",
+      contentBorder: "border-secondary-100",
+    },
+    accent: {
+      container: "border-accent-200/60 bg-gradient-to-br from-white via-white to-accent-50/30",
+      expandedRing: "ring-2 ring-accent-500/30 shadow-lg shadow-accent-500/10",
+      header: "hover:bg-accent-50/50",
+      contentBorder: "border-accent-100/60",
+    },
+  };
+
+  const styles = variantStyles[variant];
+
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border border-secondary-200 bg-white shadow-sm transition-all duration-200",
-        isExpanded && "ring-2 ring-primary-500/20",
+        "overflow-hidden rounded-2xl border shadow-sm transition-all duration-300",
+        styles.container,
+        isExpanded && styles.expandedRing,
         className
       )}
     >
@@ -87,7 +110,10 @@ export function CollapsibleSection({
       <button
         type="button"
         onClick={handleToggle}
-        className="flex w-full items-center justify-between p-4 text-left hover:bg-secondary-50 transition-colors"
+        className={cn(
+          "flex w-full items-center justify-between p-5 text-left transition-colors",
+          styles.header
+        )}
         aria-expanded={isExpanded}
         aria-controls={`section-content-${id}`}
       >
@@ -95,7 +121,7 @@ export function CollapsibleSection({
           {/* Status indicator */}
           <div
             className={cn(
-              "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border",
+              "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border shadow-sm",
               statusColors[status]
             )}
           >
@@ -105,7 +131,7 @@ export function CollapsibleSection({
           {/* Icon */}
           <div
             className={cn(
-              "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full",
+              "flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl shadow-sm",
               iconBgColor
             )}
           >
@@ -115,23 +141,28 @@ export function CollapsibleSection({
           {/* Title and summary */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-secondary-900">{title}</h3>
+              <h3 className="font-semibold text-secondary-900 text-base">{title}</h3>
             </div>
             {!isExpanded && summary ? (
-              <p className="text-sm text-secondary-500 truncate">{summary}</p>
+              <p className="text-sm text-secondary-500 truncate mt-0.5">{summary}</p>
             ) : (
-              <p className="text-sm text-secondary-500">{description}</p>
+              <p className="text-sm text-secondary-500 mt-0.5">{description}</p>
             )}
           </div>
         </div>
 
         {/* Expand/collapse indicator */}
-        <ChevronDown
-          className={cn(
-            "h-5 w-5 flex-shrink-0 text-secondary-400 transition-transform duration-200 ml-4",
-            isExpanded && "rotate-180"
-          )}
-        />
+        <div className={cn(
+          "flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200 ml-4",
+          isExpanded ? "bg-primary-100" : "bg-secondary-100"
+        )}>
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 transition-transform duration-300",
+              isExpanded ? "rotate-180 text-primary-600" : "text-secondary-500"
+            )}
+          />
+        </div>
       </button>
 
       {/* Content - Expandable */}
@@ -142,7 +173,7 @@ export function CollapsibleSection({
           isExpanded ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"
         )}
       >
-        <div className="border-t border-secondary-100 p-6">{children}</div>
+        <div className={cn("border-t p-6", styles.contentBorder)}>{children}</div>
       </div>
     </div>
   );
