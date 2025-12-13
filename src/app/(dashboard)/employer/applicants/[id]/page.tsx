@@ -176,6 +176,7 @@ export default function ApplicantDetailPage() {
           candidateId: app.candidate.id,
           candidateUserId: app.candidate.userId,
           name: app.candidate.user.name || app.candidate.user.email,
+          photo: app.candidate.photo || app.candidate.user?.image, // Candidate photo with fallback to user image
           email: app.candidate.user.email,
           phone: app.candidate.phone || "Not provided",
           location: app.candidate.location || "Not specified",
@@ -858,30 +859,48 @@ export default function ApplicantDetailPage() {
             <Card variant="accent" className="lg:col-span-2">
               <CardContent className="p-6">
                 <div className="mb-6 flex items-start justify-between">
-                  <div>
-                    <h1 className="mb-2 text-3xl font-bold text-secondary-900">
-                      {applicantData.name}
-                    </h1>
-                    <p className="mb-4 text-lg text-secondary-600">
-                      {applicantData.currentRole}
-                    </p>
+                  <div className="flex items-start gap-4">
+                    {/* Candidate Photo */}
+                    <div className="relative h-20 w-20 flex-shrink-0 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-2xl overflow-hidden">
+                      {applicantData.photo ? (
+                        <img
+                          src={applicantData.photo}
+                          alt={applicantData.name || "Candidate"}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span>
+                          {(applicantData.name || "C").charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
 
-                    <div className="flex flex-wrap gap-3 text-sm text-secondary-600">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {applicantData.location}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Briefcase className="h-4 w-4" />
-                        {applicantData.experience} experience
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        Applied{" "}
-                        {new Date(
-                          applicantData.appliedDate
-                        ).toLocaleDateString()}
-                      </span>
+                    {/* Name and Details */}
+                    <div>
+                      <h1 className="mb-2 text-3xl font-bold text-secondary-900">
+                        {applicantData.name}
+                      </h1>
+                      <p className="mb-4 text-lg text-secondary-600">
+                        {applicantData.currentRole}
+                      </p>
+
+                      <div className="flex flex-wrap gap-3 text-sm text-secondary-600">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-4 w-4" />
+                          {applicantData.location}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Briefcase className="h-4 w-4" />
+                          {applicantData.experience} experience
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          Applied{" "}
+                          {new Date(
+                            applicantData.appliedDate
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
