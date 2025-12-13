@@ -184,7 +184,7 @@ export default function ApplicantDetailPage() {
           experience: app.candidate.experience
             ? `${app.candidate.experience} years`
             : "Not specified",
-          currentRole: app.candidate.currentTitle || "Not specified",
+          currentRole: app.candidate.currentRole || app.candidate.currentTitle || "Not specified",
           currentCompany: app.candidate.currentCompany,
           education: app.candidate.education || "Not specified",
           resume: app.candidate.resume,

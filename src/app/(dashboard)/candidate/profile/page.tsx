@@ -875,13 +875,13 @@ export default function CandidateProfilePage() {
       <div className="container">
         <div className="mx-auto max-w-4xl">
           {/* Resume Import Section - Always visible */}
-          <Card className="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+          <Card className="mb-6 bg-gradient-to-r from-primary-600 to-accent-600 border-0 shadow-2xl overflow-hidden">
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg text-purple-900">
-                <Sparkles className="h-5 w-5 text-purple-600" />
+              <CardTitle className="flex items-center gap-2 text-lg text-white">
+                <Sparkles className="h-5 w-5 text-blue-100" />
                 Update Profile from Resume
               </CardTitle>
-              <CardDescription className="text-purple-700">
+              <CardDescription className="text-blue-100">
                 Upload your latest resume to automatically extract and update your profile information using AI
               </CardDescription>
             </CardHeader>
@@ -896,7 +896,7 @@ export default function CandidateProfilePage() {
                     disabled={isParsingResume}
                   />
                   <Button
-                    className="pointer-events-none bg-purple-600 hover:bg-purple-700 text-white"
+                    className="pointer-events-none bg-white hover:bg-gray-100 text-primary-700 font-semibold shadow-lg"
                     disabled={isParsingResume}
                   >
                     {isParsingResume ? (
@@ -912,7 +912,7 @@ export default function CandidateProfilePage() {
                     )}
                   </Button>
                 </div>
-                <p className="text-sm text-purple-600">
+                <p className="text-sm text-blue-100">
                   We&apos;ll extract your work experience, education, skills, and more
                 </p>
               </div>

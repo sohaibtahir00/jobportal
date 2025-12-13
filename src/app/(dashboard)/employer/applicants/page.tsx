@@ -89,6 +89,7 @@ interface Application {
     testPercentile: number | null;
     testTier: string | null;
     currentTitle: string | null;
+    currentRole: string | null;
     currentCompany: string | null;
     expectedSalary: number | null;
     resume: string | null;
@@ -698,10 +699,10 @@ export default function EmployerApplicantsPage() {
                       </div>
 
                       {/* Current Title & Company */}
-                      {app.candidate.currentTitle &&
+                      {(app.candidate.currentRole || app.candidate.currentTitle) &&
                         app.candidate.currentCompany && (
                           <p className="text-sm text-secondary-600 mb-3">
-                            {app.candidate.currentTitle} at{" "}
+                            {app.candidate.currentRole || app.candidate.currentTitle} at{" "}
                             {app.candidate.currentCompany}
                           </p>
                         )}

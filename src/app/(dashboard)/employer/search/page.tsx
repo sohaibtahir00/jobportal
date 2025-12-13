@@ -105,7 +105,7 @@ export default function EmployerSearchPage() {
               firstName,
               lastInitial,
               displayName,
-              title: c.currentTitle || "Not specified",
+              title: c.currentRole || c.currentTitle || "Not specified",
               location: c.location || "Not specified",
               experience: c.yearsExperience ? `${c.yearsExperience} years` : "Not specified",
               experienceYears: c.yearsExperience || 0,
