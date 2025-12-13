@@ -15,6 +15,8 @@ import {
   Building,
   GraduationCap,
   Clock,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Button, Badge, Card, CardContent, useToast } from "@/components/ui";
 import { SkillsScoreCard } from "@/components/skills";
@@ -31,6 +33,7 @@ export default function CandidateProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [candidateData, setCandidateData] = useState<any>(null);
+  const [isBioExpanded, setIsBioExpanded] = useState(false);
 
   // Callback when introduction is requested
   const handleIntroductionRequested = () => {
@@ -267,6 +270,56 @@ export default function CandidateProfilePage() {
                   )}
                 </div>
 
+                {/* About Section - Inline in header */}
+                {candidateData.bio && (
+                  <div className="mt-4 pt-4 border-t border-secondary-200">
+                    <h3 className="text-sm font-semibold text-secondary-700 mb-2">About</h3>
+                    <div className="relative">
+                      <p className={`text-secondary-600 text-sm whitespace-pre-line ${!isBioExpanded && candidateData.bio.length > 200 ? 'line-clamp-3' : ''}`}>
+                        {candidateData.bio}
+                      </p>
+                      {candidateData.bio.length > 200 && (
+                        <button
+                          onClick={() => setIsBioExpanded(!isBioExpanded)}
+                          className="mt-1 text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center gap-1"
+                        >
+                          {isBioExpanded ? (
+                            <>
+                              Show less <ChevronUp className="h-4 w-4" />
+                            </>
+                          ) : (
+                            <>
+                              Read more <ChevronDown className="h-4 w-4" />
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Top Skills - Inline in header */}
+                {candidateData.skills && candidateData.skills.length > 0 && (
+                  <div className={`mt-4 ${candidateData.bio ? '' : 'pt-4 border-t border-secondary-200'}`}>
+                    <h3 className="text-sm font-semibold text-secondary-700 mb-2">Top Skills</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {candidateData.skills.slice(0, 6).map((skill: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700 border border-primary-200"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                      {candidateData.skills.length > 6 && (
+                        <span className="inline-flex items-center rounded-full bg-secondary-100 px-2.5 py-1 text-xs font-medium text-secondary-600">
+                          +{candidateData.skills.length - 6} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
               </CardContent>
             </Card>
 
@@ -343,40 +396,6 @@ export default function CandidateProfilePage() {
               </Card>
             )}
           </div>
-
-          {/* Bio */}
-          {candidateData.bio && (
-            <Card variant="accent" className="mb-6">
-              <CardContent className="p-6">
-                <h2 className="mb-4 text-xl font-bold text-secondary-900">About</h2>
-                <p className="text-secondary-700 whitespace-pre-line">
-                  {candidateData.bio}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Skills */}
-          {candidateData.skills && candidateData.skills.length > 0 && (
-            <Card variant="accent" className="mb-6">
-              <CardContent className="p-6">
-                <h2 className="mb-4 text-xl font-bold text-secondary-900">
-                  <Award className="inline mr-2 h-5 w-5" />
-                  Skills
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {candidateData.skills.map((skill: string, idx: number) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 border border-primary-200"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Work Experience */}
           {candidateData.workExperiences && candidateData.workExperiences.length > 0 && (
