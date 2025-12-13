@@ -880,7 +880,12 @@ export default function EmployerSettingsPage() {
       <div className="container">
         <div className="mx-auto max-w-4xl">
           {/* Progress Header */}
-          <SettingsProgress sections={sections} onSectionClick={handleSectionClick} />
+          <SettingsProgress
+            sections={sections}
+            onSectionClick={handleSectionClick}
+            title="Company Settings"
+            description="Manage your company profile and account preferences"
+          />
 
           {/* Collapsible Sections */}
           <div className="space-y-4">

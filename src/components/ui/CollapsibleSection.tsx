@@ -188,9 +188,13 @@ export interface SettingsProgressProps {
   }[];
   onSectionClick?: (sectionId: string) => void;
   className?: string;
+  /** Title for the settings page */
+  title?: string;
+  /** Description shown below the progress bar */
+  description?: string;
 }
 
-export function SettingsProgress({ sections, onSectionClick, className }: SettingsProgressProps) {
+export function SettingsProgress({ sections, onSectionClick, className, title = "Settings", description }: SettingsProgressProps) {
   const completedCount = sections.filter((s) => s.status === "complete").length;
   const totalCount = sections.length;
   const percentage = Math.round((completedCount / totalCount) * 100);
@@ -201,7 +205,7 @@ export function SettingsProgress({ sections, onSectionClick, className }: Settin
   return (
     <div className={cn("mb-6", className)}>
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold text-secondary-900">Company Settings</h1>
+        <h1 className="text-2xl font-bold text-secondary-900">{title}</h1>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-secondary-600">
             {completedCount}/{totalCount} Complete
@@ -233,9 +237,11 @@ export function SettingsProgress({ sections, onSectionClick, className }: Settin
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <p className="text-sm text-secondary-500 mt-2">
-        Manage your company profile and account preferences
-      </p>
+      {description && (
+        <p className="text-sm text-secondary-500 mt-2">
+          {description}
+        </p>
+      )}
 
       {/* Incomplete sections notice - Modern card design */}
       {incompleteSections.length > 0 && (

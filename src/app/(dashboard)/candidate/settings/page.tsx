@@ -128,10 +128,8 @@ export default function CandidateSettingsPage() {
 
     return {
       profile: profileComplete ? "complete" : "incomplete",
-      password: "warning", // Always warning - optional
       notifications: notificationsComplete ? "complete" : "incomplete",
       privacy: privacyComplete ? "complete" : "incomplete",
-      danger: "warning", // Always warning for danger zone
     } as Record<string, SectionStatus>;
   }, [profileData]);
 
@@ -161,13 +159,12 @@ export default function CandidateSettingsPage() {
     }, 100);
   }, []);
 
-  // Progress sections
-  const sections = useMemo(() => [
+  // Progress sections (excluding Password and Danger Zone as they are optional)
+  const sections = [
     { id: "profile", name: "Profile", status: sectionStatuses.profile },
-    { id: "password", name: "Password", status: sectionStatuses.password },
     { id: "notifications", name: "Notifications", status: sectionStatuses.notifications },
     { id: "privacy", name: "Privacy", status: sectionStatuses.privacy },
-  ], [sectionStatuses]);
+  ];
 
   // Get summary text for collapsed sections
   const getSummary = (sectionId: string) => {
@@ -424,7 +421,12 @@ export default function CandidateSettingsPage() {
       <div className="container">
         <div className="mx-auto max-w-4xl">
           {/* Progress Header */}
-          <SettingsProgress sections={sections} onSectionClick={handleSectionClick} />
+          <SettingsProgress
+            sections={sections}
+            onSectionClick={handleSectionClick}
+            title="Candidate Settings"
+            description="Manage your profile and account preferences"
+          />
 
           {/* Collapsible Sections */}
           <div className="space-y-4">
@@ -699,57 +701,80 @@ export default function CandidateSettingsPage() {
             >
               <form onSubmit={handleNotificationSubmit}>
                 <div className="space-y-4">
-                  {/* Email Notifications Toggle */}
-                  <div className="rounded-xl border border-secondary-200 bg-gradient-to-r from-white to-secondary-50/50 p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100">
-                          <Mail className="h-5 w-5 text-primary-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-secondary-900">Email Notifications</p>
-                          <p className="text-sm text-secondary-500">Receive email updates</p>
-                        </div>
-                      </div>
-                      <label className="relative inline-flex cursor-pointer items-center">
-                        <input
-                          type="checkbox"
-                          checked={notificationSettings.emailNotifications}
-                          onChange={(e) => setNotificationSettings({ ...notificationSettings, emailNotifications: e.target.checked })}
-                          className="peer sr-only"
-                        />
-                        <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/20"></div>
-                      </label>
+                  {/* Disable All Notifications Toggle */}
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-secondary-50 to-secondary-100/50 border border-secondary-200">
+                    <div>
+                      <p className="font-semibold text-secondary-900">Disable All Notifications</p>
+                      <p className="text-sm text-secondary-500">Turn off all notification types at once</p>
                     </div>
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={!Object.values(notificationSettings).some(Boolean)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            // Disable all notifications
+                            setNotificationSettings({
+                              emailNotifications: false,
+                              jobAlerts: false,
+                              applicationUpdates: false,
+                              messages: false,
+                              interviewReminders: false,
+                              placementUpdates: false,
+                              weeklyDigest: false,
+                              marketingEmails: false,
+                            });
+                          } else {
+                            // Re-enable default notifications
+                            setNotificationSettings({
+                              emailNotifications: true,
+                              jobAlerts: true,
+                              applicationUpdates: true,
+                              messages: true,
+                              interviewReminders: true,
+                              placementUpdates: true,
+                              weeklyDigest: false,
+                              marketingEmails: false,
+                            });
+                          }
+                        }}
+                        className="peer sr-only"
+                      />
+                      <div className="peer h-6 w-11 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-error-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-error-500/20"></div>
+                    </label>
                   </div>
 
-                  {/* Other notification options */}
-                  <div className="grid gap-3 md:grid-cols-2">
-                    {[
-                      { key: "jobAlerts", label: "Job Alerts", description: "New matching jobs" },
-                      { key: "applicationUpdates", label: "Application Updates", description: "Status changes" },
-                      { key: "messages", label: "Messages", description: "New messages from employers" },
-                      { key: "interviewReminders", label: "Interview Reminders", description: "Upcoming interviews" },
-                      { key: "placementUpdates", label: "Placement Updates", description: "Placement status" },
-                      { key: "weeklyDigest", label: "Weekly Digest", description: "Weekly summary" },
-                      { key: "marketingEmails", label: "Marketing Emails", description: "Tips and resources" },
-                    ].map(({ key, label, description }) => (
-                      <div key={key} className="flex items-center justify-between rounded-lg border border-secondary-200 bg-white p-3">
-                        <div>
-                          <p className="text-sm font-medium text-secondary-900">{label}</p>
-                          <p className="text-xs text-secondary-500">{description}</p>
+                  <div className="border-t border-secondary-200 pt-4">
+                    <p className="text-xs font-medium text-secondary-500 uppercase tracking-wider mb-4">Individual Preferences</p>
+                    {/* Other notification options */}
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {[
+                        { key: "emailNotifications", label: "Email Notifications", description: "Receive email updates" },
+                        { key: "jobAlerts", label: "Job Alerts", description: "New matching jobs" },
+                        { key: "applicationUpdates", label: "Application Updates", description: "Status changes" },
+                        { key: "messages", label: "Messages", description: "New messages from employers" },
+                        { key: "interviewReminders", label: "Interview Reminders", description: "Upcoming interviews" },
+                        { key: "placementUpdates", label: "Placement Updates", description: "Placement status" },
+                        { key: "weeklyDigest", label: "Weekly Digest", description: "Weekly summary" },
+                        { key: "marketingEmails", label: "Marketing Emails", description: "Tips and resources" },
+                      ].map(({ key, label, description }) => (
+                        <div key={key} className="flex items-center justify-between rounded-lg border border-secondary-200 bg-white p-3">
+                          <div>
+                            <p className="text-sm font-medium text-secondary-900">{label}</p>
+                            <p className="text-xs text-secondary-500">{description}</p>
+                          </div>
+                          <label className="relative inline-flex cursor-pointer items-center">
+                            <input
+                              type="checkbox"
+                              checked={notificationSettings[key as keyof typeof notificationSettings] as boolean}
+                              onChange={(e) => setNotificationSettings({ ...notificationSettings, [key]: e.target.checked })}
+                              className="peer sr-only"
+                            />
+                            <div className="peer h-5 w-9 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-500/20"></div>
+                          </label>
                         </div>
-                        <label className="relative inline-flex cursor-pointer items-center">
-                          <input
-                            type="checkbox"
-                            checked={notificationSettings[key as keyof typeof notificationSettings] as boolean}
-                            onChange={(e) => setNotificationSettings({ ...notificationSettings, [key]: e.target.checked })}
-                            className="peer sr-only"
-                          />
-                          <div className="peer h-5 w-9 rounded-full bg-secondary-300 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-secondary-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-500/20"></div>
-                        </label>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -876,42 +901,63 @@ export default function CandidateSettingsPage() {
               </form>
             </CollapsibleSection>
 
-            {/* Danger Zone */}
-            <CollapsibleSection
-              id="danger"
-              icon={<Trash2 className="h-5 w-5" />}
-              iconBgColor="bg-error-100"
-              iconColor="text-error-600"
-              title="Danger Zone"
-              description="Irreversible account actions"
-              summary="Delete your account"
-              status="warning"
-              isExpanded={expandedSections.has("danger")}
-              onToggle={() => toggleSection("danger")}
-            >
-              <div className="rounded-xl border-2 border-dashed border-error-200 bg-error-50/50 p-6">
+          </div>
+
+          {/* Danger Zone - Separate section outside collapsible sections */}
+          <div className="overflow-hidden rounded-2xl border-2 border-error-200/60 bg-gradient-to-br from-white via-white to-error-50/30 shadow-sm mt-4">
+            <div className="p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-error-100 shadow-sm">
+                  <Trash2 className="h-5 w-5 text-error-600" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-error-700">
+                    Danger Zone
+                  </h2>
+                  <p className="text-sm text-error-600/80">
+                    Irreversible and destructive actions
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-error-100/60 p-6">
+              <div className="rounded-xl bg-gradient-to-r from-error-50 to-error-100/50 border border-error-200/50 p-5">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-error-100">
-                    <AlertCircle className="h-6 w-6 text-error-600" />
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-error-100 border border-error-200/50">
+                    <AlertCircle className="h-5 w-5 text-error-600" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-error-900">Delete Account</h3>
-                    <p className="mt-1 text-sm text-error-700">
-                      Once you delete your account, there is no going back. All your applications, profile data, and saved jobs will be permanently deleted.
+                    <h3 className="text-base font-semibold text-error-900 mb-1">
+                      Delete Account
+                    </h3>
+                    <p className="text-sm text-error-700/80 mb-4">
+                      Once you delete your account, there is no going back. All your
+                      applications, profile data, and saved jobs will be
+                      permanently deleted.
                     </p>
                     <Button
                       variant="outline"
-                      className="mt-4 border-error-300 text-error-600 hover:bg-error-100 hover:border-error-400"
                       onClick={initiateAccountDeletion}
                       disabled={isSaving}
+                      className="border-error-300 text-error-600 hover:bg-error-50 hover:border-error-400 transition-colors"
                     >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Account
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Deleting...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete Account
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
               </div>
-            </CollapsibleSection>
+            </div>
           </div>
         </div>
       </div>
