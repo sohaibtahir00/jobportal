@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -32,6 +32,9 @@ import {
   Briefcase,
   FileImage,
   User,
+  Check,
+  XCircle,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -98,6 +101,47 @@ export default function EmployerSettingsPage() {
     newPassword: "",
     confirmPassword: "",
   });
+
+  // Password strength calculator
+  const passwordValidation = useMemo(() => {
+    const password = passwordData.newPassword;
+    return {
+      minLength: password.length >= 8,
+      hasLowercase: /[a-z]/.test(password),
+      hasUppercase: /[A-Z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasSpecial: /[^a-zA-Z\d]/.test(password),
+      passwordsMatch: password.length > 0 && password === passwordData.confirmPassword,
+    };
+  }, [passwordData.newPassword, passwordData.confirmPassword]);
+
+  const passwordStrength = useMemo(() => {
+    let strength = 0;
+    if (passwordValidation.minLength) strength++;
+    if (passwordValidation.hasLowercase && passwordValidation.hasUppercase) strength++;
+    if (passwordValidation.hasNumber) strength++;
+    if (passwordValidation.hasSpecial) strength++;
+    return strength;
+  }, [passwordValidation]);
+
+  const getPasswordStrengthLabel = () => {
+    if (passwordData.newPassword.length === 0) return "";
+    if (passwordStrength === 1) return "Weak";
+    if (passwordStrength === 2) return "Fair";
+    if (passwordStrength === 3) return "Good";
+    if (passwordStrength === 4) return "Strong";
+    return "Very Weak";
+  };
+
+  const getPasswordStrengthColor = (level: number) => {
+    if (passwordStrength >= level) {
+      if (passwordStrength === 1) return "bg-red-500";
+      if (passwordStrength === 2) return "bg-orange-500";
+      if (passwordStrength === 3) return "bg-yellow-500";
+      return "bg-green-500";
+    }
+    return "bg-secondary-200";
+  };
 
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
@@ -407,18 +451,26 @@ export default function EmployerSettingsPage() {
     e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setErrorMessage("New passwords don't match");
+      showToast("error", "Passwords don't match", "New password and confirm password must be the same");
       return;
     }
 
     if (passwordData.newPassword.length < 8) {
-      setErrorMessage("Password must be at least 8 characters");
+      showToast("error", "Password too short", "Password must be at least 8 characters");
+      return;
+    }
+
+    // Check password strength
+    const hasLowercase = /[a-z]/.test(passwordData.newPassword);
+    const hasUppercase = /[A-Z]/.test(passwordData.newPassword);
+    const hasNumber = /\d/.test(passwordData.newPassword);
+
+    if (!hasLowercase || !hasUppercase || !hasNumber) {
+      showToast("error", "Weak password", "Password must contain at least one uppercase letter, one lowercase letter, and one number");
       return;
     }
 
     setIsSaving(true);
-    setErrorMessage("");
-    setSuccessMessage("");
 
     try {
       await api.post("/api/settings/password", {
@@ -426,18 +478,16 @@ export default function EmployerSettingsPage() {
         newPassword: passwordData.newPassword,
       });
 
-      setSuccessMessage("Password changed successfully!");
+      showToast("success", "Password changed", "Your password has been updated successfully");
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
       setIsSaving(false);
-
-      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Failed to change password:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to change password");
+      showToast("error", "Password change failed", err.response?.data?.error || "Failed to change password");
       setIsSaving(false);
     }
   };
@@ -838,7 +888,7 @@ export default function EmployerSettingsPage() {
     { id: "video", name: "Video Conferencing", status: sectionStatuses.video },
     { id: "calendar", name: "Google Calendar", status: sectionStatuses.calendar },
     { id: "billing", name: "Billing & Payments", status: sectionStatuses.billing },
-    { id: "templates", name: "Interview Templates", status: sectionStatuses.templates },
+    { id: "templates", name: "Interview Process", status: sectionStatuses.templates },
     { id: "notifications", name: "Notification Preferences", status: sectionStatuses.notifications },
   ];
 
@@ -1087,75 +1137,88 @@ export default function EmployerSettingsPage() {
               onToggle={() => toggleSection("team")}
               variant="accent"
             >
-              <div className="mb-4 flex justify-end">
-                <Button
-                  variant="primary"
-                  onClick={() => setShowAddMember(true)}
-                  disabled={isSaving}
-                >
-                  + Add Member
-                </Button>
-              </div>
-
               {teamMembers.length === 0 ? (
                 <div className="rounded-2xl border-2 border-dashed border-secondary-200 bg-gradient-to-br from-secondary-50 to-secondary-100/50 p-10 text-center">
                   <div className="mx-auto w-16 h-16 rounded-2xl bg-primary-100 flex items-center justify-center mb-4">
                     <Users className="h-8 w-8 text-primary-600" />
                   </div>
                   <h3 className="font-semibold text-secondary-900 mb-2">No team members yet</h3>
-                  <p className="text-secondary-600 text-sm max-w-sm mx-auto">
+                  <p className="text-secondary-600 text-sm max-w-sm mx-auto mb-4">
                     Add team members who will conduct interviews. They&apos;ll be available when scheduling interview rounds.
                   </p>
+                  <Button
+                    variant="primary"
+                    onClick={() => setShowAddMember(true)}
+                    disabled={isSaving}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Team Member
+                  </Button>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {teamMembers.map((member, index) => (
-                    <div
-                      key={member.id}
-                      className="group flex items-center justify-between rounded-xl border border-secondary-200 bg-gradient-to-r from-white to-secondary-50/50 p-4 hover:border-accent-300 hover:shadow-md transition-all duration-200"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-100 to-accent-100 text-primary-600 font-semibold text-lg shadow-sm">
-                          {member.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-secondary-900">
-                            {member.name}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <Mail className="h-3.5 w-3.5 text-secondary-400" />
-                            <p className="text-sm text-secondary-600">
-                              {member.email}
-                            </p>
+                <>
+                  <div className="space-y-3">
+                    {teamMembers.map((member, index) => (
+                      <div
+                        key={member.id}
+                        className="group flex items-center justify-between rounded-xl border border-secondary-200 bg-gradient-to-r from-white to-secondary-50/50 p-4 hover:border-accent-300 hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-100 to-accent-100 text-primary-600 font-semibold text-lg shadow-sm">
+                            {member.name.charAt(0).toUpperCase()}
                           </div>
-                          {member.title && (
+                          <div>
+                            <h3 className="font-semibold text-secondary-900">
+                              {member.name}
+                            </h3>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <Briefcase className="h-3.5 w-3.5 text-secondary-400" />
-                              <p className="text-sm text-secondary-500">
-                                {member.title}
+                              <Mail className="h-3.5 w-3.5 text-secondary-400" />
+                              <p className="text-sm text-secondary-600">
+                                {member.email}
                               </p>
                             </div>
-                          )}
+                            {member.title && (
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <Briefcase className="h-3.5 w-3.5 text-secondary-400" />
+                                <p className="text-sm text-secondary-500">
+                                  {member.title}
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setDeleteMemberModal({
+                              isOpen: true,
+                              memberId: member.id,
+                              memberName: member.name,
+                            })
+                          }
+                          disabled={isSaving}
+                          className="border-error-200 text-error-500 hover:bg-error-50 hover:border-error-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setDeleteMemberModal({
-                            isOpen: true,
-                            memberId: member.id,
-                            memberName: member.name,
-                          })
-                        }
-                        disabled={isSaving}
-                        className="border-error-200 text-error-500 hover:bg-error-50 hover:border-error-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+
+                  {/* Add Member Button - Below the list */}
+                  <div className="mt-4 flex justify-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowAddMember(true)}
+                      disabled={isSaving}
+                      className="hover:border-accent-300 hover:bg-accent-50"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Team Member
+                    </Button>
+                  </div>
+                </>
               )}
             </CollapsibleSection>
 
@@ -1217,7 +1280,7 @@ export default function EmployerSettingsPage() {
                         size="sm"
                         onClick={() => setDisconnectVideoModal(true)}
                         disabled={isSaving}
-                        className="border-error-200 text-error-600 hover:bg-error-50 hover:border-error-300"
+                        className="bg-white border-secondary-300 text-secondary-600 hover:bg-error-50 hover:text-error-600 hover:border-error-300 shadow-sm"
                       >
                         {isSaving ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -1286,7 +1349,7 @@ export default function EmployerSettingsPage() {
                         size="sm"
                         onClick={() => setDisconnectVideoModal(true)}
                         disabled={isSaving}
-                        className="border-error-200 text-error-600 hover:bg-error-50 hover:border-error-300"
+                        className="bg-white border-secondary-300 text-secondary-600 hover:bg-error-50 hover:text-error-600 hover:border-error-300 shadow-sm"
                       >
                         {isSaving ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -1389,7 +1452,7 @@ export default function EmployerSettingsPage() {
                       size="sm"
                       onClick={() => setDisconnectCalendarModal(true)}
                       disabled={isSaving}
-                      className="border-error-200 text-error-600 hover:bg-error-50 hover:border-error-300"
+                      className="bg-white border-secondary-300 text-secondary-600 hover:bg-error-50 hover:text-error-600 hover:border-error-300 shadow-sm"
                     >
                       {isSaving ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -1590,14 +1653,14 @@ export default function EmployerSettingsPage() {
               )}
             </CollapsibleSection>
 
-            {/* Interview Templates */}
+            {/* Interview Process Templates */}
             <CollapsibleSection
               id="templates"
               icon={<FileText className="h-5 w-5" />}
               iconBgColor="bg-primary-100"
               iconColor="text-primary-600"
-              title="Interview Templates"
-              description="Manage custom interview templates for your hiring process"
+              title="Interview Process Templates"
+              description="Manage custom interview process templates for your hiring workflow"
               summary={getSummary("templates")}
               status={sectionStatuses.templates}
               isExpanded={expandedSections.has("templates")}
@@ -1909,9 +1972,55 @@ export default function EmployerSettingsPage() {
                       )}
                     </button>
                   </div>
-                  <p className="mt-1.5 text-xs text-secondary-500">
-                    Must be at least 8 characters
-                  </p>
+
+                  {/* Password Strength Indicator */}
+                  {passwordData.newPassword && (
+                    <div className="mt-3 space-y-3">
+                      {/* Strength Bar */}
+                      <div>
+                        <div className="flex gap-1 mb-1">
+                          {[1, 2, 3, 4].map((level) => (
+                            <div
+                              key={level}
+                              className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${getPasswordStrengthColor(level)}`}
+                            />
+                          ))}
+                        </div>
+                        <p className={`text-xs font-medium ${
+                          passwordStrength <= 1 ? "text-red-600" :
+                          passwordStrength === 2 ? "text-orange-600" :
+                          passwordStrength === 3 ? "text-yellow-600" :
+                          "text-green-600"
+                        }`}>
+                          {getPasswordStrengthLabel()}
+                        </p>
+                      </div>
+
+                      {/* Validation Checklist */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className={`flex items-center gap-2 text-xs ${passwordValidation.minLength ? "text-green-600" : "text-secondary-400"}`}>
+                          {passwordValidation.minLength ? <Check className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+                          8+ characters
+                        </div>
+                        <div className={`flex items-center gap-2 text-xs ${passwordValidation.hasUppercase ? "text-green-600" : "text-secondary-400"}`}>
+                          {passwordValidation.hasUppercase ? <Check className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+                          Uppercase letter
+                        </div>
+                        <div className={`flex items-center gap-2 text-xs ${passwordValidation.hasLowercase ? "text-green-600" : "text-secondary-400"}`}>
+                          {passwordValidation.hasLowercase ? <Check className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+                          Lowercase letter
+                        </div>
+                        <div className={`flex items-center gap-2 text-xs ${passwordValidation.hasNumber ? "text-green-600" : "text-secondary-400"}`}>
+                          {passwordValidation.hasNumber ? <Check className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+                          Number
+                        </div>
+                        <div className={`flex items-center gap-2 text-xs ${passwordValidation.hasSpecial ? "text-green-600" : "text-secondary-400"}`}>
+                          {passwordValidation.hasSpecial ? <Check className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+                          Special character
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -1931,6 +2040,22 @@ export default function EmployerSettingsPage() {
                     }
                     placeholder="Confirm new password"
                   />
+                  {/* Password Match Indicator */}
+                  {passwordData.confirmPassword && (
+                    <div className={`mt-2 flex items-center gap-2 text-xs ${passwordValidation.passwordsMatch ? "text-green-600" : "text-red-600"}`}>
+                      {passwordValidation.passwordsMatch ? (
+                        <>
+                          <Check className="h-3.5 w-3.5" />
+                          Passwords match
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="h-3.5 w-3.5" />
+                          Passwords don&apos;t match
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-end">
@@ -2011,77 +2136,95 @@ export default function EmployerSettingsPage() {
       {/* Add Member Modal */}
       {showAddMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card className="w-full max-w-md">
-            <CardContent className="p-6">
-              <div className="mb-6 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-secondary-900">
-                  Add Team Member
-                </h3>
+          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-primary-50 to-accent-50 border-b border-secondary-100 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 shadow-sm">
+                    <User className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-secondary-900">
+                      Add Team Member
+                    </h3>
+                    <p className="text-sm text-secondary-500">Add someone who conducts interviews</p>
+                  </div>
+                </div>
                 <button
                   onClick={() => {
                     setShowAddMember(false);
                     setNewMember({ name: "", email: "", title: "" });
                   }}
-                  className="rounded-lg p-2 hover:bg-secondary-100"
+                  className="rounded-lg p-2 hover:bg-secondary-100 transition-colors"
                   disabled={isSaving}
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-5 w-5 text-secondary-500" />
                 </button>
               </div>
+            </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-secondary-700">
-                    Name <span className="text-error-600">*</span>
-                  </label>
-                  <Input
-                    value={newMember.name}
-                    onChange={(e) =>
-                      setNewMember({ ...newMember, name: e.target.value })
-                    }
-                    placeholder="John Doe"
-                    disabled={isSaving}
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-secondary-700">
-                    Email <span className="text-error-600">*</span>
-                  </label>
-                  <Input
-                    type="email"
-                    value={newMember.email}
-                    onChange={(e) =>
-                      setNewMember({ ...newMember, email: e.target.value })
-                    }
-                    placeholder="john@company.com"
-                    disabled={isSaving}
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-secondary-700">
-                    Title (Optional)
-                  </label>
-                  <Input
-                    value={newMember.title}
-                    onChange={(e) =>
-                      setNewMember({ ...newMember, title: e.target.value })
-                    }
-                    placeholder="Engineering Manager"
-                    disabled={isSaving}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6 flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowAddMember(false);
-                    setNewMember({ name: "", email: "", title: "" });
-                  }}
+            {/* Modal Body */}
+            <div className="p-6 space-y-5">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-secondary-700">
+                  Full Name <span className="text-error-600">*</span>
+                </label>
+                <Input
+                  variant="modern"
+                  leftIcon={<User className="h-5 w-5" />}
+                  value={newMember.name}
+                  onChange={(e) =>
+                    setNewMember({ ...newMember, name: e.target.value })
+                  }
+                  placeholder="John Doe"
                   disabled={isSaving}
-                  className="flex-1"
-                >
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-secondary-700">
+                  Email Address <span className="text-error-600">*</span>
+                </label>
+                <Input
+                  type="email"
+                  variant="modern"
+                  leftIcon={<Mail className="h-5 w-5" />}
+                  value={newMember.email}
+                  onChange={(e) =>
+                    setNewMember({ ...newMember, email: e.target.value })
+                  }
+                  placeholder="john@company.com"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-secondary-700">
+                  Job Title <span className="text-secondary-400 font-normal">(Optional)</span>
+                </label>
+                <Input
+                  variant="modern"
+                  leftIcon={<Briefcase className="h-5 w-5" />}
+                  value={newMember.title}
+                  onChange={(e) =>
+                    setNewMember({ ...newMember, title: e.target.value })
+                  }
+                  placeholder="Engineering Manager"
+                  disabled={isSaving}
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="border-t border-secondary-100 bg-secondary-50/50 p-6 flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAddMember(false);
+                  setNewMember({ name: "", email: "", title: "" });
+                }}
+                disabled={isSaving}
+                className="flex-1"
+              >
                   Cancel
                 </Button>
                 <Button
@@ -2096,37 +2239,53 @@ export default function EmployerSettingsPage() {
                       Adding...
                     </>
                   ) : (
-                    "Add Member"
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Member
+                    </>
                   )}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+          </div>
         </div>
       )}
 
       {/* Create Template Modal */}
       {showCreateTemplate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="mx-4 w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-secondary-900">
-                Create Interview Template
-              </h3>
-              <button
-                onClick={() => setShowCreateTemplate(false)}
-                className="text-secondary-400 hover:text-secondary-600"
-              >
-                <X className="h-5 w-5" />
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-xl max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-primary-50 to-accent-50 border-b border-secondary-100 p-6 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 shadow-sm">
+                    <FileText className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-secondary-900">
+                      Create Interview Process Template
+                    </h3>
+                    <p className="text-sm text-secondary-500">Define the stages of your interview process</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCreateTemplate(false)}
+                  className="rounded-lg p-2 hover:bg-secondary-100 transition-colors"
+                >
+                  <X className="h-5 w-5 text-secondary-500" />
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-4">
+            {/* Modal Body */}
+            <div className="p-6 space-y-6 overflow-y-auto flex-1">
               <div>
                 <label className="mb-2 block text-sm font-medium text-secondary-700">
-                  Template Name
+                  Template Name <span className="text-error-600">*</span>
                 </label>
                 <Input
+                  variant="modern"
+                  leftIcon={<FileText className="h-5 w-5" />}
                   value={newTemplate.name}
                   onChange={(e) =>
                     setNewTemplate({
@@ -2134,19 +2293,23 @@ export default function EmployerSettingsPage() {
                       name: e.target.value,
                     })
                   }
-                  placeholder="e.g., Engineering 3-Round"
+                  placeholder="e.g., Engineering 3-Round Process"
                 />
               </div>
 
               <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <label className="text-sm font-medium text-secondary-700">
-                    Interview Rounds
-                  </label>
+                <div className="mb-3 flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium text-secondary-700">
+                      Interview Rounds
+                    </label>
+                    <p className="text-xs text-secondary-500 mt-0.5">Add the stages of your interview process</p>
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={addRoundToNewTemplate}
+                    className="hover:border-accent-300 hover:bg-accent-50"
                   >
                     <Plus className="mr-1 h-3 w-3" />
                     Add Round
@@ -2157,26 +2320,33 @@ export default function EmployerSettingsPage() {
                   {newTemplate.rounds.map((round, index) => (
                     <div
                       key={index}
-                      className="rounded-lg border border-secondary-200 p-3"
+                      className="rounded-xl border-2 border-secondary-200 bg-gradient-to-r from-white to-secondary-50/30 p-4 hover:border-secondary-300 transition-all"
                     >
-                      <div className="mb-2 flex items-center justify-between">
-                        <span className="text-sm font-medium text-secondary-700">
-                          Round {index + 1}
-                        </span>
+                      <div className="mb-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-100 text-primary-600 text-sm font-semibold">
+                            {index + 1}
+                          </div>
+                          <span className="text-sm font-medium text-secondary-700">
+                            Round {index + 1}
+                          </span>
+                        </div>
                         {newTemplate.rounds.length > 1 && (
                           <button
                             onClick={() =>
                               removeRoundFromNewTemplate(index)
                             }
-                            className="text-error-600 hover:text-error-700"
+                            className="p-1.5 rounded-lg text-secondary-400 hover:text-error-600 hover:bg-error-50 transition-colors"
                           >
                             <X className="h-4 w-4" />
                           </button>
                         )}
                       </div>
 
-                      <div className="grid gap-2">
+                      <div className="grid gap-3">
                         <Input
+                          variant="modern"
+                          leftIcon={<FileText className="h-5 w-5" />}
                           value={round.name}
                           onChange={(e) => {
                             const updatedRounds = [
@@ -2190,24 +2360,32 @@ export default function EmployerSettingsPage() {
                           }}
                           placeholder="Round name (e.g., Phone Screen)"
                         />
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="relative group">
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-secondary-400 transition-colors duration-200 group-focus-within:text-accent-500">
+                              <Clock className="h-5 w-5" />
+                            </div>
+                            <input
+                              type="number"
+                              value={round.duration}
+                              onChange={(e) => {
+                                const updatedRounds = [
+                                  ...newTemplate.rounds,
+                                ];
+                                updatedRounds[index].duration =
+                                  parseInt(e.target.value) || 30;
+                                setNewTemplate({
+                                  ...newTemplate,
+                                  rounds: updatedRounds,
+                                });
+                              }}
+                              placeholder="Duration"
+                              className="h-12 w-full rounded-xl border border-secondary-200 bg-secondary-50/50 pl-12 pr-16 py-3 text-sm transition-all duration-200 hover:bg-white hover:border-secondary-300 focus:outline-none focus:bg-white focus:border-accent-400 focus:ring-2 focus:ring-accent-500/20"
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary-400 text-sm">min</span>
+                          </div>
                           <Input
-                            type="number"
-                            value={round.duration}
-                            onChange={(e) => {
-                              const updatedRounds = [
-                                ...newTemplate.rounds,
-                              ];
-                              updatedRounds[index].duration =
-                                parseInt(e.target.value) || 30;
-                              setNewTemplate({
-                                ...newTemplate,
-                                rounds: updatedRounds,
-                              });
-                            }}
-                            placeholder="Duration (minutes)"
-                          />
-                          <Input
+                            variant="modern"
                             value={round.description}
                             onChange={(e) => {
                               const updatedRounds = [
@@ -2230,18 +2408,21 @@ export default function EmployerSettingsPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-3">
+            {/* Modal Footer */}
+            <div className="border-t border-secondary-100 bg-secondary-50/50 p-6 flex gap-3 flex-shrink-0">
               <Button
                 variant="outline"
                 onClick={() => setShowCreateTemplate(false)}
                 disabled={isSaving}
+                className="flex-1"
               >
                 Cancel
               </Button>
               <Button
                 variant="primary"
                 onClick={handleCreateTemplate}
-                disabled={isSaving}
+                disabled={isSaving || !newTemplate.name}
+                className="flex-1"
               >
                 {isSaving ? (
                   <>
@@ -2249,7 +2430,10 @@ export default function EmployerSettingsPage() {
                     Creating...
                   </>
                 ) : (
-                  "Create Template"
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Template
+                  </>
                 )}
               </Button>
             </div>
