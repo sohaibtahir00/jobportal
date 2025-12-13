@@ -93,41 +93,44 @@ const formatFieldName = (field: string): string => {
 const getBannerStyle = (percentage: number) => {
   if (percentage < 30) {
     return {
-      bg: "from-red-50 to-orange-50",
-      border: "border-red-500",
+      bg: "from-white to-red-50/30",
+      border: "border-red-400",
       iconBg: "bg-red-100",
       iconColor: "text-red-600",
-      button: "bg-red-600 hover:bg-red-700",
-      progressBg: "bg-red-200",
-      tagBg: "bg-red-100/60",
-      tagText: "text-red-700",
-      dismissColor: "text-red-400 hover:text-red-600",
+      button: "bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700",
+      progressBg: "bg-red-100",
+      progressColor: "[&>div]:bg-red-500",
+      tagBg: "bg-secondary-100",
+      tagText: "text-secondary-700",
+      dismissColor: "text-secondary-400 hover:text-secondary-600",
       message: "Your profile needs attention - complete it to start applying",
     };
   } else if (percentage < 70) {
     return {
-      bg: "from-orange-50 to-amber-50",
-      border: "border-orange-500",
-      iconBg: "bg-orange-100",
-      iconColor: "text-orange-600",
-      button: "bg-orange-600 hover:bg-orange-700",
-      progressBg: "bg-orange-200",
-      tagBg: "bg-white/60",
+      bg: "from-white to-primary-50/30",
+      border: "border-primary-300",
+      iconBg: "bg-primary-100",
+      iconColor: "text-primary-600",
+      button: "bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700",
+      progressBg: "bg-primary-100",
+      progressColor: "[&>div]:bg-primary-500",
+      tagBg: "bg-secondary-100",
       tagText: "text-secondary-700",
-      dismissColor: "text-orange-400 hover:text-orange-600",
+      dismissColor: "text-secondary-400 hover:text-secondary-600",
       message: "Add missing information to boost your visibility",
     };
   } else {
     return {
-      bg: "from-yellow-50 to-green-50",
-      border: "border-yellow-500",
-      iconBg: "bg-yellow-100",
-      iconColor: "text-yellow-600",
-      button: "bg-yellow-600 hover:bg-yellow-700",
-      progressBg: "bg-yellow-200",
-      tagBg: "bg-green-100/60",
-      tagText: "text-green-700",
-      dismissColor: "text-yellow-500 hover:text-yellow-700",
+      bg: "from-white to-green-50/30",
+      border: "border-green-400",
+      iconBg: "bg-green-100",
+      iconColor: "text-green-600",
+      button: "bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700",
+      progressBg: "bg-green-100",
+      progressColor: "[&>div]:bg-green-500",
+      tagBg: "bg-secondary-100",
+      tagText: "text-secondary-700",
+      dismissColor: "text-secondary-400 hover:text-secondary-600",
       message: "Almost there! Just a few more fields to complete",
     };
   }
@@ -519,7 +522,7 @@ export default function CandidateDashboardPage() {
                     {/* Progress bar */}
                     <Progress
                       value={profileCompletionData.percentage}
-                      className={`h-3 ${bannerStyle.progressBg} mb-3`}
+                      className={`h-3 ${bannerStyle.progressBg} ${bannerStyle.progressColor} mb-3`}
                     />
 
                     {/* Missing fields */}
