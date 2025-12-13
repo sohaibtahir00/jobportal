@@ -635,19 +635,28 @@ export default function CandidateProfilePage() {
     setUploading(true);
     try {
       const result = await uploadFile(file, type);
+      console.log("[Profile] File uploaded:", type, result.url);
+
       if (type === 'resume') {
         setResumeUrl(result.url);
         showToast("success", "Resume Uploaded", "Your resume has been uploaded successfully.");
       } else {
         setPhotoUrl(result.url);
         // Auto-save photo to database immediately
-        await api.patch("/api/candidates/profile", { photo: result.url });
-        showToast("success", "Photo Uploaded", "Your profile photo has been saved.");
-        refetch(); // Refresh profile data to confirm save
+        try {
+          console.log("[Profile] Saving photo URL to database:", result.url);
+          const saveResponse = await api.patch("/api/candidates/profile", { photo: result.url });
+          console.log("[Profile] Photo save response:", saveResponse.data);
+          showToast("success", "Photo Saved", "Your profile photo has been saved.");
+          refetch(); // Refresh profile data to confirm save
+        } catch (saveError: any) {
+          console.error("[Profile] Failed to save photo to database:", saveError);
+          showToast("error", "Save Failed", saveError?.response?.data?.error || "Photo uploaded but failed to save to profile.");
+        }
       }
       queryClient.invalidateQueries({ queryKey: ['candidate-dashboard'] });
     } catch (error) {
-      console.error("File upload failed:", error);
+      console.error("[Profile] File upload failed:", error);
       showToast("error", "Upload Failed", "Failed to upload file. Please try again.");
     } finally {
       setUploading(false);
