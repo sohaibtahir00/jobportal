@@ -37,13 +37,13 @@ export interface CollapsibleSectionProps {
 
 const statusIcons = {
   complete: <Check className="h-4 w-4 text-success-600" />,
-  incomplete: <Circle className="h-4 w-4 text-secondary-400" />,
+  incomplete: <AlertCircle className="h-4 w-4 text-warning-600" />,
   warning: <AlertCircle className="h-4 w-4 text-warning-600" />,
 };
 
 const statusColors = {
   complete: "bg-success-100 border-success-200",
-  incomplete: "bg-secondary-100 border-secondary-200",
+  incomplete: "bg-warning-100 border-warning-200",
   warning: "bg-warning-100 border-warning-200",
 };
 

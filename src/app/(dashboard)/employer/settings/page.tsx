@@ -168,12 +168,12 @@ export default function EmployerSettingsPage() {
     return {
       company: companyProfileComplete ? "complete" : "incomplete",
       password: "complete", // Always complete since it's optional
-      notifications: notificationsComplete ? "complete" : "warning",
-      team: teamComplete ? "complete" : "warning",
-      video: videoComplete ? "complete" : "warning",
-      calendar: calendarComplete ? "complete" : "warning",
-      billing: billingComplete ? "complete" : "warning",
-      templates: templatesComplete ? "complete" : "warning",
+      notifications: notificationsComplete ? "complete" : "incomplete",
+      team: teamComplete ? "complete" : "incomplete",
+      video: videoComplete ? "complete" : "incomplete",
+      calendar: calendarComplete ? "complete" : "incomplete",
+      billing: billingComplete ? "complete" : "incomplete",
+      templates: templatesComplete ? "complete" : "incomplete",
     } as Record<string, SectionStatus>;
   }, [
     profileData,
